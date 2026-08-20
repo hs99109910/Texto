@@ -23,4 +23,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Texto-sms-debug
-          path: app/build/outputs/apk/foss/debug/app-foss-debug.apk
+          # archivesName in app/build.gradle.kts renames the output to
+          # Texto-sms-<versionCode>-foss-debug.apk, so match by glob instead
+          # of hardcoding a name that drifts with every version bump.
+          path: app/build/outputs/apk/foss/debug/*.apk
