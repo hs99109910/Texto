@@ -75,8 +75,8 @@ class ContactsAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyRecyclerViewListAdapter<Any>.ViewHolder {
         val binding = when (viewType) {
-            VIEW_TYPE_SUGGESTION -> org.nova.messages.databinding.ItemConversationRecentBinding.inflate(layoutInflater, parent, false)
-            VIEW_TYPE_MODERN_PILL -> org.nova.messages.databinding.ItemConversationPillBinding.inflate(layoutInflater, parent, false)
+            VIEW_TYPE_SUGGESTION -> com.texto.sms.databinding.ItemConversationRecentBinding.inflate(layoutInflater, parent, false)
+            VIEW_TYPE_MODERN_PILL -> com.texto.sms.databinding.ItemConversationPillBinding.inflate(layoutInflater, parent, false)
             else -> ItemConversationBinding.inflate(layoutInflater, parent, false)
         }
         return ContactViewHolder(binding)
@@ -142,7 +142,7 @@ class ContactsAdapter(
     }
 
     private fun setupModernPillView(view: View, item: Any, holder: MyRecyclerViewListAdapter<Any>.ViewHolder) {
-        org.nova.messages.databinding.ItemConversationPillBinding.bind(view).apply {
+        com.texto.sms.databinding.ItemConversationPillBinding.bind(view).apply {
             val mainTextColor = activity.config.mainTextColor
             val contact = item as SimpleContact
             pillAddress.text = contact.name

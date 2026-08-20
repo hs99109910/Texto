@@ -1336,7 +1336,7 @@ fun Context.showReceivedMessageNotification(
     threadId: Long,
     bitmap: Bitmap?,
 ) {
-    if (org.nova.messages.activities.ThreadActivity.currentThreadId == threadId) {
+    if (com.texto.sms.activities.ThreadActivity.currentThreadId == threadId) {
         return
     }
 

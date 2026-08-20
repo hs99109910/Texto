@@ -568,10 +568,10 @@ class SettingsActivity : SimpleActivity() {
      */
     private fun setupAppTheme() = binding.apply {
         settingsAppTheme.text =
-            org.nova.messages.helpers.AppThemes.byId(config.appTheme).label
+            com.texto.sms.helpers.AppThemes.byId(config.appTheme).label
 
         settingsAppThemeHolder.setOnClickListener {
-            val themes = org.nova.messages.helpers.AppThemes.all
+            val themes = com.texto.sms.helpers.AppThemes.all
             val items = themes.mapIndexed { index, theme ->
                 org.fossify.commons.models.RadioItem(index, theme.label)
             } as ArrayList<org.fossify.commons.models.RadioItem>
@@ -579,7 +579,7 @@ class SettingsActivity : SimpleActivity() {
             val current = themes.indexOfFirst { it.id == config.appTheme }.coerceAtLeast(0)
             org.fossify.commons.dialogs.RadioGroupDialog(this@SettingsActivity, items, current) {
                 val theme = themes[it as Int]
-                org.nova.messages.helpers.AppThemes.apply(config, theme)
+                com.texto.sms.helpers.AppThemes.apply(config, theme)
                 settingsAppTheme.text = theme.label
                 updateCustomizationUI()
                 updateAppFonts(binding.root)
@@ -613,7 +613,7 @@ class SettingsActivity : SimpleActivity() {
         org.fossify.commons.helpers.ensureBackgroundThread {
             // Explicit receiver: inside binding.apply the implicit `this` is the binding,
             // not the Context the extension needs.
-            val count = with(org.nova.messages.helpers.SystemBlockedNumbers) {
+            val count = with(com.texto.sms.helpers.SystemBlockedNumbers) {
                 this@SettingsActivity.listAll().size
             }
             runOnUiThread {
@@ -671,16 +671,16 @@ class SettingsActivity : SimpleActivity() {
             )
 
             // Persian typefaces, greyed out with a hint until their file is dropped in assets/fonts.
-            org.nova.messages.helpers.NovaFonts.displayNames.forEach { (id, name) ->
-                val installed = org.nova.messages.helpers.NovaFonts.isInstalled(this@SettingsActivity, id)
+            com.texto.sms.helpers.NovaFonts.displayNames.forEach { (id, name) ->
+                val installed = com.texto.sms.helpers.NovaFonts.isInstalled(this@SettingsActivity, id)
                 val label = if (installed) name else "$name — ${getString(R.string.font_not_installed)}"
                 items.add(org.fossify.commons.models.RadioItem(id, label))
             }
 
             org.fossify.commons.dialogs.RadioGroupDialog(this@SettingsActivity, items, config.fontFamilyNova) {
                 val selected = it as Int
-                if (org.nova.messages.helpers.NovaFonts.isPersianFont(selected) &&
-                    !org.nova.messages.helpers.NovaFonts.isInstalled(this@SettingsActivity, selected)
+                if (com.texto.sms.helpers.NovaFonts.isPersianFont(selected) &&
+                    !com.texto.sms.helpers.NovaFonts.isInstalled(this@SettingsActivity, selected)
                 ) {
                     toast(R.string.font_not_installed)
                 }
@@ -695,7 +695,7 @@ class SettingsActivity : SimpleActivity() {
     /** Anything that is not a bundled Persian face now reads as the system font, which also
      *  covers a value left behind by one of the Latin families that has been dropped. */
     private fun getFontText(): String =
-        org.nova.messages.helpers.NovaFonts.displayNames[config.fontFamilyNova]
+        com.texto.sms.helpers.NovaFonts.displayNames[config.fontFamilyNova]
             ?: getString(R.string.font_system_default)
 
     private fun setupExpandableCategories() = binding.apply {

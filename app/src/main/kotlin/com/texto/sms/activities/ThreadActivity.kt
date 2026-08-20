@@ -873,20 +873,20 @@ class ThreadActivity : SimpleActivity() {
 
         // Always create the call icon so refreshMenuItems() can toggle its visibility later,
         // once participants (and their phone numbers) have actually been loaded.
-        val callItem = toolbar.menu.add(0, org.nova.messages.R.id.dial_number, 0, getString(org.fossify.commons.R.string.dial_number))
+        val callItem = toolbar.menu.add(0, com.texto.sms.R.id.dial_number, 0, getString(org.fossify.commons.R.string.dial_number))
         callItem.setIcon(org.fossify.commons.R.drawable.ic_phone_vector)
         callItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
         callItem.isVisible = canDialCurrentParticipant()
 
         // Add a single custom overflow item
-        val moreItem = toolbar.menu.add(0, org.nova.messages.R.id.more_options, 1, "More")
+        val moreItem = toolbar.menu.add(0, com.texto.sms.R.id.more_options, 1, "More")
         moreItem.setIcon(org.fossify.commons.R.drawable.ic_three_dots_vector)
         moreItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
 
         toolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
-                org.nova.messages.R.id.dial_number -> dialNumber()
-                org.nova.messages.R.id.more_options -> {
+                com.texto.sms.R.id.dial_number -> dialNumber()
+                com.texto.sms.R.id.more_options -> {
                     // Trigger modern menu for everything else
                     val overflowView = toolbar.findViewById<android.view.View>(menuItem.itemId) ?: toolbar
                     showThreadModernMenu(overflowView)
@@ -1326,7 +1326,7 @@ class ThreadActivity : SimpleActivity() {
         if (addresses.isNotEmpty()) {
             val subId = availableSIMCards.getOrNull(subscriptionId)?.subscriptionId
             val mmsAttachments = attachments.map {
-                org.nova.messages.models.Attachment(null, 0L, it.uri.toString(), it.mimetype, 0, 0, it.filename)
+                com.texto.sms.models.Attachment(null, 0L, it.uri.toString(), it.mimetype, 0, 0, it.filename)
             }
             sendMessageCompat(text, addresses, subId, mmsAttachments)
         }

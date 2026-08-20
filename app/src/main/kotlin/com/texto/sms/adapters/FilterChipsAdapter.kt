@@ -17,7 +17,7 @@ import kotlin.math.hypot
 
 /**
  * Backs the home screen's filter chip row. Custom filters can be dragged to reorder (see
- * [org.nova.messages.helpers.FilterChipDragCallback]) or long-pressed (held without moving)
+ * [com.texto.sms.helpers.FilterChipDragCallback]) or long-pressed (held without moving)
  * to open the editor; the built-in "All"/"Contacts only" chips and the trailing "+" chip are
  * excluded from both and stay in place.
  */

@@ -80,7 +80,7 @@ class MainActivity : SimpleActivity() {
     // alongside the conversation list; backs the "Contacts only" filter.
     private var contactPhoneNumbers: Set<String> = emptySet()
     private var activeFilter: MessageFilter = MessageFilter.all("همه")
-    private var filterChipsAdapter: org.nova.messages.adapters.FilterChipsAdapter? = null
+    private var filterChipsAdapter: com.texto.sms.adapters.FilterChipsAdapter? = null
     private var filterChipDragHelper: androidx.recyclerview.widget.ItemTouchHelper? = null
 
     private val binding by viewBinding(ActivityMainBinding::inflate)
@@ -509,7 +509,7 @@ class MainActivity : SimpleActivity() {
         activeFilter = filters.firstOrNull { it.id == config.activeFilterId } ?: filters.first()
 
         if (filterChipsAdapter == null) {
-            val adapter = org.nova.messages.adapters.FilterChipsAdapter(
+            val adapter = com.texto.sms.adapters.FilterChipsAdapter(
                 onSelect = { selectFilter(it) },
                 onEditRequested = { editFilter(it) },
                 onAddRequested = { editFilter(null) },
@@ -529,7 +529,7 @@ class MainActivity : SimpleActivity() {
             // can't move or be a drop target. Drag is started manually by the adapter itself
             // -- see FilterChipsAdapter -- so it can coexist with long-press-to-edit.
             filterChipDragHelper = androidx.recyclerview.widget.ItemTouchHelper(
-                org.nova.messages.helpers.FilterChipDragCallback(adapter) { reorderedCustomFilters ->
+                com.texto.sms.helpers.FilterChipDragCallback(adapter) { reorderedCustomFilters ->
                     config.customFilters = reorderedCustomFilters
                 }
             ).apply { attachToRecyclerView(binding.filterBar) }
@@ -547,7 +547,7 @@ class MainActivity : SimpleActivity() {
                 // Alphanumeric sender ids ("BANKMELLI", "Irancell") have no digits, so their
                 // comparable form is empty. Keying on that alone collapsed every one of them
                 // into a single row and the rest could never be picked.
-                org.nova.messages.helpers.SystemBlockedNumbers.comparable(conversation.phoneNumber)
+                com.texto.sms.helpers.SystemBlockedNumbers.comparable(conversation.phoneNumber)
                     .ifEmpty { conversation.phoneNumber.lowercase() }
             }
             .map { conversation ->
@@ -605,7 +605,7 @@ class MainActivity : SimpleActivity() {
             marginEnd = 16.getScaledPx()
             bottomMargin = 88.getScaledPx()
         }
-        org.nova.messages.helpers.NovaGlass.applyPanel(
+        com.texto.sms.helpers.NovaGlass.applyPanel(
             view = this,
             tint = config.inputBarBackgroundColor,
             cornerRadius = size / 2f,
@@ -631,7 +631,7 @@ class MainActivity : SimpleActivity() {
         // bubble colour -- as a solid fill with a matching outline, which reads clearly on
         // any background, while the inactive ones drop back to a faint tint.
         val textColor = if (isActive) config.sentBubbleTextColor else config.topBarTextColor
-        org.nova.messages.helpers.NovaGlass.applyPanel(
+        com.texto.sms.helpers.NovaGlass.applyPanel(
             view = chip,
             tint = if (isActive) config.sentBubbleColor else baseColor,
             cornerRadius = radius,
@@ -640,7 +640,7 @@ class MainActivity : SimpleActivity() {
             outlineColor = if (isActive) config.sentBubbleTextColor else null,
             outlineWidthPx = if (isActive) 1.getScaledPx() else 0
         )
-        val horizontal = if (filterId == org.nova.messages.adapters.FilterChipsAdapter.ADD_CHIP_ID) {
+        val horizontal = if (filterId == com.texto.sms.adapters.FilterChipsAdapter.ADD_CHIP_ID) {
             20.getScaledPx()
         } else {
             16.getScaledPx()
@@ -854,7 +854,7 @@ class MainActivity : SimpleActivity() {
             // matched nothing and always came up empty.
             val contactNumbers = getContactNumbersSnapshot() +
                 privateContacts.flatMap { it.phoneNumbers }
-                    .map { org.nova.messages.helpers.SystemBlockedNumbers.comparable(it.normalizedNumber) }
+                    .map { com.texto.sms.helpers.SystemBlockedNumbers.comparable(it.normalizedNumber) }
                     .filter { it.isNotEmpty() }
             runOnUiThread {
                 if (!isFinishing && !isDestroyed && myGeneration == conversationLoadGeneration) {
@@ -952,7 +952,7 @@ class MainActivity : SimpleActivity() {
         // No per-position offsets: the card's own margin is the only gap, so the spacing
         // between every pair of chats is identical.
         if (useNewUi && dragTouchHelper == null) {
-            val callback = org.nova.messages.helpers.ModernDragCallback(getOrCreateConversationsAdapter())
+            val callback = com.texto.sms.helpers.ModernDragCallback(getOrCreateConversationsAdapter())
             dragTouchHelper = androidx.recyclerview.widget.ItemTouchHelper(callback)
         }
 
@@ -970,7 +970,7 @@ class MainActivity : SimpleActivity() {
             allConversations
         } else {
             allConversations.filter {
-                org.nova.messages.helpers.MessageClassifier.matches(it, activeFilter, contactPhoneNumbers)
+                com.texto.sms.helpers.MessageClassifier.matches(it, activeFilter, contactPhoneNumbers)
             }.toMutableList() as ArrayList<Conversation>
         }
 

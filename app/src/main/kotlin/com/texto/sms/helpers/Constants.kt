@@ -133,7 +133,7 @@ const val RECEIVED_BUBBLES_OUTLINE = "received_bubbles_outline"
 const val RECEIVED_BUBBLES_OUTLINE_COLOR = "received_bubbles_outline_color"
 const val RECEIVED_BUBBLES_OUTLINE_THICKNESS = "received_bubbles_outline_thickness"
 
-private const val PATH = "org.nova.org.nova.messages.action."
+private const val PATH = "com.texto.sms.action."
 const val MARK_AS_READ = PATH + "mark_as_read"
 const val REPLY = PATH + "reply"
 const val COPY_CODE = PATH + "copy_code"

@@ -192,7 +192,7 @@ abstract class BaseConversationsAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = when (viewType) {
-            VIEW_TYPE_RECENT -> org.nova.messages.databinding.ItemConversationRecentBinding.inflate(layoutInflater, parent, false)
+            VIEW_TYPE_RECENT -> com.texto.sms.databinding.ItemConversationRecentBinding.inflate(layoutInflater, parent, false)
             else -> ItemConversationBinding.inflate(layoutInflater, parent, false)
         }
         return createViewHolder(binding.root)
@@ -210,7 +210,7 @@ abstract class BaseConversationsAdapter(
 
     private fun updateRecentHoverState(holder: ViewHolder, position: Int) {
         val conversation = getItem(position)
-        org.nova.messages.databinding.ItemConversationRecentBinding.bind(holder.itemView).apply {
+        com.texto.sms.databinding.ItemConversationRecentBinding.bind(holder.itemView).apply {
             val isSelected = selectedKeys.contains(conversation.hashCode())
             val isHoverTarget = hoveredPosition == position
             recentSelectionGlow.beVisibleIf(isSelected || isHoverTarget)
@@ -482,7 +482,7 @@ abstract class BaseConversationsAdapter(
             .setItems(labels) { _, which ->
                 val target = filters[which]
                 val alreadyThere = target.senders.any {
-                    org.nova.messages.helpers.SystemBlockedNumbers
+                    com.texto.sms.helpers.SystemBlockedNumbers
                         .isSameSender(it, conversation.phoneNumber)
                 }
                 if (alreadyThere) {
@@ -495,7 +495,7 @@ abstract class BaseConversationsAdapter(
                     senders = target.senders + conversation.phoneNumber,
                     senderLabels = target.senderLabels + label
                 )
-                if (updated.id == org.nova.messages.helpers.MessageFilter.ID_ADS) {
+                if (updated.id == com.texto.sms.helpers.MessageFilter.ID_ADS) {
                     activity.config.adsFilter = updated
                 } else {
                     activity.config.customFilters = customFilters.map {
@@ -506,7 +506,7 @@ abstract class BaseConversationsAdapter(
                 // Persisted senders must reach MainActivity regardless of what happens while
                 // leaving selection mode, so post the refresh first and let it stand on its
                 // own instead of risking finishActMode() throwing and swallowing it.
-                org.nova.messages.helpers.refreshConversations()
+                com.texto.sms.helpers.refreshConversations()
                 try { finishActMode() } catch (_: Exception) {}
             }
             .setNegativeButton(org.fossify.commons.R.string.cancel, null)
@@ -514,7 +514,7 @@ abstract class BaseConversationsAdapter(
     }
 
     private fun setupRecentView(view: View, conversation: Conversation, position: Int, holder: ViewHolder) {
-        org.nova.messages.databinding.ItemConversationRecentBinding.bind(view).apply {
+        com.texto.sms.databinding.ItemConversationRecentBinding.bind(view).apply {
             val mainTextColor = activity.config.mainTextColor
             val isLead = position < 2
 
@@ -898,7 +898,7 @@ abstract class BaseConversationsAdapter(
                 background?.applyColorFilter(properPrimaryColor)
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.7f)
                 updateLayoutParams {
-                    val size = (activity as SimpleActivity).getScaledDimen(org.nova.messages.R.dimen.small_icon_size)
+                    val size = (activity as SimpleActivity).getScaledDimen(com.texto.sms.R.dimen.small_icon_size)
                     width = size
                     height = size
                 }

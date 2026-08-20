@@ -580,7 +580,7 @@ class ThreadAdapter(
                 }
 
                 // Frosted bubble, kept dense so message text stays fully legible.
-                background = org.nova.messages.helpers.NovaGlass.panel(
+                background = com.texto.sms.helpers.NovaGlass.panel(
                     tint = bgColor,
                     cornerRadii = baseRadii,
                     opacity = 0.88f,
@@ -663,7 +663,7 @@ class ThreadAdapter(
 
             // Figures in the body become tappable so a single account number, code or
             // amount can be copied or forwarded without hand-selecting text.
-            org.nova.messages.helpers.NumberSpans.apply(this, message.body) { number ->
+            com.texto.sms.helpers.NumberSpans.apply(this, message.body) { number ->
                 showNumberActions(this, number)
             }
             visibility = if (message.body.isNotEmpty()) View.VISIBLE else View.GONE
