@@ -1,0 +1,19 @@
+*.iml
+*.aab
+*.apk
+.gradle
+/local.properties
+/.idea/
+.DS_Store
+/build
+/app/build
+# Build outputs; a stale APK was committed here once, which is what this keeps out.
+/app/core/
+/app/foss/
+/app/gplay/
+/captures
+keystore.jks
+keystore.properties
+fastlane/fastlane.json
+fastlane/report.xml
+.kotlin/

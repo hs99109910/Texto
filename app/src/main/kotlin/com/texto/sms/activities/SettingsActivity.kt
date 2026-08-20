@@ -1,0 +1,720 @@
+package com.texto.sms.activities
+
+import android.app.Activity
+import android.graphics.Color
+import android.content.Intent
+import android.os.Bundle
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import androidx.core.view.updateLayoutParams
+import android.widget.TextView
+import org.fossify.commons.extensions.*
+import org.fossify.commons.helpers.NavigationIcon
+import org.fossify.commons.helpers.PERMISSION_WRITE_STORAGE
+import org.fossify.commons.views.MyAppBarLayout
+import com.texto.sms.R
+import com.texto.sms.databinding.ActivitySettingsBinding
+import com.texto.sms.extensions.config
+import com.texto.sms.helpers.*
+
+class SettingsActivity : SimpleActivity() {
+
+    private val binding by viewBinding(ActivitySettingsBinding::inflate)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(binding.root)
+
+        setupEdgeToEdge(padBottomImeAndSystem = listOf(binding.settingsNestedScrollview))
+        setupTopAppBar(binding.settingsAppbar, NavigationIcon.Arrow, Color.TRANSPARENT)
+
+        (binding.settingsAppbar as? MyAppBarLayout)?.let { appBar ->
+            appBar.setBackgroundColor(Color.TRANSPARENT)
+            binding.settingsToolbar.navigationIcon?.setTint(config.topBarTextColor)
+            binding.settingsToolbar.setNavigationOnClickListener { finish() }
+        }
+
+        setupCustomization()
+        setupUIScale()
+        setupAppTheme()
+        setupBlockedNumbers()
+        setupConversationScreens()
+        setupContactsOnlyFilter()
+        setupAdsFilter()
+        setupDefaultFilter()
+        setupFontSize()
+        setupFontFamily()
+        setupBgModes()
+        setupExpandableCategories()
+        updateAppFonts(binding.root)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        applyOutlines()
+        updateCustomizationUI()
+        setupNovaNavBar()
+        // Ensure UI is fully up to date for modern design
+        updateAppFonts(binding.root)
+        applyCustomColors()
+    }
+
+    private fun setupNovaNavBar() = binding.apply {
+        if (config.useNewUi) {
+            novaNavContainer.beVisible()
+            
+            // Sync edge-to-edge padding to match Home screen
+            androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(novaNavContainer) { v, insets ->
+                val navigationHeight = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.navigationBars()).bottom
+                v.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
+                    bottomMargin = 16.getScaledPx() + navigationHeight
+                }
+                insets
+            }
+            
+            // Apply compact width and transparency
+            novaNavContainer.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
+                width = 240.getScaledPx()
+                gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
+            }
+            novaNavContainer.alpha = 0.92f
+            
+            // Set icon transparency
+            navHomeIcon.alpha = 0.6f
+            navSettingsIcon.alpha = 0.9f // Lighter for active
+            novaSearchIcon.alpha = 0.6f
+            
+            // Highlight Settings (Current Screen) with subtle transparency
+            navSettingsBtn.setBackgroundColor(Color.WHITE.withAlpha(0.1f))
+            
+            navHomeBtn.setOnClickListener {
+                finish() // Go back to main
+            }
+            
+            navSearchBtn.setOnClickListener {
+                finish() // Go back to main and expand search
+            }
+        } else {
+            novaNavContainer.beGone()
+        }
+    }
+
+    private fun applyOutlines() = binding.apply {
+        val density = resources.displayMetrics.density
+        val inputBarTextColor = config.inputBarTextColor
+        val isNewUi = config.useNewUi
+        
+        // Top Bar Outline (Settings)
+        if (config.topBarOutline && isNewUi) {
+            val r26 = 26f * density
+            val thickness = config.topBarOutlineThickness
+            val thickStroke = (thickness * density).toInt()
+            val outline = android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                setStroke(thickStroke, config.topBarOutlineColor)
+                setColor(Color.TRANSPARENT)
+                cornerRadii = FloatArray(8) { r26 }
+            }
+            val drawable = android.graphics.drawable.LayerDrawable(arrayOf(outline))
+            // Sits exactly on the painted bar, which is now rounded all round and
+            // starts below the status bar rather than behind it.
+            drawable.setLayerInset(0, 0, statusBarInsetOf(binding.settingsAppbar), 0, 0)
+            binding.settingsAppbar.foreground = drawable
+        } else {
+            binding.settingsAppbar.foreground = null
+        }
+
+        // Nav Bar Outline (Settings)
+        if (config.searchBarOutline && isNewUi) {
+            val thickness = config.searchBarOutlineThickness
+            val thickStroke = (thickness * density).toInt()
+            val r_base = 100f * density
+            val drawable = android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                setStroke(thickStroke, config.searchBarOutlineColor)
+                cornerRadius = r_base
+                setColor(Color.TRANSPARENT)
+            }
+            val layerDrawable = android.graphics.drawable.LayerDrawable(arrayOf(drawable))
+            layerDrawable.setLayerInset(0, 0, 0, 0, 0)
+            binding.novaNavContainer.foreground = layerDrawable
+            
+            // Sync icon and divider colors with search bar text color
+            binding.navHomeIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
+            binding.navSettingsIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
+            binding.novaSearchIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
+        } else {
+            binding.novaNavContainer.foreground = null
+        }
+    }
+
+    private fun updateCustomizationUI() = binding.apply {
+        val mainTextColor = config.mainTextColor
+        
+        settingsTopBarImageIcon.applyColorFilter(mainTextColor)
+        settingsMainBgImageIcon.applyColorFilter(mainTextColor)
+        settingsInputBarImageIcon.applyColorFilter(mainTextColor)
+
+        // Force all labels to use main text color
+        settingsCustomizationLabel.setTextColor(mainTextColor)
+        settingsTopBarLabel.setTextColor(mainTextColor)
+        settingsMainBgLabel.setTextColor(mainTextColor)
+        settingsInputBarLabel.setTextColor(mainTextColor)
+        settingsBubbleCustomizationLabel.setTextColor(mainTextColor)
+        settingsUiScaleLabel.setTextColor(mainTextColor)
+        settingsFontSizeLabel.setTextColor(mainTextColor)
+        settingsFontLabel.setTextColor(mainTextColor)
+        settingsResetDefaults.setTextColor(mainTextColor)
+        settingsUiColorsLabel.setTextColor(mainTextColor)
+        
+        settingsAppearanceArrow.applyColorFilter(mainTextColor)
+        settingsColorsArrow.applyColorFilter(mainTextColor)
+        settingsBubblesArrow.applyColorFilter(mainTextColor)
+        
+        settingsTopBarTextColorLabel.setTextColor(mainTextColor)
+        settingsBackgroundColorLabel.setTextColor(mainTextColor)
+        settingsInputBarTextColorLabel.setTextColor(mainTextColor)
+        settingsSentBubbleColorLabel.setTextColor(mainTextColor)
+        settingsSentBubbleTextColorLabel.setTextColor(mainTextColor)
+        settingsReceivedBubbleColorLabel.setTextColor(mainTextColor)
+        settingsReceivedBubbleTextColorLabel.setTextColor(mainTextColor)
+        
+        
+        // Mode Visibility
+        val updateModeUI = { mode: Int, colorPreview: View, imageIcon: View ->
+            if (mode == BG_MODE_COLOR) {
+                colorPreview.beVisible()
+                imageIcon.beGone()
+            } else {
+                colorPreview.beGone()
+                imageIcon.beVisible()
+            }
+        }
+        
+        updateModeUI(config.topBarBgMode, settingsTopBarColorPreview, settingsTopBarImageIcon)
+        updateModeUI(config.mainBgMode, settingsMainBackgroundColorPreview, settingsMainBgImageIcon)
+        updateModeUI(config.inputBarBgMode, settingsInputBarBackgroundColorPreview, settingsInputBarImageIcon)
+
+        // Function to update color previews safely without losing shape
+        val updatePreview = { view: View, color: Int ->
+            val bg = view.background as? android.graphics.drawable.LayerDrawable
+            if (bg != null) {
+                bg.findDrawableByLayerId(R.id.color_preview_main)?.mutate()?.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN)
+            } else {
+                view.background?.applyColorFilter(color)
+            }
+        }
+
+        // Force all color previews to update based on current config
+        updatePreview(settingsTopBarColorPreview, if (config.topBarColor == 0) Color.BLACK else config.topBarColor)
+        updatePreview(settingsTopBarTextColorPreview, config.topBarTextColor)
+        updatePreview(settingsMainBackgroundColorPreview, config.mainBackgroundColor)
+        updatePreview(settingsMainTextColorPreview, config.mainTextColor)
+        updatePreview(settingsInputBarBackgroundColorPreview, config.inputBarBackgroundColor)
+        updatePreview(settingsInputBarTextColorPreview, config.inputBarTextColor)
+
+        updatePreview(settingsSentBubbleColorPreview, config.sentBubbleColor)
+        updatePreview(settingsSentBubbleTextColorPreview, config.sentBubbleTextColor)
+        updatePreview(settingsReceivedBubbleColorPreview, config.receivedBubbleColor)
+        updatePreview(settingsReceivedBubbleTextColorPreview, config.receivedBubbleTextColor)
+
+        updatePreview(settingsColorRecentPreview, config.recentColor)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
+        super.onActivityResult(requestCode, resultCode, resultData)
+        if (resultCode != Activity.RESULT_OK || resultData == null) return
+
+        if (requestCode == CROP_RESULT_INTENT && resultCode == RESULT_OK) {
+            val target = resultData.getIntExtra(CROP_TARGET, -1)
+            val originalUri = resultData.getStringExtra("uri") ?: ""
+            val cropRect = resultData.getStringExtra("crop_rect") ?: ""
+            
+            when (target) {
+                CROP_TARGET_TOP_BAR -> {
+                    config.topBarImage = originalUri
+                    config.topBarCropRect = cropRect
+                }
+                CROP_TARGET_BACKGROUND -> {
+                    config.mainBackgroundImage = originalUri
+                    config.mainBgCropRect = cropRect
+                }
+                CROP_TARGET_SEARCH_BAR -> {
+                    config.inputBarImage = originalUri
+                    config.inputBarCropRect = cropRect
+                }
+            }
+            applyCustomColors()
+            return
+        }
+
+        val uri = resultData?.data ?: return
+        val uriString = uri.toString()
+
+        try {
+            contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        } catch (_: Exception) {
+            // Not all URIs support persistable permissions (e.g. some file managers)
+        }
+
+        when (requestCode) {
+            PICK_TOP_BAR_IMAGE_INTENT -> startCropper(uriString, CROP_TARGET_TOP_BAR)
+            PICK_MAIN_BG_IMAGE_INTENT -> startCropper(uriString, CROP_TARGET_BACKGROUND)
+            PICK_INPUT_BAR_IMAGE_INTENT -> startCropper(uriString, CROP_TARGET_SEARCH_BAR)
+        }
+    }
+
+    private fun startCropper(uri: String, target: Int) {
+        val intent = Intent(this, ImageCropperActivity::class.java).apply {
+            putExtra("uri", uri)
+            putExtra(CROP_TARGET, target)
+        }
+        startActivityForResult(intent, CROP_RESULT_INTENT)
+    }
+
+    private fun setupBgModes() = binding.apply {
+        // The main background also supports a gradient, which is what the Aurora theme
+        // selects. Offering only Color/Image here meant setSelection(BG_MODE_GRADIENT)
+        // ran off the end of the adapter and crashed Settings.
+        val modes = arrayListOf("Color", "Image", "Gradient")
+        val mainTextColor = config.mainTextColor
+
+        val adapter = object : ArrayAdapter<String>(this@SettingsActivity, android.R.layout.simple_spinner_item, modes) {
+            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getView(position, convertView, parent) as TextView
+                view.setTextColor(config.mainTextColor)
+                return view
+            }
+
+            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
+                val view = super.getDropDownView(position, convertView, parent) as TextView
+                view.setTextColor(config.mainTextColor)
+                return view
+            }
+        }
+        
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        
+        val setupSpinner = { spinner: android.widget.Spinner, currentMode: Int, onModeChanged: (Int) -> Unit ->
+            spinner.adapter = adapter
+            // Clamped: a stored mode must never index past the adapter.
+            spinner.setSelection(currentMode.coerceIn(0, adapter.count - 1))
+            spinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
+                    if (position != currentMode) {
+                        onModeChanged(position)
+                        updateCustomizationUI()
+                        applyCustomColors()
+                        // Force refresh of the spinner text color immediately
+                        (spinner.selectedView as? TextView)?.setTextColor(config.mainTextColor)
+                    }
+                }
+                override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
+            }
+        }
+        
+        setupSpinner(settingsTopBarBgModeSpinner, config.topBarBgMode) { config.topBarBgMode = it }
+        setupSpinner(settingsMainBgModeSpinner, config.mainBgMode) { config.mainBgMode = it }
+        setupSpinner(settingsInputBarBgModeSpinner, config.inputBarBgMode) { config.inputBarBgMode = it }
+    }
+
+    private fun setupCustomization() = binding.apply {
+        val mainTextColor = config.mainTextColor
+        settingsCustomizationLabel.setTextColor(mainTextColor)
+        settingsBubbleCustomizationLabel.setTextColor(mainTextColor)
+        settingsResetDefaults.setTextColor(mainTextColor)
+
+        val updatePreview = { view: View, color: Int ->
+            val bg = view.background as? android.graphics.drawable.LayerDrawable
+            if (bg != null) {
+                bg.findDrawableByLayerId(R.id.color_preview_main)?.mutate()?.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN)
+            } else {
+                view.background?.applyColorFilter(color)
+            }
+        }
+
+        updatePreview(settingsTopBarColorPreview, if (config.topBarColor == 0) Color.BLACK else config.topBarColor)
+        updatePreview(settingsTopBarTextColorPreview, config.topBarTextColor)
+        updatePreview(settingsMainBackgroundColorPreview, config.mainBackgroundColor)
+        updatePreview(settingsMainTextColorPreview, config.mainTextColor)
+        updatePreview(settingsInputBarBackgroundColorPreview, config.inputBarBackgroundColor)
+        updatePreview(settingsInputBarTextColorPreview, config.inputBarTextColor)
+
+        updatePreview(settingsSentBubbleColorPreview, config.sentBubbleColor)
+        updatePreview(settingsSentBubbleTextColorPreview, config.sentBubbleTextColor)
+        updatePreview(settingsReceivedBubbleColorPreview, config.receivedBubbleColor)
+        updatePreview(settingsReceivedBubbleTextColorPreview, config.receivedBubbleTextColor)
+
+        updatePreview(settingsColorRecentPreview, config.recentColor)
+
+        settingsTopBarTextColorHolder.setOnClickListener {
+            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.topBarTextColor) { wasPositive, color ->
+                if (wasPositive) {
+                    config.topBarTextColor = color
+                    updatePreview(settingsTopBarTextColorPreview, color)
+                    applyCustomColors()
+                }
+            }
+        }
+
+        settingsMainTextColorHolder.setOnClickListener {
+            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.mainTextColor) { wasPositive, color ->
+                if (wasPositive) {
+                    config.mainTextColor = color
+                    updatePreview(settingsMainTextColorPreview, color)
+                    applyCustomColors()
+                    updateAppFonts(binding.root)
+                }
+            }
+        }
+
+        settingsInputBarTextColorHolder.setOnClickListener {
+            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.inputBarTextColor) { wasPositive, color ->
+                if (wasPositive) {
+                    config.inputBarTextColor = color
+                    updatePreview(settingsInputBarTextColorPreview, color)
+                    applyCustomColors()
+                }
+            }
+        }
+
+        settingsSentBubbleColorHolder.setOnClickListener {
+            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.sentBubbleColor) { wasPositive, color ->
+                if (wasPositive) {
+                    config.sentBubbleColor = color
+                    updatePreview(settingsSentBubbleColorPreview, color)
+                }
+            }
+        }
+
+        settingsSentBubbleTextColorHolder.setOnClickListener {
+            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.sentBubbleTextColor) { wasPositive, color ->
+                if (wasPositive) {
+                    config.sentBubbleTextColor = color
+                    updatePreview(settingsSentBubbleTextColorPreview, color)
+                }
+            }
+        }
+
+        settingsReceivedBubbleColorHolder.setOnClickListener {
+            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.receivedBubbleColor) { wasPositive, color ->
+                if (wasPositive) {
+                    config.receivedBubbleColor = color
+                    updatePreview(settingsReceivedBubbleColorPreview, color)
+                }
+            }
+        }
+
+        settingsReceivedBubbleTextColorHolder.setOnClickListener {
+            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.receivedBubbleTextColor) { wasPositive, color ->
+                if (wasPositive) {
+                    config.receivedBubbleTextColor = color
+                    updatePreview(settingsReceivedBubbleTextColorPreview, color)
+                }
+            }
+        }
+
+        settingsColorRecentHolder.setOnClickListener {
+            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.recentColor) { wasPositive, color ->
+                if (wasPositive) {
+                    config.recentColor = color
+                    updatePreview(settingsColorRecentPreview, color)
+                }
+            }
+        }
+
+        settingsResetDefaults.setOnClickListener {
+            config.resetColors()
+            // resetColors() clears APP_THEME along with every colour, so without re-applying
+            // here the screen would come back on the bare code defaults and only settle on
+            // the real default theme at the next cold start, when App.onCreate notices that
+            // nothing is stored. Reset now lands where a fresh install lands.
+            AppThemes.apply(config, AppThemes.byId(AppThemes.AURORA))
+            finish()
+            startActivity(intent)
+        }
+
+        val pickImage = { intentCode: Int ->
+            val intent = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+            startActivityForResult(intent, intentCode)
+        }
+
+        settingsTopBarPreviewContainer.setOnClickListener {
+            if (config.topBarBgMode == BG_MODE_COLOR) {
+                val color = if (config.topBarColor == 0) Color.BLACK else config.topBarColor
+                org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, color) { wasPositive, color ->
+                    if (wasPositive) {
+                        config.topBarColor = if (color == Color.BLACK) 0 else color
+                        updatePreview(settingsTopBarColorPreview, color)
+                        applyCustomColors()
+                    }
+                }
+            } else {
+                pickImage(PICK_TOP_BAR_IMAGE_INTENT)
+            }
+        }
+
+        settingsMainBgPreviewContainer.setOnClickListener {
+            if (config.mainBgMode == BG_MODE_COLOR) {
+                org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.mainBackgroundColor) { wasPositive, color ->
+                    if (wasPositive) {
+                        config.mainBackgroundColor = color
+                        updatePreview(settingsMainBackgroundColorPreview, color)
+                        applyCustomColors()
+                    }
+                }
+            } else {
+                pickImage(PICK_MAIN_BG_IMAGE_INTENT)
+            }
+        }
+
+        settingsInputBarPreviewContainer.setOnClickListener {
+            if (config.inputBarBgMode == BG_MODE_COLOR) {
+                org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.inputBarBackgroundColor) { wasPositive, color ->
+                    if (wasPositive) {
+                        config.inputBarBackgroundColor = color
+                        updatePreview(settingsInputBarBackgroundColorPreview, color)
+                        applyCustomColors()
+                    }
+                }
+            } else {
+                pickImage(PICK_INPUT_BAR_IMAGE_INTENT)
+            }
+        }
+    }
+
+
+    /**
+     * The contacts-only filter toggle now lives on the main settings screen (outside every
+     * collapsible section), so it is set up on its own rather than from setupNewUi().
+     * MyMaterialSwitch is its own clickable View: a tap landing on the switch is consumed by
+     * it before reaching the holder's click listener, so persistence is driven from the
+     * switch's own checked-change callback (fires however the toggle happened) and the row
+     * just forwards taps to the switch.
+     */
+    private fun setupContactsOnlyFilter() = binding.apply {
+        settingsContactsOnlyFilterSwitch.isChecked = config.showContactsOnlyFilter
+        settingsContactsOnlyFilterSwitch.setOnCheckedChangeListener { _, isChecked ->
+            config.showContactsOnlyFilter = isChecked
+        }
+        settingsContactsOnlyFilterHolder.setOnClickListener {
+            settingsContactsOnlyFilterSwitch.toggle()
+        }
+    }
+
+    /** Shows or hides the built-in "بدون تبلیغات" chip. Switching it off keeps the marked
+     *  senders, so turning it back on restores the same exclusions. */
+    private fun setupAdsFilter() = binding.apply {
+        settingsAdsFilterSwitch.isChecked = config.showAdsFilter
+        settingsAdsFilterSwitch.setOnCheckedChangeListener { _, isChecked ->
+            config.showAdsFilter = isChecked
+            // A chip that has just disappeared must not stay selected, or the list would
+            // open filtered by something with no way back to it.
+            if (!isChecked && config.activeFilterId == MessageFilter.ID_NO_ADS) {
+                config.activeFilterId = MessageFilter.ID_ALL
+            }
+            if (!isChecked && config.defaultFilterId == MessageFilter.ID_NO_ADS) {
+                config.defaultFilterId = MessageFilter.ID_ALL
+            }
+            settingsDefaultFilter.text = defaultFilterLabel()
+        }
+        settingsAdsFilterHolder.setOnClickListener {
+            settingsAdsFilterSwitch.toggle()
+        }
+    }
+
+    /** Every chip that can currently appear, in the order the main screen shows them. */
+    private fun selectableFilters(): List<Pair<String, String>> = buildList {
+        add(MessageFilter.ID_ALL to getString(R.string.filter_all))
+        if (config.showContactsOnlyFilter) {
+            add(MessageFilter.ID_CONTACTS_ONLY to getString(R.string.filter_contacts_only))
+        }
+        if (config.showAdsFilter) {
+            add(MessageFilter.ID_NO_ADS to getString(R.string.filter_no_ads))
+        }
+        config.customFilters.forEach { add(it.id to it.label) }
+    }
+
+    private fun defaultFilterLabel(): String {
+        val filters = selectableFilters()
+        // A filter that has since been deleted or switched off reads as "All", which is what
+        // the main screen would fall back to anyway.
+        return filters.firstOrNull { it.first == config.defaultFilterId }?.second
+            ?: getString(R.string.filter_all)
+    }
+
+    private fun setupDefaultFilter() = binding.apply {
+        settingsDefaultFilter.text = defaultFilterLabel()
+        settingsDefaultFilterHolder.setOnClickListener {
+            val filters = selectableFilters()
+            val items = filters.mapIndexed { index, (_, label) ->
+                org.fossify.commons.models.RadioItem(index, label)
+            } as ArrayList<org.fossify.commons.models.RadioItem>
+            val current = filters.indexOfFirst { it.first == config.defaultFilterId }
+                .coerceAtLeast(0)
+
+            org.fossify.commons.dialogs.RadioGroupDialog(this@SettingsActivity, items, current) {
+                config.defaultFilterId = filters[it as Int].first
+                settingsDefaultFilter.text = defaultFilterLabel()
+            }
+        }
+    }
+
+    /**
+     * Picking a theme rewrites the individual colour settings, so the rest of the
+     * customisation screen keeps working and anything can still be tweaked afterwards.
+     */
+    private fun setupAppTheme() = binding.apply {
+        settingsAppTheme.text =
+            org.nova.messages.helpers.AppThemes.byId(config.appTheme).label
+
+        settingsAppThemeHolder.setOnClickListener {
+            val themes = org.nova.messages.helpers.AppThemes.all
+            val items = themes.mapIndexed { index, theme ->
+                org.fossify.commons.models.RadioItem(index, theme.label)
+            } as ArrayList<org.fossify.commons.models.RadioItem>
+
+            val current = themes.indexOfFirst { it.id == config.appTheme }.coerceAtLeast(0)
+            org.fossify.commons.dialogs.RadioGroupDialog(this@SettingsActivity, items, current) {
+                val theme = themes[it as Int]
+                org.nova.messages.helpers.AppThemes.apply(config, theme)
+                settingsAppTheme.text = theme.label
+                updateCustomizationUI()
+                updateAppFonts(binding.root)
+                applyCustomColors()
+                toast(R.string.theme_applied)
+            }
+        }
+    }
+
+    /**
+     * Archive, recycle bin and the keyword block list. They used to hang off the main
+     * screen's overflow menu only, which meant the recycle bin vanished entirely whenever
+     * its own setting was off and left no way to reach what was already in it.
+     */
+    private fun setupConversationScreens() = binding.apply {
+        settingsArchivedHolder.setOnClickListener {
+            startActivity(Intent(this@SettingsActivity, ArchivedConversationsActivity::class.java))
+        }
+        settingsRecycleBinHolder.setOnClickListener {
+            startActivity(Intent(this@SettingsActivity, RecycleBinConversationsActivity::class.java))
+        }
+        settingsBlockedKeywordsHolder.setOnClickListener {
+            startActivity(Intent(this@SettingsActivity, ManageBlockedKeywordsActivity::class.java))
+        }
+    }
+
+    private fun setupBlockedNumbers() = binding.apply {
+        settingsBlockedNumbersHolder.setOnClickListener {
+            startActivity(Intent(this@SettingsActivity, BlockedNumbersActivity::class.java))
+        }
+        org.fossify.commons.helpers.ensureBackgroundThread {
+            // Explicit receiver: inside binding.apply the implicit `this` is the binding,
+            // not the Context the extension needs.
+            val count = with(org.nova.messages.helpers.SystemBlockedNumbers) {
+                this@SettingsActivity.listAll().size
+            }
+            runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
+                settingsBlockedNumbersCount.text = count.toString()
+                settingsBlockedNumbersCount.setTextColor(config.mainTextColor)
+            }
+        }
+    }
+
+
+    private fun setupUIScale() = binding.apply {
+        settingsUiScaleSlider.value = config.uiScale
+        settingsUiScaleSlider.addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                config.uiScale = value
+            }
+        }
+    }
+
+    private fun setupFontSize() = binding.apply {
+        settingsFontSize.text = getFontSizeText()
+        settingsFontSizeHolder.setOnClickListener {
+            val items = arrayListOf(
+                org.fossify.commons.models.RadioItem(org.fossify.commons.helpers.FONT_SIZE_SMALL, getString(org.fossify.commons.R.string.small)),
+                org.fossify.commons.models.RadioItem(org.fossify.commons.helpers.FONT_SIZE_MEDIUM, getString(org.fossify.commons.R.string.medium)),
+                org.fossify.commons.models.RadioItem(org.fossify.commons.helpers.FONT_SIZE_LARGE, getString(org.fossify.commons.R.string.large)),
+                org.fossify.commons.models.RadioItem(org.fossify.commons.helpers.FONT_SIZE_EXTRA_LARGE, getString(org.fossify.commons.R.string.extra_large))
+            )
+
+            org.fossify.commons.dialogs.RadioGroupDialog(this@SettingsActivity, items, config.fontSize) {
+                config.fontSize = it as Int
+                settingsFontSize.text = getFontSizeText()
+                updateAppFonts(binding.root)
+            }
+        }
+    }
+
+    private fun getFontSizeText() = getString(
+        when (config.fontSize) {
+            org.fossify.commons.helpers.FONT_SIZE_SMALL -> org.fossify.commons.R.string.small
+            org.fossify.commons.helpers.FONT_SIZE_MEDIUM -> org.fossify.commons.R.string.medium
+            org.fossify.commons.helpers.FONT_SIZE_LARGE -> org.fossify.commons.R.string.large
+            else -> org.fossify.commons.R.string.extra_large
+        }
+    )
+
+    private fun setupFontFamily() = binding.apply {
+        settingsFont.text = getFontText()
+        settingsFontHolder.setOnClickListener {
+            // Only the system font and the bundled Persian faces are offered; the Latin
+            // families that used to be here were never a sensible choice for a Persian UI.
+            val items = arrayListOf(
+                org.fossify.commons.models.RadioItem(0, getString(R.string.font_system_default))
+            )
+
+            // Persian typefaces, greyed out with a hint until their file is dropped in assets/fonts.
+            org.nova.messages.helpers.NovaFonts.displayNames.forEach { (id, name) ->
+                val installed = org.nova.messages.helpers.NovaFonts.isInstalled(this@SettingsActivity, id)
+                val label = if (installed) name else "$name — ${getString(R.string.font_not_installed)}"
+                items.add(org.fossify.commons.models.RadioItem(id, label))
+            }
+
+            org.fossify.commons.dialogs.RadioGroupDialog(this@SettingsActivity, items, config.fontFamilyNova) {
+                val selected = it as Int
+                if (org.nova.messages.helpers.NovaFonts.isPersianFont(selected) &&
+                    !org.nova.messages.helpers.NovaFonts.isInstalled(this@SettingsActivity, selected)
+                ) {
+                    toast(R.string.font_not_installed)
+                }
+                config.fontFamilyNova = selected
+                settingsFont.text = getFontText()
+                updateAppFonts(binding.root)
+                applyCustomColors()
+            }
+        }
+    }
+
+    /** Anything that is not a bundled Persian face now reads as the system font, which also
+     *  covers a value left behind by one of the Latin families that has been dropped. */
+    private fun getFontText(): String =
+        org.nova.messages.helpers.NovaFonts.displayNames[config.fontFamilyNova]
+            ?: getString(R.string.font_system_default)
+
+    private fun setupExpandableCategories() = binding.apply {
+        val categories = listOf(
+            Triple(settingsAppearanceHeader, settingsAppearanceContainer, settingsAppearanceArrow),
+            Triple(settingsColorsHeader, settingsColorsContainer, settingsColorsArrow),
+            Triple(settingsBubblesHeader, settingsBubblesContainer, settingsBubblesArrow)
+        )
+
+        categories.forEach { (header, container, arrow) ->
+            header.setOnClickListener {
+                toggleCategory(container, arrow)
+            }
+        }
+    }
+
+    private fun toggleCategory(container: View, arrow: android.widget.ImageView) {
+        val isExpanding = container.visibility == View.GONE
+        container.beVisibleIf(isExpanding)
+        arrow.animate().rotation(if (isExpanding) 180f else 0f).setDuration(200).start()
+    }
+}

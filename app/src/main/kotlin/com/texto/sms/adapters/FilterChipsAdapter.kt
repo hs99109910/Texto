@@ -1,0 +1,148 @@
+package com.texto.sms.adapters
+
+import android.os.Handler
+import android.os.Looper
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewConfiguration
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
+import com.texto.sms.databinding.ItemFilterChipBinding
+import com.texto.sms.extensions.getScaledPx
+import com.texto.sms.helpers.MessageFilter
+import kotlin.math.hypot
+
+/**
+ * Backs the home screen's filter chip row. Custom filters can be dragged to reorder (see
+ * [org.nova.messages.helpers.FilterChipDragCallback]) or long-pressed (held without moving)
+ * to open the editor; the built-in "All"/"Contacts only" chips and the trailing "+" chip are
+ * excluded from both and stay in place.
+ */
+class FilterChipsAdapter(
+    private val onSelect: (MessageFilter) -> Unit,
+    private val onEditRequested: (MessageFilter) -> Unit,
+    private val onAddRequested: () -> Unit,
+    private val styleChip: (chip: TextView, filterId: String, isActive: Boolean) -> Unit,
+) : RecyclerView.Adapter<FilterChipsAdapter.ViewHolder>() {
+
+    companion object {
+        const val ADD_CHIP_ID = "__add__"
+
+        // Shorter than the platform long-press timeout (~500ms) so this fires before
+        // ItemTouchHelper's own drag-start ever would -- see the class doc on
+        // FilterChipDragCallback for why that callback's long-press-drag is disabled.
+        private const val LONG_PRESS_EDIT_DELAY_MS = 400L
+    }
+
+    /** Lets the adapter kick off a reorder drag itself once a held touch moves past slop. */
+    var itemTouchHelper: ItemTouchHelper? = null
+
+    private val addChipFilter = MessageFilter(id = ADD_CHIP_ID, label = "+")
+    private var items: List<MessageFilter> = emptyList()
+    private var activeFilterId: String = MessageFilter.ID_ALL
+
+    private val longPressHandler = Handler(Looper.getMainLooper())
+    private var pendingEditRunnable: Runnable? = null
+    private var touchDownX = 0f
+    private var touchDownY = 0f
+
+    /** [filters] should already include the built-in "All"/"Contacts only" chips; the "+" chip is added here. */
+    fun submitFilters(filters: List<MessageFilter>, activeId: String) {
+        items = filters + addChipFilter
+        activeFilterId = activeId
+        notifyDataSetChanged()
+    }
+
+    /** The custom filters in their current on-screen order, for persisting after a drag. */
+    fun currentCustomFilterOrder(): List<MessageFilter> = items.filter { it.isCustom }
+
+    fun getFilterAt(position: Int): MessageFilter? = items.getOrNull(position)
+
+    fun moveItem(fromPosition: Int, toPosition: Int) {
+        items = items.toMutableList().apply { add(toPosition, removeAt(fromPosition)) }
+        notifyItemMoved(fromPosition, toPosition)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val binding = ItemFilterChipBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        (binding.root.layoutParams as? ViewGroup.MarginLayoutParams)?.marginEnd = 8.getScaledPx()
+        return ViewHolder(binding.root)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val filter = items[position]
+        val chip = holder.chip
+        chip.text = filter.label
+        val isActive = filter.id == activeFilterId
+        styleChip(chip, filter.id, isActive)
+
+        chip.setOnClickListener {
+            when {
+                filter.id == ADD_CHIP_ID -> onAddRequested()
+                // Kept as a fallback alongside long-press: tapping the already-active
+                // custom chip also opens the editor.
+                filter.isCustom && filter.id == activeFilterId -> onEditRequested(filter)
+                else -> onSelect(filter)
+            }
+        }
+
+        if (filter.isCustom) {
+            chip.setOnTouchListener { view, event -> handleCustomChipTouch(view, event, holder) }
+        } else {
+            chip.setOnTouchListener(null)
+        }
+    }
+
+    override fun onViewRecycled(holder: ViewHolder) {
+        super.onViewRecycled(holder)
+        cancelPendingEdit()
+    }
+
+    /**
+     * Held-without-moving opens the editor after [LONG_PRESS_EDIT_DELAY_MS]; held-then-moved
+     * past touch slop cancels that and starts a reorder drag instead. Always returns false so
+     * the chip's own click listener still runs normally for plain taps.
+     */
+    private fun handleCustomChipTouch(view: View, event: MotionEvent, holder: ViewHolder): Boolean {
+        when (event.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                cancelPendingEdit()
+                touchDownX = event.rawX
+                touchDownY = event.rawY
+                val runnable = Runnable {
+                    pendingEditRunnable = null
+                    val filter = items.getOrNull(holder.bindingAdapterPosition)
+                    if (filter != null && filter.isCustom) onEditRequested(filter)
+                }
+                pendingEditRunnable = runnable
+                longPressHandler.postDelayed(runnable, LONG_PRESS_EDIT_DELAY_MS)
+            }
+
+            MotionEvent.ACTION_MOVE -> {
+                if (pendingEditRunnable != null) {
+                    val slop = ViewConfiguration.get(view.context).scaledTouchSlop
+                    val moved = hypot((event.rawX - touchDownX).toDouble(), (event.rawY - touchDownY).toDouble())
+                    if (moved > slop) {
+                        cancelPendingEdit()
+                        itemTouchHelper?.startDrag(holder)
+                    }
+                }
+            }
+
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> cancelPendingEdit()
+        }
+        return false
+    }
+
+    private fun cancelPendingEdit() {
+        pendingEditRunnable?.let { longPressHandler.removeCallbacks(it) }
+        pendingEditRunnable = null
+    }
+
+    override fun getItemCount() = items.size
+
+    class ViewHolder(val chip: TextView) : RecyclerView.ViewHolder(chip)
+}
