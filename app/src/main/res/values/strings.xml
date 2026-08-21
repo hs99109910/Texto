@@ -1,161 +1,161 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_launcher_name">Texto</string>
-    <string name="type_a_message">Type a message…</string>
-    <string name="message_not_sent_short">Message not sent</string>
-    <string name="message_not_sent_touch_retry">Not sent. Touch to retry.</string>
-    <string name="message_sending_error">Your message to \'%s\' has not been sent</string>
-    <string name="add_person">Add Person</string>
-    <string name="attachment">Attachment</string>
-    <string name="no_conversations_found">No stored conversations have been found</string>
-    <string name="start_conversation">Start a conversation</string>
-    <string name="reply">Reply</string>
-    <string name="show_character_counter">Show a character counter at writing messages</string>
-    <string name="loading_messages">Loading messages…</string>
-    <string name="no_reply_support">Sender doesn\'t support replies</string>
-    <string name="draft">Draft</string>
-    <string name="sending">Sending…</string>
-    <string name="pin_conversation">Pin to the top</string>
-    <string name="unpin_conversation">Unpin</string>
-    <string name="forward_message">Forward</string>
-    <string name="compress_error">Unable to compress image to selected size</string>
+    <string name="type_a_message">پیام بنویسید…</string>
+    <string name="message_not_sent_short">پیام ارسال نشد</string>
+    <string name="message_not_sent_touch_retry">ارسال نشد. برای تلاش دوباره لمس کنید.</string>
+    <string name="message_sending_error">پیام شما به «%s» ارسال نشد</string>
+    <string name="add_person">افزودن مخاطب</string>
+    <string name="attachment">پیوست</string>
+    <string name="no_conversations_found">هیچ گفتگویی یافت نشد</string>
+    <string name="start_conversation">شروع گفتگو</string>
+    <string name="reply">پاسخ</string>
+    <string name="show_character_counter">نمایش شمارنده نویسه هنگام نوشتن پیام</string>
+    <string name="loading_messages">در حال بارگذاری پیام‌ها…</string>
+    <string name="no_reply_support">فرستنده از پاسخ پشتیبانی نمی‌کند</string>
+    <string name="draft">پیش‌نویس</string>
+    <string name="sending">در حال ارسال…</string>
+    <string name="pin_conversation">سنجاق به بالا</string>
+    <string name="unpin_conversation">برداشتن سنجاق</string>
+    <string name="forward_message">هدایت</string>
+    <string name="compress_error">فشرده‌سازی تصویر به اندازه انتخابی ممکن نشد</string>
     <!-- Attachments -->
-    <string name="duplicate_item_warning">Duplicate item was not included</string>
+    <string name="duplicate_item_warning">مورد تکراری اضافه نشد</string>
     <!-- vCard -->
     <plurals name="and_other_contacts">
-        <item quantity="one">and %d other</item>
-        <item quantity="other">and %d others</item>
+        <item quantity="one">و %d نفر دیگر</item>
+        <item quantity="other">و %d نفر دیگر</item>
     </plurals>
     <!-- New conversation -->
-    <string name="new_conversation">New conversation</string>
-    <string name="add_contact_or_number">Add Contact or Number…</string>
-    <string name="suggestions">Suggestions</string>
+    <string name="new_conversation">گفتگوی جدید</string>
+    <string name="add_contact_or_number">افزودن مخاطب یا شماره…</string>
+    <string name="suggestions">پیشنهادها</string>
     <!-- Group conversation -->
-    <string name="members">Members</string>
-    <string name="conversation_name">Conversation name</string>
-    <string name="conversation_details">Conversation details</string>
-    <string name="rename_conversation">Rename conversation</string>
-    <string name="rename_conversation_warning">Only you can see this conversation name</string>
+    <string name="members">اعضا</string>
+    <string name="conversation_name">نام گفتگو</string>
+    <string name="conversation_details">جزئیات گفتگو</string>
+    <string name="rename_conversation">تغییر نام گفتگو</string>
+    <string name="rename_conversation_warning">این نام را فقط شما می‌بینید</string>
     <!-- Schedule send -->
-    <string name="scheduled_message">Scheduled message</string>
-    <string name="schedule_message">Schedule message</string>
-    <string name="schedule_send">Schedule send</string>
-    <string name="cancel_schedule_send">Cancel schedule send</string>
-    <string name="must_pick_time_in_the_future">You must pick a time in the future</string>
-    <string name="schedule_send_warning">Keep the phone on and make sure there is nothing killing the app while in background.</string>
-    <string name="update_message">Update message</string>
-    <string name="send_now">Send now</string>
+    <string name="scheduled_message">پیام زمان‌بندی‌شده</string>
+    <string name="schedule_message">زمان‌بندی پیام</string>
+    <string name="schedule_send">ارسال زمان‌بندی‌شده</string>
+    <string name="cancel_schedule_send">لغو ارسال زمان‌بندی‌شده</string>
+    <string name="must_pick_time_in_the_future">باید زمانی در آینده انتخاب کنید</string>
+    <string name="schedule_send_warning">گوشی را روشن نگه دارید و مطمئن شوید چیزی برنامه را در پس‌زمینه نمی‌بندد.</string>
+    <string name="update_message">به‌روزرسانی پیام</string>
+    <string name="send_now">ارسال فوری</string>
     <!-- Message details -->
-    <string name="message_details">Message details</string>
-    <string name="message_details_sender">Sender</string>
-    <string name="message_details_receiver">Receiver</string>
-    <string name="message_details_sent_at">Sent at</string>
-    <string name="message_details_received_at">Received at</string>
+    <string name="message_details">جزئیات پیام</string>
+    <string name="message_details_sender">فرستنده</string>
+    <string name="message_details_receiver">گیرنده</string>
+    <string name="message_details_sent_at">زمان ارسال</string>
+    <string name="message_details_received_at">زمان دریافت</string>
     <!-- Notifications -->
-    <string name="channel_received_sms">Received SMS</string>
-    <string name="new_message">New message</string>
-    <string name="mark_as_read">Mark as Read</string>
-    <string name="mark_as_unread">Mark as Unread</string>
-    <string name="me">Me</string>
-    <string name="enable_custom_notifications">Enable custom notifications</string>
+    <string name="channel_received_sms">پیامک دریافتی</string>
+    <string name="new_message">پیام جدید</string>
+    <string name="mark_as_read">علامت‌گذاری به‌عنوان خوانده‌شده</string>
+    <string name="mark_as_unread">علامت‌گذاری به‌عنوان خوانده‌نشده</string>
+    <string name="me">من</string>
+    <string name="enable_custom_notifications">فعال‌سازی اعلان‌های اختصاصی</string>
     <!-- Archive -->
-    <string name="unarchive">Unarchive</string>
-    <string name="empty_archive">Delete all archived conversations</string>
-    <string name="archived_conversations">Archive</string>
-    <string name="show_archived_conversations">Show archived conversations</string>
-    <string name="archive">Archive</string>
-    <string name="no_archived_conversations">No archived conversations have been found</string>
-    <string name="archive_emptied_successfully">The archive has been emptied successfully</string>
-    <string name="empty_archive_confirmation">Are you sure you want to empty the archive? All archived conversations will be permanently lost.</string>
-    <string name="keep_conversations_archived">Keep conversations archived</string>
+    <string name="unarchive">خروج از بایگانی</string>
+    <string name="empty_archive">حذف همه گفتگوهای بایگانی‌شده</string>
+    <string name="archived_conversations">بایگانی</string>
+    <string name="show_archived_conversations">نمایش گفتگوهای بایگانی‌شده</string>
+    <string name="archive">بایگانی</string>
+    <string name="no_archived_conversations">هیچ گفتگوی بایگانی‌شده‌ای یافت نشد</string>
+    <string name="archive_emptied_successfully">بایگانی با موفقیت خالی شد</string>
+    <string name="empty_archive_confirmation">آیا از خالی کردن بایگانی مطمئن هستید؟ همه گفتگوهای بایگانی‌شده برای همیشه پاک می‌شوند.</string>
+    <string name="keep_conversations_archived">گفتگوها در بایگانی بمانند</string>
     <!-- Recycle bin -->
-    <string name="restore">Restore</string>
-    <string name="restore_all_messages">Restore all messages</string>
-    <string name="empty_recycle_bin_messages_confirmation">Are you sure you want to empty the Recycle Bin? The messages will be permanently lost.</string>
-    <string name="skip_the_recycle_bin_messages">Skip the Recycle Bin, delete messages directly</string>
+    <string name="restore">بازگردانی</string>
+    <string name="restore_all_messages">بازگردانی همه پیام‌ها</string>
+    <string name="empty_recycle_bin_messages_confirmation">آیا از خالی کردن سطل آشغال مطمئن هستید؟ پیام‌ها برای همیشه پاک می‌شوند.</string>
+    <string name="skip_the_recycle_bin_messages">بدون سطل آشغال، پیام‌ها مستقیم حذف شوند</string>
     <!-- Confirmation dialog -->
-    <string name="delete_whole_conversation_confirmation">Are you sure you want to delete all messages of this conversation?</string>
-    <string name="archive_confirmation">Are you sure you want to archive %s?</string>
-    <string name="restore_whole_conversation_confirmation">Are you sure you want to restore all messages of this conversation?</string>
-    <string name="restore_confirmation">Are you sure you want to restore %s?</string>
+    <string name="delete_whole_conversation_confirmation">آیا از حذف همه پیام‌های این گفتگو مطمئن هستید؟</string>
+    <string name="archive_confirmation">آیا از بایگانی کردن %s مطمئن هستید؟</string>
+    <string name="restore_whole_conversation_confirmation">آیا از بازگردانی همه پیام‌های این گفتگو مطمئن هستید؟</string>
+    <string name="restore_confirmation">آیا از بازگردانی %s مطمئن هستید؟</string>
     <!-- Are you sure you want to delete 5 conversations? -->
     <plurals name="delete_conversations">
-        <item quantity="one">%d conversation</item>
-        <item quantity="other">%d conversations</item>
+        <item quantity="one">%d گفتگو</item>
+        <item quantity="other">%d گفتگو</item>
     </plurals>
     <!-- Are you sure you want to delete 5 messages? -->
     <plurals name="delete_messages">
-        <item quantity="one">%d message</item>
-        <item quantity="other">%d messages</item>
+        <item quantity="one">%d پیام</item>
+        <item quantity="other">%d پیام</item>
     </plurals>
     <!-- Settings -->
-    <string name="keyword">Keyword</string>
+    <string name="keyword">کلیدواژه</string>
     <string name="blocked_keywords">کلمات مسدود شده</string>
-    <string name="manage_blocked_keywords">Manage blocked keywords</string>
-    <string name="not_blocking_keywords">You are not blocking any keywords. You may add keywords here to block all messages containing them.</string>
-    <string name="add_a_blocked_keyword">Add a blocked keyword</string>
-    <string name="lock_screen_visibility">Lock screen notification visibility</string>
-    <string name="sender_and_message">Sender and message</string>
-    <string name="sender_only">Sender only</string>
-    <string name="enable_delivery_reports">Enable delivery reports</string>
-    <string name="use_simple_characters">Remove accents and diacritics at sending messages</string>
-    <string name="send_on_enter">Send message on pressing Enter</string>
-    <string name="mms_file_size_limit">Resize sent MMS images</string>
-    <string name="mms_file_size_limit_none">No limit</string>
-    <string name="mms_file_size_limit_50mb">50 MB</string>
-    <string name="mms_file_size_limit_100mb">100 MB</string>
-    <string name="outgoing_messages">Outgoing messages</string>
-    <string name="group_message_mms">Send group messages as MMS</string>
-    <string name="send_long_message_mms">Send long messages as MMS</string>
+    <string name="manage_blocked_keywords">مدیریت کلمات مسدود شده</string>
+    <string name="not_blocking_keywords">هیچ کلیدواژه‌ای مسدود نکرده‌اید. می‌توانید اینجا کلیدواژه اضافه کنید تا همه پیام‌های حاوی آن مسدود شوند.</string>
+    <string name="add_a_blocked_keyword">افزودن کلیدواژه مسدود</string>
+    <string name="lock_screen_visibility">نمایش اعلان در صفحه قفل</string>
+    <string name="sender_and_message">فرستنده و پیام</string>
+    <string name="sender_only">فقط فرستنده</string>
+    <string name="enable_delivery_reports">فعال‌سازی گزارش تحویل</string>
+    <string name="use_simple_characters">حذف اعراب و نویسه‌های ویژه هنگام ارسال</string>
+    <string name="send_on_enter">ارسال پیام با زدن Enter</string>
+    <string name="mms_file_size_limit">تغییر اندازه تصاویر MMS ارسالی</string>
+    <string name="mms_file_size_limit_none">بدون محدودیت</string>
+    <string name="mms_file_size_limit_50mb">۵۰ مگابایت</string>
+    <string name="mms_file_size_limit_100mb">۱۰۰ مگابایت</string>
+    <string name="outgoing_messages">پیام‌های خروجی</string>
+    <string name="group_message_mms">ارسال پیام‌های گروهی به‌صورت MMS</string>
+    <string name="send_long_message_mms">ارسال پیام‌های بلند به‌صورت MMS</string>
     <!-- Export / Import -->
-    <string name="messages">Messages</string>
-    <string name="keywords">Keywords</string>
-    <string name="export_messages">Export messages</string>
-    <string name="export_sms">Export SMS</string>
-    <string name="export_mms">Export MMS</string>
-    <string name="import_messages">Import messages</string>
-    <string name="import_sms">Import SMS</string>
-    <string name="import_mms">Import MMS</string>
-    <string name="no_option_selected">You have to select at least one item</string>
-    <string name="export_blocked_keywords">Export blocked keywords</string>
-    <string name="import_blocked_keywords">Import blocked keywords</string>
+    <string name="messages">پیام‌ها</string>
+    <string name="keywords">کلیدواژه‌ها</string>
+    <string name="export_messages">برون‌بری پیام‌ها</string>
+    <string name="export_sms">برون‌بری پیامک</string>
+    <string name="export_mms">برون‌بری MMS</string>
+    <string name="import_messages">درون‌ریزی پیام‌ها</string>
+    <string name="import_sms">درون‌ریزی پیامک</string>
+    <string name="import_mms">درون‌ریزی MMS</string>
+    <string name="no_option_selected">باید حداقل یک مورد انتخاب کنید</string>
+    <string name="export_blocked_keywords">برون‌بری کلمات مسدود شده</string>
+    <string name="import_blocked_keywords">درون‌ریزی کلمات مسدود شده</string>
     <!-- Errors -->
-    <string name="empty_destination_address">Can\'t send message to an empty number</string>
-    <string name="unable_to_save_message">Unable to save message to the telephony database</string>
-    <string name="error_service_is_unavailable">Couldn\'t send message, service unavailable</string>
-    <string name="error_radio_turned_off">Couldn\'t send message, radio turned off</string>
-    <string name="carrier_send_error">Couldn\'t send message, carrier error</string>
-    <string name="unknown_error_occurred_sending_message">Couldn\'t send message, error code: %d</string>
-    <string name="invalid_short_code">Can\'t reply to short codes like this</string>
-    <string name="invalid_short_code_desc">You can only reply to short codes with numbers like \"503501\" but not to codes containing letters and numbers like \"AB-CD0\".</string>
-    <string name="attachment_sized_exceeds_max_limit">Attachment size exceeds max MMS limit</string>
-    <string name="sim_card_not_available">SIM card not available</string>
-    <string name="couldnt_download_mms">Couldn\'t download MMS</string>
+    <string name="empty_destination_address">ارسال پیام به شماره خالی ممکن نیست</string>
+    <string name="unable_to_save_message">ذخیره پیام در پایگاه داده مخابراتی ممکن نشد</string>
+    <string name="error_service_is_unavailable">ارسال پیام ممکن نشد، سرویس در دسترس نیست</string>
+    <string name="error_radio_turned_off">ارسال پیام ممکن نشد، آنتن خاموش است</string>
+    <string name="carrier_send_error">ارسال پیام ممکن نشد، خطای اپراتور</string>
+    <string name="unknown_error_occurred_sending_message">ارسال پیام ممکن نشد، کد خطا: %d</string>
+    <string name="invalid_short_code">به این نوع کد کوتاه نمی‌توان پاسخ داد</string>
+    <string name="invalid_short_code_desc">فقط می‌توانید به کدهای کوتاه عددی مانند «۵۰۳۵۰۱» پاسخ دهید، نه کدهایی که حروف و عدد دارند مانند «AB-CD0».</string>
+    <string name="attachment_sized_exceeds_max_limit">حجم پیوست از حد مجاز MMS بیشتر است</string>
+    <string name="sim_card_not_available">سیم‌کارت در دسترس نیست</string>
+    <string name="couldnt_download_mms">دریافت MMS ممکن نشد</string>
     <!-- FAQ -->
-    <string name="faq_1_title">Why does the app require access to the internet?</string>
-    <string name="faq_1_text">Sadly it is needed for sending MMS attachments. Not being able to send MMS would be a really huge disadvantage compared to other apps, so we decided to go this way.
-    However, as usually, there are no ads, tracking or analytics whatsoever, the internet is used only for sending MMS.</string>
-    <string name="faq_2_title">The other end is not receiving my MMS, is there anything I can do about it?</string>
-    <string name="faq_2_text">MMS size is limited by carriers, you can try setting a smaller limit in the app settings.</string>
-    <string name="faq_3_title">Does the app support scheduled messages?</string>
-    <string name="faq_3_text">Yes, you can schedule messages to be sent in the future by long pressing the Send button and picking the desired date and time.</string>
-    <string name="faq_4_title">Why do my group message replies appear as individual texts to recipients?</string>
-    <string name="faq_4_text">You need to enable \"Send group messages as MMS\" in the app settings. This will ensure that group messages are sent as proper MMS, allowing all participants to see each other\'s replies.</string>
+    <string name="faq_1_title">چرا برنامه به اینترنت نیاز دارد؟</string>
+    <string name="faq_1_text">متأسفانه برای ارسال پیوست‌های MMS لازم است. نبود امکان ارسال MMS نسبت به برنامه‌های دیگر ضعف بزرگی بود، برای همین این راه انتخاب شد.
+    با این حال طبق معمول هیچ تبلیغ، ردیابی یا آماربرداری وجود ندارد و اینترنت فقط برای ارسال MMS استفاده می‌شود.</string>
+    <string name="faq_2_title">طرف مقابل MMS من را دریافت نمی‌کند، چه کاری می‌توانم بکنم؟</string>
+    <string name="faq_2_text">حجم MMS را اپراتورها محدود می‌کنند؛ می‌توانید در تنظیمات برنامه حد کمتری تعیین کنید.</string>
+    <string name="faq_3_title">آیا برنامه از پیام زمان‌بندی‌شده پشتیبانی می‌کند؟</string>
+    <string name="faq_3_text">بله، با نگه داشتن دکمه ارسال و انتخاب تاریخ و ساعت دلخواه می‌توانید پیام را برای آینده زمان‌بندی کنید.</string>
+    <string name="faq_4_title">چرا پاسخ‌های گروهی من برای گیرنده‌ها جداگانه نمایش داده می‌شود؟</string>
+    <string name="faq_4_text">باید گزینه «ارسال پیام‌های گروهی به‌صورت MMS» را در تنظیمات فعال کنید. این کار باعث می‌شود پیام‌های گروهی به‌صورت MMS واقعی ارسال شوند و همه شرکت‌کنندگان پاسخ یکدیگر را ببینند.</string>
     <!--
         Haven't found some strings? There's more at
         https://github.com/NovaOrg/Commons/tree/master/commons/src/main/res
     -->
-    <string name="restart_app_for_changes_to_take_effect">You will have to restart the app for changes to take effect</string>
+    <string name="restart_app_for_changes_to_take_effect">برای اعمال تغییرات باید برنامه را دوباره اجرا کنید</string>
     <string name="sideloading_unmodded"></string>
     <string name="sideloading_unmodded_title"></string>
     <!-- Nova additions -->
-    <string name="more_options">More options</string>
-    <string name="manage_blocked_numbers">Blocked numbers</string>
-    <string name="blocked_numbers_unavailable">This device does not offer a blocked numbers screen</string>
-    <string name="no_conversations_in_filter">No conversations in this category</string>
+    <string name="more_options">گزینه‌های بیشتر</string>
+    <string name="manage_blocked_numbers">شماره‌های مسدود شده</string>
+    <string name="blocked_numbers_unavailable">این دستگاه صفحه شماره‌های مسدود شده ندارد</string>
+    <string name="no_conversations_in_filter">گفتگویی در این دسته نیست</string>
     <string name="font_system_default">پیش‌فرض سیستم</string>
-    <string name="font_not_installed">Font file is missing from assets/fonts</string>
-    <string name="update_available_description">A newer version is available on GitHub. Would you like to update now?</string>
+    <string name="font_not_installed">فایل فونت موجود نیست</string>
+    <string name="update_available_description">نسخه جدیدی در GitHub موجود است. اکنون به‌روزرسانی می‌کنید؟</string>
     <!-- Filters -->
     <string name="filter_all">همه</string>
     <string name="filter_contacts_only">مخاطبین</string>
@@ -190,9 +190,9 @@
     <string name="copy_number_value">کپی عدد</string>
     <string name="forward_number_value">فوروارد عدد</string>
     <string name="app_theme">پوستهٔ برنامه</string>
-    <string name="theme_applied">Theme applied</string>
-    <string name="glass_theme">Glass Theme</string>
-    <string name="selected">Selected</string>
+    <string name="theme_applied">پوسته اعمال شد</string>
+    <string name="glass_theme">پوسته شیشه‌ای</string>
+    <string name="selected">انتخاب‌شده</string>
     <string name="settings_group_conversations">گفتگوها</string>
     <string name="settings_group_filters">فیلترها</string>
     <string name="settings_group_appearance">ظاهر و رنگ‌ها</string>
@@ -203,6 +203,11 @@
     <string name="settings_input_bar_background">نوار جستجو و نوشتن</string>
     <string name="settings_ui_scale">مقیاس رابط</string>
     <string name="settings_glass_opacity">شفافیت نوارهای شیشه‌ای</string>
+    <string name="search">جستجو</string>
+    <string name="x_selected">%1$d مورد انتخاب شد</string>
+    <string name="bg_mode_color">رنگ</string>
+    <string name="bg_mode_image">تصویر</string>
+    <string name="bg_mode_gradient">طیف رنگی</string>
     <string name="settings_font_size">اندازه فونت</string>
     <string name="settings_font">فونت</string>
     <string name="settings_colors">رنگ‌ها</string>

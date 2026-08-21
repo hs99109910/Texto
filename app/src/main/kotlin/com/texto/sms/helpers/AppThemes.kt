@@ -38,7 +38,7 @@ object AppThemes {
     /** The look the app shipped with: light background, pastel pill cards. */
     private val classic = AppTheme(
         id = CLASSIC,
-        label = "Classic",
+        label = "کلاسیک",
         topBarColor = Color.BLACK,
         topBarTextColor = Color.WHITE,
         mainTextColor = Color.BLACK,
@@ -58,7 +58,7 @@ object AppThemes {
     /** Dark navy fading into purple, translucent slate cards, bright blue accent. */
     private val aurora = AppTheme(
         id = AURORA,
-        label = "Aurora",
+        label = "آورورا",
         topBarColor = Color.parseColor("#0B1026"),
         topBarTextColor = Color.WHITE,
         mainTextColor = Color.WHITE,

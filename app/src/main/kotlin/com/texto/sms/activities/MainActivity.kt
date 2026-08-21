@@ -1052,7 +1052,33 @@ class MainActivity : SimpleActivity() {
                     .sortedByDescending { it.date }
 
                 val conversations = conversationsDB.getConversationsWithText(searchQuery)
-                if (text == lastSearchedText) showSearchResults(messages, conversations, text)
+
+                // Searching while a filter chip is active stays inside that chip: the
+                // results are narrowed to the threads the filter itself would show, so
+                // "search" means "search in what I am looking at" rather than silently
+                // reaching across every conversation on the device.
+                val allowedThreads = if (activeFilter.id == MessageFilter.ID_ALL) {
+                    null
+                } else {
+                    allConversations
+                        .filter {
+                            com.texto.sms.helpers.MessageClassifier
+                                .matches(it, activeFilter, contactPhoneNumbers)
+                        }
+                        .map { it.threadId }
+                        .toSet()
+                }
+
+                val visibleMessages = allowedThreads
+                    ?.let { allowed -> messages.filter { it.threadId in allowed } }
+                    ?: messages
+                val visibleConversations = allowedThreads
+                    ?.let { allowed -> conversations.filter { it.threadId in allowed } }
+                    ?: conversations
+
+                if (text == lastSearchedText) {
+                    showSearchResults(visibleMessages, visibleConversations, text)
+                }
             }
         } else {
             binding.mainNestedScrollview.getChildAt(0).beVisible()

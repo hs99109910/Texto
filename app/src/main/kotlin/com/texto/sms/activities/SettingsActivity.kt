@@ -279,7 +279,7 @@ class SettingsActivity : SimpleActivity() {
         // The main background also supports a gradient, which is what the Aurora theme
         // selects. Offering only Color/Image here meant setSelection(BG_MODE_GRADIENT)
         // ran off the end of the adapter and crashed Settings.
-        val modes = arrayListOf("Color", "Image", "Gradient")
+        val modes = arrayListOf(getString(R.string.bg_mode_color), getString(R.string.bg_mode_image), getString(R.string.bg_mode_gradient))
         val mainTextColor = config.mainTextColor
 
         val adapter = object : ArrayAdapter<String>(this@SettingsActivity, android.R.layout.simple_spinner_item, modes) {
@@ -626,8 +626,23 @@ class SettingsActivity : SimpleActivity() {
     }
 
 
+    /**
+     * Material's Slider throws IllegalStateException the first time it is measured with a
+     * value that is not valueFrom plus a whole number of steps -- a crash that only shows up
+     * when the section holding the slider is expanded. Snap and clamp before assigning so a
+     * stored preference can never take the screen down.
+     */
+    private fun com.google.android.material.slider.Slider.setSteppedValue(raw: Float) {
+        val snapped = if (stepSize > 0f) {
+            valueFrom + Math.round((raw - valueFrom) / stepSize) * stepSize
+        } else {
+            raw
+        }
+        value = snapped.coerceIn(valueFrom, valueTo)
+    }
+
     private fun setupUIScale() = binding.apply {
-        settingsUiScaleSlider.value = config.uiScale
+        settingsUiScaleSlider.setSteppedValue(config.uiScale)
         settingsUiScaleSlider.addOnChangeListener { _, value, fromUser ->
             if (fromUser) {
                 config.uiScale = value
@@ -636,7 +651,7 @@ class SettingsActivity : SimpleActivity() {
     }
 
     private fun setupGlassOpacity() = binding.apply {
-        settingsGlassOpacitySlider.value = config.glassOpacity.toFloat()
+        settingsGlassOpacitySlider.setSteppedValue(config.glassOpacity.toFloat())
         settingsGlassOpacitySlider.addOnChangeListener { _, value, fromUser ->
             if (fromUser) {
                 config.glassOpacity = value.toInt()

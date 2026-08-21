@@ -27,7 +27,7 @@
                 android:layout_gravity="center_vertical"
                 android:text="@string/settings_title"
                 android:textColor="@android:color/white"
-                android:textSize="22sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 android:layout_marginEnd="60dp"
                 android:ellipsize="end"
@@ -63,7 +63,7 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/settings_group_conversations"
                 android:textColor="@color/colorPrimary"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:alpha="0.7"
                 android:textStyle="bold" />
 
@@ -82,7 +82,7 @@
                     android:layout_centerVertical="true"
                     android:text="@string/settings_archived_messages"
                     android:textColor="@color/colorPrimary"
-                    android:textSize="14sp"
+                    android:textSize="15sp"
                     />
                 <ImageView android:id="@+id/settings_archived_icon" android:layout_width="24dp" android:layout_height="24dp" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:src="@drawable/ic_archive_vector" app:tint="@color/colorPrimary" android:alpha="0.85" />
             </RelativeLayout>
@@ -103,7 +103,7 @@
                     android:layout_centerVertical="true"
                     android:text="@string/deleted_messages"
                     android:textColor="@color/colorPrimary"
-                    android:textSize="14sp"
+                    android:textSize="15sp"
                     />
                 <ImageView android:id="@+id/settings_recycle_bin_icon" android:layout_width="24dp" android:layout_height="24dp" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:src="@drawable/ic_delete_vector" app:tint="@color/colorPrimary" android:alpha="0.85" />
             </RelativeLayout>
@@ -124,7 +124,7 @@
                     android:layout_centerVertical="true"
                     android:text="@string/blocked_numbers"
                     android:textColor="@color/colorPrimary"
-                    android:textSize="14sp"
+                    android:textSize="15sp"
                     />
                 <TextView
                     android:id="@+id/settings_blocked_numbers_count"
@@ -133,7 +133,7 @@
                     android:layout_toStartOf="@+id/settings_blocked_numbers_icon" android:layout_marginEnd="16dp"
                     android:layout_centerVertical="true"
                     android:textColor="@android:color/white"
-                    android:textSize="16sp" />
+                    android:textSize="13sp" android:alpha="0.65" />
                 <ImageView android:id="@+id/settings_blocked_numbers_icon" android:layout_width="24dp" android:layout_height="24dp" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:src="@drawable/ic_settings_block" app:tint="@color/colorPrimary" android:alpha="0.85" />
             </RelativeLayout>
             <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#14FFFFFF" android:layout_marginStart="4dp" android:layout_marginEnd="44dp" />
@@ -153,7 +153,7 @@
                     android:layout_centerVertical="true"
                     android:text="@string/blocked_keywords"
                     android:textColor="@color/colorPrimary"
-                    android:textSize="14sp"
+                    android:textSize="15sp"
                     />
                 <ImageView android:id="@+id/settings_blocked_keywords_icon" android:layout_width="24dp" android:layout_height="24dp" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:src="@drawable/ic_settings_key" app:tint="@color/colorPrimary" android:alpha="0.85" />
             </RelativeLayout>
@@ -167,7 +167,7 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/settings_group_filters"
                 android:textColor="@color/colorPrimary"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:alpha="0.7"
                 android:textStyle="bold" />
 
@@ -189,7 +189,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/show_contacts_only_filter"
                     android:textColor="@color/colorPrimary"
-                    android:textSize="14sp"
+                    android:textSize="15sp"
                     />
                 <org.fossify.commons.views.MyMaterialSwitch
                     android:id="@+id/settings_contacts_only_filter_switch"
@@ -218,7 +218,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/show_ads_filter"
                     android:textColor="@color/colorPrimary"
-                    android:textSize="14sp"
+                    android:textSize="15sp"
                     />
                 <org.fossify.commons.views.MyMaterialSwitch
                     android:id="@+id/settings_ads_filter_switch"
@@ -248,7 +248,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/default_filter"
                     android:textColor="@color/colorPrimary"
-                    android:textSize="14sp"
+                    android:textSize="15sp"
                     />
                 <TextView
                     android:id="@+id/settings_default_filter"
@@ -257,7 +257,7 @@
                     android:layout_toStartOf="@+id/settings_default_filter_icon" android:layout_marginEnd="16dp"
                     android:layout_centerVertical="true"
                     android:textColor="@android:color/white"
-                    android:textSize="16sp" />
+                    android:textSize="13sp" android:alpha="0.65" />
                 <ImageView android:id="@+id/settings_default_filter_icon" android:layout_width="24dp" android:layout_height="24dp" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:src="@drawable/ic_filter_vector" app:tint="@color/colorPrimary" android:alpha="0.85" />
             </RelativeLayout>
 
@@ -270,7 +270,7 @@
                 android:layout_marginBottom="8dp"
                 android:text="@string/settings_group_appearance"
                 android:textColor="@color/colorPrimary"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:alpha="0.7"
                 android:textStyle="bold" />
 
@@ -291,7 +291,7 @@
                     android:layout_centerVertical="true"
                     android:text="@string/app_theme"
                     android:textColor="@color/colorPrimary"
-                    android:textSize="14sp"
+                    android:textSize="15sp"
                     />
                 <TextView
                     android:id="@+id/settings_app_theme"
@@ -300,13 +300,13 @@
                     android:layout_toStartOf="@+id/settings_app_theme_icon" android:layout_marginEnd="16dp"
                     android:layout_centerVertical="true"
                     android:textColor="@android:color/white"
-                    android:textSize="16sp" />
+                    android:textSize="13sp" android:alpha="0.65" />
                 <ImageView android:id="@+id/settings_app_theme_icon" android:layout_width="24dp" android:layout_height="24dp" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:src="@drawable/ic_settings_palette" app:tint="@color/colorPrimary" android:alpha="0.85" />
             </RelativeLayout>
 
             <!-- Appearance Section -->
             <RelativeLayout android:id="@+id/settings_appearance_header" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingVertical="12dp" android:background="?selectableItemBackground" android:clickable="true" android:focusable="true">
-                <TextView android:id="@+id/settings_customization_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentStart="true" android:layout_toStartOf="@+id/settings_appearance_arrow" android:text="@string/settings_backgrounds_and_font" android:textColor="@color/colorPrimary" android:textSize="16sp" android:textStyle="bold" />
+                <TextView android:id="@+id/settings_customization_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentStart="true" android:layout_toStartOf="@+id/settings_appearance_arrow" android:text="@string/settings_backgrounds_and_font" android:textColor="@color/colorPrimary" android:textSize="15sp" android:textStyle="bold" />
                 <ImageView android:id="@+id/settings_appearance_arrow" android:layout_width="24dp" android:layout_height="24dp" android:layout_toStartOf="@+id/settings_appearance_icon" android:layout_marginEnd="16dp" android:layout_centerVertical="true" android:src="@drawable/ic_expand_down" app:tint="@color/colorPrimary" />
                 <ImageView android:id="@+id/settings_appearance_icon" android:layout_width="24dp" android:layout_height="24dp" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:src="@drawable/ic_settings_brush" app:tint="@color/colorPrimary" android:alpha="0.85" />
             </RelativeLayout>
@@ -332,15 +332,15 @@
                 </RelativeLayout>
                 <RelativeLayout android:id="@+id/settings_glass_opacity_holder" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingVertical="12dp">
                     <TextView android:id="@+id/settings_glass_opacity_label" style="@style/SettingsTextLabelStyle" android:layout_width="match_parent" android:layout_alignParentStart="true" android:text="@string/settings_glass_opacity" />
-                    <com.google.android.material.slider.Slider android:id="@+id/settings_glass_opacity_slider" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_below="@id/settings_glass_opacity_label" android:layout_marginTop="4dp" android:valueFrom="20" android:valueTo="100" android:stepSize="5" />
+                    <com.google.android.material.slider.Slider android:id="@+id/settings_glass_opacity_slider" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_below="@id/settings_glass_opacity_label" android:layout_marginTop="4dp" android:valueFrom="20" android:valueTo="100" android:stepSize="1" />
                 </RelativeLayout>
                 <RelativeLayout android:id="@+id/settings_font_size_holder" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingVertical="12dp" android:background="?selectableItemBackground" android:clickable="true" android:focusable="true">
                     <TextView android:id="@+id/settings_font_size_label" style="@style/SettingsTextLabelStyle" android:layout_width="match_parent" android:layout_alignParentStart="true" android:layout_toStartOf="@+id/settings_font_size" android:layout_centerVertical="true" android:text="@string/settings_font_size" />
-                    <TextView android:id="@+id/settings_font_size" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:textColor="@android:color/white" android:textSize="16sp" />
+                    <TextView android:id="@+id/settings_font_size" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:textColor="@android:color/white" android:textSize="13sp" android:alpha="0.65" />
                 </RelativeLayout>
                 <RelativeLayout android:id="@+id/settings_font_holder" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingVertical="12dp" android:background="?selectableItemBackground" android:clickable="true" android:focusable="true">
                     <TextView android:id="@+id/settings_font_label" style="@style/SettingsTextLabelStyle" android:layout_width="match_parent" android:layout_alignParentStart="true" android:layout_toStartOf="@+id/settings_font" android:layout_centerVertical="true" android:text="@string/settings_font" />
-                    <TextView android:id="@+id/settings_font" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:textColor="@android:color/white" android:textSize="16sp" />
+                    <TextView android:id="@+id/settings_font" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:textColor="@android:color/white" android:textSize="13sp" android:alpha="0.65" />
                 </RelativeLayout>
             </LinearLayout>
 
@@ -348,7 +348,7 @@
 
             <!-- Colors Section -->
             <RelativeLayout android:id="@+id/settings_colors_header" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingVertical="12dp" android:background="?selectableItemBackground" android:clickable="true" android:focusable="true">
-                <TextView android:id="@+id/settings_ui_colors_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentStart="true" android:layout_toStartOf="@+id/settings_colors_arrow" android:text="@string/settings_colors" android:textColor="@color/colorPrimary" android:textSize="16sp" android:textStyle="bold" />
+                <TextView android:id="@+id/settings_ui_colors_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentStart="true" android:layout_toStartOf="@+id/settings_colors_arrow" android:text="@string/settings_colors" android:textColor="@color/colorPrimary" android:textSize="15sp" android:textStyle="bold" />
                 <ImageView android:id="@+id/settings_colors_arrow" android:layout_width="24dp" android:layout_height="24dp" android:layout_toStartOf="@+id/settings_colors_icon" android:layout_marginEnd="16dp" android:layout_centerVertical="true" android:src="@drawable/ic_expand_down" app:tint="@color/colorPrimary" />
                 <ImageView android:id="@+id/settings_colors_icon" android:layout_width="24dp" android:layout_height="24dp" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:src="@drawable/ic_settings_palette" app:tint="@color/colorPrimary" android:alpha="0.85" />
             </RelativeLayout>
@@ -357,7 +357,7 @@
                 <RelativeLayout android:id="@+id/settings_main_text_color_holder" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingVertical="10dp"><TextView android:id="@+id/settings_background_color_label" style="@style/SettingsTextLabelStyle" android:layout_width="match_parent" android:layout_alignParentStart="true" android:layout_toStartOf="@+id/settings_main_text_color_preview" android:layout_centerVertical="true" android:text="@string/settings_main_text" /><View android:id="@+id/settings_main_text_color_preview" android:layout_width="32dp" android:layout_height="32dp" android:layout_alignParentEnd="true" android:background="@drawable/color_preview_bg" /></RelativeLayout>
                 <RelativeLayout android:id="@+id/settings_input_bar_text_color_holder" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingVertical="10dp"><TextView android:id="@+id/settings_input_bar_text_color_label" style="@style/SettingsTextLabelStyle" android:layout_width="match_parent" android:layout_alignParentStart="true" android:layout_toStartOf="@+id/settings_input_bar_text_color_preview" android:layout_centerVertical="true" android:text="@string/settings_input_bar_text" /><View android:id="@+id/settings_input_bar_text_color_preview" android:layout_width="32dp" android:layout_height="32dp" android:layout_alignParentEnd="true" android:background="@drawable/color_preview_bg" /></RelativeLayout>
                 <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#1AFFFFFF" android:layout_marginVertical="12dp" />
-                <TextView style="@style/SettingsTextLabelStyle" android:layout_width="match_parent" android:text="@string/settings_conversation_card_color" android:textSize="14sp" android:layout_marginBottom="8dp" />
+                <TextView style="@style/SettingsTextLabelStyle" android:layout_width="match_parent" android:text="@string/settings_conversation_card_color" android:textSize="15sp" android:layout_marginBottom="8dp" />
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:gravity="center">
                     <LinearLayout android:id="@+id/settings_color_recent_holder" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:padding="8dp"><View android:id="@+id/settings_color_recent_preview" android:layout_width="32dp" android:layout_height="32dp" android:background="@drawable/color_preview_bg" /></LinearLayout>
                 </LinearLayout>
@@ -367,7 +367,7 @@
 
             <!-- Bubbles Section -->
             <RelativeLayout android:id="@+id/settings_bubbles_header" android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingVertical="12dp" android:background="?selectableItemBackground" android:clickable="true" android:focusable="true">
-                <TextView android:id="@+id/settings_bubble_customization_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentStart="true" android:layout_toStartOf="@+id/settings_bubbles_arrow" android:text="@string/settings_message_bubbles" android:textColor="@color/colorPrimary" android:textSize="16sp" android:textStyle="bold" />
+                <TextView android:id="@+id/settings_bubble_customization_label" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_alignParentStart="true" android:layout_toStartOf="@+id/settings_bubbles_arrow" android:text="@string/settings_message_bubbles" android:textColor="@color/colorPrimary" android:textSize="15sp" android:textStyle="bold" />
                 <ImageView android:id="@+id/settings_bubbles_arrow" android:layout_width="24dp" android:layout_height="24dp" android:layout_toStartOf="@+id/settings_bubbles_icon" android:layout_marginEnd="16dp" android:layout_centerVertical="true" android:src="@drawable/ic_expand_down" app:tint="@color/colorPrimary" />
                 <ImageView android:id="@+id/settings_bubbles_icon" android:layout_width="24dp" android:layout_height="24dp" android:layout_alignParentEnd="true" android:layout_centerVertical="true" android:src="@drawable/ic_settings_bubble" app:tint="@color/colorPrimary" android:alpha="0.85" />
             </RelativeLayout>
@@ -396,7 +396,7 @@
                     android:padding="8dp"
                     android:text="@string/settings_reset_customization"
                     android:textColor="@color/colorPrimary"
-                    android:textSize="14sp"
+                    android:textSize="13sp"
                     android:textStyle="bold" />
             </RelativeLayout>
 

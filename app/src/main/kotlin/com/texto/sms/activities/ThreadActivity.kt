@@ -879,7 +879,7 @@ class ThreadActivity : SimpleActivity() {
         callItem.isVisible = canDialCurrentParticipant()
 
         // Add a single custom overflow item
-        val moreItem = toolbar.menu.add(0, com.texto.sms.R.id.more_options, 1, "More")
+        val moreItem = toolbar.menu.add(0, com.texto.sms.R.id.more_options, 1, getString(R.string.more_options))
         moreItem.setIcon(org.fossify.commons.R.drawable.ic_three_dots_vector)
         moreItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
 

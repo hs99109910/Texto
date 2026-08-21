@@ -246,7 +246,7 @@
                 android:layout_height="match_parent"
                 android:paddingStart="8dp"
                 android:paddingEnd="12dp"
-                android:hint="Search"
+                android:hint="@string/search"
                 android:textColor="@android:color/white"
                 android:textColorHint="#888888"
                 android:background="@android:color/transparent"

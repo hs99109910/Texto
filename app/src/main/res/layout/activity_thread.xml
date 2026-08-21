@@ -41,7 +41,7 @@
                 android:textDirection="anyRtl"
                 android:textStyle="bold"
                 app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="15sp"
+                app:autoSizeMinTextSize="12sp"
                 app:autoSizeStepGranularity="1sp"
                 app:autoSizeTextType="uniform"
                 tools:text="نام مخاطب" />

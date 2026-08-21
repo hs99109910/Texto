@@ -27,10 +27,10 @@ object NovaFonts {
     )
 
     val displayNames = mapOf(
-        FONT_B_KOODAK to "B Koodak (ب کودک)",
-        FONT_B_NAZANIN to "B Nazanin (ب نازنین)",
-        FONT_B_KAMRAN to "B Kamran (ب کامران)",
-        FONT_IRAN_NASTALIQ to "Iran Nastaliq (ایران نستعلیق)"
+        FONT_B_KOODAK to "ب کودک",
+        FONT_B_NAZANIN to "ب نازنین",
+        FONT_B_KAMRAN to "ب کامران",
+        FONT_IRAN_NASTALIQ to "ایران نستعلیق"
     )
 
     private val cache = HashMap<Int, Typeface?>()

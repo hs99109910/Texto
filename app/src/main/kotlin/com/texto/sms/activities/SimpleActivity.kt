@@ -30,6 +30,7 @@ import androidx.appcompat.widget.ListPopupWindow
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.doOnLayout
 import androidx.core.view.get
 import androidx.core.view.size
@@ -157,6 +158,20 @@ open class SimpleActivity : BaseSimpleActivity() {
             clearGlideTarget(window.decorView)
             window.decorView.setBackgroundColor(config.mainBackgroundColor)
         }
+
+        // The frosted bars start below the status bar, so what sits behind the clock, signal
+        // and battery is the window background -- not the bar. Nothing ever set the status
+        // bar icon appearance, so on a light background the white icons were unreadable.
+        // Pick the icon polarity from whatever is actually painted up there.
+        val behindStatusBar = when {
+            config.mainBgMode == BG_MODE_IMAGE && config.mainBackgroundImage.isNotEmpty() -> null
+            config.mainBgMode == BG_MODE_GRADIENT -> config.mainBgGradientStart
+            else -> config.mainBackgroundColor
+        }
+        runCatching {
+            WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars =
+                behindStatusBar != null && !NovaGlass.isDark(behindStatusBar)
+        }
         
         // 2. Apply top bar color (HARD RECURSIVE SHAPE GUARD)
         val appBar = findViewById<AppBarLayout>(R.id.settings_appbar) ?: 
@@ -171,7 +186,10 @@ open class SimpleActivity : BaseSimpleActivity() {
         
         if (appBar != null) {
             val barColor = if (config.topBarColor != 0) config.topBarColor else Color.BLACK
-            val barRadius = 26 * density
+            // Same geometry as the floating home/search/settings pill (28dp radius, inset
+            // from the screen edges) so all three read as one family of glass surfaces.
+            val barRadius = 28 * density
+            val barSideInset = (12 * density).toInt()
             val useNewUi = config.useNewUi
             
             val topBarImage = config.topBarImage
@@ -206,7 +224,7 @@ open class SimpleActivity : BaseSimpleActivity() {
                 // only what gets painted leaves that padding doing its job.
                 val appliedInset = statusBarInsetOf(appBar)
                 appBar.background = android.graphics.drawable.InsetDrawable(
-                    barShape, 0, appliedInset, 0, 0
+                    barShape, barSideInset, appliedInset, barSideInset, 0
                 )
                 if (appliedInset == 0) {
                     // On a cold start the insets are not known yet, which would paint the bar
@@ -215,7 +233,7 @@ open class SimpleActivity : BaseSimpleActivity() {
                         val settled = statusBarInsetOf(view)
                         if (settled > 0) {
                             view.background = android.graphics.drawable.InsetDrawable(
-                                barShape, 0, settled, 0, 0
+                                barShape, barSideInset, settled, barSideInset, 0
                             )
                         }
                     }
@@ -230,7 +248,8 @@ open class SimpleActivity : BaseSimpleActivity() {
             appBar.outlineProvider = object : android.view.ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: android.graphics.Outline) {
                     outline.setRoundRect(
-                        0, statusBarInsetOf(view), view.width, view.height, barRadius
+                        barSideInset, statusBarInsetOf(view),
+                        view.width - barSideInset, view.height, barRadius
                     )
                 }
             }
@@ -280,7 +299,7 @@ open class SimpleActivity : BaseSimpleActivity() {
             // background it had before. No status-bar inset needed since it already sits
             // below the top bar.
             findViewById<View>(R.id.filter_bar)?.let { filterBar ->
-                val filterRadius = 22 * density
+                val filterRadius = 28 * density
                 if (useNewUi && config.glassTheme) {
                     NovaGlass.applyPanel(
                         view = filterBar,
@@ -649,7 +668,7 @@ open class SimpleActivity : BaseSimpleActivity() {
 
         if (show) {
             val countText = findViewById<TextView>(R.id.selection_count)
-            countText?.text = "$count selected"
+            countText?.text = getString(R.string.x_selected, count)
             countText?.setTextColor(config.topBarTextColor)
             
             val tint = ColorStateList.valueOf(config.topBarTextColor)
