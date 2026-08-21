@@ -996,6 +996,49 @@ fun Context.getSuggestedContacts(
  * Every number in the device address book, reduced to the comparable trailing-digits form
  * so the "مخاطبین" filter can decide with a single set lookup per conversation.
  */
+/**
+ * The phone book as display-name/number pairs, for building a filter straight from contacts
+ * rather than only from people who have already texted. Runs the same one-shot provider query
+ * as [getContactNumbersSnapshot], so it must be called off the main thread.
+ */
+fun Context.getContactsWithNamesSnapshot(): List<Pair<String, String>> {
+    if (!hasPermission(PERMISSION_READ_CONTACTS)) return emptyList()
+
+    val contacts = LinkedHashMap<String, Pair<String, String>>()
+    try {
+        contentResolver.query(
+            Phone.CONTENT_URI,
+            arrayOf(Phone.DISPLAY_NAME, Phone.NORMALIZED_NUMBER, Phone.NUMBER),
+            null,
+            null,
+            "${Phone.DISPLAY_NAME} COLLATE NOCASE ASC"
+        )?.use { cursor ->
+            val nameIndex = cursor.getColumnIndex(Phone.DISPLAY_NAME)
+            val normalizedIndex = cursor.getColumnIndex(Phone.NORMALIZED_NUMBER)
+            val rawIndex = cursor.getColumnIndex(Phone.NUMBER)
+            while (cursor.moveToNext()) {
+                val number = normalizedIndex.takeIf { it >= 0 }
+                    ?.let { cursor.getString(it) }
+                    ?.takeIf { it.isNotBlank() }
+                    ?: rawIndex.takeIf { it >= 0 }?.let { cursor.getString(it) }.orEmpty()
+                if (number.isBlank()) continue
+
+                val key = SystemBlockedNumbers.comparable(number)
+                if (key.isEmpty() || contacts.containsKey(key)) continue
+
+                val name = nameIndex.takeIf { it >= 0 }
+                    ?.let { cursor.getString(it) }
+                    ?.takeIf { it.isNotBlank() }
+                    ?: number
+                contacts[key] = name to number
+            }
+        }
+    } catch (_: Exception) {
+        return contacts.values.toList()
+    }
+    return contacts.values.toList()
+}
+
 fun Context.getContactNumbersSnapshot(): Set<String> {
     if (!hasPermission(PERMISSION_READ_CONTACTS)) return emptySet()
 

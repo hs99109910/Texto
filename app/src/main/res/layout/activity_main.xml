@@ -51,8 +51,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fillViewport="true"
-        android:scrollbars="none"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:scrollbars="none">
 
         <androidx.coordinatorlayout.widget.CoordinatorLayout
             android:id="@+id/main_coordinator_wrapper"
@@ -81,9 +80,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
-                    android:layout_marginTop="8dp"
                     android:layout_marginHorizontal="12dp"
                     android:alpha="0.92"
+                    android:elevation="10dp"
                     android:clipChildren="false"
                     android:clipToPadding="false"
                     android:overScrollMode="never"
@@ -125,11 +124,10 @@
                     android:id="@+id/conversations_list"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_below="@+id/filter_bar"
+                    android:layout_alignParentTop="true"
                     android:layoutAnimation="@anim/layout_animation"
                     android:overScrollMode="ifContentScrolls"
                     android:scrollbars="none"
-                    android:paddingTop="8dp"
                     android:paddingBottom="100dp"
                     android:paddingHorizontal="4dp"
                     android:clipChildren="false"

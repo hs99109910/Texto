@@ -28,6 +28,8 @@ class EditFilterDialog(
     private val existing: MessageFilter? = null,
     /** Every conversation currently on the main screen, offered as pickable senders. */
     private val pickableSenders: List<Pair<String, String>> = emptyList(),
+    /** The phone book, offered as the second source to build a filter from. */
+    private val pickableContacts: List<Pair<String, String>> = emptyList(),
     private val onDelete: (() -> Unit)? = null,
     private val callback: (filter: MessageFilter) -> Unit,
 ) {
@@ -38,11 +40,8 @@ class EditFilterDialog(
 
     init {
         val binding = DialogEditFilterBinding.inflate(activity.layoutInflater).apply {
-            existing?.let {
-                filterNameEditText.setText(it.label)
-                filterKeywordsEditText.setText(it.keywords.joinToString("، "))
-            }
-            filterPickSenders.setOnClickListener { showSenderPicker(this) }
+            existing?.let { filterNameEditText.setText(it.label) }
+            filterPickSenders.setOnClickListener { chooseSenderSource(this) }
             updateSenderSummary(this)
         }
 
@@ -68,22 +67,19 @@ class EditFilterDialog(
                             return@setOnClickListener
                         }
 
-                        val keywords =
-                            FilterStore.parseKeywords(binding.filterKeywordsEditText.text.toString())
-                        // Either source on its own is enough to define a filter.
-                        if (keywords.isEmpty() && chosenNumbers.isEmpty()) {
-                            activity.toast(R.string.filter_needs_keywords_or_senders)
+                        // A filter is defined purely by who it covers now that the keyword
+                        // field is gone, so at least one sender has to be picked.
+                        if (chosenNumbers.isEmpty()) {
+                            activity.toast(R.string.filter_needs_senders)
                             return@setOnClickListener
                         }
 
                         val filter = existing?.copy(
                             label = label,
-                            keywords = keywords,
                             senders = chosenNumbers.toList(),
                             senderLabels = chosenLabels.toList()
                         ) ?: FilterStore.newCustomFilter(
                             label = label,
-                            keywords = keywords,
                             senders = chosenNumbers.toList(),
                             senderLabels = chosenLabels.toList()
                         )
@@ -109,15 +105,43 @@ class EditFilterDialog(
         }
     }
 
-    /** Multi-choice, search-filterable list of the current conversations, pre-ticked with what is saved. */
-    private fun showSenderPicker(binding: DialogEditFilterBinding) {
-        if (pickableSenders.isEmpty()) {
-            activity.toast(R.string.no_conversations_to_pick)
+    /**
+     * Filters can be built from two different sources, so ask which one first rather than
+     * silently offering only the chat list.
+     */
+    private fun chooseSenderSource(binding: DialogEditFilterBinding) {
+        val options = arrayOf(
+            activity.getString(R.string.pick_from_chats),
+            activity.getString(R.string.pick_from_contacts)
+        )
+        AlertDialog.Builder(activity)
+            .setTitle(R.string.pick_senders)
+            .setItems(options) { _, which ->
+                val source = if (which == 0) pickableSenders else pickableContacts
+                val emptyMessage = if (which == 0) {
+                    R.string.no_conversations_to_pick
+                } else {
+                    R.string.no_contacts_to_pick
+                }
+                showSenderPicker(binding, source, emptyMessage)
+            }
+            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
+            .show()
+    }
+
+    /** Multi-choice, search-filterable list of one source, pre-ticked with what is saved. */
+    private fun showSenderPicker(
+        binding: DialogEditFilterBinding,
+        source: List<Pair<String, String>>,
+        emptyMessage: Int,
+    ) {
+        if (source.isEmpty()) {
+            activity.toast(emptyMessage)
             return
         }
 
-        val labels = pickableSenders.map { it.first }
-        val numbers = pickableSenders.map { it.second }
+        val labels = source.map { it.first }
+        val numbers = source.map { it.second }
 
         // Selection is tracked by index into the full (unfiltered) arrays above, so it
         // survives the search box narrowing/widening the visible rows.
@@ -178,11 +202,20 @@ class EditFilterDialog(
             .setTitle(R.string.pick_senders)
             .setView(pickerBinding.root)
             .setPositiveButton(org.fossify.commons.R.string.ok) { _, _ ->
-                chosenNumbers.clear()
-                chosenLabels.clear()
-                selectedIndices.sorted().forEach { index ->
-                    chosenNumbers.add(numbers[index])
-                    chosenLabels.add(labels[index])
+                // Only this source's entries are rewritten; anything picked from the other
+                // source stays, so a filter can mix chats and contacts.
+                numbers.forEachIndexed { index, number ->
+                    val at = chosenNumbers.indexOfFirst {
+                        SystemBlockedNumbers.isSameSender(it, number)
+                    }
+                    if (at >= 0) {
+                        chosenNumbers.removeAt(at)
+                        chosenLabels.removeAt(at)
+                    }
+                    if (selectedIndices.contains(index)) {
+                        chosenNumbers.add(number)
+                        chosenLabels.add(labels[index])
+                    }
                 }
                 updateSenderSummary(binding)
             }

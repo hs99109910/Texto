@@ -19,7 +19,6 @@ import com.texto.sms.extensions.insertOrUpdateConversation
 import com.texto.sms.extensions.shouldUnarchive
 import com.texto.sms.extensions.showReceivedMessageNotification
 import com.texto.sms.extensions.updateConversationArchivedStatus
-import com.texto.sms.helpers.ReceiverUtils.isMessageFilteredOut
 import com.texto.sms.helpers.refreshConversations
 import com.texto.sms.helpers.refreshMessages
 import com.texto.sms.models.Message
@@ -37,9 +36,7 @@ class MmsReceiver : MmsReceivedReceiver() {
         return false
     }
 
-    override fun isContentBlocked(context: Context, content: String): Boolean {
-        return isMessageFilteredOut(context, content)
-    }
+    override fun isContentBlocked(context: Context, content: String): Boolean = false
 
     override fun onMessageReceived(context: Context, messageUri: Uri) {
         val mms = context.getLatestMMS() ?: return

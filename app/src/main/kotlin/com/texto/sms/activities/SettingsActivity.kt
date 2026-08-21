@@ -175,7 +175,7 @@ class SettingsActivity : SimpleActivity() {
         // they stay legible in every theme, kept a touch lighter than the label itself.
         listOf(
             settingsArchivedIcon, settingsRecycleBinIcon, settingsBlockedNumbersIcon,
-            settingsBlockedKeywordsIcon, settingsContactsOnlyFilterIcon, settingsAdsFilterIcon,
+            settingsContactsOnlyFilterIcon, settingsAdsFilterIcon,
             settingsDefaultFilterIcon, settingsAppThemeIcon, settingsAppearanceIcon,
             settingsColorsIcon, settingsBubblesIcon
         ).forEach {
@@ -614,9 +614,6 @@ class SettingsActivity : SimpleActivity() {
         }
         settingsRecycleBinHolder.setOnClickListener {
             startActivity(Intent(this@SettingsActivity, RecycleBinConversationsActivity::class.java))
-        }
-        settingsBlockedKeywordsHolder.setOnClickListener {
-            startActivity(Intent(this@SettingsActivity, ManageBlockedKeywordsActivity::class.java))
         }
     }
 

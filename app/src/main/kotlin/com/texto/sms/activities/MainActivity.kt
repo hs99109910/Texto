@@ -22,7 +22,9 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnLayout
 import androidx.core.view.updateLayoutParams
+import android.widget.RelativeLayout
 import androidx.core.widget.addTextChangedListener
 import org.fossify.commons.activities.AboutActivity
 import org.fossify.commons.dialogs.ConfirmationDialog
@@ -79,6 +81,9 @@ class MainActivity : SimpleActivity() {
     // Comparable (SystemBlockedNumbers.comparable) numbers of every saved contact, refreshed
     // alongside the conversation list; backs the "Contacts only" filter.
     private var contactPhoneNumbers: Set<String> = emptySet()
+
+    /** Phone book snapshot kept for the "build a filter from contacts" picker. */
+    private var cachedContactsForFilters: List<Pair<String, String>> = emptyList()
     private var activeFilter: MessageFilter = MessageFilter.all("همه")
     private var filterChipsAdapter: com.texto.sms.adapters.FilterChipsAdapter? = null
     private var filterChipDragHelper: androidx.recyclerview.widget.ItemTouchHelper? = null
@@ -163,6 +168,7 @@ class MainActivity : SimpleActivity() {
         getOrCreateConversationsAdapter().updateScaling()
         applyCustomColors()
         setupNovaNavBar()
+        setupOverlayBars()
 
         styleFab()
         filterChipsAdapter?.notifyDataSetChanged()
@@ -569,10 +575,19 @@ class MainActivity : SimpleActivity() {
                 "$label$suffix" to conversation.phoneNumber
             }
 
+        // A filter can also be built straight from the phone book, not just from people who
+        // have already texted. Read off the already-loaded contact cache so opening the
+        // dialog never blocks; it is empty until contacts finish loading, and the picker
+        // says so rather than showing an empty list.
+        val pickableContacts = cachedContactsForFilters
+            .filter { it.second.isNotBlank() }
+            .distinctBy { it.second }
+
         EditFilterDialog(
             activity = this,
             existing = existing,
             pickableSenders = pickable,
+            pickableContacts = pickableContacts,
             onDelete = if (existing == null) null else {
                 { deleteFilter(existing) }
             }
@@ -862,9 +877,15 @@ class MainActivity : SimpleActivity() {
                 privateContacts.flatMap { it.phoneNumbers }
                     .map { com.texto.sms.helpers.SystemBlockedNumbers.comparable(it.normalizedNumber) }
                     .filter { it.isNotEmpty() }
+            val contactsForFilters = getContactsWithNamesSnapshot() +
+                privateContacts.mapNotNull { contact ->
+                    val number = contact.phoneNumbers.firstOrNull()?.normalizedNumber.orEmpty()
+                    if (number.isBlank()) null else contact.name.ifBlank { number } to number
+                }
             runOnUiThread {
                 if (!isFinishing && !isDestroyed && myGeneration == conversationLoadGeneration) {
                     contactPhoneNumbers = contactNumbers
+                    cachedContactsForFilters = contactsForFilters
                     getOrCreateConversationsAdapter().setLatestSnippets(snippets)
                     setupConversations(all, isManualReorder = isManualReorder)
                     applyOutlines()
@@ -1084,6 +1105,45 @@ class MainActivity : SimpleActivity() {
             binding.mainNestedScrollview.getChildAt(0).beVisible()
             binding.searchHolder.beGone()
             binding.searchHolder.alpha = 0f
+        }
+    }
+
+    /**
+     * Makes the chat list run *behind* the two frosted bars instead of starting below them.
+     *
+     * This is what every previous attempt at "make the bars glassy" was missing: the bars were
+     * translucent, but nothing was ever drawn behind them, so there was nothing to see through.
+     * Two things caused that -- the content root carried appbar_scrolling_view_behavior, which
+     * offsets it below the app bar, and the list was laid out with layout_below="filter_bar".
+     * Both are gone from the layout; the list now fills the window from the very top and simply
+     * pads its *content* down by the height of the two bars, with clipToPadding=false so rows
+     * scroll up into that padding and pass under the glass, Telegram-style.
+     *
+     * The heights are only known after layout (the top bar includes the status-bar inset and
+     * scales with the UI-scale setting), so they are measured rather than hard-coded.
+     */
+    private fun setupOverlayBars() {
+        val appbar = binding.mainAppbar
+        val filterBar = binding.filterBar
+
+        appbar.doOnLayout {
+            if (isFinishing || isDestroyed) return@doOnLayout
+            val barsGap = 8.getScaledPx()
+            filterBar.updateLayoutParams<RelativeLayout.LayoutParams> {
+                topMargin = appbar.height + barsGap
+            }
+            filterBar.doOnLayout {
+                if (isFinishing || isDestroyed) return@doOnLayout
+                val inset = appbar.height + barsGap + filterBar.height + barsGap
+                listOf(binding.conversationsList, binding.searchResultsList).forEach { list ->
+                    if (list.paddingTop != inset) {
+                        list.setPadding(list.paddingLeft, inset, list.paddingRight, list.paddingBottom)
+                        list.scrollToPosition(0)
+                    }
+                }
+                // The empty-state text is already positioned with layout_below="filter_bar",
+                // so it follows the bar without any extra offset here.
+            }
         }
     }
 

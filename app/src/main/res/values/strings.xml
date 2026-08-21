@@ -89,11 +89,6 @@
         <item quantity="other">%d پیام</item>
     </plurals>
     <!-- Settings -->
-    <string name="keyword">کلیدواژه</string>
-    <string name="blocked_keywords">کلمات مسدود شده</string>
-    <string name="manage_blocked_keywords">مدیریت کلمات مسدود شده</string>
-    <string name="not_blocking_keywords">هیچ کلیدواژه‌ای مسدود نکرده‌اید. می‌توانید اینجا کلیدواژه اضافه کنید تا همه پیام‌های حاوی آن مسدود شوند.</string>
-    <string name="add_a_blocked_keyword">افزودن کلیدواژه مسدود</string>
     <string name="lock_screen_visibility">نمایش اعلان در صفحه قفل</string>
     <string name="sender_and_message">فرستنده و پیام</string>
     <string name="sender_only">فقط فرستنده</string>
@@ -109,7 +104,6 @@
     <string name="send_long_message_mms">ارسال پیام‌های بلند به‌صورت MMS</string>
     <!-- Export / Import -->
     <string name="messages">پیام‌ها</string>
-    <string name="keywords">کلیدواژه‌ها</string>
     <string name="export_messages">برون‌بری پیام‌ها</string>
     <string name="export_sms">برون‌بری پیامک</string>
     <string name="export_mms">برون‌بری MMS</string>
@@ -117,8 +111,6 @@
     <string name="import_sms">درون‌ریزی پیامک</string>
     <string name="import_mms">درون‌ریزی MMS</string>
     <string name="no_option_selected">باید حداقل یک مورد انتخاب کنید</string>
-    <string name="export_blocked_keywords">برون‌بری کلمات مسدود شده</string>
-    <string name="import_blocked_keywords">درون‌ریزی کلمات مسدود شده</string>
     <!-- Errors -->
     <string name="empty_destination_address">ارسال پیام به شماره خالی ممکن نیست</string>
     <string name="unable_to_save_message">ذخیره پیام در پایگاه داده مخابراتی ممکن نشد</string>
@@ -162,11 +154,8 @@
     <string name="add_filter">فیلتر جدید</string>
     <string name="edit_filter">ویرایش فیلتر</string>
     <string name="filter_name">نام فیلتر</string>
-    <string name="filter_keywords">کلمات کلیدی (با ویرگول جدا کنید)</string>
-    <string name="filter_keywords_hint">مثلا: پروژه, قرارداد, جلسه</string>
     <string name="filter_name_required">نام فیلتر را وارد کنید</string>
     <string name="filter_keywords_required">حداقل یک کلمه کلیدی وارد کنید</string>
-    <string name="filter_needs_keywords_or_senders">حداقل یک کلمه کلیدی وارد کنید یا یک فرستنده انتخاب کنید</string>
     <string name="pick_senders">انتخاب از چت‌ها</string>
     <string name="no_senders_picked">هیچ فرستنده‌ای انتخاب نشده</string>
     <string name="no_conversations_to_pick">چتی برای انتخاب وجود ندارد</string>
@@ -204,6 +193,10 @@
     <string name="settings_ui_scale">مقیاس رابط</string>
     <string name="settings_glass_opacity">شفافیت نوارهای شیشه‌ای</string>
     <string name="search">جستجو</string>
+    <string name="pick_from_chats">از فهرست گفتگوها</string>
+    <string name="pick_from_contacts">از مخاطبین</string>
+    <string name="no_contacts_to_pick">مخاطبی برای انتخاب نیست</string>
+    <string name="filter_needs_senders">حداقل یک فرستنده انتخاب کنید</string>
     <string name="x_selected">%1$d مورد انتخاب شد</string>
     <string name="bg_mode_color">رنگ</string>
     <string name="bg_mode_image">تصویر</string>

@@ -93,17 +93,6 @@ class Config(context: Context) : BaseConfig(context) {
             pinnedConversations.minus(conversations.map { it.threadId.toString() })
     }
 
-    var blockedKeywords: Set<String>
-        get() = prefs.getStringSet(BLOCKED_KEYWORDS, HashSet<String>())!!
-        set(blockedKeywords) = prefs.edit().putStringSet(BLOCKED_KEYWORDS, blockedKeywords).apply()
-
-    fun addBlockedKeyword(keyword: String) {
-        blockedKeywords = blockedKeywords.plus(keyword)
-    }
-
-    fun removeBlockedKeyword(keyword: String) {
-        blockedKeywords = blockedKeywords.minus(keyword)
-    }
 
     var exportSms: Boolean
         get() = prefs.getBoolean(EXPORT_SMS, true)
@@ -158,10 +147,6 @@ class Config(context: Context) : BaseConfig(context) {
         customNotifications = customNotifications.minus(threadId.toString())
     }
 
-    var lastBlockedKeywordExportPath: String
-        get() = prefs.getString(LAST_BLOCKED_KEYWORD_EXPORT_PATH, "")!!
-        set(lastBlockedNumbersExportPath) = prefs.edit()
-            .putString(LAST_BLOCKED_KEYWORD_EXPORT_PATH, lastBlockedNumbersExportPath).apply()
 
     var keepConversationsArchived: Boolean
         get() = prefs.getBoolean(KEEP_CONVERSATIONS_ARCHIVED, false)

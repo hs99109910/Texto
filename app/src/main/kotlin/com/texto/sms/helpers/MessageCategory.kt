@@ -8,13 +8,12 @@ import com.texto.sms.models.Conversation
 /**
  * A filter chip on the main screen. "All" always ships built in; "Contacts only" is a
  * built-in filter that can be toggled on from settings; the rest are defined by the user
- * as a name plus a list of keywords.
+ * as a name plus the senders picked for it.
  */
 @Serializable
 data class MessageFilter(
     val id: String,
     val label: String,
-    val keywords: List<String> = emptyList(),
     val isCustom: Boolean = false,
     /** Phone numbers picked from the chat list; a thread matches if its sender is here. */
     val senders: List<String> = emptyList(),
@@ -91,24 +90,16 @@ object FilterStore {
 
     fun newCustomFilter(
         label: String,
-        keywords: List<String>,
         senders: List<String> = emptyList(),
         senderLabels: List<String> = emptyList(),
     ) = MessageFilter(
         id = "custom:${System.currentTimeMillis()}",
         label = label,
-        keywords = keywords,
         isCustom = true,
         senders = senders,
         senderLabels = senderLabels
     )
 
-    /** Splits a free-text keyword field on Persian and Latin commas plus newlines. */
-    fun parseKeywords(input: String): List<String> =
-        input.split(',', '،', '\n', ';')
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-            .distinct()
 }
 
 /**
@@ -192,11 +183,6 @@ object MessageClassifier {
         return codePattern.find(text)?.value
     }
 
-    private fun matchesKeywords(conversation: Conversation, keywords: List<String>): Boolean {
-        if (keywords.isEmpty()) return false
-        val text = normalize("${conversation.snippet} ${conversation.title}")
-        return containsAny(text, keywords)
-    }
 
     /** A thread matches when its number is one of the ones picked for this filter. */
     private fun matchesSenders(conversation: Conversation, senders: List<String>): Boolean {
@@ -218,9 +204,7 @@ object MessageClassifier {
         // Inverted on purpose: a thread belongs here until it is marked as advertising, so an
         // untouched filter holds every conversation rather than none.
         filter.id == MessageFilter.ID_NO_ADS -> !matchesSenders(conversation, filter.senders)
-        // Picked senders and typed keywords are alternatives, so a filter can be built
-        // from either one alone or from both together.
-        else -> matchesSenders(conversation, filter.senders) ||
-                matchesKeywords(conversation, filter.keywords)
+        // A user filter is defined purely by the senders picked for it.
+        else -> matchesSenders(conversation, filter.senders)
     }
 }

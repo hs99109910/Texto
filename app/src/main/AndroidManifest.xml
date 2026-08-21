@@ -174,12 +174,6 @@
             android:parentActivityName=".activities.SettingsActivity"
             tools:replace="android:label,android:configChanges" />
 
-        <activity
-            android:name=".activities.ManageBlockedKeywordsActivity"
-            android:configChanges="orientation|screenSize|smallestScreenSize|screenLayout|keyboardHidden"
-            android:exported="false"
-            android:label="@string/blocked_keywords"
-            android:parentActivityName=".activities.SettingsActivity" />
 
         <activity
             android:name=".activities.VCardViewerActivity"

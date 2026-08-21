@@ -23,7 +23,6 @@ import com.texto.sms.extensions.messagesDB
 import com.texto.sms.extensions.shouldUnarchive
 import com.texto.sms.extensions.showReceivedMessageNotification
 import com.texto.sms.extensions.updateConversationArchivedStatus
-import com.texto.sms.helpers.ReceiverUtils.isMessageFilteredOut
 import com.texto.sms.helpers.refreshConversations
 import com.texto.sms.helpers.refreshMessages
 import com.texto.sms.models.Message
@@ -47,7 +46,6 @@ class SmsReceiver : BroadcastReceiver() {
                 val status = parts.last().status
                 val body = buildString { parts.forEach { append(it.messageBody.orEmpty()) } }
 
-                if (isMessageFilteredOut(appContext, body)) return@ensureBackgroundThread
                 if (appContext.isNumberBlockedBySystem(address)) return@ensureBackgroundThread
                 if (appContext.baseConfig.blockUnknownNumbers) {
                     val privateCursor =
