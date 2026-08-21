@@ -16,7 +16,7 @@ import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.dialogs.RenameConversationDialog
 import com.texto.sms.extensions.config
-import com.texto.sms.extensions.deleteConversation
+import com.texto.sms.extensions.deleteOrRecycleConversation
 import com.texto.sms.extensions.dialNumber
 import com.texto.sms.extensions.launchConversationDetails
 import com.texto.sms.extensions.markThreadMessagesRead
@@ -230,7 +230,7 @@ class ConversationsAdapter(
         val conversationsToRemove =
             currentList.filter { selectedKeys.contains(it.hashCode()) } as ArrayList<Conversation>
         conversationsToRemove.forEach {
-            activity.deleteConversation(it.threadId)
+            activity.deleteOrRecycleConversation(it.threadId)
             activity.notificationManager.cancel(it.threadId.hashCode())
         }
 

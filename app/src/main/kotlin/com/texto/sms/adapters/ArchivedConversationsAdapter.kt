@@ -7,7 +7,7 @@ import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.commons.views.MyRecyclerView
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
-import com.texto.sms.extensions.deleteConversation
+import com.texto.sms.extensions.deleteOrRecycleConversation
 import com.texto.sms.extensions.updateConversationArchivedStatus
 import com.texto.sms.helpers.refreshConversations
 import com.texto.sms.models.Conversation
@@ -20,10 +20,14 @@ class ArchivedConversationsAdapter(
     override fun prepareActionMode(menu: Menu) {}
 
     override fun getCustomActions(): List<Int> {
+        // The bottom selection bar only has a fixed icon slot for cab_archive, not for
+        // cab_unarchive, and actionItemPressed() below never handled cab_archive anyway --
+        // so advertising it here just showed an "Archive" button that did nothing when
+        // tapped. Unarchiving a multi-selection still works from the classic action bar
+        // (cab_archived_conversations.xml); this only affects the modern selection pill.
         return listOf(
             R.id.cab_select_all,
-            R.id.cab_delete,
-            R.id.cab_archive // Unarchive in this context
+            R.id.cab_delete
         )
     }
 
@@ -60,7 +64,7 @@ class ArchivedConversationsAdapter(
 
         val conversationsToRemove = currentList.filter { selectedKeys.contains(it.hashCode()) } as ArrayList<Conversation>
         conversationsToRemove.forEach {
-            activity.deleteConversation(it.threadId)
+            activity.deleteOrRecycleConversation(it.threadId)
             activity.notificationManager.cancel(it.threadId.hashCode())
         }
 

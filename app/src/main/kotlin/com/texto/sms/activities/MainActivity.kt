@@ -325,6 +325,10 @@ class MainActivity : SimpleActivity() {
         animator.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationStart(animation: Animator) {
                 novaNavContainer.alpha = 1.0f // Solid when searching
+                // The top title bar and filter chips row are glass too now -- brighten them
+                // in lockstep with the nav bar instead of leaving them dimmed while it isn't.
+                mainAppbar.alpha = 1.0f
+                filterBar.alpha = 1.0f
             }
             override fun onAnimationEnd(animation: Animator) {
                 navHomeBtn.beGone()
@@ -384,6 +388,8 @@ class MainActivity : SimpleActivity() {
         animator.addListener(object : AnimatorListenerAdapter() {
             override fun onAnimationEnd(animation: Animator) {
                 novaNavContainer.alpha = 0.92f // Less transparent when idle
+                mainAppbar.alpha = 0.92f
+                filterBar.alpha = 0.92f
             }
         })
         animator.start()

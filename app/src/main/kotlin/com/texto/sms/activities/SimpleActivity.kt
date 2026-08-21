@@ -271,6 +271,31 @@ open class SimpleActivity : BaseSimpleActivity() {
                     it.translationZ = 0f
                 }
             }
+
+            // Filter chips row sits right under the top bar -- give it the same glass
+            // treatment (thinner and slightly airier) instead of the plain transparent
+            // background it had before. No status-bar inset needed since it already sits
+            // below the top bar.
+            findViewById<View>(R.id.filter_bar)?.let { filterBar ->
+                val filterRadius = 22 * density
+                if (useNewUi && config.glassTheme) {
+                    NovaGlass.applyPanel(
+                        view = filterBar,
+                        tint = barColor,
+                        cornerRadius = filterRadius,
+                        opacity = 0.62f,
+                        strokeWidthPx = density.toInt().coerceAtLeast(1)
+                    )
+                } else if (useNewUi) {
+                    filterBar.background = GradientDrawable().apply {
+                        shape = GradientDrawable.RECTANGLE
+                        cornerRadius = filterRadius
+                        setColor(barColor)
+                    }
+                } else {
+                    filterBar.background = null
+                }
+            }
         }
         
         toolbar?.setBackgroundColor(Color.TRANSPARENT)

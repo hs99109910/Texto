@@ -1415,7 +1415,7 @@ class ThreadActivity : SimpleActivity() {
         val question = resources.getString(R.string.delete_whole_conversation_confirmation)
         ConfirmationDialog(this, question) {
             ensureBackgroundThread {
-                deleteConversation(threadId)
+                deleteOrRecycleConversation(threadId)
                 refreshConversations()
                 runOnUiThread {
                     if (isFinishing || isDestroyed) return@runOnUiThread

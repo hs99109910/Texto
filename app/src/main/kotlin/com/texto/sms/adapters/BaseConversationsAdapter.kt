@@ -423,8 +423,26 @@ abstract class BaseConversationsAdapter(
                 )
             }
         )
-        if (activity.config.isArchiveAvailable) {
-            items.add(
+        when {
+            // These two lists show conversations that already left the main list; the
+            // useful action here is getting them back, not archiving them again. Routing
+            // "Archive" here sent an id (cab_archive) neither adapter's actionItemPressed()
+            // handled, so the button silently did nothing.
+            this is RecycleBinConversationsAdapter -> items.add(
+                SimpleActivity.BubbleAction(
+                    R.id.cab_restore,
+                    simpleActivity.getString(R.string.restore_all_messages),
+                    R.drawable.ic_unarchive_vector
+                )
+            )
+            this is ArchivedConversationsAdapter -> items.add(
+                SimpleActivity.BubbleAction(
+                    R.id.cab_unarchive,
+                    simpleActivity.getString(R.string.unarchive),
+                    R.drawable.ic_unarchive_vector
+                )
+            )
+            activity.config.isArchiveAvailable -> items.add(
                 SimpleActivity.BubbleAction(
                     R.id.cab_archive,
                     simpleActivity.getString(R.string.archive),

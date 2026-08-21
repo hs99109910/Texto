@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
+        android:alpha="0.92"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
@@ -80,6 +81,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
+                    android:layout_marginTop="8dp"
+                    android:alpha="0.92"
                     android:clipChildren="false"
                     android:clipToPadding="false"
                     android:overScrollMode="never"

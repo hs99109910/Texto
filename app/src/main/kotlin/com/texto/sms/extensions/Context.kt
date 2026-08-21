@@ -1132,6 +1132,44 @@ fun Context.deleteConversation(threadId: Long) {
     }
 }
 
+/**
+ * Soft-deletes a whole conversation: every message moves into the recycle bin instead of
+ * being removed from the telephony provider, exactly like a single-message delete does when
+ * [Config.useRecycleBin] is on. The conversation still drops off the main list and its
+ * notification channel/shortcut are cleared, but [restoreAllMessagesFromRecycleBinForConversation]
+ * can bring it back intact.
+ */
+fun Context.moveConversationToRecycleBin(threadId: Long) {
+    try {
+        messagesDB.getThreadMessages(threadId).forEach { moveMessageToRecycleBin(it.id) }
+        enforceRecycleBinThreadLimit()
+    } catch (e: Exception) {
+        showErrorToast(e)
+    }
+
+    conversationsDB.deleteThreadId(threadId)
+    MessagingCache.participantsCache.remove(threadId)
+
+    if (config.customNotifications.contains(threadId.toString())) {
+        config.removeCustomNotificationsByThreadId(threadId)
+        notificationManager.deleteNotificationChannel(threadId.toString())
+    }
+    if (shortcutHelper.getShortcut(threadId) != null) {
+        shortcutHelper.removeShortcutForThread(threadId)
+    }
+}
+
+/** Routes a user-initiated "delete this conversation" through the recycle bin when enabled;
+ *  callers that need a real permanent purge (emptying the recycle bin/archive) must keep
+ *  calling [deleteConversation] directly. */
+fun Context.deleteOrRecycleConversation(threadId: Long) {
+    if (config.useRecycleBin) {
+        moveConversationToRecycleBin(threadId)
+    } else {
+        deleteConversation(threadId)
+    }
+}
+
 fun Context.checkAndDeleteOldRecycleBinMessages(callback: (() -> Unit)? = null) {
     if (
         config.useRecycleBin
