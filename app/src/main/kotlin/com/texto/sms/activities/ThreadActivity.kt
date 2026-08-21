@@ -1687,6 +1687,41 @@ class ThreadActivity : SimpleActivity() {
         activeSubscriptions.forEachIndexed { index, info ->
             availableSIMCards.add(SIMCard(index + 1, info.subscriptionId, info.displayName.toString()))
         }
+
+        // The picker exists in the layout but was never shown or wired up, so currentSIMCardIndex
+        // stayed 0 and there was simply no way to choose a SIM. It sits immediately left of the
+        // send button, and only appears when there is actually a choice to make.
+        val simIcon = binding.messageHolder.threadSelectSimIcon
+        val simNumber = binding.messageHolder.threadSelectSimNumber
+        val number = participants.firstOrNull()?.phoneNumbers?.firstOrNull()?.normalizedNumber
+
+        if (availableSIMCards.size < 2 || number.isNullOrEmpty()) {
+            simIcon.beGone()
+            simNumber.beGone()
+            return
+        }
+
+        currentSIMCardIndex = config.getUseSIMIdAtNumber(number)
+            .coerceIn(0, availableSIMCards.lastIndex)
+        simIcon.beVisible()
+        simNumber.beVisible()
+
+        fun renderSelectedSIM() {
+            val card = availableSIMCards[currentSIMCardIndex]
+            simNumber.text = card.id.toString()
+            simNumber.setTextColor(config.inputBarTextColor)
+            simIcon.applyColorFilter(config.inputBarTextColor)
+        }
+
+        val pickNextSIM = android.view.View.OnClickListener {
+            currentSIMCardIndex = (currentSIMCardIndex + 1) % availableSIMCards.size
+            config.saveUseSIMIdAtNumber(number, currentSIMCardIndex)
+            renderSelectedSIM()
+            toast(availableSIMCards[currentSIMCardIndex].label)
+        }
+        simIcon.setOnClickListener(pickNextSIM)
+        simNumber.setOnClickListener(pickNextSIM)
+        renderSelectedSIM()
     }
 
     private fun setupMessagingEdgeToEdge() {

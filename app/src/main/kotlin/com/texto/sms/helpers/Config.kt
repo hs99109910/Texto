@@ -11,12 +11,18 @@ class Config(context: Context) : BaseConfig(context) {
         fun newInstance(context: Context) = Config(context)
         
         // FINAL ABSOLUTE DEFAULTS
-        /** Matches the frosted top bar's previous hard-coded 0.78 alpha. */
-        const val DEFAULT_GLASS_OPACITY = 78
+        /** Opaque enough that text scrolling under a bar stays out of the way of its title. */
+        const val DEFAULT_GLASS_OPACITY = 88
 
         val DEFAULT_DARK_GREY = Color.parseColor("#333333")
         val DEFAULT_LIGHT_GREY = Color.parseColor("#E0E0E0")
-        val DEFAULT_SENT_GREY = Color.parseColor("#D8D8D8") // Even lighter grey, very close to receiver bubble
+        val DEFAULT_SENT_GREY = Color.parseColor("#D8D8D8")
+
+        /** 20% darker than [DEFAULT_SENT_GREY], so received bubbles read as the heavier side. */
+        val DEFAULT_RECEIVED_GREY = Color.parseColor("#ADADAD")
+
+        /** Neutral card grey the Classic theme opens with. */
+        val DEFAULT_CARD_GREY = Color.parseColor("#EDEDED")
     }
 
     fun saveUseSIMIdAtNumber(number: String, SIMId: Int) {
@@ -175,7 +181,7 @@ class Config(context: Context) : BaseConfig(context) {
         set(contactSortingMode) = prefs.edit().putInt(CONTACT_SORTING_MODE, contactSortingMode).apply()
 
     var recentColor: Int
-        get() = prefs.getInt(RECENT_COLOR, Color.parseColor("#FFE4E1"))
+        get() = prefs.getInt(RECENT_COLOR, DEFAULT_CARD_GREY)
         set(recentColor) = prefs.edit().putInt(RECENT_COLOR, recentColor).apply()
 
     var uiScale: Float
@@ -295,7 +301,7 @@ class Config(context: Context) : BaseConfig(context) {
         set(sentBubbleColor) = prefs.edit().putInt(SENT_BUBBLE_COLOR, sentBubbleColor).apply()
 
     var receivedBubbleColor: Int
-        get() = prefs.getInt(RECEIVED_BUBBLE_COLOR, DEFAULT_LIGHT_GREY)
+        get() = prefs.getInt(RECEIVED_BUBBLE_COLOR, DEFAULT_RECEIVED_GREY)
         set(receivedBubbleColor) = prefs.edit().putInt(RECEIVED_BUBBLE_COLOR, receivedBubbleColor).apply()
 
     var sentBubbleTextColor: Int

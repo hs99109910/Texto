@@ -170,6 +170,19 @@ class SettingsActivity : SimpleActivity() {
         settingsResetDefaults.setTextColor(mainTextColor)
         settingsUiColorsLabel.setTextColor(mainTextColor)
         
+        // The row icons were pinned to colorPrimary, which is a fixed accent and reads badly
+        // against a light Classic background. Tint them with the theme's own text colour so
+        // they stay legible in every theme, kept a touch lighter than the label itself.
+        listOf(
+            settingsArchivedIcon, settingsRecycleBinIcon, settingsBlockedNumbersIcon,
+            settingsBlockedKeywordsIcon, settingsContactsOnlyFilterIcon, settingsAdsFilterIcon,
+            settingsDefaultFilterIcon, settingsAppThemeIcon, settingsAppearanceIcon,
+            settingsColorsIcon, settingsBubblesIcon
+        ).forEach {
+            it.applyColorFilter(mainTextColor)
+            it.alpha = 0.75f
+        }
+
         settingsAppearanceArrow.applyColorFilter(mainTextColor)
         settingsColorsArrow.applyColorFilter(mainTextColor)
         settingsBubblesArrow.applyColorFilter(mainTextColor)
