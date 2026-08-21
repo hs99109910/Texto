@@ -38,6 +38,7 @@ class SettingsActivity : SimpleActivity() {
 
         setupCustomization()
         setupUIScale()
+        setupGlassOpacity()
         setupAppTheme()
         setupBlockedNumbers()
         setupConversationScreens()
@@ -630,6 +631,17 @@ class SettingsActivity : SimpleActivity() {
         settingsUiScaleSlider.addOnChangeListener { _, value, fromUser ->
             if (fromUser) {
                 config.uiScale = value
+            }
+        }
+    }
+
+    private fun setupGlassOpacity() = binding.apply {
+        settingsGlassOpacitySlider.value = config.glassOpacity.toFloat()
+        settingsGlassOpacitySlider.addOnChangeListener { _, value, fromUser ->
+            if (fromUser) {
+                config.glassOpacity = value.toInt()
+                // Repaint straight away so the bar behind the slider previews the new value.
+                applyCustomColors()
             }
         }
     }

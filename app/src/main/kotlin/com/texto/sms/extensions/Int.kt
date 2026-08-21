@@ -6,6 +6,7 @@ import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import com.texto.sms.helpers.NovaFonts
 
 fun Int.withAlpha(alpha: Float): Int {
     val a = (alpha * 255).toInt().coerceIn(0, 255)
@@ -47,7 +48,14 @@ fun Int.getScaledDimen(context: Context): Int {
     return context.resources.getDimensionPixelSize(this)
 }
 
-fun Context.getCustomTypeface(): Typeface? = null
+/**
+ * Context-level counterpart to [com.texto.sms.activities.SimpleActivity.getCustomTypeface].
+ * This used to be a hard-coded `null`, so any caller whose receiver was a plain Context --
+ * dialogs and non-SimpleActivity views -- silently kept the system font while the rest of
+ * the app switched to the selected Persian face.
+ */
+fun Context.getCustomTypeface(): Typeface? =
+    NovaFonts.getTypeface(this, config.fontFamilyNova)
 
 fun View.updateAppFonts() {
     if (this is ViewGroup) {

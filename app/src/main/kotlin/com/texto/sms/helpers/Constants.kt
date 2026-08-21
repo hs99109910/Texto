@@ -45,6 +45,13 @@ const val USE_RECYCLE_BIN = "use_recycle_bin"
 
 /** How many distinct chats the recycle bin keeps before the oldest is dropped. */
 const val RECYCLE_BIN_THREAD_LIMIT = 20
+
+/**
+ * Upper bound when pulling a whole thread out of telephony to bin it. The normal read path
+ * uses [MESSAGES_LIMIT] (a screenful), which would silently leave older messages unbinned
+ * and the chat still visible, so deleting a chat reads far deeper.
+ */
+const val RECYCLE_BIN_MESSAGE_FETCH_LIMIT = 10000
 const val LAST_RECYCLE_BIN_CHECK = "last_recycle_bin_check"
 const val IS_RECYCLE_BIN = "is_recycle_bin"
 const val IS_ARCHIVE_AVAILABLE = "is_archive_available"
@@ -72,6 +79,7 @@ const val SHOW_ADS_FILTER = "show_ads_filter"
 const val ADS_FILTER = "ads_filter"
 const val DEFAULT_FILTER_ID = "default_filter_id"
 const val GLASS_THEME = "glass_theme"
+const val GLASS_OPACITY = "glass_opacity"
 
 // Customization constants
 const val TOP_BAR_COLOR = "top_bar_color"

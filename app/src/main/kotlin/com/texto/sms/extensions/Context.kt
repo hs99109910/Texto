@@ -56,6 +56,7 @@ import com.texto.sms.helpers.Config
 import com.texto.sms.helpers.FILE_SIZE_NONE
 import com.texto.sms.helpers.MAX_MESSAGE_LENGTH
 import com.texto.sms.helpers.MESSAGES_LIMIT
+import com.texto.sms.helpers.RECYCLE_BIN_MESSAGE_FETCH_LIMIT
 import com.texto.sms.helpers.RECYCLE_BIN_THREAD_LIMIT
 import com.texto.sms.helpers.MessagingCache
 import com.texto.sms.helpers.NotificationHelper
@@ -1135,27 +1136,61 @@ fun Context.deleteConversation(threadId: Long) {
 /**
  * Soft-deletes a whole conversation: every message moves into the recycle bin instead of
  * being removed from the telephony provider, exactly like a single-message delete does when
- * [Config.useRecycleBin] is on. The conversation still drops off the main list and its
- * notification channel/shortcut are cleared, but [restoreAllMessagesFromRecycleBinForConversation]
- * can bring it back intact.
+ * [Config.useRecycleBin] is on. [restoreAllMessagesFromRecycleBinForConversation] brings it
+ * back intact.
+ *
+ * The conversations row is deliberately kept. RecycleBinConversationsActivity finds binned
+ * chats through [ConversationsDao.getAllWithMessagesInRecycleBin], which joins conversations
+ * against their binned messages -- dropping the row here made the chat disappear from the
+ * main list *and* never show up in the bin. The main and archived lists instead filter out
+ * threads whose cached messages are all recycled.
  */
 fun Context.moveConversationToRecycleBin(threadId: Long) {
     try {
-        messagesDB.getThreadMessages(threadId).forEach { moveMessageToRecycleBin(it.id) }
+        // messagesDB only caches what a thread has actually shown, while the bin's lookup
+        // needs rows in `messages` to join against. Read the whole thread from telephony so
+        // a chat that was never opened -- or one longer than a cached screenful -- is binned
+        // in full rather than partly, which would leave it visible or let it come back on
+        // the next sync.
+        val cachedIds = messagesDB.getThreadMessages(threadId).map { it.id }.toSet()
+        val fetched = getMessages(
+            threadId = threadId,
+            includeScheduledMessages = false,
+            limit = RECYCLE_BIN_MESSAGE_FETCH_LIMIT
+        )
+
+        // Only genuinely new rows are inserted: re-inserting a cached message would REPLACE
+        // it and drop app-only state such as its reaction.
+        val uncached = fetched.filter { it.id !in cachedIds }
+        if (uncached.isNotEmpty()) {
+            messagesDB.insertMessages(*uncached.toTypedArray())
+        }
+
+        (cachedIds + fetched.map { it.id }).forEach { moveMessageToRecycleBin(it) }
         enforceRecycleBinThreadLimit()
     } catch (e: Exception) {
         showErrorToast(e)
     }
 
-    conversationsDB.deleteThreadId(threadId)
     MessagingCache.participantsCache.remove(threadId)
-
-    if (config.customNotifications.contains(threadId.toString())) {
-        config.removeCustomNotificationsByThreadId(threadId)
-        notificationManager.deleteNotificationChannel(threadId.toString())
-    }
     if (shortcutHelper.getShortcut(threadId) != null) {
         shortcutHelper.removeShortcutForThread(threadId)
+    }
+}
+
+/**
+ * Drops conversation rows that no longer have any cached message, so a chat whose messages
+ * were just purged for good does not linger as an empty row. The main list treats "no cached
+ * messages" as "not enough information to hide this", which is right for a thread that was
+ * never opened but wrong for one that has just been emptied.
+ */
+private fun Context.deleteConversationsWithoutMessages(threadIds: Collection<Long>) {
+    threadIds.distinct().forEach { threadId ->
+        runCatching {
+            if (messagesDB.getThreadMessages(threadId).isEmpty()) {
+                conversationsDB.deleteThreadId(threadId)
+            }
+        }
     }
 }
 
@@ -1195,6 +1230,7 @@ fun Context.emptyMessagesRecycleBin() {
     for (message in messages) {
         deleteMessage(message.id, message.isMMS)
     }
+    deleteConversationsWithoutMessages(messages.map { it.threadId })
 }
 
 fun Context.emptyMessagesRecycleBinForConversation(threadId: Long) {
@@ -1202,6 +1238,7 @@ fun Context.emptyMessagesRecycleBinForConversation(threadId: Long) {
     for (message in messages) {
         deleteMessage(message.id, message.isMMS)
     }
+    deleteConversationsWithoutMessages(listOf(threadId))
 }
 
 fun Context.restoreAllMessagesFromRecycleBinForConversation(threadId: Long) {
@@ -1218,11 +1255,13 @@ fun Context.enforceRecycleBinThreadLimit() {
     try {
         val threadIds = messagesDB.getRecycleBinThreadIdsNewestFirst()
         if (threadIds.size <= RECYCLE_BIN_THREAD_LIMIT) return
-        threadIds.drop(RECYCLE_BIN_THREAD_LIMIT).forEach { threadId ->
+        val evicted = threadIds.drop(RECYCLE_BIN_THREAD_LIMIT)
+        evicted.forEach { threadId ->
             messagesDB.getThreadMessagesFromRecycleBin(threadId).forEach { message ->
                 deleteMessage(message.id, message.isMMS)
             }
         }
+        deleteConversationsWithoutMessages(evicted)
     } catch (_: Exception) {
     }
 }

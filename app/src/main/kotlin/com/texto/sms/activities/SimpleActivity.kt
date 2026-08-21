@@ -179,11 +179,14 @@ open class SimpleActivity : BaseSimpleActivity() {
             // behind the status bar either: its background is inset by the status-bar height
             // so the clock, battery and signal icons keep a clear strip of their own above it.
             val allCorners = FloatArray(8) { barRadius }
+            // Settings -> "شفافیت نوارهای شیشه‌ای" drives every frosted bar, so the top bar,
+            // the filter chips row and the floating nav pill stay visually in step.
+            val glassOpacity = config.glassOpacity / 100f
             val barShape = if (useNewUi) {
                 NovaGlass.panel(
                     tint = barColor,
                     cornerRadii = allCorners,
-                    opacity = 0.78f,
+                    opacity = glassOpacity,
                     strokeWidthPx = density.toInt().coerceAtLeast(1)
                 )
             } else {
@@ -283,7 +286,7 @@ open class SimpleActivity : BaseSimpleActivity() {
                         view = filterBar,
                         tint = barColor,
                         cornerRadius = filterRadius,
-                        opacity = 0.62f,
+                        opacity = glassOpacity,
                         strokeWidthPx = density.toInt().coerceAtLeast(1)
                     )
                 } else if (useNewUi) {
@@ -348,9 +351,14 @@ open class SimpleActivity : BaseSimpleActivity() {
                 clearGlideTarget(inputBar)
                 inputBar.clipToOutline = false
                 if (config.glassTheme) {
-                    // The floating bar can be glassier than the typing bar, whose text has
-                    // to stay crisp while composing.
-                    val opacity = if (inputBar.id == R.id.nova_nav_container) 0.62f else 0.85f
+                    // The floating nav bar follows the user's glass setting alongside the top
+                    // bar and filter row; the typing bar keeps its own fixed value because its
+                    // text has to stay crisp while composing.
+                    val opacity = if (inputBar.id == R.id.nova_nav_container) {
+                        config.glassOpacity / 100f
+                    } else {
+                        0.85f
+                    }
                     NovaGlass.applyPanel(
                         view = inputBar,
                         tint = inputBgColor,

@@ -11,6 +11,9 @@ class Config(context: Context) : BaseConfig(context) {
         fun newInstance(context: Context) = Config(context)
         
         // FINAL ABSOLUTE DEFAULTS
+        /** Matches the frosted top bar's previous hard-coded 0.78 alpha. */
+        const val DEFAULT_GLASS_OPACITY = 78
+
         val DEFAULT_DARK_GREY = Color.parseColor("#333333")
         val DEFAULT_LIGHT_GREY = Color.parseColor("#E0E0E0")
         val DEFAULT_SENT_GREY = Color.parseColor("#D8D8D8") // Even lighter grey, very close to receiver bubble
@@ -252,8 +255,15 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(GLASS_THEME, true)
         set(glassTheme) = prefs.edit().putBoolean(GLASS_THEME, glassTheme).apply()
 
+    /** How opaque the frosted surfaces are, as a percentage. Lower reads as more see-through. */
+    var glassOpacity: Int
+        get() = prefs.getInt(GLASS_OPACITY, DEFAULT_GLASS_OPACITY).coerceIn(20, 100)
+        set(glassOpacity) = prefs.edit().putInt(GLASS_OPACITY, glassOpacity).apply()
+
     var fontFamilyNova: Int
-        get() = prefs.getInt(FONT_FAMILY_NOVA, 0) // Default to System
+        // B Nazanin is the app's default face; NovaFonts falls back to the system font on
+        // its own if the asset is ever missing, so this is safe even without the file.
+        get() = prefs.getInt(FONT_FAMILY_NOVA, NovaFonts.FONT_B_NAZANIN)
         set(fontFamilyNova) = prefs.edit().putInt(FONT_FAMILY_NOVA, fontFamilyNova).apply()
 
     var topBarColor: Int

@@ -202,6 +202,7 @@
     <string name="settings_main_background">پس‌زمینه اصلی</string>
     <string name="settings_input_bar_background">نوار جستجو و نوشتن</string>
     <string name="settings_ui_scale">مقیاس رابط</string>
+    <string name="settings_glass_opacity">شفافیت نوارهای شیشه‌ای</string>
     <string name="settings_font_size">اندازه فونت</string>
     <string name="settings_font">فونت</string>
     <string name="settings_colors">رنگ‌ها</string>

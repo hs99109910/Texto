@@ -12,14 +12,22 @@ interface ConversationsDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertOrUpdate(conversation: Conversation): Long
 
-    @Query("SELECT (SELECT body FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NULL AND messages.thread_id = conversations.thread_id ORDER BY messages.date DESC LIMIT 1) as new_snippet, * FROM conversations WHERE archived = 0 ORDER BY date DESC")
+    /**
+     * `HAS_LIVE_MESSAGES` keeps a chat out of the list once every message it has cached sits
+     * in the recycle bin -- that is what makes "delete chat" actually move the whole thread
+     * to the bin instead of leaving a stripped, snippet-less row behind. A thread with no
+     * cached messages at all is still shown: messagesDB only caches threads that have been
+     * opened, so "nothing cached" means "unknown", not "deleted".
+     */
+    @Query("SELECT (SELECT body FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NULL AND messages.thread_id = conversations.thread_id ORDER BY messages.date DESC LIMIT 1) as new_snippet, * FROM conversations WHERE archived = 0 AND ((SELECT COUNT(*) FROM messages WHERE messages.thread_id = conversations.thread_id) = 0 OR EXISTS (SELECT 1 FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NULL AND messages.thread_id = conversations.thread_id)) ORDER BY date DESC")
     fun getNonArchivedWithLatestSnippet(): List<ConversationWithSnippetOverride>
 
     fun getNonArchived(): List<Conversation> {
         return getNonArchivedWithLatestSnippet().map { it.toConversation() }
     }
 
-    @Query("SELECT (SELECT body FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NULL AND messages.thread_id = conversations.thread_id ORDER BY messages.date DESC LIMIT 1) as new_snippet, * FROM conversations WHERE archived = 1 ORDER BY date DESC")
+    /** Same fully-recycled filter as [getNonArchivedWithLatestSnippet], for archived chats. */
+    @Query("SELECT (SELECT body FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NULL AND messages.thread_id = conversations.thread_id ORDER BY messages.date DESC LIMIT 1) as new_snippet, * FROM conversations WHERE archived = 1 AND ((SELECT COUNT(*) FROM messages WHERE messages.thread_id = conversations.thread_id) = 0 OR EXISTS (SELECT 1 FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NULL AND messages.thread_id = conversations.thread_id)) ORDER BY date DESC")
     fun getAllArchivedWithLatestSnippet(): List<ConversationWithSnippetOverride>
 
     fun getAllArchived(): List<Conversation> {

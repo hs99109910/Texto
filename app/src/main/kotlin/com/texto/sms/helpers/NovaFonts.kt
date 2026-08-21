@@ -11,6 +11,7 @@ object NovaFonts {
 
     const val FONT_B_KOODAK = 6
     const val FONT_B_NAZANIN = 7
+    const val FONT_B_KAMRAN = 8
     const val FONT_IRAN_NASTALIQ = 9
 
     private const val ASSET_DIR = "fonts"
@@ -19,6 +20,7 @@ object NovaFonts {
     private val assetNames = mapOf(
         FONT_B_KOODAK to listOf("BKoodak.ttf", "B Koodak.ttf", "b_koodak.ttf", "BKoodak.otf"),
         FONT_B_NAZANIN to listOf("BNazanin.ttf", "B Nazanin.ttf", "b_nazanin.ttf", "BNazanin.otf"),
+        FONT_B_KAMRAN to listOf("BKamran.ttf", "B Kamran.ttf", "b_kamran.ttf", "BKamran.otf"),
         FONT_IRAN_NASTALIQ to listOf(
             "IranNastaliq.ttf", "Iran Nastaliq.ttf", "iran_nastaliq.ttf", "IranNastaliq.otf"
         )
@@ -27,6 +29,7 @@ object NovaFonts {
     val displayNames = mapOf(
         FONT_B_KOODAK to "B Koodak (ب کودک)",
         FONT_B_NAZANIN to "B Nazanin (ب نازنین)",
+        FONT_B_KAMRAN to "B Kamran (ب کامران)",
         FONT_IRAN_NASTALIQ to "Iran Nastaliq (ایران نستعلیق)"
     )
 
@@ -45,8 +48,13 @@ object NovaFonts {
             emptyList()
         }
 
-        val fileName = assetNames[id]?.firstOrNull { candidate ->
-            available.any { it.equals(candidate, ignoreCase = true) }
+        // Match case-insensitively but open the name exactly as it appears in assets:
+        // AssetManager itself is case-sensitive, so resolving "BNazanin.TTF" and then asking
+        // for the candidate spelling "BNazanin.ttf" threw and silently fell back to the
+        // system font -- which is why B Nazanin never applied while the lower-case
+        // BKoodak.ttf and IranNastaliq.ttf did.
+        val fileName = assetNames[id]?.firstNotNullOfOrNull { candidate ->
+            available.firstOrNull { it.equals(candidate, ignoreCase = true) }
         }
 
         val typeface = if (fileName == null) {
