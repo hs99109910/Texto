@@ -53,6 +53,14 @@ class App : FossifyApp() {
             AppThemes.apply(config, AppThemes.byId(AppThemes.AURORA))
         }
 
+        // Filters used to carry a keyword list. The field is gone from the model and the
+        // decoder ignores unknown keys, so old filters still load -- but the dead "keywords"
+        // entry would otherwise sit in stored JSON for good. Reading and writing the list
+        // back once re-encodes it through the current model and drops it.
+        if (config.customFilters.isNotEmpty()) {
+            config.customFilters = config.customFilters
+        }
+
         ensureBackgroundThread {
             rescheduleAllScheduledMessages()
         }

@@ -604,7 +604,7 @@ class SettingsActivity : SimpleActivity() {
     }
 
     /**
-     * Archive, recycle bin and the keyword block list. They used to hang off the main
+     * Archive and the recycle bin. They used to hang off the main
      * screen's overflow menu only, which meant the recycle bin vanished entirely whenever
      * its own setting was off and left no way to reach what was already in it.
      */

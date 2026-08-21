@@ -760,7 +760,7 @@ class MainActivity : SimpleActivity() {
         if (config.isArchiveAvailable) {
             items.add(R.id.show_archived to getString(R.string.show_archived_conversations))
         }
-        // Recycle bin, blocked numbers and blocked keywords are reached from Settings now,
+        // Recycle bin and blocked numbers are reached from Settings now,
         // where they sit together under one heading instead of being scattered here.
         items.add(R.id.settings to getString(org.fossify.commons.R.string.settings))
         items.add(R.id.about to getString(org.fossify.commons.R.string.about))

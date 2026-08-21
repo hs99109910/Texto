@@ -41,7 +41,19 @@ class EditFilterDialog(
     init {
         val binding = DialogEditFilterBinding.inflate(activity.layoutInflater).apply {
             existing?.let { filterNameEditText.setText(it.label) }
-            filterPickSenders.setOnClickListener { chooseSenderSource(this) }
+            // Both sources are offered as visible rows rather than behind an extra
+            // "where from?" prompt, so the choice is obvious without a detour.
+            filterPickFromChats.setOnClickListener {
+                showSenderPicker(this, pickableSenders, R.string.no_conversations_to_pick)
+            }
+            filterPickFromContacts.setOnClickListener {
+                showSenderPicker(this, pickableContacts, R.string.no_contacts_to_pick)
+            }
+            // The dialog can render light or dark depending on the theme, so take the tint
+            // from text that is already correct for it rather than hard-coding a colour.
+            val iconTint = filterSourcesCaption.currentTextColor
+            filterPickFromChatsIcon.setColorFilter(iconTint)
+            filterPickFromContactsIcon.setColorFilter(iconTint)
             updateSenderSummary(this)
         }
 
@@ -103,30 +115,6 @@ class EditFilterDialog(
         } else {
             chosenLabels.joinToString("، ")
         }
-    }
-
-    /**
-     * Filters can be built from two different sources, so ask which one first rather than
-     * silently offering only the chat list.
-     */
-    private fun chooseSenderSource(binding: DialogEditFilterBinding) {
-        val options = arrayOf(
-            activity.getString(R.string.pick_from_chats),
-            activity.getString(R.string.pick_from_contacts)
-        )
-        AlertDialog.Builder(activity)
-            .setTitle(R.string.pick_senders)
-            .setItems(options) { _, which ->
-                val source = if (which == 0) pickableSenders else pickableContacts
-                val emptyMessage = if (which == 0) {
-                    R.string.no_conversations_to_pick
-                } else {
-                    R.string.no_contacts_to_pick
-                }
-                showSenderPicker(binding, source, emptyMessage)
-            }
-            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
-            .show()
     }
 
     /** Multi-choice, search-filterable list of one source, pre-ticked with what is saved. */

@@ -155,7 +155,6 @@
     <string name="edit_filter">ویرایش فیلتر</string>
     <string name="filter_name">نام فیلتر</string>
     <string name="filter_name_required">نام فیلتر را وارد کنید</string>
-    <string name="filter_keywords_required">حداقل یک کلمه کلیدی وارد کنید</string>
     <string name="pick_senders">انتخاب از چت‌ها</string>
     <string name="no_senders_picked">هیچ فرستنده‌ای انتخاب نشده</string>
     <string name="no_conversations_to_pick">چتی برای انتخاب وجود ندارد</string>
