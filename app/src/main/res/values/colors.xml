@@ -6,4 +6,5 @@
 
     <color name="nova_dark_grey">#333333</color>
     <color name="nova_light_grey">#E0E0E0</color>
+    <color name="nova_dialog_bg">#1E1E22</color>
 </resources>

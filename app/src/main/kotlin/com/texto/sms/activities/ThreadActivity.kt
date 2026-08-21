@@ -1436,12 +1436,27 @@ class ThreadActivity : SimpleActivity() {
     }
     private fun addContactAttachment(data: Uri) {}
 
+    /**
+     * Slot number of the SIM a message went through, for the date separator's SIM badge.
+     * ThreadAdapter has always been ready to draw this, but getThreadItems() passed a
+     * hard-coded "" so the badge was blank on every message, incoming ones included.
+     * Empty on single-SIM devices, where the badge would say nothing useful.
+     */
+    private fun simLabelFor(message: Message): String {
+        if (availableSIMCards.size < 2) return ""
+        return availableSIMCards
+            .firstOrNull { it.subscriptionId == message.subscriptionId }
+            ?.id
+            ?.toString()
+            .orEmpty()
+    }
+
     private fun getThreadItems(): ArrayList<ThreadItem> {
         val items = ArrayList<ThreadItem>()
         var prevDateTime = 0L
         messages.forEach { message ->
             if (message.date - prevDateTime > MIN_DATE_TIME_DIFF_SECS) {
-                items.add(ThreadDateTime(message.date, ""))
+                items.add(ThreadDateTime(message.date, simLabelFor(message)))
                 prevDateTime = message.date.toLong()
             }
             items.add(message)
