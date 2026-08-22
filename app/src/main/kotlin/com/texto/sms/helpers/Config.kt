@@ -18,11 +18,20 @@ class Config(context: Context) : BaseConfig(context) {
         val DEFAULT_LIGHT_GREY = Color.parseColor("#E0E0E0")
         val DEFAULT_SENT_GREY = Color.parseColor("#D8D8D8")
 
-        /** 20% darker than [DEFAULT_SENT_GREY], so received bubbles read as the heavier side. */
-        val DEFAULT_RECEIVED_GREY = Color.parseColor("#ADADAD")
+        /**
+         * Received bubbles are the heavier side in Classic. Darkened a further 30% from the
+         * earlier #ADADAD so they separate clearly from the light #D8D8D8 sent bubble.
+         */
+        val DEFAULT_RECEIVED_GREY = Color.parseColor("#797979")
 
         /** Neutral card grey the Classic theme opens with. */
         val DEFAULT_CARD_GREY = Color.parseColor("#EDEDED")
+
+        /** Slot 0 and slot 1 badge colours; deliberately far apart on the hue wheel. */
+        val DEFAULT_SIM_COLORS = listOf(
+            Color.parseColor("#2F6BFF"),
+            Color.parseColor("#FF7A29")
+        )
     }
 
     fun saveUseSIMIdAtNumber(number: String, SIMId: Int) {
@@ -30,6 +39,18 @@ class Config(context: Context) : BaseConfig(context) {
     }
 
     fun getUseSIMIdAtNumber(number: String) = prefs.getInt(USE_SIM_ID_PREFIX + number, 0)
+
+    /**
+     * Colour standing in for a SIM slot. A tinted badge is far easier to read at a glance
+     * than a tiny digit, so the slot number is not drawn at all any more -- the colour is
+     * the identifier, and the user picks it.
+     */
+    fun getSimColor(slot: Int): Int =
+        prefs.getInt(SIM_COLOR_PREFIX + slot, DEFAULT_SIM_COLORS.getOrElse(slot) { DEFAULT_SIM_COLORS[0] })
+
+    fun setSimColor(slot: Int, color: Int) {
+        prefs.edit().putInt(SIM_COLOR_PREFIX + slot, color).apply()
+    }
 
     var showCharacterCounter: Boolean
         get() = prefs.getBoolean(SHOW_CHARACTER_COUNTER, false)

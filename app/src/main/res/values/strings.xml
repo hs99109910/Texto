@@ -191,6 +191,8 @@
     <string name="settings_input_bar_background">نوار جستجو و نوشتن</string>
     <string name="settings_ui_scale">مقیاس رابط</string>
     <string name="settings_glass_opacity">شفافیت نوارهای شیشه‌ای</string>
+    <string name="settings_sim1_color">رنگ سیم‌کارت ۱</string>
+    <string name="settings_sim2_color">رنگ سیم‌کارت ۲</string>
     <string name="search">جستجو</string>
     <string name="pick_from_chats">از فهرست گفتگوها</string>
     <string name="pick_from_contacts">از مخاطبین</string>

@@ -857,17 +857,16 @@ class ThreadAdapter(
             }
 
             threadSimIcon.beVisibleIf(hasMultipleSIMCards)
-            threadSimNumber.beVisibleIf(hasMultipleSIMCards)
+            // The slot digit is gone: at this size it was unreadable and it shared the
+            // icon's colour anyway. The badge is now half as big and simply carries the
+            // colour the user assigned to that SIM in Settings.
+            threadSimNumber.beGone()
             if (hasMultipleSIMCards) {
-                threadSimNumber.text = dateTime.simID
-                val contrastColor = if (dateTimeColor == 0 || dateTimeColor == Color.TRANSPARENT) Color.BLACK else dateTimeColor.getContrastColor()
-                threadSimNumber.setTextColor(contrastColor)
-                threadSimIcon.applyColorFilter(dateTimeColor)
-                threadSimNumber.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.6f)
-                
+                val slot = dateTime.simID.toIntOrNull()?.minus(1)?.coerceAtLeast(0) ?: 0
+                threadSimIcon.applyColorFilter(activity.config.getSimColor(slot))
                 threadSimIcon.updateLayoutParams {
-                    width = (fontSize * 1.2f).toInt()
-                    height = (fontSize * 1.2f).toInt()
+                    width = (fontSize * 0.6f).toInt()
+                    height = (fontSize * 0.6f).toInt()
                 }
             }
         }

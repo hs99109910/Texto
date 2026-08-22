@@ -78,6 +78,10 @@ const val ADS_FILTER = "ads_filter"
 const val DEFAULT_FILTER_ID = "default_filter_id"
 const val GLASS_THEME = "glass_theme"
 const val GLASS_OPACITY = "glass_opacity"
+const val SIM_COLOR_PREFIX = "sim_color_"
+
+/** Half the old badge: the SIM marker only has to carry a colour now, not a readable digit. */
+const val SIM_BADGE_SIZE_DP = 14
 
 // Customization constants
 const val TOP_BAR_COLOR = "top_bar_color"

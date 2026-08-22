@@ -384,6 +384,26 @@ class SettingsActivity : SimpleActivity() {
             }
         }
 
+        // SIM badges are identified by colour rather than a slot digit, so each slot needs
+        // a colour the user can choose.
+        listOf(
+            0 to (settingsSim1ColorHolder to settingsSim1ColorPreview),
+            1 to (settingsSim2ColorHolder to settingsSim2ColorPreview)
+        ).forEach { (slot, views) ->
+            val (holder, preview) = views
+            updatePreview(preview, config.getSimColor(slot))
+            holder.setOnClickListener {
+                org.fossify.commons.dialogs.ColorPickerDialog(
+                    this@SettingsActivity, config.getSimColor(slot)
+                ) { wasPositive, color ->
+                    if (wasPositive) {
+                        config.setSimColor(slot, color)
+                        updatePreview(preview, color)
+                    }
+                }
+            }
+        }
+
         settingsInputBarTextColorHolder.setOnClickListener {
             org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.inputBarTextColor) { wasPositive, color ->
                 if (wasPositive) {

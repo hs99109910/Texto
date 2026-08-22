@@ -34,6 +34,7 @@ object AppThemes {
 
     const val CLASSIC = 0
     const val AURORA = 1
+    const val AURORA_LIGHT = 2
 
     /** The look the app shipped with: light background, pastel pill cards. */
     private val classic = AppTheme(
@@ -50,7 +51,8 @@ object AppThemes {
         sentBubbleColor = Config.DEFAULT_SENT_GREY,
         sentBubbleTextColor = Color.BLACK,
         receivedBubbleColor = Config.DEFAULT_RECEIVED_GREY,
-        receivedBubbleTextColor = Color.BLACK,
+        // The darker received bubble needs light text to stay readable.
+        receivedBubbleTextColor = Color.WHITE,
         cardCornerRadiusDp = 500,
         glass = true
     )
@@ -75,7 +77,30 @@ object AppThemes {
         glass = true
     )
 
-    val all = listOf(classic, aurora)
+    /**
+     * Aurora's shape and accent on a light ground: the same frosted cards, 24dp corners and
+     * blue sent bubble, but a pale blue-lavender gradient with dark text instead of navy.
+     */
+    private val auroraLight = AppTheme(
+        id = AURORA_LIGHT,
+        label = "آورورا روشن",
+        topBarColor = Color.parseColor("#F4F6FC"),
+        topBarTextColor = Color.parseColor("#10162B"),
+        mainTextColor = Color.parseColor("#10162B"),
+        mainBackgroundColor = Color.parseColor("#EEF1F8"),
+        backgroundGradient = Color.parseColor("#F5F7FD") to Color.parseColor("#DDE4F6"),
+        cardColor = Color.parseColor("#FFFFFF"),
+        inputBarBackgroundColor = Color.parseColor("#FFFFFF"),
+        inputBarTextColor = Color.parseColor("#10162B"),
+        sentBubbleColor = Color.parseColor("#2F6BFF"),
+        sentBubbleTextColor = Color.WHITE,
+        receivedBubbleColor = Color.parseColor("#E3E9F7"),
+        receivedBubbleTextColor = Color.parseColor("#10162B"),
+        cardCornerRadiusDp = 24,
+        glass = true
+    )
+
+    val all = listOf(classic, aurora, auroraLight)
 
     fun byId(id: Int) = all.firstOrNull { it.id == id } ?: classic
 

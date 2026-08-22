@@ -1688,39 +1688,44 @@ class ThreadActivity : SimpleActivity() {
             availableSIMCards.add(SIMCard(index + 1, info.subscriptionId, info.displayName.toString()))
         }
 
-        // The picker exists in the layout but was never shown or wired up, so currentSIMCardIndex
-        // stayed 0 and there was simply no way to choose a SIM. It sits immediately left of the
-        // send button, and only appears when there is actually a choice to make.
+        // Half the previous size and identified by colour rather than a tiny digit: the
+        // slot number was too small to read, so the badge is now just a tinted SIM glyph
+        // whose colour the user picks in Settings.
         val simIcon = binding.messageHolder.threadSelectSimIcon
         val simNumber = binding.messageHolder.threadSelectSimNumber
         val number = participants.firstOrNull()?.phoneNumbers?.firstOrNull()?.normalizedNumber
 
+        simNumber.beGone()
         if (availableSIMCards.size < 2 || number.isNullOrEmpty()) {
             simIcon.beGone()
-            simNumber.beGone()
             return
         }
 
         currentSIMCardIndex = config.getUseSIMIdAtNumber(number)
             .coerceIn(0, availableSIMCards.lastIndex)
         simIcon.beVisible()
-        simNumber.beVisible()
+        simIcon.updateLayoutParams {
+            width = SIM_BADGE_SIZE_DP.getScaledPx()
+            height = SIM_BADGE_SIZE_DP.getScaledPx()
+        }
+        simIcon.setPadding(0, 0, 0, 0)
 
         fun renderSelectedSIM() {
-            val card = availableSIMCards[currentSIMCardIndex]
-            simNumber.text = card.id.toString()
-            simNumber.setTextColor(config.inputBarTextColor)
-            simIcon.applyColorFilter(config.inputBarTextColor)
+            simIcon.applyColorFilter(config.getSimColor(currentSIMCardIndex))
         }
 
-        val pickNextSIM = android.view.View.OnClickListener {
-            currentSIMCardIndex = (currentSIMCardIndex + 1) % availableSIMCards.size
-            config.saveUseSIMIdAtNumber(number, currentSIMCardIndex)
-            renderSelectedSIM()
-            toast(availableSIMCards[currentSIMCardIndex].label)
+        // Tapping opens the list of SIMs to choose from; it used to silently cycle to the
+        // next one, which gave no indication of what was picked or what else was available.
+        simIcon.setOnClickListener {
+            val items = availableSIMCards.mapIndexed { index, card ->
+                org.fossify.commons.models.RadioItem(index, card.label)
+            } as ArrayList<org.fossify.commons.models.RadioItem>
+            org.fossify.commons.dialogs.RadioGroupDialog(this, items, currentSIMCardIndex) {
+                currentSIMCardIndex = (it as Int).coerceIn(0, availableSIMCards.lastIndex)
+                config.saveUseSIMIdAtNumber(number, currentSIMCardIndex)
+                renderSelectedSIM()
+            }
         }
-        simIcon.setOnClickListener(pickNextSIM)
-        simNumber.setOnClickListener(pickNextSIM)
         renderSelectedSIM()
     }
 

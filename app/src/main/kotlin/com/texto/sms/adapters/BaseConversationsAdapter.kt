@@ -719,10 +719,12 @@ abstract class BaseConversationsAdapter(
                 true
             }
 
-            // Tapping the avatar toggles selection for that single card.
+            // A plain tap never starts selection -- only a long-press does. Tapping the
+            // avatar used to call viewLongClicked() and drop the list into selection mode,
+            // so opening a chat by aiming slightly left of its name selected it instead.
             recentImage.setOnClickListener {
-                if (!isSelectionModeActive()) holder.viewLongClicked()
-                else holder.viewClicked(conversation)
+                if (System.currentTimeMillis() - lastDragTime < 500) return@setOnClickListener
+                holder.viewClicked(conversation)
                 notifyItemChanged(position)
                 updateCustomSelectionBarNow()
             }
