@@ -80,8 +80,11 @@ const val GLASS_THEME = "glass_theme"
 const val GLASS_OPACITY = "glass_opacity"
 const val SIM_COLOR_PREFIX = "sim_color_"
 
-/** Half the old badge: the SIM marker only has to carry a colour now, not a readable digit. */
-const val SIM_BADGE_SIZE_DP = 14
+/** 1.5x the original half-size badge, so the SIM marker stays easy to tap and see. */
+const val SIM_BADGE_SIZE_DP = 21
+
+/** Small nudge toward the message field so the enlarged badge doesn't crowd the send button. */
+const val SIM_BADGE_LEFT_SHIFT_DP = 3
 
 // Customization constants
 const val TOP_BAR_COLOR = "top_bar_color"

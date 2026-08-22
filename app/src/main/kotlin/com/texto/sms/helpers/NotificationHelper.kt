@@ -26,7 +26,6 @@ import com.texto.sms.messaging.isShortCodeWithLetters
 import com.texto.sms.receivers.CopyCodeReceiver
 import com.texto.sms.receivers.DeleteSmsReceiver
 import com.texto.sms.receivers.DirectReplyReceiver
-import com.texto.sms.receivers.MarkAsReadReceiver
 
 class NotificationHelper(private val context: Context) {
 
@@ -64,18 +63,6 @@ class NotificationHelper(private val context: Context) {
                 context,
                 notificationId,
                 contentIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
-            )
-
-        val markAsReadIntent = Intent(context, MarkAsReadReceiver::class.java).apply {
-            action = MARK_AS_READ
-            putExtra(THREAD_ID, threadId)
-        }
-        val markAsReadPendingIntent =
-            PendingIntent.getBroadcast(
-                context,
-                notificationId,
-                markAsReadIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
             )
 
@@ -185,12 +172,6 @@ class NotificationHelper(private val context: Context) {
             builder.addAction(copyCodeAction)
         }
 
-        builder.addAction(
-            org.fossify.commons.R.drawable.ic_check_vector,
-            context.getString(R.string.mark_as_read),
-            markAsReadPendingIntent
-        )
-            .setChannelId(notificationChannelId)
         builder.addAction(
             org.fossify.commons.R.drawable.ic_delete_vector,
             context.getString(org.fossify.commons.R.string.delete),

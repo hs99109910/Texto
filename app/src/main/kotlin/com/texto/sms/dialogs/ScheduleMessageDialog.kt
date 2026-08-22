@@ -1,7 +1,5 @@
 package com.texto.sms.dialogs
 
-import android.app.DatePickerDialog
-import android.app.DatePickerDialog.OnDateSetListener
 import android.app.TimePickerDialog
 import android.app.TimePickerDialog.OnTimeSetListener
 import android.text.format.DateFormat
@@ -19,8 +17,8 @@ import org.fossify.commons.extensions.setupDialogStuff
 import org.fossify.commons.extensions.toast
 import com.texto.sms.R
 import com.texto.sms.databinding.ScheduleMessageDialogBinding
-import com.texto.sms.extensions.config
 import com.texto.sms.extensions.roundToClosestMultipleOf
+import com.texto.sms.extensions.toJalaliDateText
 import org.joda.time.DateTime
 import java.util.Calendar
 
@@ -61,9 +59,8 @@ class ScheduleMessageDialog(
     }
 
     private fun updateTexts(dateTime: DateTime) {
-        val dateFormat = activity.config.dateFormat
         val timeFormat = activity.getTimeFormat()
-        binding.editDate.text = dateTime.toString(dateFormat)
+        binding.editDate.text = dateTime.toJalaliDateText()
         binding.editTime.text = dateTime.toString(timeFormat)
     }
 
@@ -95,28 +92,11 @@ class ScheduleMessageDialog(
     }
 
     private fun showDatePicker() {
-        val year = dateTime?.year ?: calendar.get(Calendar.YEAR)
-        val monthOfYear = dateTime?.monthOfYear?.minus(1) ?: calendar.get(Calendar.MONTH)
-        val dayOfMonth = dateTime?.dayOfMonth ?: calendar.get(Calendar.DAY_OF_MONTH)
-
-        val dateSetListener = OnDateSetListener { _, y, m, d -> dateSet(y, m, d) }
-        DatePickerDialog(
-            activity,
-            activity.getDatePickerDialogTheme(),
-            dateSetListener,
-            year,
-            monthOfYear,
-            dayOfMonth
-        ).apply {
-            datePicker.minDate = System.currentTimeMillis()
-            show()
-            getButton(AlertDialog.BUTTON_NEGATIVE).apply {
-                text = activity.getString(org.fossify.commons.R.string.cancel)
-                setOnClickListener {
-                    dismiss()
-                }
-            }
-        }
+        PersianDatePickerDialog(
+            activity = activity,
+            initialDateTime = dateTime ?: DateTime.now(),
+            minDateTime = DateTime.now()
+        ) { y, m, d -> dateSet(y, m, d) }
     }
 
     private fun showTimePicker() {

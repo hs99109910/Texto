@@ -45,6 +45,9 @@
     <string name="schedule_send_warning">گوشی را روشن نگه دارید و مطمئن شوید چیزی برنامه را در پس‌زمینه نمی‌بندد.</string>
     <string name="update_message">به‌روزرسانی پیام</string>
     <string name="send_now">ارسال فوری</string>
+    <string name="select_date">انتخاب تاریخ</string>
+    <string name="day_after_tomorrow">پس‌فردا</string>
+    <string name="or_pick_a_custom_date">یا یک تاریخ دیگر انتخاب کنید</string>
     <!-- Message details -->
     <string name="message_details">جزئیات پیام</string>
     <string name="message_details_sender">فرستنده</string>
@@ -223,4 +226,16 @@
     <string name="default_filter">فیلتر پیش‌فرض هنگام باز شدن</string>
     <string name="add_to_ads_filter">افزودن به تبلیغات</string>
     <string name="show_contacts_only_filter">نمایش فیلتر فقط مخاطبین</string>
+    <!-- Long-press menus (overrides Fossify Commons' English defaults) -->
+    <string name="copy_to_clipboard">کپی در کلیپ‌بورد</string>
+    <string name="share">اشتراک‌گذاری</string>
+    <string name="save_as">ذخیره به‌عنوان</string>
+    <string name="delete">حذف</string>
+    <string name="select_text">انتخاب متن</string>
+    <string name="select_all">انتخاب همه</string>
+    <string name="properties">جزئیات</string>
+    <string name="dial_number">شماره‌گیری</string>
+    <string name="add_number_to_contact">افزودن شماره به مخاطب</string>
+    <string name="copy_number_to_clipboard">کپی شماره</string>
+    <string name="block_number">مسدود کردن شماره</string>
 </resources>

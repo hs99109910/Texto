@@ -21,6 +21,8 @@
             android:background="@android:color/transparent"
             app:contentInsetStart="0dp"
             app:contentInsetStartWithNavigation="0dp"
+            app:contentInsetEnd="0dp"
+            app:contentInsetEndWithActions="0dp"
             app:popupTheme="@style/NovaPopupTheme">
 
             <!--

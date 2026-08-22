@@ -1688,9 +1688,8 @@ class ThreadActivity : SimpleActivity() {
             availableSIMCards.add(SIMCard(index + 1, info.subscriptionId, info.displayName.toString()))
         }
 
-        // Half the previous size and identified by colour rather than a tiny digit: the
-        // slot number was too small to read, so the badge is now just a tinted SIM glyph
-        // whose colour the user picks in Settings.
+        // Identified by colour rather than a tiny digit: the slot number was too small to
+        // read, so the badge is a tinted SIM glyph whose colour the user picks in Settings.
         val simIcon = binding.messageHolder.threadSelectSimIcon
         val simNumber = binding.messageHolder.threadSelectSimNumber
         val number = participants.firstOrNull()?.phoneNumbers?.firstOrNull()?.normalizedNumber
@@ -1709,6 +1708,7 @@ class ThreadActivity : SimpleActivity() {
             height = SIM_BADGE_SIZE_DP.getScaledPx()
         }
         simIcon.setPadding(0, 0, 0, 0)
+        simIcon.translationX = -SIM_BADGE_LEFT_SHIFT_DP.getScaledPx().toFloat()
 
         fun renderSelectedSIM() {
             simIcon.applyColorFilter(config.getSimColor(currentSIMCardIndex))
