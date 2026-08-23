@@ -294,9 +294,16 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getInt(MAIN_BACKGROUND_COLOR, Color.WHITE)
         set(mainBackgroundColor) = prefs.edit().putInt(MAIN_BACKGROUND_COLOR, mainBackgroundColor).apply()
 
+    /**
+     * The top and bottom (search/typing) bars share one background setting now, so this is
+     * an alias for [topBarColor] rather than its own stored value -- kept as a distinct
+     * property because callers still read/write "the input bar's colour".
+     */
     var inputBarBackgroundColor: Int
-        get() = prefs.getInt(INPUT_BAR_BACKGROUND_COLOR, DEFAULT_DARK_GREY)
-        set(inputBarBackgroundColor) = prefs.edit().putInt(INPUT_BAR_BACKGROUND_COLOR, inputBarBackgroundColor).apply()
+        get() = if (topBarColor != 0) topBarColor else Color.BLACK
+        set(inputBarBackgroundColor) {
+            topBarColor = inputBarBackgroundColor
+        }
 
     var inputBarTextColor: Int
         get() = prefs.getInt(INPUT_BAR_TEXT_COLOR, Color.WHITE)
@@ -326,9 +333,12 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getString(MAIN_BACKGROUND_IMAGE, "")!!
         set(mainBackgroundImage) = prefs.edit().putString(MAIN_BACKGROUND_IMAGE, mainBackgroundImage).apply()
 
+    /** Alias for [topBarImage] -- see [inputBarBackgroundColor]. */
     var inputBarImage: String
-        get() = prefs.getString(INPUT_BAR_IMAGE, "")!!
-        set(inputBarImage) = prefs.edit().putString(INPUT_BAR_IMAGE, inputBarImage).apply()
+        get() = topBarImage
+        set(inputBarImage) {
+            topBarImage = inputBarImage
+        }
 
     var topBarBgMode: Int
         get() = prefs.getInt(TOP_BAR_BG_MODE, BG_MODE_COLOR)
@@ -338,9 +348,12 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getInt(MAIN_BG_MODE, BG_MODE_COLOR)
         set(mainBgMode) = prefs.edit().putInt(MAIN_BG_MODE, mainBgMode).apply()
 
+    /** Alias for [topBarBgMode] -- see [inputBarBackgroundColor]. */
     var inputBarBgMode: Int
-        get() = prefs.getInt(INPUT_BAR_BG_MODE, BG_MODE_COLOR)
-        set(inputBarBgMode) = prefs.edit().putInt(INPUT_BAR_BG_MODE, inputBarBgMode).apply()
+        get() = topBarBgMode
+        set(inputBarBgMode) {
+            topBarBgMode = inputBarBgMode
+        }
 
     var topBarCropRect: String
         get() = prefs.getString(TOP_BAR_CROP_RECT, "")!!
@@ -350,9 +363,12 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getString(MAIN_BG_CROP_RECT, "")!!
         set(mainBgCropRect) = prefs.edit().putString(MAIN_BG_CROP_RECT, mainBgCropRect).apply()
 
+    /** Alias for [topBarCropRect] -- see [inputBarBackgroundColor]. */
     var inputBarCropRect: String
-        get() = prefs.getString(INPUT_BAR_CROP_RECT, "")!!
-        set(inputBarCropRect) = prefs.edit().putString(INPUT_BAR_CROP_RECT, inputBarCropRect).apply()
+        get() = topBarCropRect
+        set(inputBarCropRect) {
+            topBarCropRect = inputBarCropRect
+        }
 
     var alwaysExpandSearchBar: Boolean
         get() = prefs.getBoolean(ALWAYS_EXPAND_SEARCH_BAR, false)

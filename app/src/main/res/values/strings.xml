@@ -189,7 +189,7 @@
     <string name="settings_group_appearance">ظاهر و رنگ‌ها</string>
     <string name="settings_title">تنظیمات</string>
     <string name="settings_backgrounds_and_font">پس‌زمینه و فونت</string>
-    <string name="settings_top_bar_background">پس‌زمینه نوار بالا</string>
+    <string name="settings_top_bar_background">بالا و پایین</string>
     <string name="settings_main_background">پس‌زمینه اصلی</string>
     <string name="settings_input_bar_background">نوار جستجو و نوشتن</string>
     <string name="settings_ui_scale">مقیاس رابط</string>

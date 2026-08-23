@@ -452,7 +452,6 @@ open class SimpleActivity : BaseSimpleActivity() {
             R.id.settings_customization_label,
             R.id.settings_top_bar_label,
             R.id.settings_main_bg_label,
-            R.id.settings_input_bar_label,
             R.id.settings_bubble_customization_label,
             R.id.settings_ui_scale_label,
             R.id.settings_font_size_label,

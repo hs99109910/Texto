@@ -156,13 +156,11 @@ class SettingsActivity : SimpleActivity() {
         
         settingsTopBarImageIcon.applyColorFilter(mainTextColor)
         settingsMainBgImageIcon.applyColorFilter(mainTextColor)
-        settingsInputBarImageIcon.applyColorFilter(mainTextColor)
 
         // Force all labels to use main text color
         settingsCustomizationLabel.setTextColor(mainTextColor)
         settingsTopBarLabel.setTextColor(mainTextColor)
         settingsMainBgLabel.setTextColor(mainTextColor)
-        settingsInputBarLabel.setTextColor(mainTextColor)
         settingsBubbleCustomizationLabel.setTextColor(mainTextColor)
         settingsUiScaleLabel.setTextColor(mainTextColor)
         settingsFontSizeLabel.setTextColor(mainTextColor)
@@ -209,7 +207,6 @@ class SettingsActivity : SimpleActivity() {
         
         updateModeUI(config.topBarBgMode, settingsTopBarColorPreview, settingsTopBarImageIcon)
         updateModeUI(config.mainBgMode, settingsMainBackgroundColorPreview, settingsMainBgImageIcon)
-        updateModeUI(config.inputBarBgMode, settingsInputBarBackgroundColorPreview, settingsInputBarImageIcon)
 
         // Function to update color previews safely without losing shape
         val updatePreview = { view: View, color: Int ->
@@ -226,7 +223,6 @@ class SettingsActivity : SimpleActivity() {
         updatePreview(settingsTopBarTextColorPreview, config.topBarTextColor)
         updatePreview(settingsMainBackgroundColorPreview, config.mainBackgroundColor)
         updatePreview(settingsMainTextColorPreview, config.mainTextColor)
-        updatePreview(settingsInputBarBackgroundColorPreview, config.inputBarBackgroundColor)
         updatePreview(settingsInputBarTextColorPreview, config.inputBarTextColor)
 
         updatePreview(settingsSentBubbleColorPreview, config.sentBubbleColor)
@@ -289,10 +285,12 @@ class SettingsActivity : SimpleActivity() {
     }
 
     private fun setupBgModes() = binding.apply {
-        // The main background also supports a gradient, which is what the Aurora theme
-        // selects. Offering only Color/Image here meant setSelection(BG_MODE_GRADIENT)
-        // ran off the end of the adapter and crashed Settings.
-        val modes = arrayListOf(getString(R.string.bg_mode_color), getString(R.string.bg_mode_image), getString(R.string.bg_mode_gradient))
+        // Only Color/Image are user-selectable. The Aurora themes still drive the main
+        // background's mode to BG_MODE_GRADIENT programmatically (AppThemes.apply), which is
+        // why setSelection below is clamped rather than assuming the stored mode is always
+        // one of these two -- an out-of-range value just displays as the last item instead
+        // of crashing.
+        val modes = arrayListOf(getString(R.string.bg_mode_color), getString(R.string.bg_mode_image))
         val mainTextColor = config.mainTextColor
 
         val adapter = object : ArrayAdapter<String>(this@SettingsActivity, android.R.layout.simple_spinner_item, modes) {
@@ -308,11 +306,15 @@ class SettingsActivity : SimpleActivity() {
                 return view
             }
         }
-        
+
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        
+
         val setupSpinner = { spinner: android.widget.Spinner, currentMode: Int, onModeChanged: (Int) -> Unit ->
             spinner.adapter = adapter
+            // The dropdown popup is its own window with a system-default (usually light)
+            // background, unrelated to the settings row it opens from. On Aurora the label
+            // text is white, so without an explicit popup background it was white-on-white.
+            spinner.setPopupBackgroundDrawable(android.graphics.drawable.ColorDrawable(config.mainBackgroundColor))
             // Clamped: a stored mode must never index past the adapter.
             spinner.setSelection(currentMode.coerceIn(0, adapter.count - 1))
             spinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
@@ -328,10 +330,10 @@ class SettingsActivity : SimpleActivity() {
                 override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
             }
         }
-        
+
+        // Also drives the input/search bar's background -- see Config.inputBarBgMode.
         setupSpinner(settingsTopBarBgModeSpinner, config.topBarBgMode) { config.topBarBgMode = it }
         setupSpinner(settingsMainBgModeSpinner, config.mainBgMode) { config.mainBgMode = it }
-        setupSpinner(settingsInputBarBgModeSpinner, config.inputBarBgMode) { config.inputBarBgMode = it }
     }
 
     private fun setupCustomization() = binding.apply {
@@ -353,7 +355,6 @@ class SettingsActivity : SimpleActivity() {
         updatePreview(settingsTopBarTextColorPreview, config.topBarTextColor)
         updatePreview(settingsMainBackgroundColorPreview, config.mainBackgroundColor)
         updatePreview(settingsMainTextColorPreview, config.mainTextColor)
-        updatePreview(settingsInputBarBackgroundColorPreview, config.inputBarBackgroundColor)
         updatePreview(settingsInputBarTextColorPreview, config.inputBarTextColor)
 
         updatePreview(settingsSentBubbleColorPreview, config.sentBubbleColor)
@@ -504,19 +505,6 @@ class SettingsActivity : SimpleActivity() {
             }
         }
 
-        settingsInputBarPreviewContainer.setOnClickListener {
-            if (config.inputBarBgMode == BG_MODE_COLOR) {
-                org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.inputBarBackgroundColor) { wasPositive, color ->
-                    if (wasPositive) {
-                        config.inputBarBackgroundColor = color
-                        updatePreview(settingsInputBarBackgroundColorPreview, color)
-                        applyCustomColors()
-                    }
-                }
-            } else {
-                pickImage(PICK_INPUT_BAR_IMAGE_INTENT)
-            }
-        }
     }
 
 

@@ -19,7 +19,6 @@ data class AppTheme(
     val mainBackgroundColor: Int,
     val backgroundGradient: Pair<Int, Int>?,
     val cardColor: Int,
-    val inputBarBackgroundColor: Int,
     val inputBarTextColor: Int,
     val sentBubbleColor: Int,
     val sentBubbleTextColor: Int,
@@ -46,7 +45,6 @@ object AppThemes {
         mainBackgroundColor = Color.WHITE,
         backgroundGradient = null,
         cardColor = Config.DEFAULT_CARD_GREY,
-        inputBarBackgroundColor = Config.DEFAULT_DARK_GREY,
         inputBarTextColor = Color.WHITE,
         sentBubbleColor = Config.DEFAULT_SENT_GREY,
         sentBubbleTextColor = Color.BLACK,
@@ -67,7 +65,6 @@ object AppThemes {
         mainBackgroundColor = Color.parseColor("#0B1026"),
         backgroundGradient = Color.parseColor("#0B1026") to Color.parseColor("#3D2260"),
         cardColor = Color.parseColor("#1B2136"),
-        inputBarBackgroundColor = Color.parseColor("#171C2E"),
         inputBarTextColor = Color.WHITE,
         sentBubbleColor = Color.parseColor("#2F6BFF"),
         sentBubbleTextColor = Color.WHITE,
@@ -90,7 +87,6 @@ object AppThemes {
         mainBackgroundColor = Color.parseColor("#EEF1F8"),
         backgroundGradient = Color.parseColor("#F5F7FD") to Color.parseColor("#DDE4F6"),
         cardColor = Color.parseColor("#FFFFFF"),
-        inputBarBackgroundColor = Color.parseColor("#FFFFFF"),
         inputBarTextColor = Color.parseColor("#10162B"),
         sentBubbleColor = Color.parseColor("#2F6BFF"),
         sentBubbleTextColor = Color.WHITE,
@@ -112,7 +108,8 @@ object AppThemes {
         config.mainTextColor = theme.mainTextColor
         config.mainBackgroundColor = theme.mainBackgroundColor
         config.recentColor = theme.cardColor
-        config.inputBarBackgroundColor = theme.inputBarBackgroundColor
+        // No separate write for inputBarBackgroundColor: it's an alias for topBarColor now
+        // that the top and bottom bars share one background setting.
         config.inputBarTextColor = theme.inputBarTextColor
         config.sentBubbleColor = theme.sentBubbleColor
         config.sentBubbleTextColor = theme.sentBubbleTextColor
