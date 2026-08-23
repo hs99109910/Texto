@@ -153,9 +153,6 @@ class SettingsActivity : SimpleActivity() {
 
     private fun updateCustomizationUI() = binding.apply {
         val mainTextColor = config.mainTextColor
-        
-        settingsTopBarImageIcon.applyColorFilter(mainTextColor)
-        settingsMainBgImageIcon.applyColorFilter(mainTextColor)
 
         // Force all labels to use main text color
         settingsCustomizationLabel.setTextColor(mainTextColor)
@@ -192,21 +189,6 @@ class SettingsActivity : SimpleActivity() {
         settingsSentBubbleTextColorLabel.setTextColor(mainTextColor)
         settingsReceivedBubbleColorLabel.setTextColor(mainTextColor)
         settingsReceivedBubbleTextColorLabel.setTextColor(mainTextColor)
-        
-        
-        // Mode Visibility
-        val updateModeUI = { mode: Int, colorPreview: View, imageIcon: View ->
-            if (mode == BG_MODE_COLOR) {
-                colorPreview.beVisible()
-                imageIcon.beGone()
-            } else {
-                colorPreview.beGone()
-                imageIcon.beVisible()
-            }
-        }
-        
-        updateModeUI(config.topBarBgMode, settingsTopBarColorPreview, settingsTopBarImageIcon)
-        updateModeUI(config.mainBgMode, settingsMainBackgroundColorPreview, settingsMainBgImageIcon)
 
         // Function to update color previews safely without losing shape
         val updatePreview = { view: View, color: Int ->
@@ -285,15 +267,21 @@ class SettingsActivity : SimpleActivity() {
     }
 
     private fun setupBgModes() = binding.apply {
-        // Only Color/Image are user-selectable. The Aurora themes still drive the main
-        // background's mode to BG_MODE_GRADIENT programmatically (AppThemes.apply), which is
-        // why setSelection below is clamped rather than assuming the stored mode is always
-        // one of these two -- an out-of-range value just displays as the last item instead
-        // of crashing.
-        val modes = arrayListOf(getString(R.string.bg_mode_color), getString(R.string.bg_mode_image))
-        val mainTextColor = config.mainTextColor
+        // Top & bottom bars only support a plain colour now (no mode picker for them at all)
+        // -- migrate away from a stale Image selection from before this was simplified, so the
+        // preview swatch and renderer agree on what's actually shown.
+        if (config.topBarBgMode != BG_MODE_COLOR) {
+            config.topBarBgMode = BG_MODE_COLOR
+        }
 
-        val adapter = object : ArrayAdapter<String>(this@SettingsActivity, android.R.layout.simple_spinner_item, modes) {
+        // The main background picks between a flat colour and an auto-shaded gradient derived
+        // from one colour. The two mode values (BG_MODE_COLOR, BG_MODE_GRADIENT) are not
+        // contiguous -- BG_MODE_IMAGE(1) used to sit between them -- so position and stored
+        // mode are mapped through mainModeValues rather than assumed equal.
+        val mainModes = arrayListOf(getString(R.string.bg_mode_color), getString(R.string.bg_mode_gradient))
+        val mainModeValues = intArrayOf(BG_MODE_COLOR, BG_MODE_GRADIENT)
+
+        val adapter = object : ArrayAdapter<String>(this@SettingsActivity, android.R.layout.simple_spinner_item, mainModes) {
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
                 val view = super.getView(position, convertView, parent) as TextView
                 view.setTextColor(config.mainTextColor)
@@ -309,31 +297,31 @@ class SettingsActivity : SimpleActivity() {
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-        val setupSpinner = { spinner: android.widget.Spinner, currentMode: Int, onModeChanged: (Int) -> Unit ->
-            spinner.adapter = adapter
-            // The dropdown popup is its own window with a system-default (usually light)
-            // background, unrelated to the settings row it opens from. On Aurora the label
-            // text is white, so without an explicit popup background it was white-on-white.
-            spinner.setPopupBackgroundDrawable(android.graphics.drawable.ColorDrawable(config.mainBackgroundColor))
-            // Clamped: a stored mode must never index past the adapter.
-            spinner.setSelection(currentMode.coerceIn(0, adapter.count - 1))
-            spinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
-                    if (position != currentMode) {
-                        onModeChanged(position)
-                        updateCustomizationUI()
-                        applyCustomColors()
-                        // Force refresh of the spinner text color immediately
-                        (spinner.selectedView as? TextView)?.setTextColor(config.mainTextColor)
+        settingsMainBgModeSpinner.adapter = adapter
+        // The dropdown popup is its own window with a system-default (usually light)
+        // background, unrelated to the settings row it opens from. On Aurora the label text
+        // is white, so without an explicit popup background it was white-on-white.
+        settingsMainBgModeSpinner.setPopupBackgroundDrawable(android.graphics.drawable.ColorDrawable(config.mainBackgroundColor))
+        settingsMainBgModeSpinner.setSelection(mainModeValues.indexOf(config.mainBgMode).coerceAtLeast(0))
+        settingsMainBgModeSpinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val newMode = mainModeValues[position]
+                if (newMode != config.mainBgMode) {
+                    config.mainBgMode = newMode
+                    if (newMode == BG_MODE_GRADIENT) {
+                        // Switching to shaded should look different right away, so seed the
+                        // shade from the current flat colour instead of leaving a flat gradient.
+                        config.mainBgGradientStart = config.mainBackgroundColor
+                        config.mainBgGradientEnd = adjustColor(config.mainBackgroundColor, 0.75f)
                     }
+                    updateCustomizationUI()
+                    applyCustomColors()
+                    // Force refresh of the spinner text color immediately
+                    (settingsMainBgModeSpinner.selectedView as? TextView)?.setTextColor(config.mainTextColor)
                 }
-                override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
             }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
         }
-
-        // Also drives the input/search bar's background -- see Config.inputBarBgMode.
-        setupSpinner(settingsTopBarBgModeSpinner, config.topBarBgMode) { config.topBarBgMode = it }
-        setupSpinner(settingsMainBgModeSpinner, config.mainBgMode) { config.mainBgMode = it }
     }
 
     private fun setupCustomization() = binding.apply {
@@ -471,28 +459,30 @@ class SettingsActivity : SimpleActivity() {
             startActivity(intent)
         }
 
-        val pickImage = { intentCode: Int ->
-            val intent = Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-            startActivityForResult(intent, intentCode)
-        }
-
         settingsTopBarPreviewContainer.setOnClickListener {
-            if (config.topBarBgMode == BG_MODE_COLOR) {
-                val color = if (config.topBarColor == 0) Color.BLACK else config.topBarColor
-                org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, color) { wasPositive, color ->
-                    if (wasPositive) {
-                        config.topBarColor = if (color == Color.BLACK) 0 else color
-                        updatePreview(settingsTopBarColorPreview, color)
-                        applyCustomColors()
-                    }
+            val color = if (config.topBarColor == 0) Color.BLACK else config.topBarColor
+            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, color) { wasPositive, color ->
+                if (wasPositive) {
+                    config.topBarColor = if (color == Color.BLACK) 0 else color
+                    updatePreview(settingsTopBarColorPreview, color)
+                    applyCustomColors()
                 }
-            } else {
-                pickImage(PICK_TOP_BAR_IMAGE_INTENT)
             }
         }
 
         settingsMainBgPreviewContainer.setOnClickListener {
-            if (config.mainBgMode == BG_MODE_COLOR) {
+            if (config.mainBgMode == BG_MODE_GRADIENT) {
+                // One colour is all the user picks; the second stop is an automatic shade.
+                org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.mainBgGradientStart) { wasPositive, color ->
+                    if (wasPositive) {
+                        config.mainBackgroundColor = color
+                        config.mainBgGradientStart = color
+                        config.mainBgGradientEnd = adjustColor(color, 0.75f)
+                        updatePreview(settingsMainBackgroundColorPreview, color)
+                        applyCustomColors()
+                    }
+                }
+            } else {
                 org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.mainBackgroundColor) { wasPositive, color ->
                     if (wasPositive) {
                         config.mainBackgroundColor = color
@@ -500,8 +490,6 @@ class SettingsActivity : SimpleActivity() {
                         applyCustomColors()
                     }
                 }
-            } else {
-                pickImage(PICK_MAIN_BG_IMAGE_INTENT)
             }
         }
 

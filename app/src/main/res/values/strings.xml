@@ -202,9 +202,9 @@
     <string name="no_contacts_to_pick">مخاطبی برای انتخاب نیست</string>
     <string name="filter_needs_senders">حداقل یک فرستنده انتخاب کنید</string>
     <string name="x_selected">%1$d مورد انتخاب شد</string>
-    <string name="bg_mode_color">رنگ</string>
+    <string name="bg_mode_color">رنگ معمولی</string>
     <string name="bg_mode_image">تصویر</string>
-    <string name="bg_mode_gradient">طیف رنگی</string>
+    <string name="bg_mode_gradient">رنگ سایه‌دار</string>
     <string name="settings_font_size">اندازه فونت</string>
     <string name="settings_font">فونت</string>
     <string name="settings_colors">رنگ‌ها</string>
