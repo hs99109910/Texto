@@ -48,6 +48,7 @@ class SettingsActivity : SimpleActivity() {
         setupFontSize()
         setupFontFamily()
         setupBgModes()
+        setupAuroraAnimate()
         setupExpandableCategories()
         updateAppFonts(binding.root)
     }
@@ -504,6 +505,23 @@ class SettingsActivity : SimpleActivity() {
      * switch's own checked-change callback (fires however the toggle happened) and the row
      * just forwards taps to the switch.
      */
+    /**
+     * The halos are always painted; this only decides whether they drift. Applying it needs a
+     * fresh drawable, which is what applyCustomColors() builds.
+     */
+    private fun setupAuroraAnimate() = binding.apply {
+        settingsAuroraAnimateLabel.setTextColor(config.mainTextColor)
+        settingsAuroraAnimateSwitch.isChecked = config.auroraAnimate
+        settingsAuroraAnimateSwitch.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked == config.auroraAnimate) return@setOnCheckedChangeListener
+            config.auroraAnimate = isChecked
+            applyCustomColors()
+        }
+        settingsAuroraAnimateHolder.setOnClickListener {
+            settingsAuroraAnimateSwitch.toggle()
+        }
+    }
+
     private fun setupContactsOnlyFilter() = binding.apply {
         settingsContactsOnlyFilterSwitch.isChecked = config.showContactsOnlyFilter
         settingsContactsOnlyFilterSwitch.setOnCheckedChangeListener { _, isChecked ->

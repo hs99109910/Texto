@@ -102,12 +102,28 @@ open class SimpleActivity : BaseSimpleActivity() {
         return null
     }
 
+    /** Resolves the selected family at [style], using a real bold cut when the family ships one. */
+    fun getCustomTypeface(style: Int): android.graphics.Typeface? {
+        val id = config.fontFamilyNova
+        if (!NovaFonts.isPersianFont(id)) return null
+        return NovaFonts.create(this, id, style)
+    }
+
+    /**
+     * Always-resolved counterpart to [getCustomTypeface]. Assign this directly rather than
+     * calling `setTypeface(family, style)`: the two-arg form would synthesise bold on top of
+     * an already-bold cut. Falling back to a null family keeps the *system* face at [style],
+     * where a bare null would silently drop bold/italic.
+     */
+    fun typefaceFor(style: Int): android.graphics.Typeface =
+        getCustomTypeface(style)
+            ?: android.graphics.Typeface.create(null as android.graphics.Typeface?, style)
+
     fun updateAppFonts(view: View?) {
         if (view == null) return
-        val customTypeface = getCustomTypeface()
         if (view is TextView) {
             val style = view.typeface?.style ?: android.graphics.Typeface.NORMAL
-            view.typeface = android.graphics.Typeface.create(customTypeface, style)
+            view.typeface = typefaceFor(style)
             
             // Apply custom text color if not in toolbar AND not a message bubble/list item
             val id = view.id
@@ -142,19 +158,42 @@ open class SimpleActivity : BaseSimpleActivity() {
         }
     }
 
+    /**
+     * The drifting halo background currently installed on this activity's decor view, kept so
+     * its animator can be cancelled when it is replaced or the activity goes away.
+     */
+    private var auroraBackground: AuroraBackgroundDrawable? = null
+
+    private fun releaseAuroraBackground() {
+        auroraBackground?.release()
+        auroraBackground = null
+    }
+
     fun applyCustomColors() {
         val density = resources.displayMetrics.density
 
         // 1. Force main background to apply to the window decor view
         if (config.mainBgMode == BG_MODE_IMAGE && config.mainBackgroundImage.isNotEmpty()) {
+            releaseAuroraBackground()
             loadBackgroundImage(config.mainBackgroundImage, window.decorView, config.mainBgCropRect)
         } else if (config.mainBgMode == BG_MODE_GRADIENT) {
             clearGlideTarget(window.decorView)
-            window.decorView.background = GradientDrawable(
-                GradientDrawable.Orientation.TOP_BOTTOM,
-                intArrayOf(config.mainBgGradientStart, config.mainBgGradientEnd)
+            // "رنگ سایه‌دار" is the skin's aurora field: the chosen colour as the ground with
+            // three slowly drifting halos in the accent hues over it.
+            releaseAuroraBackground()
+            val aurora = AuroraBackgroundDrawable(
+                groundColor = config.mainBgGradientStart,
+                haloColors = listOf(
+                    config.accentGradientStart,
+                    config.accentGradientEnd,
+                    config.auroraAccentColor
+                ),
+                animate = config.auroraAnimate
             )
+            auroraBackground = aurora
+            window.decorView.background = aurora
         } else {
+            releaseAuroraBackground()
             clearGlideTarget(window.decorView)
             window.decorView.setBackgroundColor(config.mainBackgroundColor)
         }
@@ -739,6 +778,13 @@ open class SimpleActivity : BaseSimpleActivity() {
         NovaGlass.setBlurBehind(this, false)
     }
 
+    override fun onDestroy() {
+        // The View machinery already stops the halo animator when the window goes away, but
+        // an explicit release keeps a torn-down activity from holding a running ValueAnimator.
+        releaseAuroraBackground()
+        super.onDestroy()
+    }
+
     private fun requestHighRefreshRate() {
         if (isRPlus()) {
             try {
@@ -854,10 +900,7 @@ open class SimpleActivity : BaseSimpleActivity() {
                         text = action.label
                         setTextColor(textColor)
                         setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.85f))
-                        typeface = android.graphics.Typeface.create(
-                            getCustomTypeface(),
-                            android.graphics.Typeface.BOLD
-                        )
+                        typeface = typefaceFor(android.graphics.Typeface.BOLD)
                         includeFontPadding = false
                     }
                 )
@@ -946,7 +989,7 @@ open class SimpleActivity : BaseSimpleActivity() {
                 view.setTextColor(finalTextColor)
                 view.setPadding(20.getScaledPx(), 14.getScaledPx(), 20.getScaledPx(), 14.getScaledPx())
                 view.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.85f))
-                view.typeface = android.graphics.Typeface.create(getCustomTypeface(), android.graphics.Typeface.BOLD)
+                view.typeface = typefaceFor(android.graphics.Typeface.BOLD)
                 view.background = null
                 return view
             }

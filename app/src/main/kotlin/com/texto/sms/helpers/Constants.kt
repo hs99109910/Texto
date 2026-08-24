@@ -116,6 +116,19 @@ const val BG_MODE_COLOR = 0
 const val BG_MODE_IMAGE = 1
 const val BG_MODE_GRADIENT = 2
 
+/**
+ * Accent gradient the skin runs through every emphasis surface -- sent bubbles, the unread
+ * badge, the active filter chip, the FAB and the active nav tab -- so they read as one system.
+ */
+const val ACCENT_GRADIENT_START = "accent_gradient_start"
+const val ACCENT_GRADIENT_END = "accent_gradient_end"
+
+/** Third aurora hue, used only by the background halos. */
+const val AURORA_ACCENT_COLOR = "aurora_accent_color"
+
+/** Slow drifting halos behind the app; off leaves them painted but still. */
+const val AURORA_ANIMATE = "aurora_animate"
+
 const val ALWAYS_EXPAND_SEARCH_BAR = "always_expand_search_bar"
 
 const val PRESET_1_NAME = "preset_1_name"

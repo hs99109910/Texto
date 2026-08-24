@@ -3,9 +3,10 @@ package com.texto.sms.helpers
 import android.graphics.Color
 
 /**
- * A theme is a named bundle of the colour settings the app already exposes, plus the two
- * shape choices that cannot be expressed as a colour: the card corner radius and whether
- * the background is a flat fill or a vertical gradient.
+ * A theme is a named bundle of the colour settings the app already exposes, plus the shape
+ * and gradient choices that cannot be expressed as a single colour: the card corner radius,
+ * whether the background is a flat fill or an aurora halo field, and the accent gradient
+ * every emphasis surface is painted with.
  *
  * Selecting one writes its values into [Config], so every existing customisation screen
  * keeps working and the user can still tweak any individual colour afterwards.
@@ -17,10 +18,14 @@ data class AppTheme(
     val topBarTextColor: Int,
     val mainTextColor: Int,
     val mainBackgroundColor: Int,
+    /** Non-null turns the main background into the drifting aurora halo field. */
     val backgroundGradient: Pair<Int, Int>?,
     val cardColor: Int,
     val inputBarTextColor: Int,
-    val sentBubbleColor: Int,
+    /** Start/end of the emphasis gradient shared by bubbles, badges, chips and the FAB. */
+    val accentGradient: Pair<Int, Int>,
+    /** Third halo hue behind the app, alongside the two accent stops. */
+    val auroraAccent: Int,
     val sentBubbleTextColor: Int,
     val receivedBubbleColor: Int,
     val receivedBubbleTextColor: Int,
@@ -35,48 +40,40 @@ object AppThemes {
     const val AURORA = 1
     const val AURORA_LIGHT = 2
 
-    /** The look the app shipped with: light background, pastel pill cards. */
-    private val classic = AppTheme(
-        id = CLASSIC,
-        label = "کلاسیک",
-        topBarColor = Color.BLACK,
-        topBarTextColor = Color.WHITE,
-        mainTextColor = Color.BLACK,
-        mainBackgroundColor = Color.WHITE,
-        backgroundGradient = null,
-        cardColor = Config.DEFAULT_CARD_GREY,
-        inputBarTextColor = Color.WHITE,
-        sentBubbleColor = Config.DEFAULT_SENT_GREY,
-        sentBubbleTextColor = Color.BLACK,
-        receivedBubbleColor = Config.DEFAULT_RECEIVED_GREY,
-        // The darker received bubble needs light text to stay readable.
-        receivedBubbleTextColor = Color.WHITE,
-        cardCornerRadiusDp = 500,
-        glass = true
-    )
+    /**
+     * The skin's signature hues, shared by every theme so the accent gradient stays
+     * recognisable whichever ground it sits on.
+     */
+    private val CYAN = Config.AURORA_CYAN
+    private val BLUE = Config.AURORA_BLUE
+    private val MAGENTA = Config.AURORA_MAGENTA
 
-    /** Dark navy fading into purple, translucent slate cards, bright blue accent. */
+    /**
+     * Dark navy ground with drifting cyan/blue/magenta halos -- the design the skin is
+     * drawn from. `--background oklch(.16 .035 275)`, `--card oklch(.22 .04 275)`.
+     */
     private val aurora = AppTheme(
         id = AURORA,
         label = "آورورا",
-        topBarColor = Color.parseColor("#0B1026"),
-        topBarTextColor = Color.WHITE,
-        mainTextColor = Color.WHITE,
-        mainBackgroundColor = Color.parseColor("#0B1026"),
-        backgroundGradient = Color.parseColor("#0B1026") to Color.parseColor("#3D2260"),
-        cardColor = Color.parseColor("#1B2136"),
-        inputBarTextColor = Color.WHITE,
-        sentBubbleColor = Color.parseColor("#2F6BFF"),
-        sentBubbleTextColor = Color.WHITE,
-        receivedBubbleColor = Color.parseColor("#232838"),
-        receivedBubbleTextColor = Color.WHITE,
-        cardCornerRadiusDp = 24,
+        topBarColor = Color.parseColor("#13162B"),
+        topBarTextColor = Color.parseColor("#F2F5FC"),
+        mainTextColor = Color.parseColor("#F2F5FC"),
+        mainBackgroundColor = Color.parseColor("#090C1C"),
+        backgroundGradient = Color.parseColor("#090C1C") to Color.parseColor("#15192D"),
+        cardColor = Color.parseColor("#15192D"),
+        inputBarTextColor = Color.parseColor("#F2F5FC"),
+        accentGradient = CYAN to BLUE,
+        auroraAccent = MAGENTA,
+        sentBubbleTextColor = Color.parseColor("#090C1C"),
+        receivedBubbleColor = Color.parseColor("#1B2038"),
+        receivedBubbleTextColor = Color.parseColor("#F2F5FC"),
+        cardCornerRadiusDp = 32,
         glass = true
     )
 
     /**
-     * Aurora's shape and accent on a light ground: the same frosted cards, 24dp corners and
-     * blue sent bubble, but a pale blue-lavender gradient with dark text instead of navy.
+     * Aurora's shape and accent on a light ground: the same halos, 32dp corners and
+     * cyan-to-blue gradient, but a pale blue-lavender field with dark text instead of navy.
      */
     private val auroraLight = AppTheme(
         id = AURORA_LIGHT,
@@ -88,17 +85,41 @@ object AppThemes {
         backgroundGradient = Color.parseColor("#F5F7FD") to Color.parseColor("#DDE4F6"),
         cardColor = Color.parseColor("#FFFFFF"),
         inputBarTextColor = Color.parseColor("#10162B"),
-        sentBubbleColor = Color.parseColor("#2F6BFF"),
-        sentBubbleTextColor = Color.WHITE,
+        accentGradient = CYAN to BLUE,
+        auroraAccent = MAGENTA,
+        sentBubbleTextColor = Color.parseColor("#062033"),
         receivedBubbleColor = Color.parseColor("#E3E9F7"),
         receivedBubbleTextColor = Color.parseColor("#10162B"),
-        cardCornerRadiusDp = 24,
+        cardCornerRadiusDp = 32,
+        glass = true
+    )
+
+    /**
+     * The neutral option: no halos and a plain white ground, but the same corner radius and
+     * accent gradient as the rest so it reads as the same app rather than a different one.
+     */
+    private val classic = AppTheme(
+        id = CLASSIC,
+        label = "کلاسیک",
+        topBarColor = Color.parseColor("#101216"),
+        topBarTextColor = Color.WHITE,
+        mainTextColor = Color.parseColor("#101216"),
+        mainBackgroundColor = Color.WHITE,
+        backgroundGradient = null,
+        cardColor = Config.DEFAULT_CARD_GREY,
+        inputBarTextColor = Color.WHITE,
+        accentGradient = CYAN to BLUE,
+        auroraAccent = MAGENTA,
+        sentBubbleTextColor = Color.parseColor("#062033"),
+        receivedBubbleColor = Color.parseColor("#ECEFF4"),
+        receivedBubbleTextColor = Color.parseColor("#101216"),
+        cardCornerRadiusDp = 32,
         glass = true
     )
 
     val all = listOf(classic, aurora, auroraLight)
 
-    fun byId(id: Int) = all.firstOrNull { it.id == id } ?: classic
+    fun byId(id: Int) = all.firstOrNull { it.id == id } ?: aurora
 
     /** Overwrites the colour settings with [theme]'s values. */
     fun apply(config: Config, theme: AppTheme) {
@@ -111,7 +132,14 @@ object AppThemes {
         // No separate write for inputBarBackgroundColor: it's an alias for topBarColor now
         // that the top and bottom bars share one background setting.
         config.inputBarTextColor = theme.inputBarTextColor
-        config.sentBubbleColor = theme.sentBubbleColor
+
+        config.accentGradientStart = theme.accentGradient.first
+        config.accentGradientEnd = theme.accentGradient.second
+        config.auroraAccentColor = theme.auroraAccent
+
+        // The sent bubble is painted with the accent gradient, so its own colour only needs
+        // to be a sane flat fallback for the non-glass path.
+        config.sentBubbleColor = theme.accentGradient.second
         config.sentBubbleTextColor = theme.sentBubbleTextColor
         config.receivedBubbleColor = theme.receivedBubbleColor
         config.receivedBubbleTextColor = theme.receivedBubbleTextColor

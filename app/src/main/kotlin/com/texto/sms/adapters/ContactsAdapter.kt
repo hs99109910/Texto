@@ -18,6 +18,7 @@ import com.texto.sms.databinding.ItemConversationBinding
 import com.texto.sms.databinding.ItemConversationRecentBinding
 import com.texto.sms.models.ConversationListItem
 import java.util.ArrayList
+import com.texto.sms.helpers.NovaAvatars
 
 class ContactsAdapter(
     activity: SimpleActivity,
@@ -148,10 +149,12 @@ class ContactsAdapter(
             pillAddress.text = contact.name
             pillAddress.setTextColor(mainTextColor)
             
+            NovaAvatars.clipToSquircle(pillImage)
             SimpleContactsHelper(activity).loadContactImage(
                 path = contact.photoUri,
                 imageView = pillImage,
-                placeholderName = contact.name
+                placeholderName = contact.name,
+                placeholderImage = NovaAvatars.letterAvatar(activity, contact.name)
             )
 
             // Setup modern gradient/outline

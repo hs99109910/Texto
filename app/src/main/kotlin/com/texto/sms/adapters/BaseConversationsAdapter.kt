@@ -18,7 +18,6 @@ import com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller
 import org.fossify.commons.adapters.MyRecyclerViewListAdapter
 import org.fossify.commons.extensions.applyColorFilter
 import org.fossify.commons.extensions.beVisibleIf
-import org.fossify.commons.extensions.getContrastColor
 import org.fossify.commons.extensions.getTextSize
 import org.fossify.commons.extensions.setupViewBackground
 import org.fossify.commons.extensions.toast
@@ -30,6 +29,7 @@ import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.databinding.ItemConversationBinding
 import com.texto.sms.extensions.*
+import com.texto.sms.helpers.NovaAvatars
 import com.texto.sms.helpers.NovaGlass
 import com.texto.sms.models.Conversation
 
@@ -579,11 +579,11 @@ abstract class BaseConversationsAdapter(
                 if (conversation.isScheduled) Typeface.ITALIC else Typeface.NORMAL
             }
 
-            val customTypeface = (activity as SimpleActivity).getCustomTypeface()
-            recentAddress.setTypeface(customTypeface, Typeface.BOLD)
-            recentBody.setTypeface(customTypeface, style)
-            recentDate.setTypeface(customTypeface, style)
-            recentUnreadBadge.typeface = customTypeface
+            val simpleActivity = activity as SimpleActivity
+            recentAddress.typeface = simpleActivity.typefaceFor(Typeface.BOLD)
+            recentBody.typeface = simpleActivity.typefaceFor(style)
+            recentDate.typeface = simpleActivity.typefaceFor(style)
+            recentUnreadBadge.typeface = simpleActivity.typefaceFor(Typeface.BOLD)
 
             recentPinIndicator.beVisibleIf(
                 activity.config.pinnedConversations.contains(conversation.threadId.toString())
@@ -740,11 +740,8 @@ abstract class BaseConversationsAdapter(
                 true
             }
 
-            val placeholder = if (conversation.isGroupConversation) {
-                SimpleContactsHelper(activity).getColoredGroupIcon(conversation.title)
-            } else {
-                null
-            }
+            val placeholder = NovaAvatars.letterAvatar(activity, conversation.title)
+            NovaAvatars.clipToSquircle(recentImage)
 
             SimpleContactsHelper(activity).loadContactImage(
                 path = conversation.photoUri,
@@ -871,12 +868,13 @@ abstract class BaseConversationsAdapter(
                 conversationBodyShort.alpha = 0.7f
                 if (conversation.isScheduled) Typeface.ITALIC else Typeface.NORMAL
             }
-            val customTypeface = (activity as SimpleActivity).getCustomTypeface()
-            conversationAddress.setTypeface(customTypeface, style)
-            conversationBodyShort.setTypeface(customTypeface, style)
-            conversationDate.setTypeface(customTypeface, style)
-            unreadCountBadge.typeface = customTypeface
-            draftIndicator.typeface = Typeface.create(customTypeface, Typeface.ITALIC)
+            val simpleActivity = activity as SimpleActivity
+            // The name stays bold regardless of read state; only the preview line reacts.
+            conversationAddress.typeface = simpleActivity.typefaceFor(Typeface.BOLD)
+            conversationBodyShort.typeface = simpleActivity.typefaceFor(style)
+            conversationDate.typeface = simpleActivity.typefaceFor(style)
+            unreadCountBadge.typeface = simpleActivity.typefaceFor(Typeface.BOLD)
+            draftIndicator.typeface = simpleActivity.typefaceFor(Typeface.ITALIC)
 
             arrayListOf(conversationAddress, conversationBodyShort, conversationDate).forEach {
                 it.setTextColor(currentMainTextColor)
@@ -884,17 +882,18 @@ abstract class BaseConversationsAdapter(
             unreadCountBadge.setTextColor(currentMainTextColor)
 
             setupBadgeCount(unreadCountBadge, isUnread, conversation.unreadCount)
-            // at group conversations we use an icon as the placeholder, not any letter
-            val placeholder = if (conversation.isGroupConversation) {
-                SimpleContactsHelper(activity).getColoredGroupIcon(conversation.title)
-            } else {
-                null
-            }
+
+            // Gradient squircle monogram instead of the library's flat circular letter icon.
+            // Group threads get one too: the icon the commons helper draws is a circle and
+            // would be the only round avatar left in the list.
+            val placeholder = NovaAvatars.letterAvatar(activity, conversation.title)
 
             conversationImage.updateLayoutParams {
                 width = (activity as SimpleActivity).getScaledDimen(org.fossify.commons.R.dimen.list_icon_size_medium)
                 height = (activity as SimpleActivity).getScaledDimen(org.fossify.commons.R.dimen.list_icon_size_medium)
             }
+            // Real contact photos get clipped to the same silhouette as the generated ones.
+            NovaAvatars.clipToSquircle(conversationImage)
 
             SimpleContactsHelper(activity).loadContactImage(
                 path = conversation.photoUri,
@@ -914,14 +913,21 @@ abstract class BaseConversationsAdapter(
                     count == 0 -> ""
                     else -> count.toString()
                 }
-                setTextColor(properPrimaryColor.getContrastColor())
-                background?.applyColorFilter(properPrimaryColor)
+                val config = activity.config
+                setTextColor(config.sentBubbleTextColor)
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.7f)
+                val size = (activity as SimpleActivity).getScaledDimen(com.texto.sms.R.dimen.small_icon_size)
                 updateLayoutParams {
-                    val size = (activity as SimpleActivity).getScaledDimen(com.texto.sms.R.dimen.small_icon_size)
                     width = size
                     height = size
                 }
+                // Same accent gradient as the sent bubble and the active filter chip. A
+                // radius of half the badge keeps it a circle at any UI scale.
+                background = NovaGlass.accent(
+                    start = config.accentGradientStart,
+                    end = config.accentGradientEnd,
+                    cornerRadius = size / 2f
+                )
             }
         }
     }

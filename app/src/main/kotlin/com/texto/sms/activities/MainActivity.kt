@@ -645,7 +645,7 @@ class MainActivity : SimpleActivity() {
     }
 
     /**
-     * Frosted circular action button parked above the nav bar. [SimpleActivity.applyCustomColors]
+     * Accent action button parked above the nav bar. [SimpleActivity.applyCustomColors]
      * still treats this view as the old top-bar glyph and dims it, so restyle it afterwards.
      */
     private fun styleFab() = binding.conversationsFab.apply {
@@ -656,14 +656,15 @@ class MainActivity : SimpleActivity() {
             marginEnd = 16.getScaledPx()
             bottomMargin = 88.getScaledPx()
         }
-        com.texto.sms.helpers.NovaGlass.applyPanel(
-            view = this,
-            tint = config.inputBarBackgroundColor,
-            cornerRadius = size / 2f,
-            opacity = 0.8f,
-            strokeWidthPx = 1.getScaledPx()
+        // Solid accent gradient rather than glass: the design's FAB is the one surface that
+        // is meant to sit on top of the halos, not blend into them. Rounded to a squircle at
+        // 32% of its side, matching the avatars and cards.
+        background = com.texto.sms.helpers.NovaGlass.accent(
+            start = config.accentGradientEnd,
+            end = config.auroraAccentColor,
+            cornerRadius = size * 0.32f
         )
-        setTextColor(config.inputBarTextColor)
+        setTextColor(config.sentBubbleTextColor)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.9f))
         alpha = 1f
         elevation = 12 * resources.displayMetrics.density
@@ -684,7 +685,9 @@ class MainActivity : SimpleActivity() {
         val textColor = if (isActive) config.sentBubbleTextColor else config.topBarTextColor
         com.texto.sms.helpers.NovaGlass.applyPanel(
             view = chip,
-            tint = if (isActive) config.sentBubbleColor else baseColor,
+            // Active chips carry the same accent gradient as the sent bubble and the FAB.
+            tint = if (isActive) config.accentGradientStart else baseColor,
+            tintEnd = if (isActive) config.accentGradientEnd else null,
             cornerRadius = radius,
             opacity = if (isActive) 0.98f else 0.30f,
             strokeWidthPx = 1.getScaledPx(),
@@ -700,8 +703,7 @@ class MainActivity : SimpleActivity() {
         chip.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.8f))
         chip.setTextColor(textColor)
         chip.alpha = if (isActive) 1f else 0.55f
-        chip.typeface = android.graphics.Typeface.create(
-            getCustomTypeface(),
+        chip.typeface = typefaceFor(
             if (isActive) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL
         )
         chip.elevation = 6 * density

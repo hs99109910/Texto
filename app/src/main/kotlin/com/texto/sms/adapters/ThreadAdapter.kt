@@ -579,9 +579,14 @@ class ThreadAdapter(
                     (thickness * density).toInt()
                 }
 
+                // Sent bubbles carry the skin's accent gradient; received ones stay a single
+                // tint so the two sides never compete for attention.
+                val tintEnd = if (isReceived) null else config.accentGradientEnd
+
                 // Frosted bubble, kept dense so message text stays fully legible.
                 background = com.texto.sms.helpers.NovaGlass.panel(
-                    tint = bgColor,
+                    tint = if (isReceived) bgColor else config.accentGradientStart,
+                    tintEnd = tintEnd,
                     cornerRadii = baseRadii,
                     opacity = 0.88f,
                     strokeWidthPx = density.toInt().coerceAtLeast(1),

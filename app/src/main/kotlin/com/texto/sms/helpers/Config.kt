@@ -32,6 +32,16 @@ class Config(context: Context) : BaseConfig(context) {
             Color.parseColor("#2F6BFF"),
             Color.parseColor("#FF7A29")
         )
+
+        /**
+         * The three aurora hues the skin is built on, converted from the design's oklch
+         * values: aurora-3 `oklch(.78 .17 190)`, aurora-1 `oklch(.7 .19 250)` and aurora-2
+         * `oklch(.72 .2 330)`. Cyan and blue form the accent gradient; magenta is the third
+         * background halo.
+         */
+        val AURORA_CYAN = Color.parseColor("#00D8CF")
+        val AURORA_BLUE = Color.parseColor("#1CA2FF")
+        val AURORA_MAGENTA = Color.parseColor("#E76EDF")
     }
 
     fun saveUseSIMIdAtNumber(number: String, SIMId: Int) {
@@ -199,6 +209,8 @@ class Config(context: Context) : BaseConfig(context) {
             .remove(TOP_BAR_IMAGE).remove(MAIN_BACKGROUND_IMAGE).remove(INPUT_BAR_IMAGE)
             .remove(TOP_BAR_BG_MODE).remove(MAIN_BG_MODE).remove(INPUT_BAR_BG_MODE)
             .remove(APP_THEME).remove(MAIN_BG_GRADIENT_START).remove(MAIN_BG_GRADIENT_END)
+            .remove(ACCENT_GRADIENT_START).remove(ACCENT_GRADIENT_END)
+            .remove(AURORA_ACCENT_COLOR).remove(AURORA_ANIMATE)
             .remove(CARD_CORNER_RADIUS).apply()
     }
 
@@ -221,6 +233,29 @@ class Config(context: Context) : BaseConfig(context) {
     var mainBgGradientEnd: Int
         get() = prefs.getInt(MAIN_BG_GRADIENT_END, mainBackgroundColor)
         set(color) = prefs.edit().putInt(MAIN_BG_GRADIENT_END, color).apply()
+
+    /**
+     * The skin's emphasis gradient. Every accent surface -- sent bubble, unread badge, active
+     * filter chip, FAB, active nav tab -- is painted with this one pair, which is what makes
+     * them read as a set. Defaults keep a theme-less install on the Aurora cyan-to-blue.
+     */
+    var accentGradientStart: Int
+        get() = prefs.getInt(ACCENT_GRADIENT_START, AURORA_CYAN)
+        set(color) = prefs.edit().putInt(ACCENT_GRADIENT_START, color).apply()
+
+    var accentGradientEnd: Int
+        get() = prefs.getInt(ACCENT_GRADIENT_END, AURORA_BLUE)
+        set(color) = prefs.edit().putInt(ACCENT_GRADIENT_END, color).apply()
+
+    /** Third halo hue behind the app, alongside the two accent-gradient stops. */
+    var auroraAccentColor: Int
+        get() = prefs.getInt(AURORA_ACCENT_COLOR, AURORA_MAGENTA)
+        set(color) = prefs.edit().putInt(AURORA_ACCENT_COLOR, color).apply()
+
+    /** Whether the background halos drift. Off still paints them, just frozen. */
+    var auroraAnimate: Boolean
+        get() = prefs.getBoolean(AURORA_ANIMATE, true)
+        set(animate) = prefs.edit().putBoolean(AURORA_ANIMATE, animate).apply()
 
     /** Very large values render conversation cards as full pills. */
     var cardCornerRadiusDp: Int
@@ -273,9 +308,10 @@ class Config(context: Context) : BaseConfig(context) {
         set(glassOpacity) = prefs.edit().putInt(GLASS_OPACITY, glassOpacity).apply()
 
     var fontFamilyNova: Int
-        // B Nazanin is the app's default face; NovaFonts falls back to the system font on
-        // its own if the asset is ever missing, so this is safe even without the file.
-        get() = prefs.getInt(FONT_FAMILY_NOVA, NovaFonts.FONT_B_NAZANIN)
+        // Vazirmatn is the app's default face -- it ships with the app (SIL OFL) and is the
+        // only bundled family with a real bold cut. NovaFonts falls back to the system font
+        // on its own if the asset is ever missing, so this is safe even without the file.
+        get() = prefs.getInt(FONT_FAMILY_NOVA, NovaFonts.FONT_VAZIRMATN)
         set(fontFamilyNova) = prefs.edit().putInt(FONT_FAMILY_NOVA, fontFamilyNova).apply()
 
     var topBarColor: Int

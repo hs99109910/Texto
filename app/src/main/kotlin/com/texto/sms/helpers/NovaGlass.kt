@@ -26,6 +26,9 @@ object NovaGlass {
 
     /**
      * @param tint base color the panel is tinted with
+     * @param tintEnd when set, the fill becomes a diagonal [tint]-to-[tintEnd] gradient
+     *   instead of the default vertical lighten/darken shade of [tint] alone. This is how
+     *   the skin's accent surfaces (sent bubbles, the FAB, the active chip) are painted.
      * @param cornerRadius uniform radius in px, ignored when [cornerRadii] is given
      * @param cornerRadii per-corner radii (8 values, as GradientDrawable expects)
      * @param opacity 0f..1f of the tint fill; the lower the glassier
@@ -33,6 +36,7 @@ object NovaGlass {
      */
     fun panel(
         tint: Int,
+        tintEnd: Int? = null,
         cornerRadius: Float = 0f,
         cornerRadii: FloatArray? = null,
         opacity: Float = 0.55f,
@@ -50,14 +54,21 @@ object NovaGlass {
             }
         }
 
-        val fill = GradientDrawable(
-            GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(
-                lighten(tint, 1.25f).withAlpha(opacity),
-                tint.withAlpha(opacity),
-                darken(tint, 0.85f).withAlpha(opacity)
+        val fill = if (tintEnd != null) {
+            GradientDrawable(
+                GradientDrawable.Orientation.TL_BR,
+                intArrayOf(tint.withAlpha(opacity), tintEnd.withAlpha(opacity))
             )
-        ).apply {
+        } else {
+            GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(
+                    lighten(tint, 1.25f).withAlpha(opacity),
+                    tint.withAlpha(opacity),
+                    darken(tint, 0.85f).withAlpha(opacity)
+                )
+            )
+        }.apply {
             shape = GradientDrawable.RECTANGLE
             applyCorners()
         }
@@ -119,6 +130,7 @@ object NovaGlass {
     fun applyPanel(
         view: View,
         tint: Int,
+        tintEnd: Int? = null,
         cornerRadius: Float,
         opacity: Float = 0.55f,
         strokeWidthPx: Int = 1,
@@ -127,6 +139,7 @@ object NovaGlass {
     ) {
         view.background = panel(
             tint = tint,
+            tintEnd = tintEnd,
             cornerRadius = cornerRadius,
             opacity = opacity,
             strokeWidthPx = strokeWidthPx,
@@ -134,6 +147,16 @@ object NovaGlass {
             outlineWidthPx = outlineWidthPx
         )
     }
+
+    /**
+     * Solid accent gradient with no glass treatment, for the small emphasis surfaces the skin
+     * paints with the accent pair: unread badges, the active filter chip, the FAB.
+     */
+    fun accent(start: Int, end: Int, cornerRadius: Float): GradientDrawable =
+        GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(start, end)).apply {
+            shape = GradientDrawable.RECTANGLE
+            this.cornerRadius = cornerRadius
+        }
 
     fun isDark(color: Int): Boolean {
         val luminance =

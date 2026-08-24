@@ -301,6 +301,31 @@
                     <Spinner android:id="@+id/settings_main_bg_mode_spinner" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_centerVertical="true" android:layout_toEndOf="@+id/settings_main_bg_preview_container" android:layout_marginStart="12dp" />
                     <FrameLayout android:id="@+id/settings_main_bg_preview_container" android:layout_width="32dp" android:layout_height="32dp" android:layout_alignParentStart="true" android:layout_centerVertical="true"><View android:id="@+id/settings_main_background_color_preview" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@drawable/color_preview_bg" /></FrameLayout>
                 </RelativeLayout>
+                <RelativeLayout
+                    android:id="@+id/settings_aurora_animate_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingVertical="15dp">
+                    <TextView
+                        android:id="@+id/settings_aurora_animate_label"
+                        style="@style/SettingsTextLabelStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_toEndOf="@+id/settings_aurora_animate_switch"
+                        android:layout_centerVertical="true"
+                        android:text="@string/settings_aurora_animate"
+                        android:gravity="right|center_vertical" />
+                    <org.fossify.commons.views.MyMaterialSwitch
+                        android:id="@+id/settings_aurora_animate_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true" />
+                </RelativeLayout>
                 <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:paddingVertical="15dp">
                     <TextView android:id="@+id/settings_ui_scale_label" style="@style/SettingsTextLabelStyle" android:layout_width="match_parent" android:layout_alignParentEnd="true" android:text="@string/settings_ui_scale" android:gravity="right|center_vertical" />
                     <com.google.android.material.slider.Slider android:id="@+id/settings_ui_scale_slider" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_below="@id/settings_ui_scale_label" android:layout_marginTop="4dp" android:valueFrom="0.5" android:valueTo="1.5" android:stepSize="0.1" />

@@ -21,6 +21,7 @@ import com.texto.sms.dialogs.RenameConversationDialog
 import com.texto.sms.extensions.*
 import com.texto.sms.helpers.THREAD_ID
 import com.texto.sms.models.Conversation
+import com.texto.sms.helpers.NovaAvatars
 
 class ConversationDetailsActivity : SimpleActivity() {
 
@@ -99,10 +100,12 @@ class ConversationDetailsActivity : SimpleActivity() {
         val title = conversation?.title ?: participants.getThreadTitle()
         binding.detailsHeroName.text = title
         
+        NovaAvatars.clipToSquircle(binding.detailsHeroImage)
         SimpleContactsHelper(this).loadContactImage(
             path = participants.firstOrNull()?.photoUri ?: "",
             imageView = binding.detailsHeroImage,
-            placeholderName = title
+            placeholderName = title,
+            placeholderImage = NovaAvatars.letterAvatar(this, title)
         )
     }
 
