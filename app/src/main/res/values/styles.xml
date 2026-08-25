@@ -137,8 +137,8 @@
     </style>
 
     <!--
-        Settings row typography. Three sizes only -- section label, row title, row
-        subtitle/value -- so every screen in the app builds rows from the same scale.
+        Settings row typography. Three sizes only (section label, row title, row
+        subtitle/value) so every screen in the app builds rows from the same scale.
         Colours are applied at runtime from the active theme, not hard-coded here.
     -->
     <style name="SettingsSectionLabel">
