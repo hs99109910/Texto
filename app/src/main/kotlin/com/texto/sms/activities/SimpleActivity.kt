@@ -488,10 +488,8 @@ open class SimpleActivity : BaseSimpleActivity() {
         // Force settings labels to follow main text color
         val mainTextCol = config.mainTextColor
         val settingsLabels = listOf(
-            R.id.settings_customization_label,
             R.id.settings_top_bar_label,
             R.id.settings_main_bg_label,
-            R.id.settings_bubble_customization_label,
             R.id.settings_ui_scale_label,
             R.id.settings_font_size_label,
             R.id.settings_font_label,
@@ -571,8 +569,26 @@ open class SimpleActivity : BaseSimpleActivity() {
         return (this and 0x00FFFFFF) or (a shl 24)
     }
 
+    /**
+     * The UI is Persian, so it lays out right-to-left. That cannot come from the device
+     * locale here: build.gradle pins `resConfigs("en")`, which leaves the app resolving to an
+     * LTR configuration no matter what the phone is set to -- which is why the older screens
+     * had to fake RTL with absolute `right` gravity and `alignParentStart` controls.
+     *
+     * Overriding the configuration's locale to Persian makes `start`/`end` resolve the way
+     * the layouts actually mean them, and every framework surface we don't own -- dialogs,
+     * menus, the commons library's views -- flips with it. String lookup is unaffected: with
+     * no values-fa folder shipped, Persian falls back to `values/`, which is where the app's
+     * Persian strings already live.
+     */
     override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(newBase)
+        val locale = java.util.Locale("fa", "IR")
+        java.util.Locale.setDefault(locale)
+        val config = android.content.res.Configuration(newBase.resources.configuration).apply {
+            setLocale(locale)
+            setLayoutDirection(locale)
+        }
+        super.attachBaseContext(newBase.createConfigurationContext(config))
     }
 
     private var selectionCancelCallback: (() -> Unit)? = null

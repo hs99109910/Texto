@@ -17,6 +17,7 @@ import org.fossify.commons.views.MyAppBarLayout
 import com.texto.sms.R
 import com.texto.sms.databinding.ActivitySettingsBinding
 import com.texto.sms.extensions.config
+import com.texto.sms.extensions.toPersianDigits
 import com.texto.sms.helpers.*
 
 class SettingsActivity : SimpleActivity() {
@@ -49,7 +50,6 @@ class SettingsActivity : SimpleActivity() {
         setupFontFamily()
         setupBgModes()
         setupAuroraAnimate()
-        setupExpandableCategories()
         updateAppFonts(binding.root)
     }
 
@@ -155,33 +155,9 @@ class SettingsActivity : SimpleActivity() {
     private fun updateCustomizationUI() = binding.apply {
         val mainTextColor = config.mainTextColor
 
-        // Force all labels to use main text color
-        settingsCustomizationLabel.setTextColor(mainTextColor)
-        settingsTopBarLabel.setTextColor(mainTextColor)
-        settingsMainBgLabel.setTextColor(mainTextColor)
-        settingsBubbleCustomizationLabel.setTextColor(mainTextColor)
-        settingsUiScaleLabel.setTextColor(mainTextColor)
-        settingsFontSizeLabel.setTextColor(mainTextColor)
-        settingsFontLabel.setTextColor(mainTextColor)
-        settingsResetDefaults.setTextColor(mainTextColor)
-        settingsUiColorsLabel.setTextColor(mainTextColor)
-        
-        // The row icons were pinned to colorPrimary, which is a fixed accent and reads badly
-        // against a light Classic background. Tint them with the theme's own text colour so
-        // they stay legible in every theme, kept a touch lighter than the label itself.
-        listOf(
-            settingsArchivedIcon, settingsRecycleBinIcon, settingsBlockedNumbersIcon,
-            settingsContactsOnlyFilterIcon, settingsAdsFilterIcon,
-            settingsDefaultFilterIcon, settingsAppThemeIcon, settingsAppearanceIcon,
-            settingsColorsIcon, settingsBubblesIcon
-        ).forEach {
-            it.applyColorFilter(mainTextColor)
-            it.alpha = 0.75f
-        }
-
-        settingsAppearanceArrow.applyColorFilter(mainTextColor)
-        settingsColorsArrow.applyColorFilter(mainTextColor)
-        settingsBubblesArrow.applyColorFilter(mainTextColor)
+        // Every row's title, subtitle, value and icon is tinted from the theme here rather
+        // than in XML, so a theme switch repaints the whole screen without reinflating it.
+        styleSettingsRows()
         
         settingsTopBarTextColorLabel.setTextColor(mainTextColor)
         settingsBackgroundColorLabel.setTextColor(mainTextColor)
@@ -327,9 +303,6 @@ class SettingsActivity : SimpleActivity() {
 
     private fun setupCustomization() = binding.apply {
         val mainTextColor = config.mainTextColor
-        settingsCustomizationLabel.setTextColor(mainTextColor)
-        settingsBubbleCustomizationLabel.setTextColor(mainTextColor)
-        settingsResetDefaults.setTextColor(mainTextColor)
 
         val updatePreview = { view: View, color: Int ->
             val bg = view.background as? android.graphics.drawable.LayerDrawable
@@ -667,23 +640,34 @@ class SettingsActivity : SimpleActivity() {
 
     private fun setupUIScale() = binding.apply {
         settingsUiScaleSlider.setSteppedValue(config.uiScale)
+        settingsUiScaleValue.text = uiScaleLabel(config.uiScale)
         settingsUiScaleSlider.addOnChangeListener { _, value, fromUser ->
             if (fromUser) {
                 config.uiScale = value
+                settingsUiScaleValue.text = uiScaleLabel(value)
             }
         }
     }
 
+    /** Shown beside the slider as a percentage, so the raw 0.5-1.5 factor never surfaces. */
+    private fun uiScaleLabel(value: Float) =
+        "${Math.round(value * 100)}٪".toPersianDigits()
+
     private fun setupGlassOpacity() = binding.apply {
         settingsGlassOpacitySlider.setSteppedValue(config.glassOpacity.toFloat())
+        settingsGlassOpacityValue.text = glassOpacityLabel(config.glassOpacity)
         settingsGlassOpacitySlider.addOnChangeListener { _, value, fromUser ->
             if (fromUser) {
                 config.glassOpacity = value.toInt()
+                settingsGlassOpacityValue.text = glassOpacityLabel(value.toInt())
                 // Repaint straight away so the bar behind the slider previews the new value.
                 applyCustomColors()
             }
         }
     }
+
+    /** The stored value is opacity; the design's label reads as transparency, so invert it. */
+    private fun glassOpacityLabel(opacity: Int) = "${100 - opacity}٪".toPersianDigits()
 
     private fun setupFontSize() = binding.apply {
         settingsFontSize.text = getFontSizeText()
@@ -749,23 +733,68 @@ class SettingsActivity : SimpleActivity() {
         com.texto.sms.helpers.NovaFonts.displayNames[config.fontFamilyNova]
             ?: getString(R.string.font_system_default)
 
-    private fun setupExpandableCategories() = binding.apply {
-        val categories = listOf(
-            Triple(settingsAppearanceHeader, settingsAppearanceContainer, settingsAppearanceArrow),
-            Triple(settingsColorsHeader, settingsColorsContainer, settingsColorsArrow),
-            Triple(settingsBubblesHeader, settingsBubblesContainer, settingsBubblesArrow)
+    /** Every grouped card on the screen, in display order. */
+    private fun settingsCards() = binding.run {
+        listOf(
+            settingsCardConversations, settingsCardFilters, settingsCardAppearance,
+            settingsCardSizeFont, settingsCardTextColors, settingsCardConversationColors,
+            settingsCardBubbles
         )
+    }
 
-        categories.forEach { (header, container, arrow) ->
-            header.setOnClickListener {
-                toggleCategory(container, arrow)
+    /**
+     * Paints the grouped cards and walks every row inside them applying the theme's text
+     * colour. Doing it here rather than in XML means one pass repaints the whole screen
+     * after a theme change, and new rows pick the styling up for free.
+     */
+    private fun styleSettingsRows() {
+        val mainTextColor = config.mainTextColor
+        val cardRadius = config.cardCornerRadiusDp * resources.displayMetrics.density
+
+        settingsCards().forEach { card ->
+            NovaGlass.applyPanel(
+                view = card,
+                tint = config.recentColor,
+                cornerRadius = cardRadius,
+                opacity = if (config.glassTheme) 0.55f else 1f,
+                strokeWidthPx = 1.getScaledPx()
+            )
+            card.clipToOutline = true
+            card.outlineProvider = object : android.view.ViewOutlineProvider() {
+                override fun getOutline(view: View, outline: android.graphics.Outline) {
+                    outline.setRoundRect(0, 0, view.width, view.height, cardRadius)
+                }
+            }
+            tintRowsIn(card, mainTextColor)
+        }
+
+        // Section labels sit outside the cards, so they are tinted separately. The reset row
+        // is the one destructive action on the screen and keeps its own warning colour.
+        val holder = binding.settingsHolder
+        for (i in 0 until holder.childCount) {
+            (holder.getChildAt(i) as? TextView)?.setTextColor(mainTextColor)
+        }
+        binding.settingsResetDefaults.setTextColor(DESTRUCTIVE_COLOR)
+    }
+
+    /**
+     * Recursively tints a card's text and icons. Colour swatches are plain [View]s, so they
+     * fall through every branch here and keep the fill that represents their stored value.
+     */
+    private fun tintRowsIn(view: View, textColor: Int) {
+        when (view) {
+            is TextView -> view.setTextColor(textColor)
+            is android.widget.ImageView -> view.applyColorFilter(textColor)
+            is ViewGroup -> {
+                for (i in 0 until view.childCount) {
+                    tintRowsIn(view.getChildAt(i), textColor)
+                }
             }
         }
     }
 
-    private fun toggleCategory(container: View, arrow: android.widget.ImageView) {
-        val isExpanding = container.visibility == View.GONE
-        container.beVisibleIf(isExpanding)
-        arrow.animate().rotation(if (isExpanding) 180f else 0f).setDuration(200).start()
+    private companion object {
+        /** The design's `--destructive`, oklch(0.65 0.21 22). */
+        val DESTRUCTIVE_COLOR = Color.parseColor("#F54651")
     }
 }

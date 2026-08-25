@@ -26,9 +26,9 @@
             app:popupTheme="@style/NovaPopupTheme">
 
             <!--
-                Absolute "right", not "end": the manifest never opts into android:supportsRtl
-                and resConfigs("en") leaves the app resolving to an LTR configuration, so
-                "end" resolved to the left edge and the Persian name stayed left-aligned.
+                The app now runs right-to-left for real (supportsRtl plus the Persian locale
+                SimpleActivity.attachBaseContext installs), so "start" is the right edge and
+                this no longer needs the absolute "right" it used to be pinned to.
                 Auto-sizing shrinks long names down to 13sp instead of cutting them off.
             -->
             <TextView
@@ -37,7 +37,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
                 android:ellipsize="end"
-                android:gravity="right|center_vertical"
+                android:gravity="start|center_vertical"
                 android:maxLines="1"
                 android:textColor="#FFFFFF"
                 android:textDirection="anyRtl"

@@ -239,4 +239,32 @@
     <string name="add_number_to_contact">افزودن شماره به مخاطب</string>
     <string name="copy_number_to_clipboard">کپی شماره</string>
     <string name="block_number">مسدود کردن شماره</string>
+    <!-- Settings: section labels and per-row subtitles (the redesigned grouped layout) -->
+    <string name="settings_group_size_font">اندازه و فونت</string>
+    <string name="settings_group_text_colors">رنگ متن‌ها</string>
+    <string name="settings_group_conversation_colors">رنگ گفتگوها</string>
+    <string name="settings_archived_messages_sub">گفتگوهایی که بایگانی کرده‌اید</string>
+    <string name="deleted_messages_sub">پیام‌های حذف‌شده تا ۳۰ روز اینجا می‌مانند</string>
+    <string name="blocked_numbers_sub">شماره‌هایی که پیامشان دریافت نمی‌شود</string>
+    <string name="show_contacts_only_filter_sub">نمایش فیلتر «مخاطبین» در نوار بالا</string>
+    <string name="show_ads_filter_sub">نمایش فیلتر «بدون تبلیغات» در نوار بالا</string>
+    <string name="default_filter_sub">فیلتری که هنگام باز شدن برنامه فعال است</string>
+    <string name="app_theme_sub">مجموعه رنگ و شکل کلی برنامه</string>
+    <string name="settings_top_bar_background_sub">رنگ نوار بالا و نوار پایین</string>
+    <string name="settings_main_background_sub">رنگ زمینه پشت گفتگوها</string>
+    <string name="settings_aurora_animate_sub">هاله‌های رنگی به‌آرامی جابه‌جا می‌شوند</string>
+    <string name="settings_ui_scale_sub">اندازه کلی دکمه‌ها و فاصله‌ها</string>
+    <string name="settings_glass_opacity_sub">هرچه کمتر، نوارها شفاف‌تر</string>
+    <string name="settings_font_size_sub">اندازه متن پیام‌ها و فهرست‌ها</string>
+    <string name="settings_font_sub">قلم مورد استفاده در کل برنامه</string>
+    <string name="settings_top_bar_text_sub">رنگ عنوان و آیکون‌های نوار بالا</string>
+    <string name="settings_main_text_sub">رنگ نام‌ها و متن‌های اصلی</string>
+    <string name="settings_input_bar_text_sub">رنگ متن کادر نوشتن و جستجو</string>
+    <string name="settings_conversation_card_color_sub">رنگ کارت هر گفتگو در فهرست</string>
+    <string name="settings_sim1_color_sub">رنگ نشانگر سیم‌کارت یک</string>
+    <string name="settings_sim2_color_sub">رنگ نشانگر سیم‌کارت دو</string>
+    <string name="settings_sent_bubble_color_sub">رنگ حباب پیام‌هایی که می‌فرستید</string>
+    <string name="settings_sent_bubble_text_sub">رنگ متن داخل حباب ارسالی</string>
+    <string name="settings_received_bubble_color_sub">رنگ حباب پیام‌های دریافتی</string>
+    <string name="settings_received_bubble_text_sub">رنگ متن داخل حباب دریافتی</string>
 </resources>
