@@ -1301,7 +1301,7 @@
     <LinearLayout
         android:id="@+id/nova_nav_container"
         android:layout_width="240dp"
-        android:layout_height="55dp"
+        android:layout_height="62dp"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_margin="16dp"
         android:background="@drawable/nova_searchbar_bg"
@@ -1312,11 +1312,11 @@
         android:paddingEnd="4dp"
         android:gravity="center_vertical">
 
-        <FrameLayout android:id="@+id/nav_home_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="?selectableItemBackground"><ImageView android:id="@+id/nav_home_icon" android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_home_modern" android:alpha="0.6" app:tint="@android:color/white" /></FrameLayout>
+        <LinearLayout android:id="@+id/nav_home_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="?selectableItemBackground"><ImageView android:id="@+id/nav_home_icon" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_home_modern" android:alpha="0.6" app:tint="@android:color/white" /><TextView android:id="@+id/nav_home_label" style="@style/NavBarLabel" android:text="@string/nav_conversations" /></LinearLayout>
         <View android:id="@+id/nav_divider1" android:layout_width="1dp" android:layout_height="24dp" android:background="#33808080" />
-        <FrameLayout android:id="@+id/nav_search_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="?selectableItemBackground"><ImageView android:id="@+id/nova_search_icon" android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_search_vector" android:alpha="0.6" app:tint="@android:color/white" /></FrameLayout>
+        <LinearLayout android:id="@+id/nav_search_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="?selectableItemBackground"><ImageView android:id="@+id/nova_search_icon" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_search_vector" android:alpha="0.6" app:tint="@android:color/white" /><TextView android:id="@+id/nav_search_label" style="@style/NavBarLabel" android:text="@string/search" /></LinearLayout>
         <View android:id="@+id/nav_divider2" android:layout_width="1dp" android:layout_height="24dp" android:background="#33808080" />
-        <FrameLayout android:id="@+id/nav_settings_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="?selectableItemBackground"><ImageView android:id="@+id/nav_settings_icon" android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="center" android:src="@drawable/ic_settings_cog_vector" android:alpha="0.9" app:tint="@android:color/white" /></FrameLayout>
+        <LinearLayout android:id="@+id/nav_settings_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="?selectableItemBackground"><ImageView android:id="@+id/nav_settings_icon" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_settings_cog_vector" android:alpha="0.9" app:tint="@android:color/white" /><TextView android:id="@+id/nav_settings_label" style="@style/NavBarLabel" android:text="@string/settings_title" /></LinearLayout>
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

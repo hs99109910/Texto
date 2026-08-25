@@ -152,6 +152,7 @@ class MainActivity : SimpleActivity() {
         binding.novaTitle.updateLayoutParams<Toolbar.LayoutParams> {
             marginEnd = 60.getScaledPx()
         }
+        styleAppTitle()
         setupScaledToolbar(binding.mainToolbar)
         binding.novaMenuBtn.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
             topMargin = 3.getScaledPx()
@@ -162,7 +163,8 @@ class MainActivity : SimpleActivity() {
         binding.novaMenuBtn.alpha = 0.6f
 
         binding.novaNavContainer.updateLayoutParams {
-            height = 55.getScaledPx()
+            // Taller than the old icon-only bar so each tab's caption fits under its icon.
+            height = 62.getScaledPx()
         }
 
         getOrCreateConversationsAdapter().updateScaling()
@@ -279,6 +281,7 @@ class MainActivity : SimpleActivity() {
                 navHomeBtn.beVisible()
                 navSettingsBtn.beVisible()
                 novaSearchInput.beGone()
+                navSearchLabel.beVisible()
                 
                 // Center search icon when collapsed
                 (novaSearchIcon.layoutParams as? LinearLayout.LayoutParams)?.marginStart = 0
@@ -341,6 +344,8 @@ class MainActivity : SimpleActivity() {
                 navSettingsBtn.beGone()
                 navDivider1.beGone()
                 navDivider2.beGone()
+                // Frees the row for the input; the icon stays as the field's leading glyph.
+                navSearchLabel.beGone()
                 novaSearchInput.beVisible()
                 novaSearchInput.requestFocus()
                 showKeyboard(novaSearchInput)
@@ -357,6 +362,7 @@ class MainActivity : SimpleActivity() {
         navSettingsBtn.beVisible()
         navDivider1.beVisible()
         navDivider2.beVisible()
+        navSearchLabel.beVisible()
         novaSearchInput.beGone()
         hideKeyboard()
         
@@ -548,7 +554,7 @@ class MainActivity : SimpleActivity() {
             adapter.itemTouchHelper = filterChipDragHelper
         }
 
-        filterChipsAdapter?.submitFilters(filters, activeFilter.id)
+        filterChipsAdapter?.submitFilters(filters, activeFilter.id, filterCounts(filters))
         centerFilterChips()
     }
 
@@ -672,7 +678,46 @@ class MainActivity : SimpleActivity() {
         bringToFront()
     }
 
-    private fun styleFilterChip(chip: TextView, filterId: String, isActive: Boolean) {
+    /**
+     * How many conversations each chip currently holds. "All" is the whole list; every other
+     * filter reuses the same predicate the list itself is filtered with, so a chip's badge can
+     * never disagree with what tapping it shows.
+     */
+    /**
+     * The wordmark, painted with the skin's accent gradient rather than a flat colour. The
+     * shader has to be rebuilt whenever the text's measured width changes, so it is applied
+     * on layout rather than once: a shader sized to a stale width leaves the tail of the word
+     * a single colour.
+     */
+    private fun styleAppTitle() = binding.novaTitle.apply {
+        doOnLayout {
+            if (width == 0) return@doOnLayout
+            paint.shader = android.graphics.LinearGradient(
+                0f, 0f, width.toFloat(), 0f,
+                config.accentGradientStart, config.auroraAccentColor,
+                android.graphics.Shader.TileMode.CLAMP
+            )
+            invalidate()
+        }
+    }
+
+    private fun filterCounts(filters: List<MessageFilter>): Map<String, Int> =
+        filters.associate { filter ->
+            filter.id to if (filter.id == MessageFilter.ID_ALL) {
+                allConversations.size
+            } else {
+                allConversations.count {
+                    com.texto.sms.helpers.MessageClassifier.matches(it, filter, contactPhoneNumbers)
+                }
+            }
+        }
+
+    private fun styleFilterChip(
+        views: com.texto.sms.adapters.FilterChipViews,
+        filterId: String,
+        isActive: Boolean,
+    ) {
+        val chip = views.root
         val density = resources.displayMetrics.density
         val radius = 100f * density
         val baseColor = if (config.topBarColor != 0) config.topBarColor else Color.BLACK
@@ -700,13 +745,31 @@ class MainActivity : SimpleActivity() {
             16.getScaledPx()
         }
         chip.setPadding(horizontal, 8.getScaledPx(), horizontal, 8.getScaledPx())
-        chip.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.8f))
-        chip.setTextColor(textColor)
         chip.alpha = if (isActive) 1f else 0.55f
-        chip.typeface = typefaceFor(
-            if (isActive) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL
-        )
         chip.elevation = 6 * density
+
+        views.label.apply {
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.8f))
+            setTextColor(textColor)
+            typeface = typefaceFor(
+                if (isActive) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL
+            )
+        }
+
+        // The count sits in its own pill, a wash of the chip's own text colour so it reads as
+        // secondary on both the active gradient and the inactive tint.
+        views.count.apply {
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.62f))
+            setTextColor(textColor)
+            typeface = typefaceFor(android.graphics.Typeface.BOLD)
+            val padH = 5.getScaledPx()
+            setPadding(padH, 1.getScaledPx(), padH, 1.getScaledPx())
+            background = android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                cornerRadius = 100f * density
+                setColor(textColor.withAlpha(if (isActive) 0.22f else 0.14f))
+            }
+        }
     }
 
     private fun selectFilter(filter: MessageFilter) {
@@ -718,7 +781,8 @@ class MainActivity : SimpleActivity() {
 
     private fun applyActiveFilter() {
         clearPendingScroll()
-        filterChipsAdapter?.submitFilters(currentFilters(), activeFilter.id)
+        val filters = currentFilters()
+        filterChipsAdapter?.submitFilters(filters, activeFilter.id, filterCounts(filters))
         submitFilteredConversations()
         binding.conversationsList.scrollToPosition(0)
     }

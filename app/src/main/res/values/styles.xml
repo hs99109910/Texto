@@ -180,4 +180,16 @@
         <item name="android:ellipsize">end</item>
     </style>
 
+    <!-- Bottom-nav tab caption, sitting under its icon. -->
+    <style name="NavBarLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:textSize">9sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:includeFontPadding">false</item>
+    </style>
+
 </resources>

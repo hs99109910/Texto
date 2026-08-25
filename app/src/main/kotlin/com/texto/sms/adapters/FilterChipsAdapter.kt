@@ -10,10 +10,23 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import org.fossify.commons.extensions.beGone
+import org.fossify.commons.extensions.beVisible
 import com.texto.sms.databinding.ItemFilterChipBinding
 import com.texto.sms.extensions.getScaledPx
+import com.texto.sms.extensions.toPersianDigits
 import com.texto.sms.helpers.MessageFilter
 import kotlin.math.hypot
+
+/**
+ * The three views a chip is built from. Passed to the styling callback as a unit so the
+ * caller can tint the label and the count badge differently without re-finding them.
+ */
+data class FilterChipViews(
+    val root: android.view.ViewGroup,
+    val label: TextView,
+    val count: TextView,
+)
 
 /**
  * Backs the home screen's filter chip row. Custom filters can be dragged to reorder (see
@@ -25,7 +38,7 @@ class FilterChipsAdapter(
     private val onSelect: (MessageFilter) -> Unit,
     private val onEditRequested: (MessageFilter) -> Unit,
     private val onAddRequested: () -> Unit,
-    private val styleChip: (chip: TextView, filterId: String, isActive: Boolean) -> Unit,
+    private val styleChip: (chip: FilterChipViews, filterId: String, isActive: Boolean) -> Unit,
 ) : RecyclerView.Adapter<FilterChipsAdapter.ViewHolder>() {
 
     companion object {
@@ -43,16 +56,26 @@ class FilterChipsAdapter(
     private val addChipFilter = MessageFilter(id = ADD_CHIP_ID, label = "+")
     private var items: List<MessageFilter> = emptyList()
     private var activeFilterId: String = MessageFilter.ID_ALL
+    private var counts: Map<String, Int> = emptyMap()
 
     private val longPressHandler = Handler(Looper.getMainLooper())
     private var pendingEditRunnable: Runnable? = null
     private var touchDownX = 0f
     private var touchDownY = 0f
 
-    /** [filters] should already include the built-in "All"/"Contacts only" chips; the "+" chip is added here. */
-    fun submitFilters(filters: List<MessageFilter>, activeId: String) {
+    /**
+     * [filters] should already include the built-in "All"/"Contacts only" chips; the "+" chip
+     * is added here. [filterCounts] maps a filter id to how many conversations it holds; ids
+     * missing from it simply show no badge.
+     */
+    fun submitFilters(
+        filters: List<MessageFilter>,
+        activeId: String,
+        filterCounts: Map<String, Int> = emptyMap(),
+    ) {
         items = filters + addChipFilter
         activeFilterId = activeId
+        counts = filterCounts
         notifyDataSetChanged()
     }
 
@@ -69,15 +92,33 @@ class FilterChipsAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemFilterChipBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         (binding.root.layoutParams as? ViewGroup.MarginLayoutParams)?.marginEnd = 8.getScaledPx()
-        return ViewHolder(binding.root)
+        return ViewHolder(
+            FilterChipViews(
+                root = binding.root,
+                label = binding.filterChipLabel,
+                count = binding.filterChipCount
+            )
+        )
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val filter = items[position]
-        val chip = holder.chip
-        chip.text = filter.label
+        val chip = holder.chip.root
+        holder.chip.label.text = filter.label
+
+        // The "+" chip is an action, not a filter, so it never carries a count.
+        val count = if (filter.id == ADD_CHIP_ID) null else counts[filter.id]
+        holder.chip.count.apply {
+            if (count == null) {
+                beGone()
+            } else {
+                text = count.toPersianDigits()
+                beVisible()
+            }
+        }
+
         val isActive = filter.id == activeFilterId
-        styleChip(chip, filter.id, isActive)
+        styleChip(holder.chip, filter.id, isActive)
 
         chip.setOnClickListener {
             when {
@@ -144,5 +185,5 @@ class FilterChipsAdapter(
 
     override fun getItemCount() = items.size
 
-    class ViewHolder(val chip: TextView) : RecyclerView.ViewHolder(chip)
+    class ViewHolder(val chip: FilterChipViews) : RecyclerView.ViewHolder(chip.root)
 }

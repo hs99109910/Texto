@@ -267,4 +267,5 @@
     <string name="settings_sent_bubble_text_sub">رنگ متن داخل حباب ارسالی</string>
     <string name="settings_received_bubble_color_sub">رنگ حباب پیام‌های دریافتی</string>
     <string name="settings_received_bubble_text_sub">رنگ متن داخل حباب دریافتی</string>
+    <string name="nav_conversations">گفتگوها</string>
 </resources>

@@ -79,6 +79,8 @@ class SettingsActivity : SimpleActivity() {
             // Apply compact width and transparency
             novaNavContainer.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
                 width = 240.getScaledPx()
+                // Matches the home screen's bar, which grew to fit the tab captions.
+                height = 62.getScaledPx()
                 gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
             }
             novaNavContainer.alpha = 0.92f
