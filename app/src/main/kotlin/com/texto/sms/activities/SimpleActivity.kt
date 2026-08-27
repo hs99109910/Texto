@@ -140,7 +140,7 @@ open class SimpleActivity : BaseSimpleActivity() {
                 R.id.thread_message_carrier_warning,
                 R.id.conversations_fab,
                 R.id.nav_home_icon,
-                R.id.nav_settings_icon,
+                R.id.nav_contacts_icon,
                 R.id.nova_search_icon
             )
                              
@@ -322,7 +322,7 @@ open class SimpleActivity : BaseSimpleActivity() {
             findViewById<View>(R.id.nova_nav_container)?.let {
                 val inputBarTextColor = config.inputBarTextColor
                 findViewById<ImageView>(R.id.nav_home_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
-                findViewById<ImageView>(R.id.nav_settings_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
+                findViewById<ImageView>(R.id.nav_contacts_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
                 findViewById<ImageView>(R.id.nova_search_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
                 findViewById<View>(R.id.nav_divider1)?.setBackgroundColor(inputBarTextColor.withAlpha(0.2f))
                 findViewById<View>(R.id.nav_divider2)?.setBackgroundColor(inputBarTextColor.withAlpha(0.2f))

@@ -162,6 +162,16 @@ class MainActivity : SimpleActivity() {
             android.content.res.ColorStateList.valueOf(config.topBarTextColor)
         binding.novaMenuBtn.alpha = 0.6f
 
+        // The gear sits beside the overflow button and is scaled and tinted with it, so the
+        // two read as one pair of header controls at any UI scale.
+        binding.novaSettingsBtn.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
+            topMargin = 3.getScaledPx()
+            marginEnd = 56.getScaledPx()
+        }
+        binding.novaSettingsBtn.imageTintList =
+            android.content.res.ColorStateList.valueOf(config.topBarTextColor)
+        binding.novaSettingsBtn.alpha = 0.6f
+
         binding.novaNavContainer.updateLayoutParams {
             // Taller than the old icon-only bar so each tab's caption fits under its icon.
             height = 62.getScaledPx()
@@ -246,7 +256,7 @@ class MainActivity : SimpleActivity() {
             
             // Set icon transparency
             navHomeIcon.alpha = 0.9f // Lighter for active
-            navSettingsIcon.alpha = 0.6f
+            navContactsIcon.alpha = 0.6f
             novaSearchIcon.alpha = 0.6f
             
             // Highlight Home (Current Screen) with subtle transparency
@@ -258,8 +268,11 @@ class MainActivity : SimpleActivity() {
                 if (!isSearchExpanded) expandSearchBar()
             }
             
-            navSettingsBtn.setOnClickListener {
-                startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
+            // The contacts tab reuses the new-conversation screen: it is already the app's
+            // contact list, and tapping a row there opens that person's thread, which is
+            // exactly what the design's contacts tab does.
+            navContactsBtn.setOnClickListener {
+                startActivity(Intent(this@MainActivity, NewConversationActivity::class.java))
             }
             
             navHomeBtn.setOnClickListener {
@@ -279,7 +292,7 @@ class MainActivity : SimpleActivity() {
                 navDivider1.beVisible()
                 navDivider2.beVisible()
                 navHomeBtn.beVisible()
-                navSettingsBtn.beVisible()
+                navContactsBtn.beVisible()
                 novaSearchInput.beGone()
                 navSearchLabel.beVisible()
                 
@@ -313,7 +326,7 @@ class MainActivity : SimpleActivity() {
             // Shrink side buttons weight
             val weight = 1f - value
             navHomeBtn.layoutParams = (navHomeBtn.layoutParams as LinearLayout.LayoutParams).apply { this.weight = weight }
-            navSettingsBtn.layoutParams = (navSettingsBtn.layoutParams as LinearLayout.LayoutParams).apply { this.weight = weight }
+            navContactsBtn.layoutParams = (navContactsBtn.layoutParams as LinearLayout.LayoutParams).apply { this.weight = weight }
             
             // Expand search container weight
             navSearchContainer.layoutParams = (navSearchContainer.layoutParams as LinearLayout.LayoutParams).apply { this.weight = 1f + (2f * value) }
@@ -322,7 +335,7 @@ class MainActivity : SimpleActivity() {
             navDivider1.alpha = 1f - value
             navDivider2.alpha = 1f - value
             navHomeIcon.alpha = 0.9f * (1f - value)
-            navSettingsIcon.alpha = 0.6f * (1f - value)
+            navContactsIcon.alpha = 0.6f * (1f - value)
             
             // Move search icon to start
             navSearchContainer.gravity = if (value > 0.5f) android.view.Gravity.CENTER_VERTICAL else android.view.Gravity.CENTER
@@ -341,7 +354,7 @@ class MainActivity : SimpleActivity() {
             }
             override fun onAnimationEnd(animation: Animator) {
                 navHomeBtn.beGone()
-                navSettingsBtn.beGone()
+                navContactsBtn.beGone()
                 navDivider1.beGone()
                 navDivider2.beGone()
                 // Frees the row for the input; the icon stays as the field's leading glyph.
@@ -359,7 +372,7 @@ class MainActivity : SimpleActivity() {
         isSearchExpanded = false
         
         navHomeBtn.beVisible()
-        navSettingsBtn.beVisible()
+        navContactsBtn.beVisible()
         navDivider1.beVisible()
         navDivider2.beVisible()
         navSearchLabel.beVisible()
@@ -382,13 +395,13 @@ class MainActivity : SimpleActivity() {
             
             val weight = 1f - value
             navHomeBtn.layoutParams = (navHomeBtn.layoutParams as LinearLayout.LayoutParams).apply { this.weight = weight }
-            navSettingsBtn.layoutParams = (navSettingsBtn.layoutParams as LinearLayout.LayoutParams).apply { this.weight = weight }
+            navContactsBtn.layoutParams = (navContactsBtn.layoutParams as LinearLayout.LayoutParams).apply { this.weight = weight }
             navSearchContainer.layoutParams = (navSearchContainer.layoutParams as LinearLayout.LayoutParams).apply { this.weight = 1f + (2f * value) }
             
             navDivider1.alpha = 1f - value
             navDivider2.alpha = 1f - value
             navHomeIcon.alpha = 0.9f * (1f - value)
-            navSettingsIcon.alpha = 0.6f * (1f - value)
+            navContactsIcon.alpha = 0.6f * (1f - value)
             
             // Recenter search icon
             navSearchContainer.gravity = if (value < 0.5f) android.view.Gravity.CENTER else android.view.Gravity.CENTER_VERTICAL
@@ -887,6 +900,9 @@ class MainActivity : SimpleActivity() {
         binding.noConversationsPlaceholder2.setOnClickListener { launchNewConversation() }
         binding.conversationsFab.setOnClickListener { launchNewConversation() }
         binding.novaMenuBtn.setOnClickListener { showMainMenu() }
+        binding.novaSettingsBtn.setOnClickListener {
+            startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
+        }
         buildFilterChips()
         setupFilterSwipeGesture()
 
@@ -1344,7 +1360,7 @@ class MainActivity : SimpleActivity() {
             
             // Sync icon and divider colors with search bar text color
             binding.navHomeIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
-            binding.navSettingsIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
+            binding.navContactsIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
             binding.novaSearchIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
             binding.navDivider1.setBackgroundColor(inputBarTextColor.withAlpha(0.2f))
             binding.navDivider2.setBackgroundColor(inputBarTextColor.withAlpha(0.2f))

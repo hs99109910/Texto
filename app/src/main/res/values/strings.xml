@@ -206,6 +206,7 @@
     <string name="bg_mode_image">تصویر</string>
     <string name="bg_mode_gradient">رنگ سایه‌دار</string>
     <string name="bg_mode_linear">گرادیان دو رنگ</string>
+    <string name="nav_contacts">مخاطبین</string>
     <string name="settings_aurora_animate">حرکت آهسته هاله‌های پس‌زمینه</string>
     <string name="settings_font_size">اندازه فونت</string>
     <string name="settings_font">فونت</string>

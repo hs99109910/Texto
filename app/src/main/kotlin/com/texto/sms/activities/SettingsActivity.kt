@@ -87,18 +87,23 @@ class SettingsActivity : SimpleActivity() {
             
             // Set icon transparency
             navHomeIcon.alpha = 0.6f
-            navSettingsIcon.alpha = 0.9f // Lighter for active
+            navContactsIcon.alpha = 0.6f
             novaSearchIcon.alpha = 0.6f
-            
-            // Highlight Settings (Current Screen) with subtle transparency
-            navSettingsBtn.setBackgroundColor(Color.WHITE.withAlpha(0.1f))
-            
+
+            // No tab is highlighted here any more: settings is reached from the header's
+            // gear, not from the bar, so none of the three tabs is the current screen.
+            navContactsBtn.setBackgroundColor(Color.TRANSPARENT)
+
             navHomeBtn.setOnClickListener {
                 finish() // Go back to main
             }
-            
+
             navSearchBtn.setOnClickListener {
                 finish() // Go back to main and expand search
+            }
+
+            navContactsBtn.setOnClickListener {
+                startActivity(Intent(this@SettingsActivity, NewConversationActivity::class.java))
             }
         } else {
             novaNavContainer.beGone()
@@ -147,7 +152,7 @@ class SettingsActivity : SimpleActivity() {
             
             // Sync icon and divider colors with search bar text color
             binding.navHomeIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
-            binding.navSettingsIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
+            binding.navContactsIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
             binding.novaSearchIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
         } else {
             binding.novaNavContainer.foreground = null

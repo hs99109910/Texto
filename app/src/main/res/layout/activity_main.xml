@@ -31,7 +31,7 @@
                 android:textColor="@android:color/white"
                 android:textSize="28sp"
                 android:textStyle="bold"
-                android:layout_marginEnd="60dp"
+                android:layout_marginEnd="108dp"
                 android:ellipsize="end"
                 android:maxLines="1" />
 
@@ -281,28 +281,52 @@
             android:layout_height="24dp"
             android:background="#22FFFFFF" />
 
-        <!-- SETTINGS BUTTON -->
+        <!--
+            CONTACTS BUTTON. The design puts contacts in the bar's third slot and moves
+            settings behind the gear in the header, so the bar stays the three places you
+            browse rather than two places plus a configuration screen.
+        -->
         <LinearLayout
-            android:id="@+id/nav_settings_btn"
+            android:id="@+id/nav_contacts_btn"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
             android:orientation="vertical">
             <ImageView
-                android:id="@+id/nav_settings_icon"
+                android:id="@+id/nav_contacts_icon"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
-                android:src="@drawable/ic_settings_cog_vector"
+                android:src="@drawable/ic_settings_person"
                 android:alpha="0.6"
                 app:tint="@android:color/white" />
             <TextView
-                android:id="@+id/nav_settings_label"
+                android:id="@+id/nav_contacts_label"
                 style="@style/NavBarLabel"
-                android:text="@string/settings_title" />
+                android:text="@string/nav_contacts" />
         </LinearLayout>
 
     </LinearLayout>
+
+    <!--
+        Settings moved off the bottom bar to make room for contacts, so it needs a home in
+        the header. Sits inboard of the overflow button, matching the design's gear in the
+        corner opposite the wordmark.
+    -->
+    <ImageView
+        android:id="@+id/nova_settings_btn"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="3dp"
+        android:layout_marginEnd="56dp"
+        android:background="?selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/settings_title"
+        android:focusable="true"
+        android:padding="12dp"
+        android:src="@drawable/ic_settings_cog_vector"
+        app:tint="@android:color/white" />
 
     <ImageView
         android:id="@+id/nova_menu_btn"
