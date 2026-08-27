@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Debug builds are the ones actually installed, so they carry the real name. -->
+    <string name="app_launcher_name">Texto</string>
+</resources>

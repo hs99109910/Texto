@@ -1,0 +1,1322 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/settings_coordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/transparent">
+
+    <org.fossify.commons.views.MyAppBarLayout
+        android:id="@+id/settings_appbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/settings_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:background="@android:color/transparent">
+
+            <TextView
+                android:id="@+id/settings_toolbar_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="60dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="@string/settings_title"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+        </com.google.android.material.appbar.MaterialToolbar>
+
+    </org.fossify.commons.views.MyAppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/settings_nested_scrollview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:scrollbars="none"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:id="@+id/settings_holder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="120dp">
+
+            <TextView
+                style="@style/SettingsSectionLabel"
+                android:text="@string/settings_group_conversations" />
+
+            <LinearLayout
+                android:id="@+id/settings_card_conversations"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/settings_archived_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_archived_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_archive"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_archived_messages" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_archived_messages_sub" />
+                    </LinearLayout>
+
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_recycle_bin_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_recycle_bin_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_trash"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/deleted_messages" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/deleted_messages_sub" />
+                    </LinearLayout>
+
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_blocked_numbers_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_blocked_numbers_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_block"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/blocked_numbers" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/blocked_numbers_sub" />
+                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/settings_blocked_numbers_count"
+                        style="@style/SettingsRowValue" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                style="@style/SettingsSectionLabel"
+                android:text="@string/settings_group_filters" />
+
+            <LinearLayout
+                android:id="@+id/settings_card_filters"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/settings_contacts_only_filter_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_contacts_only_filter_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_person"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/show_contacts_only_filter" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/show_contacts_only_filter_sub" />
+                    </LinearLayout>
+                    <org.fossify.commons.views.MyMaterialSwitch
+                        android:id="@+id/settings_contacts_only_filter_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_ads_filter_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_ads_filter_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_campaign"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/show_ads_filter" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/show_ads_filter_sub" />
+                    </LinearLayout>
+                    <org.fossify.commons.views.MyMaterialSwitch
+                        android:id="@+id/settings_ads_filter_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_default_filter_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_default_filter_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_filter"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:id="@+id/settings_default_filter_label"
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/default_filter" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/default_filter_sub" />
+                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/settings_default_filter"
+                        style="@style/SettingsRowValue" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                style="@style/SettingsSectionLabel"
+                android:text="@string/settings_group_appearance" />
+
+            <LinearLayout
+                android:id="@+id/settings_card_appearance"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/settings_app_theme_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_app_theme_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_palette"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/app_theme" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/app_theme_sub" />
+                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/settings_app_theme"
+                        style="@style/SettingsRowValue" />
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_top_bar_preview_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_top_bar_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_brush"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:id="@+id/settings_top_bar_label"
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_top_bar_background" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_top_bar_background_sub" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/settings_top_bar_preview_container"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp">
+                        <View
+                            android:id="@+id/settings_top_bar_color_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/color_preview_bg" />
+                    </FrameLayout>
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_main_bg_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_main_bg_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_brush"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:id="@+id/settings_main_bg_label"
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_main_background" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_main_background_sub" />
+                    </LinearLayout>
+                    <Spinner
+                        android:id="@+id/settings_main_bg_mode_spinner"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp" />
+                    <FrameLayout
+                        android:id="@+id/settings_main_bg_preview_container"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp">
+                        <View
+                            android:id="@+id/settings_main_background_color_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/color_preview_bg" />
+                    </FrameLayout>
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_aurora_animate_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_aurora_animate_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_sparkle"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:id="@+id/settings_aurora_animate_label"
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_aurora_animate" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_aurora_animate_sub" />
+                    </LinearLayout>
+                    <org.fossify.commons.views.MyMaterialSwitch
+                        android:id="@+id/settings_aurora_animate_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                style="@style/SettingsSectionLabel"
+                android:text="@string/settings_group_size_font" />
+
+            <LinearLayout
+                android:id="@+id/settings_card_size_font"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/settings_ui_scale_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <TextView
+                            android:id="@+id/settings_ui_scale_label"
+                            style="@style/SettingsRowTitle"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:text="@string/settings_ui_scale" />
+                        <TextView
+                            android:id="@+id/settings_ui_scale_value"
+                            style="@style/SettingsRowValue" />
+                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/settings_ui_scale_sub"
+                        style="@style/SettingsRowSubtitle"
+                        android:text="@string/settings_ui_scale_sub" />
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/settings_ui_scale_slider"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:valueFrom="0.5"
+                        android:valueTo="1.5"
+                        android:stepSize="0.1" />
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_glass_opacity_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <TextView
+                            android:id="@+id/settings_glass_opacity_label"
+                            style="@style/SettingsRowTitle"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:text="@string/settings_glass_opacity" />
+                        <TextView
+                            android:id="@+id/settings_glass_opacity_value"
+                            style="@style/SettingsRowValue" />
+                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/settings_glass_opacity_sub"
+                        style="@style/SettingsRowSubtitle"
+                        android:text="@string/settings_glass_opacity_sub" />
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/settings_glass_opacity_slider"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:valueFrom="20"
+                        android:valueTo="100"
+                        android:stepSize="1" />
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_font_size_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_font_size_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_text_size"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:id="@+id/settings_font_size_label"
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_font_size" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_font_size_sub" />
+                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/settings_font_size"
+                        style="@style/SettingsRowValue" />
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_font_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_font_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_font"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:id="@+id/settings_font_label"
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_font" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_font_sub" />
+                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/settings_font"
+                        style="@style/SettingsRowValue" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                style="@style/SettingsSectionLabel"
+                android:text="@string/settings_group_text_colors" />
+
+            <LinearLayout
+                android:id="@+id/settings_card_text_colors"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/settings_top_bar_text_color_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_top_bar_text_color_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_palette"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:id="@+id/settings_top_bar_text_color_label"
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_top_bar_text" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_top_bar_text_sub" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/settings_top_bar_text_color_preview_container"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp">
+                        <View
+                            android:id="@+id/settings_top_bar_text_color_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/color_preview_bg" />
+                    </FrameLayout>
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_main_text_color_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_main_text_color_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_palette"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:id="@+id/settings_background_color_label"
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_main_text" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_main_text_sub" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/settings_main_text_color_preview_container"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp">
+                        <View
+                            android:id="@+id/settings_main_text_color_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/color_preview_bg" />
+                    </FrameLayout>
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_input_bar_text_color_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_input_bar_text_color_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_palette"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:id="@+id/settings_input_bar_text_color_label"
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_input_bar_text" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_input_bar_text_sub" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/settings_input_bar_text_color_preview_container"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp">
+                        <View
+                            android:id="@+id/settings_input_bar_text_color_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/color_preview_bg" />
+                    </FrameLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                style="@style/SettingsSectionLabel"
+                android:text="@string/settings_group_conversation_colors" />
+
+            <LinearLayout
+                android:id="@+id/settings_card_conversation_colors"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/settings_color_recent_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_color_recent_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_bubble"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_conversation_card_color" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_conversation_card_color_sub" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/settings_color_recent_preview_container"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp">
+                        <View
+                            android:id="@+id/settings_color_recent_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/color_preview_bg" />
+                    </FrameLayout>
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_sim1_color_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_sim1_color_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_sim_vector"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_sim1_color" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_sim1_color_sub" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/settings_sim1_color_preview_container"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp">
+                        <View
+                            android:id="@+id/settings_sim1_color_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/color_preview_bg" />
+                    </FrameLayout>
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_sim2_color_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_sim2_color_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_sim_vector"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_sim2_color" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_sim2_color_sub" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/settings_sim2_color_preview_container"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp">
+                        <View
+                            android:id="@+id/settings_sim2_color_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/color_preview_bg" />
+                    </FrameLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                style="@style/SettingsSectionLabel"
+                android:text="@string/settings_message_bubbles" />
+
+            <LinearLayout
+                android:id="@+id/settings_card_bubbles"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/settings_sent_bubble_color_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_sent_bubble_color_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_bubble"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:id="@+id/settings_sent_bubble_color_label"
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_sent_bubble_color" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_sent_bubble_color_sub" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/settings_sent_bubble_color_preview_container"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp">
+                        <View
+                            android:id="@+id/settings_sent_bubble_color_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/color_preview_bg" />
+                    </FrameLayout>
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_sent_bubble_text_color_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_sent_bubble_text_color_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_bubble"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:id="@+id/settings_sent_bubble_text_color_label"
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_sent_bubble_text" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_sent_bubble_text_sub" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/settings_sent_bubble_text_color_preview_container"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp">
+                        <View
+                            android:id="@+id/settings_sent_bubble_text_color_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/color_preview_bg" />
+                    </FrameLayout>
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_received_bubble_color_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_received_bubble_color_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_bubble"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:id="@+id/settings_received_bubble_color_label"
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_received_bubble_color" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_received_bubble_color_sub" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/settings_received_bubble_color_preview_container"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp">
+                        <View
+                            android:id="@+id/settings_received_bubble_color_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/color_preview_bg" />
+                    </FrameLayout>
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="64dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+                <LinearLayout
+                    android:id="@+id/settings_received_bubble_text_color_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="12dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <FrameLayout
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/settings_icon_tile">
+                        <ImageView android:id="@+id/settings_received_bubble_text_color_icon"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_gravity="center"
+                            android:src="@drawable/ic_settings_bubble"
+                            android:importantForAccessibility="no" />
+                    </FrameLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:id="@+id/settings_received_bubble_text_color_label"
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_received_bubble_text" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_received_bubble_text_sub" />
+                    </LinearLayout>
+                    <FrameLayout
+                        android:id="@+id/settings_received_bubble_text_color_preview_container"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp">
+                        <View
+                            android:id="@+id/settings_received_bubble_text_color_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/color_preview_bg" />
+                    </FrameLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/settings_reset_defaults"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="24dp"
+                android:background="?selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:paddingVertical="16dp"
+                android:text="@string/settings_reset_customization"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- NAVIGATION BAR -->
+    <LinearLayout
+        android:id="@+id/nova_nav_container"
+        android:layout_width="240dp"
+        android:layout_height="62dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_margin="16dp"
+        android:background="@drawable/nova_searchbar_bg"
+        android:alpha="0.92"
+        android:elevation="10dp"
+        android:orientation="horizontal"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:gravity="center_vertical">
+
+        <LinearLayout android:id="@+id/nav_home_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="?selectableItemBackground"><ImageView android:id="@+id/nav_home_icon" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_home_modern" android:alpha="0.6" app:tint="@android:color/white" /><TextView android:id="@+id/nav_home_label" style="@style/NavBarLabel" android:text="@string/nav_conversations" /></LinearLayout>
+        <View android:id="@+id/nav_divider1" android:layout_width="1dp" android:layout_height="24dp" android:background="#33808080" />
+        <LinearLayout android:id="@+id/nav_search_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="?selectableItemBackground"><ImageView android:id="@+id/nova_search_icon" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_search_vector" android:alpha="0.6" app:tint="@android:color/white" /><TextView android:id="@+id/nav_search_label" style="@style/NavBarLabel" android:text="@string/search" /></LinearLayout>
+        <View android:id="@+id/nav_divider2" android:layout_width="1dp" android:layout_height="24dp" android:background="#33808080" />
+        <LinearLayout android:id="@+id/nav_settings_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="?selectableItemBackground"><ImageView android:id="@+id/nav_settings_icon" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_settings_cog_vector" android:alpha="0.9" app:tint="@android:color/white" /><TextView android:id="@+id/nav_settings_label" style="@style/NavBarLabel" android:text="@string/settings_title" /></LinearLayout>
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

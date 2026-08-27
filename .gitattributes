@@ -1,0 +1,17 @@
+# Keep the Gradle wrapper script LF-only so Linux CI runners can execute it.
+gradlew text eol=lf
+*.sh text eol=lf
+
+# Binary assets must never be line-ending converted.
+*.jar binary
+*.keystore binary
+*.jks binary
+*.png binary
+*.jpg binary
+*.webp binary
+# Uppercase variants matter: font files often arrive named *.TTF, and a miss here
+# would let line-ending conversion corrupt them.
+*.ttf binary
+*.TTF binary
+*.otf binary
+*.OTF binary

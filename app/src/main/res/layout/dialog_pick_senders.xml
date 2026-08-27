@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/normal_margin"
+    android:paddingBottom="@dimen/normal_margin">
+
+    <org.fossify.commons.views.MyEditText
+        android:id="@+id/pick_senders_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/normal_margin"
+        android:hint="@string/search_senders_hint"
+        android:inputType="text"
+        android:maxLines="1" />
+
+    <ListView
+        android:id="@+id/pick_senders_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/normal_margin"
+        android:choiceMode="multipleChoice" />
+
+</LinearLayout>
