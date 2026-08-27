@@ -192,6 +192,15 @@ open class SimpleActivity : BaseSimpleActivity() {
             )
             auroraBackground = aurora
             window.decorView.background = aurora
+        } else if (config.mainBgMode == BG_MODE_LINEAR) {
+            // A plain vertical fade between the two stops -- the Nocturne theme's ground,
+            // where the design calls for a clean navy-to-purple gradient rather than halos.
+            releaseAuroraBackground()
+            clearGlideTarget(window.decorView)
+            window.decorView.background = GradientDrawable(
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(config.mainBgGradientStart, config.mainBgGradientEnd)
+            )
         } else {
             releaseAuroraBackground()
             clearGlideTarget(window.decorView)
@@ -204,7 +213,8 @@ open class SimpleActivity : BaseSimpleActivity() {
         // Pick the icon polarity from whatever is actually painted up there.
         val behindStatusBar = when {
             config.mainBgMode == BG_MODE_IMAGE && config.mainBackgroundImage.isNotEmpty() -> null
-            config.mainBgMode == BG_MODE_GRADIENT -> config.mainBgGradientStart
+            config.mainBgMode == BG_MODE_GRADIENT || config.mainBgMode == BG_MODE_LINEAR ->
+                config.mainBgGradientStart
             else -> config.mainBackgroundColor
         }
         runCatching {

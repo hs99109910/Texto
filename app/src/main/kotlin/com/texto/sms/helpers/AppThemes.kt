@@ -32,6 +32,11 @@ data class AppTheme(
     /** In dp. A very large value renders the cards as full pills. */
     val cardCornerRadiusDp: Int,
     val glass: Boolean,
+    /**
+     * Paints [backgroundGradient] as a plain two-stop vertical fade instead of the drifting
+     * halo field. Themes drawn from a flat mockup want the literal gradient they specify.
+     */
+    val linearBackground: Boolean = false,
 )
 
 object AppThemes {
@@ -39,6 +44,7 @@ object AppThemes {
     const val CLASSIC = 0
     const val AURORA = 1
     const val AURORA_LIGHT = 2
+    const val NOCTURNE = 3
 
     /**
      * The skin's signature hues, shared by every theme so the accent gradient stays
@@ -117,7 +123,35 @@ object AppThemes {
         glass = true
     )
 
-    val all = listOf(classic, aurora, auroraLight)
+    /**
+     * The Claude Design "Texto RTL" mockup, taken at its own values rather than reshaded into
+     * the cyan skin: a navy ground fading to deep purple, slate cards, a saturated blue sent
+     * bubble and a blurple accent. Its background is the literal gradient the mockup draws,
+     * so it opts out of the halo field the two Aurora themes use.
+     */
+    private val nocturne = AppTheme(
+        id = NOCTURNE,
+        label = "نوکترن",
+        topBarColor = Color.parseColor("#171C2E"),
+        topBarTextColor = Color.parseColor("#F2F3F8"),
+        mainTextColor = Color.parseColor("#F2F3F8"),
+        mainBackgroundColor = Color.parseColor("#0B1026"),
+        backgroundGradient = Color.parseColor("#0B1026") to Color.parseColor("#3D2260"),
+        cardColor = Color.parseColor("#1B2136"),
+        inputBarTextColor = Color.parseColor("#F2F3F8"),
+        // The mockup's own sent-bubble gradient, light stop first.
+        accentGradient = Color.parseColor("#4A80FF") to Color.parseColor("#2F6BFF"),
+        auroraAccent = Color.parseColor("#9184D9"),
+        // Unlike the cyan themes, this accent is a deep blue, so its text is white.
+        sentBubbleTextColor = Color.WHITE,
+        receivedBubbleColor = Color.parseColor("#232838"),
+        receivedBubbleTextColor = Color.parseColor("#F2F3F8"),
+        cardCornerRadiusDp = 24,
+        glass = true,
+        linearBackground = true
+    )
+
+    val all = listOf(classic, aurora, auroraLight, nocturne)
 
     fun byId(id: Int) = all.firstOrNull { it.id == id } ?: aurora
 
@@ -152,7 +186,7 @@ object AppThemes {
         config.topBarBgMode = BG_MODE_COLOR
 
         if (theme.backgroundGradient != null) {
-            config.mainBgMode = BG_MODE_GRADIENT
+            config.mainBgMode = if (theme.linearBackground) BG_MODE_LINEAR else BG_MODE_GRADIENT
             config.mainBgGradientStart = theme.backgroundGradient.first
             config.mainBgGradientEnd = theme.backgroundGradient.second
         } else {

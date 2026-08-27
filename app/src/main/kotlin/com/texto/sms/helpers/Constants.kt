@@ -116,6 +116,11 @@ const val BG_MODE_COLOR = 0
 const val BG_MODE_IMAGE = 1
 const val BG_MODE_GRADIENT = 2
 
+// A plain two-stop vertical gradient between mainBgGradientStart and mainBgGradientEnd.
+// Distinct from BG_MODE_GRADIENT, which ignores the end stop and paints the drifting
+// aurora halo field over the start colour instead.
+const val BG_MODE_LINEAR = 3
+
 /**
  * Accent gradient the skin runs through every emphasis surface -- sent bubbles, the unread
  * badge, the active filter chip, the FAB and the active nav tab -- so they read as one system.

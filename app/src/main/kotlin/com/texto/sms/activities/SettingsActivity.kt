@@ -253,12 +253,16 @@ class SettingsActivity : SimpleActivity() {
             config.topBarBgMode = BG_MODE_COLOR
         }
 
-        // The main background picks between a flat colour and an auto-shaded gradient derived
-        // from one colour. The two mode values (BG_MODE_COLOR, BG_MODE_GRADIENT) are not
-        // contiguous -- BG_MODE_IMAGE(1) used to sit between them -- so position and stored
-        // mode are mapped through mainModeValues rather than assumed equal.
-        val mainModes = arrayListOf(getString(R.string.bg_mode_color), getString(R.string.bg_mode_gradient))
-        val mainModeValues = intArrayOf(BG_MODE_COLOR, BG_MODE_GRADIENT)
+        // The main background picks between a flat colour, the auto-shaded aurora halo field,
+        // and a plain two-stop gradient. The mode values are not contiguous -- BG_MODE_IMAGE(1)
+        // sits between COLOR(0) and GRADIENT(2) -- so position and stored mode are mapped
+        // through mainModeValues rather than assumed equal.
+        val mainModes = arrayListOf(
+            getString(R.string.bg_mode_color),
+            getString(R.string.bg_mode_gradient),
+            getString(R.string.bg_mode_linear)
+        )
+        val mainModeValues = intArrayOf(BG_MODE_COLOR, BG_MODE_GRADIENT, BG_MODE_LINEAR)
 
         val adapter = object : ArrayAdapter<String>(this@SettingsActivity, android.R.layout.simple_spinner_item, mainModes) {
             override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
@@ -287,7 +291,7 @@ class SettingsActivity : SimpleActivity() {
                 val newMode = mainModeValues[position]
                 if (newMode != config.mainBgMode) {
                     config.mainBgMode = newMode
-                    if (newMode == BG_MODE_GRADIENT) {
+                    if (newMode == BG_MODE_GRADIENT || newMode == BG_MODE_LINEAR) {
                         // Switching to shaded should look different right away, so seed the
                         // shade from the current flat colour instead of leaving a flat gradient.
                         config.mainBgGradientStart = config.mainBackgroundColor
@@ -447,7 +451,9 @@ class SettingsActivity : SimpleActivity() {
         }
 
         settingsMainBgPreviewContainer.setOnClickListener {
-            if (config.mainBgMode == BG_MODE_GRADIENT) {
+            if (config.mainBgMode == BG_MODE_GRADIENT || config.mainBgMode == BG_MODE_LINEAR) {
+                // Both gradient modes read the stops rather than mainBackgroundColor, so the
+                // picker has to write the stops too or tapping the swatch would change nothing.
                 // One colour is all the user picks; the second stop is an automatic shade.
                 org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.mainBgGradientStart) { wasPositive, color ->
                     if (wasPositive) {
