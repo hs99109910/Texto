@@ -91,8 +91,7 @@ object NovaGlass {
             shape = GradientDrawable.RECTANGLE
             applyCorners()
             setColor(Color.TRANSPARENT)
-            val defaultRimAlpha = if (isDarkTint) 0.22f else 0.5f
-            setStroke(strokeWidthPx, Color.WHITE.withAlpha(rimAlpha ?: defaultRimAlpha))
+            setStroke(strokeWidthPx, rimFor(tint, rimAlpha ?: 0.22f))
         }
 
         val layers = mutableListOf<android.graphics.drawable.Drawable>(fill, sheen, rim)
@@ -144,7 +143,7 @@ object NovaGlass {
             shape = GradientDrawable.RECTANGLE
             applyCorners()
             setColor(Color.TRANSPARENT)
-            setStroke(strokeWidthPx, Color.WHITE.withAlpha(rimAlpha))
+            setStroke(strokeWidthPx, rimFor(tint, rimAlpha))
         }
 
         return LayerDrawable(arrayOf(fill, rim))
@@ -152,6 +151,28 @@ object NovaGlass {
 
     /** The mockup's bar gradient runs .84 -> .66; keeping the ratio is what carries over. */
     private const val FADE_RATIO = 0.79f
+
+    /** The design's own light-theme rim, `--rim: 20,23,43`. */
+    private val LIGHT_RIM = Color.rgb(20, 23, 43)
+
+    /**
+     * Alpha the light rim takes relative to the dark one. The design pairs a white rim at
+     * .20 on its dark theme with a near-black at .07 on its light one; a dark hairline reads
+     * far louder than a white one, so it is drawn much fainter to weigh the same.
+     */
+    private const val LIGHT_RIM_RATIO = 0.35f
+
+    /**
+     * The hairline for a surface tinted [tint]. White on dark grounds, as the design has it.
+     * On light grounds white is invisible against the fill, so the rim flips to the design's
+     * near-black and drops to a matching weight -- otherwise every glass panel in a light
+     * theme loses its edge and the cards bleed into the background.
+     */
+    fun rimFor(tint: Int, alpha: Float): Int = if (isDark(tint)) {
+        Color.WHITE.withAlpha(alpha)
+    } else {
+        LIGHT_RIM.withAlpha(alpha * LIGHT_RIM_RATIO)
+    }
 
     /** Blurs everything behind a popup while it is open. No-op below Android 12. */
     fun setBlurBehind(activity: Activity, enabled: Boolean) {

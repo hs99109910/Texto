@@ -45,6 +45,7 @@ object AppThemes {
     const val AURORA = 1
     const val AURORA_LIGHT = 2
     const val NOCTURNE = 3
+    const val NOCTURNE_LIGHT = 4
 
     /**
      * The skin's signature hues, shared by every theme so the accent gradient stays
@@ -152,7 +153,36 @@ object AppThemes {
         linearBackground = true
     )
 
-    val all = listOf(classic, aurora, auroraLight, nocturne)
+    /**
+     * Nocturne by day. The design ships a light variant of the same skin as its `.lt` token
+     * block, and these are those values rather than the dark theme inverted by hand:
+     * `--bg1 #F6F7FC`, `--bg2 #E6E1F7`, white cards and bars, `--txt #14172B`, and an
+     * accent that deepens from #9184D9 to #5B4FC4 so it still carries on a pale ground.
+     *
+     * The sent bubble keeps the dark theme's blue: the design does not move `--sent`
+     * between the two, and it is the one surface that stays saturated in both.
+     */
+    private val nocturneLight = AppTheme(
+        id = NOCTURNE_LIGHT,
+        label = "نوکترن روشن",
+        topBarColor = Color.WHITE,
+        topBarTextColor = Color.parseColor("#14172B"),
+        mainTextColor = Color.parseColor("#14172B"),
+        mainBackgroundColor = Color.parseColor("#F6F7FC"),
+        backgroundGradient = Color.parseColor("#F6F7FC") to Color.parseColor("#E6E1F7"),
+        cardColor = Color.WHITE,
+        inputBarTextColor = Color.parseColor("#14172B"),
+        accentGradient = Color.parseColor("#4A80FF") to Color.parseColor("#2F6BFF"),
+        auroraAccent = Color.parseColor("#5B4FC4"),
+        sentBubbleTextColor = Color.WHITE,
+        receivedBubbleColor = Color.WHITE,
+        receivedBubbleTextColor = Color.parseColor("#14172B"),
+        cardCornerRadiusDp = 22,
+        glass = true,
+        linearBackground = true
+    )
+
+    val all = listOf(classic, aurora, auroraLight, nocturne, nocturneLight)
 
     fun byId(id: Int) = all.firstOrNull { it.id == id } ?: aurora
 

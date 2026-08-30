@@ -243,7 +243,10 @@ class MainActivity : SimpleActivity() {
             shape = android.graphics.drawable.GradientDrawable.RECTANGLE
             cornerRadius = 14 * density
             setColor(config.recentColor.withAlpha(0.55f))
-            setStroke(density.toInt().coerceAtLeast(1), Color.WHITE.withAlpha(0.20f))
+            setStroke(
+                density.toInt().coerceAtLeast(1),
+                com.texto.sms.helpers.NovaGlass.rimFor(config.recentColor, 0.20f)
+            )
         }
         imageTintList = android.content.res.ColorStateList.valueOf(
             config.topBarTextColor.withAlpha(0.58f)
@@ -677,7 +680,11 @@ class MainActivity : SimpleActivity() {
         // Straight from the design: the selected chip is a solid fill of the sent colour
         // with a soft shadow under it and no rim; the rest are a 50% wash of the card colour
         // behind a 10%-white hairline.
-        val textColor = if (isActive) Color.WHITE else config.mainTextColor.withAlpha(0.58f)
+        val textColor = if (isActive) {
+            config.sentBubbleTextColor
+        } else {
+            config.mainTextColor.withAlpha(0.58f)
+        }
         chip.background = android.graphics.drawable.GradientDrawable().apply {
             shape = android.graphics.drawable.GradientDrawable.RECTANGLE
             cornerRadius = 20 * density
