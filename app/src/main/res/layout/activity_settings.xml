@@ -70,24 +70,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_archived_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_archive"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_archived_icon"
+                            android:src="@drawable/ic_ph_archive_box"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -105,7 +100,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -114,24 +109,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_recycle_bin_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_trash"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_recycle_bin_icon"
+                            android:src="@drawable/ic_ph_trash"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -149,7 +139,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -158,24 +148,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_blocked_numbers_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_block"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_blocked_numbers_icon"
+                            android:src="@drawable/ic_ph_prohibit"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -210,24 +195,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_contacts_only_filter_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_person"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_contacts_only_filter_icon"
+                            android:src="@drawable/ic_ph_users"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -248,7 +228,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -257,24 +237,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_ads_filter_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_campaign"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_ads_filter_icon"
+                            android:src="@drawable/ic_ph_megaphone"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -295,7 +270,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -304,24 +279,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_default_filter_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_filter"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_default_filter_icon"
+                            android:src="@drawable/ic_ph_funnel"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -356,24 +326,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_app_theme_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_palette"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_app_theme_icon"
+                            android:src="@drawable/ic_ph_palette"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -393,7 +358,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -402,24 +367,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_top_bar_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_brush"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_top_bar_icon"
+                            android:src="@drawable/ic_ph_paint_brush"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -446,7 +406,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -455,24 +415,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_main_bg_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_brush"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_main_bg_icon"
+                            android:src="@drawable/ic_ph_paint_brush"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -504,7 +459,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -513,24 +468,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_aurora_animate_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_sparkle"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_aurora_animate_icon"
+                            android:src="@drawable/ic_ph_sparkle"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -565,8 +515,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp">
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -598,7 +548,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -606,8 +556,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp">
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -639,7 +589,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -648,24 +598,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_font_size_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_text_size"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_font_size_icon"
+                            android:src="@drawable/ic_ph_text_t"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -685,7 +630,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -694,24 +639,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_font_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_font"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_font_icon"
+                            android:src="@drawable/ic_ph_text_aa"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -746,24 +686,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_top_bar_text_color_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_palette"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_top_bar_text_color_icon"
+                            android:src="@drawable/ic_ph_palette"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -790,7 +725,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -799,24 +734,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_main_text_color_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_palette"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_main_text_color_icon"
+                            android:src="@drawable/ic_ph_palette"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -843,7 +773,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -852,24 +782,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_input_bar_text_color_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_palette"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_input_bar_text_color_icon"
+                            android:src="@drawable/ic_ph_palette"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -911,24 +836,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_color_recent_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_bubble"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_color_recent_icon"
+                            android:src="@drawable/ic_ph_chat_circle_text"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -955,7 +875,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -964,24 +884,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_sim1_color_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_sim_vector"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_sim1_color_icon"
+                            android:src="@drawable/ic_ph_sim_card"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -1008,7 +923,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -1017,24 +932,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_sim2_color_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_sim_vector"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_sim2_color_icon"
+                            android:src="@drawable/ic_ph_sim_card"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -1076,24 +986,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_sent_bubble_color_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_bubble"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_sent_bubble_color_icon"
+                            android:src="@drawable/ic_ph_chat_circle_text"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -1120,7 +1025,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -1129,24 +1034,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_sent_bubble_text_color_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_bubble"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_sent_bubble_text_color_icon"
+                            android:src="@drawable/ic_ph_chat_circle_text"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -1173,7 +1073,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -1182,24 +1082,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_received_bubble_color_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_bubble"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_received_bubble_color_icon"
+                            android:src="@drawable/ic_ph_chat_circle_text"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -1226,7 +1121,7 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:layout_marginStart="64dp"
+                    android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
                     android:background="#1FFFFFFF" />
                 <LinearLayout
@@ -1235,24 +1130,19 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingHorizontal="14dp"
-                    android:paddingVertical="12dp"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
                     android:background="?selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
 
-                    <FrameLayout
-                        android:layout_width="38dp"
-                        android:layout_height="38dp"
-                        android:layout_marginEnd="12dp"
-                        android:background="@drawable/settings_icon_tile">
-                        <ImageView android:id="@+id/settings_received_bubble_text_color_icon"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="center"
-                            android:src="@drawable/ic_settings_bubble"
-                            android:importantForAccessibility="no" />
-                    </FrameLayout>
+                    <ImageView
+                            android:id="@+id/settings_received_bubble_text_color_icon"
+                            android:src="@drawable/ic_ph_chat_circle_text"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -1276,6 +1166,55 @@
                             android:background="@drawable/color_preview_bg" />
                     </FrameLayout>
                 </LinearLayout>
+            </LinearLayout>
+
+            <!--
+                About closes the screen out. It used to hang off the home screen's overflow
+                button, which no longer exists. The header carries a gear that opens this
+                screen instead, so everything that menu offered had to land somewhere here.
+            -->
+            <LinearLayout
+                android:id="@+id/settings_card_about"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/settings_about_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp">
+
+                    <ImageView
+                            android:id="@+id/settings_about_icon"
+                            android:src="@drawable/ic_ph_sparkle"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_about" />
+                        <!-- A version number is never translated, so it stays LTR. -->
+                        <TextView
+                            android:id="@+id/settings_about_version"
+                            style="@style/SettingsRowSubtitle"
+                            android:layoutDirection="ltr"
+                            android:textDirection="ltr" />
+                    </LinearLayout>
+                </LinearLayout>
+
             </LinearLayout>
 
             <TextView
@@ -1307,16 +1246,23 @@
         android:background="@drawable/nova_searchbar_bg"
         android:alpha="0.92"
         android:elevation="10dp"
+        android:layoutDirection="ltr"
         android:orientation="horizontal"
         android:paddingStart="4dp"
         android:paddingEnd="4dp"
         android:gravity="center_vertical">
 
-        <LinearLayout android:id="@+id/nav_home_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="?selectableItemBackground"><ImageView android:id="@+id/nav_home_icon" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_home_modern" android:alpha="0.6" app:tint="@android:color/white" /><TextView android:id="@+id/nav_home_label" style="@style/NavBarLabel" android:text="@string/nav_conversations" /></LinearLayout>
+        <!-- Same slot order as the home screen's bar: search, threads, then this screen. -->
+        <LinearLayout android:id="@+id/nav_search_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="?selectableItemBackground"><ImageView android:id="@+id/nova_search_icon" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_ph_magnifying_glass" android:alpha="0.6" app:tint="@android:color/white" /><TextView android:id="@+id/nav_search_label" style="@style/NavBarLabel" android:text="@string/search" /></LinearLayout>
         <View android:id="@+id/nav_divider1" android:layout_width="1dp" android:layout_height="24dp" android:background="#33808080" />
-        <LinearLayout android:id="@+id/nav_search_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="?selectableItemBackground"><ImageView android:id="@+id/nova_search_icon" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_search_vector" android:alpha="0.6" app:tint="@android:color/white" /><TextView android:id="@+id/nav_search_label" style="@style/NavBarLabel" android:text="@string/search" /></LinearLayout>
+        <LinearLayout android:id="@+id/nav_home_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="?selectableItemBackground"><ImageView android:id="@+id/nav_home_icon" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_ph_chat_teardrop_text" android:alpha="0.6" app:tint="@android:color/white" /><TextView android:id="@+id/nav_home_label" style="@style/NavBarLabel" android:text="@string/nav_conversations" /></LinearLayout>
         <View android:id="@+id/nav_divider2" android:layout_width="1dp" android:layout_height="24dp" android:background="#33808080" />
-        <LinearLayout android:id="@+id/nav_contacts_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="?selectableItemBackground"><ImageView android:id="@+id/nav_contacts_icon" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_settings_person" android:alpha="0.6" app:tint="@android:color/white" /><TextView android:id="@+id/nav_contacts_label" style="@style/NavBarLabel" android:text="@string/nav_contacts" /></LinearLayout>
+        <!--
+            Settings is the screen you are on, so the third slot names it and is drawn at
+            full strength. The home screen's bar puts the compose button here instead, which
+            is why the two bars are wired separately.
+        -->
+        <LinearLayout android:id="@+id/nav_settings_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="?selectableItemBackground"><ImageView android:id="@+id/nav_settings_icon" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_ph_gear_six" android:alpha="0.9" app:tint="@android:color/white" /><TextView android:id="@+id/nav_settings_label" style="@style/NavBarLabel" android:text="@string/settings_title" /></LinearLayout>
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

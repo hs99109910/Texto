@@ -550,13 +550,17 @@ class ThreadAdapter(
             
             if (isNewUi) {
                 val density = resources.displayMetrics.density
-                val r18 = 18f * density
-                val r4 = 4f * density
+                val r20 = 20f * density
+                val r7 = 7f * density
 
+                // The design tucks the tail into each bubble's *outer* bottom corner: the
+                // sent column sits on the left under RTL, so its short corner is bottom-left,
+                // and the received column mirrors it. cornerRadii is in physical corners
+                // (TL, TR, BR, BL) and is not flipped for us, hence the explicit sides.
                 val baseRadii = if (isReceived) {
-                    floatArrayOf(r18, r18, r18, r18, r18, r18, r4, r4)
+                    floatArrayOf(r20, r20, r20, r20, r7, r7, r20, r20)
                 } else {
-                    floatArrayOf(r18, r18, r18, r18, r4, r4, r18, r18)
+                    floatArrayOf(r20, r20, r20, r20, r20, r20, r7, r7)
                 }
 
                 val outlineOn =
@@ -583,19 +587,24 @@ class ThreadAdapter(
                 // tint so the two sides never compete for attention.
                 val tintEnd = if (isReceived) null else config.accentGradientEnd
 
-                // Frosted bubble, kept dense so message text stays fully legible.
+                // The design's own weights: the sent bubble is its accent gradient at full
+                // strength, the received one a 70% wash of the card colour. Neither carries
+                // a rim or a sheen -- the fill alone is the bubble.
                 background = com.texto.sms.helpers.NovaGlass.panel(
                     tint = if (isReceived) bgColor else config.accentGradientStart,
                     tintEnd = tintEnd,
                     cornerRadii = baseRadii,
-                    opacity = 0.88f,
+                    opacity = if (isReceived) 0.70f else 1f,
                     strokeWidthPx = density.toInt().coerceAtLeast(1),
+                    rimAlpha = 0f,
+                    sheenAlpha = 0f,
                     outlineColor = outlineColor,
                     outlineWidthPx = outlineWidth
                 )
 
-                // Material 3 Depth (Standardized for stability)
-                elevation = 4f * density
+                // The design floats the sent bubble over the ground and leaves the received
+                // one flat against it.
+                elevation = if (isReceived) 0f else 4f * density
                 clipToOutline = false 
                 outlineProvider = object : android.view.ViewOutlineProvider() {
                     override fun getOutline(view: View, outline: android.graphics.Outline) {

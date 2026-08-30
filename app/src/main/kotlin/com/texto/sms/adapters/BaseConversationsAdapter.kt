@@ -538,7 +538,8 @@ abstract class BaseConversationsAdapter(
 
             recentAddress.text = conversation.title
             recentAddress.setTextColor(mainTextColor)
-            recentAddress.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 1.1f)
+            // The design's row type ramp, relative to the preview line: 15 / 13 / 11.
+            recentAddress.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 1.15f)
 
             val smsDraft = drafts[conversation.threadId]
             val draftLabel = activity.getString(R.string.draft)
@@ -566,16 +567,20 @@ abstract class BaseConversationsAdapter(
             }
 
             recentDate.text = (conversation.date * 1000L).formatJalaliDateOrTime()
-            recentDate.setTextColor(mainTextColor)
-            recentDate.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.8f)
-            recentDate.alpha = 0.7f
+            // Secondary and tertiary text weights come straight from the design's tokens
+            // (--txt2 58%, --txt3 36%) rather than from a blanket view alpha, so the
+            // unread/read distinction below is free to use alpha for its own purpose.
+            recentDate.setTextColor(mainTextColor.withAlpha(0.36f))
+            recentDate.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.85f)
+            recentDate.alpha = 1f
+            recentBody.setTextColor(mainTextColor.withAlpha(0.58f))
 
             val isUnread = !conversation.read
             val style = if (isUnread) {
                 recentBody.alpha = 1f
                 if (conversation.isScheduled) Typeface.BOLD_ITALIC else Typeface.BOLD
             } else {
-                recentBody.alpha = 0.8f
+                recentBody.alpha = 0.85f
                 if (conversation.isScheduled) Typeface.ITALIC else Typeface.NORMAL
             }
 
@@ -588,13 +593,12 @@ abstract class BaseConversationsAdapter(
             recentPinIndicator.beVisibleIf(
                 activity.config.pinnedConversations.contains(conversation.threadId.toString())
             )
-            recentPinIndicator.applyColorFilter(mainTextColor)
-            recentUnreadBadge.setTextColor(mainTextColor)
+            recentPinIndicator.applyColorFilter(mainTextColor.withAlpha(0.36f))
             setupBadgeCount(recentUnreadBadge, isUnread, conversation.unreadCount)
 
             recentImage.updateLayoutParams {
-                val size = (activity as SimpleActivity)
-                    .getScaledDimen(org.fossify.commons.R.dimen.list_icon_size_medium)
+                // The design's avatar is 44dp, not the commons list-icon size.
+                val size = 44.getScaledPxIn(activity as SimpleActivity)
                 width = size
                 height = size
             }
@@ -637,14 +641,18 @@ abstract class BaseConversationsAdapter(
                 activity.config.cardCornerRadiusDp * resources.displayMetrics.density
 
             if (activity.config.glassTheme) {
-                // Frosted card matching the menus and bars. Kept dense enough that the
-                // message body stays legible against whatever background is behind it.
+                // The design's thread card is a flat wash of the card colour at 42% with no
+                // border and no sheen at all -- what separates one row from the next is the
+                // gap and the fill, not an edge. A selected row deepens to make the
+                // selection obvious.
                 NovaGlass.applyPanel(
                     view = recentFrame,
                     tint = baseColor,
                     cornerRadius = cardRadius,
-                    opacity = if (isLead) 0.72f else 0.62f,
+                    opacity = if (isSelected) 0.66f else 0.42f,
                     strokeWidthPx = (resources.displayMetrics.density).toInt().coerceAtLeast(1),
+                    rimAlpha = 0f,
+                    sheenAlpha = 0f,
                     outlineColor = outlineColor,
                     outlineWidthPx = outlineThickness
                 )
@@ -667,8 +675,11 @@ abstract class BaseConversationsAdapter(
                 }
             }
 
-            recentFrame.elevation = (if (isLead) 10f else 8f) * resources.displayMetrics.density
-            recentFrame.translationZ = if (isLead) 6f else 4f
+            // A drop shadow would draw a second, darker edge just outside the hairline and
+            // undo the point of it. Only the opaque classic card still casts one.
+            val cardElevation = if (activity.config.glassTheme) 0f else 8f
+            recentFrame.elevation = cardElevation * resources.displayMetrics.density
+            recentFrame.translationZ = if (activity.config.glassTheme) 0f else 4f
             recentFrame.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
             recentFrame.clipToOutline = false
 
@@ -915,19 +926,23 @@ abstract class BaseConversationsAdapter(
                 }
                 val config = activity.config
                 setTextColor(config.sentBubbleTextColor)
-                setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.7f)
-                val size = (activity as SimpleActivity).getScaledDimen(com.texto.sms.R.dimen.small_icon_size)
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.85f)
+                // The design's badge is a 19dp lozenge on a 10dp radius that grows wider for
+                // a two-digit count rather than staying a fixed circle, and it is filled
+                // with the flat sent colour rather than the accent gradient.
+                val size = 19.getScaledPxIn(activity as SimpleActivity)
+                val pad = 5.getScaledPxIn(activity as SimpleActivity)
                 updateLayoutParams {
-                    width = size
+                    width = ViewGroup.LayoutParams.WRAP_CONTENT
                     height = size
                 }
-                // Same accent gradient as the sent bubble and the active filter chip. A
-                // radius of half the badge keeps it a circle at any UI scale.
-                background = NovaGlass.accent(
-                    start = config.accentGradientStart,
-                    end = config.accentGradientEnd,
+                minWidth = size
+                setPadding(pad, 0, pad, 0)
+                background = GradientDrawable().apply {
+                    shape = GradientDrawable.RECTANGLE
                     cornerRadius = size / 2f
-                )
+                    setColor(config.accentGradientEnd)
+                }
             }
         }
     }
@@ -981,3 +996,11 @@ abstract class BaseConversationsAdapter(
         private const val HOVER_PAYLOAD = "hover_payload"
     }
 }
+
+/**
+ * [SimpleActivity.getScaledPx] reached from an adapter, which is not the activity itself.
+ * Keeps the design's dp figures readable at the call site while still honouring the
+ * UI-scale setting.
+ */
+private fun Int.getScaledPxIn(activity: SimpleActivity): Int =
+    with(activity) { this@getScaledPxIn.getScaledPx() }

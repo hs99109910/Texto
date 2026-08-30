@@ -1,0 +1,15 @@
+<!-- Phosphor "plus", lifted verbatim from the design's icon font. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024"
+    android:tint="#FFFFFFFF">
+    <group
+        android:scaleY="-1"
+        android:translateY="960">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M896 448c0-17.673-14.327-32-32-32v0h-320v-320c0-17.673-14.327-32-32-32s-32 14.327-32 32v0 320h-320c-17.673 0-32 14.327-32 32s14.327 32 32 32v0h320v320c0 17.673 14.327 32 32 32s32-14.327 32-32v0-320h320c17.673 0 32-14.327 32-32v0z" />
+    </group>
+</vector>

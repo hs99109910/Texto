@@ -46,11 +46,18 @@ class App : FossifyApp() {
         config.hadThankYouInstalled = true
         config.appRunCount = 100 // Avoid early popups
 
-        // Aurora is the default look. Setting only the appTheme default would name it in
+        // Nocturne is the default look. Setting only the appTheme default would name it in
         // settings without any of its colours being written, so a fresh install gets the
-        // whole theme applied once. Anyone who has already chosen a theme keeps theirs.
-        if (!config.hasStoredAppTheme) {
-            AppThemes.apply(config, AppThemes.byId(AppThemes.AURORA))
+        // whole theme applied once.
+        //
+        // Existing installs are moved onto it once as well: the app was reskinned to the
+        // Nocturne design wholesale, and leaving an upgrader on the old Aurora palette would
+        // show them the new layout wearing the old colours. Guarded by its own flag rather
+        // than hasStoredAppTheme so it happens exactly once and a theme picked afterwards
+        // sticks.
+        if (!config.hasStoredAppTheme || !config.nocturneRefreshApplied) {
+            AppThemes.apply(config, AppThemes.byId(AppThemes.NOCTURNE))
+            config.nocturneRefreshApplied = true
         }
 
         // Filters used to carry a keyword list. The field is gone from the model and the

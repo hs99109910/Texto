@@ -147,16 +147,15 @@
         <item name="android:layout_marginTop">20dp</item>
         <item name="android:layout_marginBottom">8dp</item>
         <item name="android:layout_marginStart">6dp</item>
-        <item name="android:textSize">12sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:alpha">0.6</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:letterSpacing">0.1</item>
+        <item name="android:alpha">0.36</item>
     </style>
 
     <style name="SettingsRowTitle">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:textSize">14sp</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">14.5sp</item>
         <item name="android:maxLines">2</item>
         <item name="android:ellipsize">end</item>
     </style>
@@ -165,8 +164,8 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">2dp</item>
-        <item name="android:textSize">11sp</item>
-        <item name="android:alpha">0.55</item>
+        <item name="android:textSize">11.5sp</item>
+        <item name="android:alpha">0.36</item>
         <item name="android:maxLines">2</item>
         <item name="android:ellipsize">end</item>
     </style>
@@ -175,7 +174,7 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">12sp</item>
-        <item name="android:alpha">0.65</item>
+        <item name="android:alpha">0.36</item>
         <item name="android:maxLines">1</item>
         <item name="android:ellipsize">end</item>
     </style>
@@ -185,10 +184,10 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_marginTop">2dp</item>
-        <item name="android:textSize">9sp</item>
-        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">9.5sp</item>
         <item name="android:textColor">@android:color/white</item>
         <item name="android:maxLines">1</item>
+        <item name="android:singleLine">true</item>
         <item name="android:includeFontPadding">false</item>
     </style>
 

@@ -1,0 +1,15 @@
+<!-- Phosphor "prohibit", lifted verbatim from the design's icon font. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024"
+    android:tint="#FFFFFFFF">
+    <group
+        android:scaleY="-1"
+        android:translateY="960">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M512 864c-229.75 0-416-186.25-416-416s186.25-416 416-416c229.75 0 416 186.25 416 416v0c-0.25 229.65-186.35 415.75-415.976 416h-0.024zM864 448c0-0.104 0-0.226 0-0.349 0-85.805-30.856-164.404-82.077-225.305l0.437 0.534-495.48 495.52c60.545 50.645 139.241 81.399 225.12 81.399 194.334 0 351.885-157.481 352-351.788v-0.011zM160 448c0 0.104 0 0.226 0 0.349 0 85.805 30.856 164.404 82.077 225.305l-0.437-0.534 495.48-495.52c-60.545-50.645-139.241-81.399-225.12-81.399-194.334 0-351.885 157.481-352 351.788v0.011z" />
+    </group>
+</vector>

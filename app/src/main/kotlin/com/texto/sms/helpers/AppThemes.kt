@@ -146,7 +146,8 @@ object AppThemes {
         sentBubbleTextColor = Color.WHITE,
         receivedBubbleColor = Color.parseColor("#232838"),
         receivedBubbleTextColor = Color.parseColor("#F2F3F8"),
-        cardCornerRadiusDp = 24,
+        // The mockup draws every card, sheet and thread row on a 22px radius.
+        cardCornerRadiusDp = 22,
         glass = true,
         linearBackground = true
     )

@@ -67,6 +67,8 @@ const val FONT_FAMILY = "font_family_nova"
 const val FONT_TYPE = "font_type"
 const val FONT_FAMILY_NOVA = "font_family_nova"
 const val APP_THEME = "app_theme"
+/** One-shot marker for the move onto the Nocturne design. See App.onCreate. */
+const val NOCTURNE_REFRESH_APPLIED = "nocturne_refresh_applied"
 const val MAIN_BG_GRADIENT_START = "main_bg_gradient_start"
 const val MAIN_BG_GRADIENT_END = "main_bg_gradient_end"
 const val CARD_CORNER_RADIUS = "card_corner_radius"

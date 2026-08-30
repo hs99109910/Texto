@@ -215,8 +215,13 @@ class Config(context: Context) : BaseConfig(context) {
     }
 
     var appTheme: Int
-        get() = prefs.getInt(APP_THEME, AppThemes.AURORA)
+        get() = prefs.getInt(APP_THEME, AppThemes.NOCTURNE)
         set(appTheme) = prefs.edit().putInt(APP_THEME, appTheme).apply()
+
+    /** Set once the install has been moved onto the Nocturne design. See App.onCreate. */
+    var nocturneRefreshApplied: Boolean
+        get() = prefs.getBoolean(NOCTURNE_REFRESH_APPLIED, false)
+        set(applied) = prefs.edit().putBoolean(NOCTURNE_REFRESH_APPLIED, applied).apply()
 
     /**
      * False until a theme has actually been written, which is what separates a fresh install

@@ -138,9 +138,8 @@ open class SimpleActivity : BaseSimpleActivity() {
                 R.id.thread_type_message,
                 R.id.thread_sim_number,
                 R.id.thread_message_carrier_warning,
-                R.id.conversations_fab,
                 R.id.nav_home_icon,
-                R.id.nav_contacts_icon,
+                R.id.nav_settings_icon,
                 R.id.nova_search_icon
             )
                              
@@ -317,30 +316,17 @@ open class SimpleActivity : BaseSimpleActivity() {
                 appBar.elevation = 0f
             }
             
-            // Force title tinting for main screen icons if they exist
-            val topTextColor = config.topBarTextColor
+            // Force tinting for the nav bar icons if they exist
             findViewById<View>(R.id.nova_nav_container)?.let {
                 val inputBarTextColor = config.inputBarTextColor
                 findViewById<ImageView>(R.id.nav_home_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
-                findViewById<ImageView>(R.id.nav_contacts_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
+                // Only the settings screen still has a third tab icon to tint; the home
+                // screen fills that slot with the accent compose disc, which keeps its own
+                // colours.
+                findViewById<ImageView>(R.id.nav_settings_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
                 findViewById<ImageView>(R.id.nova_search_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
                 findViewById<View>(R.id.nav_divider1)?.setBackgroundColor(inputBarTextColor.withAlpha(0.2f))
                 findViewById<View>(R.id.nav_divider2)?.setBackgroundColor(inputBarTextColor.withAlpha(0.2f))
-            }
-
-            findViewById<TextView>(R.id.conversations_fab)?.let {
-                it.visibility = View.VISIBLE
-                it.setTextColor(topTextColor)
-                if (useNewUi) {
-                    it.alpha = 0.4f
-                    it.elevation = 20 * density
-                    it.translationZ = 10 * density
-                    it.bringToFront()
-                } else {
-                    it.alpha = 1.0f
-                    it.elevation = 0f
-                    it.translationZ = 0f
-                }
             }
 
             // Filter chips row sits right under the top bar -- give it the same glass
@@ -403,7 +389,12 @@ open class SimpleActivity : BaseSimpleActivity() {
                        findViewById<View>(R.id.new_conversation_search_container)
         if (inputBar != null) {
             val inputBgColor = config.inputBarBackgroundColor
-            val inputRadius = 28 * density 
+            // The design draws the floating nav pill on 26dp and the typing bar on 28dp.
+            val inputRadius = if (inputBar.id == R.id.nova_nav_container) {
+                26 * density
+            } else {
+                22 * density
+            }
             val inputBarImage = config.inputBarImage
             
             if (config.inputBarBgMode == BG_MODE_IMAGE && inputBarImage.isNotEmpty()) {
@@ -481,17 +472,6 @@ open class SimpleActivity : BaseSimpleActivity() {
                     override fun afterTextChanged(s: Editable?) {}
                 })
                 et.tag = "color_watcher_attached"
-            }
-        }
-        
-        // Apply gear icon and plus button colors (Force 100% Sync with Top Bar Text, 70% Transparent)
-        val topTextColor = config.topBarTextColor
-        findViewById<TextView>(R.id.conversations_fab)?.let {
-            it.setTextColor(topTextColor)
-            it.alpha = 0.3f // 70% transparent = 0.3 opacity
-            if (config.useNewUi) {
-                it.elevation = 12 * density
-                it.bringToFront()
             }
         }
         

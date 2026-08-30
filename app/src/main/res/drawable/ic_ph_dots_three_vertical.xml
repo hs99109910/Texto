@@ -1,0 +1,15 @@
+<!-- Phosphor "dots-three-vertical", lifted verbatim from the design's icon font. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024"
+    android:tint="#FFFFFFFF">
+    <group
+        android:scaleY="-1"
+        android:translateY="960">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M560 448c0-26.51-21.49-48-48-48s-48 21.49-48 48c0 26.51 21.49 48 48 48v0c26.51 0 48-21.49 48-48v0zM512 672c26.51 0 48 21.49 48 48s-21.49 48-48 48c-26.51 0-48-21.49-48-48v0c0-26.51 21.49-48 48-48v0zM512 224c-26.51 0-48-21.49-48-48s21.49-48 48-48c26.51 0 48 21.49 48 48v0c0 26.51-21.49 48-48 48v0z" />
+    </group>
+</vector>

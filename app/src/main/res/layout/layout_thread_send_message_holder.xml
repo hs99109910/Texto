@@ -80,7 +80,7 @@
         android:scrollbars="none"
         android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toTopOf="@id/nova_message_input_bar"
+        app:layout_constraintBottom_toTopOf="@id/nova_message_bar_row"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_goneMarginTop="@dimen/medium_margin"
@@ -88,102 +88,120 @@
         tools:listitem="@layout/item_attachment_document_preview"
         tools:visibility="visible" />
 
+    <!--
+        The design splits the composer in two: a rounded field carrying the attachment clip,
+        the text and the SIM badge, with the send disc as its own accent square beside it.
+        The row itself is the tinted bar behind both, hairlined along its top edge.
+    -->
     <LinearLayout
-        android:id="@+id/nova_message_input_bar"
+        android:id="@+id/nova_message_bar_row"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:background="@drawable/nova_searchbar_bg"
-        android:gravity="center_vertical"
-        android:paddingStart="4dp"
-        android:paddingEnd="4dp"
-        android:minHeight="55dp"
-        android:elevation="6dp"
+        android:gravity="bottom"
+        android:paddingHorizontal="14dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="22dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <ImageView
-            android:id="@+id/thread_add_attachment"
-            android:layout_width="@dimen/normal_icon_size"
-            android:layout_height="@dimen/normal_icon_size"
-            android:alpha="0.9"
-            android:background="?selectableItemBackgroundBorderless"
-            android:contentDescription="@string/attachment"
-            android:padding="@dimen/normal_margin"
-            android:src="@drawable/ic_plus_vector" />
-
-        <org.fossify.commons.views.MyEditText
-            android:id="@+id/thread_type_message"
+        <LinearLayout
+            android:id="@+id/nova_message_input_bar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@android:color/transparent"
+            android:background="@drawable/nova_searchbar_bg"
             android:gravity="center_vertical"
-            android:hint="@string/type_a_message"
-            android:textColorHint="#888888"
-            android:textColor="@android:color/white"
-            android:inputType="textCapSentences|textMultiLine"
-            android:minHeight="@dimen/normal_icon_size"
-            android:maxLines="8" />
-
-        <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:minHeight="44dp"
+            android:paddingHorizontal="14dp"
+            android:paddingVertical="4dp">
 
             <ImageView
-                android:id="@+id/thread_select_sim_icon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:alpha="0.9"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:paddingStart="@dimen/medium_margin"
-                android:paddingTop="@dimen/normal_margin"
-                android:paddingEnd="@dimen/medium_margin"
-                android:paddingBottom="@dimen/normal_margin"
-                android:src="@drawable/ic_sim_vector"
-                android:visibility="gone"
-                tools:visibility="visible" />
+                android:id="@+id/thread_add_attachment"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:background="?selectableItemBackgroundBorderless"
+                android:contentDescription="@string/attachment"
+                android:src="@drawable/ic_ph_paperclip" />
 
-            <TextView
-                android:id="@+id/thread_select_sim_number"
+            <org.fossify.commons.views.MyEditText
+                android:id="@+id/thread_type_message"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:gravity="center_vertical"
+                android:hint="@string/type_a_message"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="8dp"
+                android:textColorHint="#888888"
+                android:textColor="@android:color/white"
+                android:inputType="textCapSentences|textMultiLine"
+                android:maxLines="8" />
+
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/thread_select_sim_icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:alpha="0.9"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:paddingStart="@dimen/medium_margin"
+                    android:paddingTop="@dimen/normal_margin"
+                    android:paddingEnd="@dimen/medium_margin"
+                    android:paddingBottom="@dimen/normal_margin"
+                    android:src="@drawable/ic_ph_sim_card"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+                <TextView
+                    android:id="@+id/thread_select_sim_number"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:textSize="@dimen/normal_text_size"
+                    android:visibility="gone"
+                    tools:text="1"
+                    tools:textColor="@color/dark_grey"
+                    tools:visibility="visible" />
+            </FrameLayout>
+
+            <org.fossify.commons.views.MyTextView
+                android:id="@+id/thread_character_counter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
                 android:gravity="center"
+                android:paddingStart="@dimen/small_margin"
+                android:paddingEnd="@dimen/small_margin"
+                android:text="0"
+                android:textColor="@android:color/white"
                 android:textSize="@dimen/normal_text_size"
                 android:visibility="gone"
-                tools:text="1"
-                tools:textColor="@color/dark_grey"
+                tools:ignore="HardcodedText"
                 tools:visibility="visible" />
-        </FrameLayout>
 
-        <org.fossify.commons.views.MyTextView
-            android:id="@+id/thread_character_counter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:paddingStart="@dimen/small_margin"
-            android:paddingEnd="@dimen/small_margin"
-            android:text="0"
-            android:textColor="@android:color/white"
-            android:textSize="@dimen/normal_text_size"
-            android:visibility="gone"
-            tools:ignore="HardcodedText"
-            tools:visibility="visible" />
+        </LinearLayout>
 
+        <!--
+            The paper plane points the way the language reads, so under RTL it is mirrored:
+            exactly what the design does to the same glyph.
+        -->
         <org.fossify.commons.views.MyButton
             android:id="@+id/thread_send_message"
-            android:layout_width="@dimen/normal_icon_size"
-            android:layout_height="@dimen/normal_icon_size"
-            android:layout_gravity="center_vertical"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="9dp"
             android:alpha="0.4"
-            android:background="?selectableItemBackgroundBorderless"
             android:clickable="false"
             android:contentDescription="@string/ok"
-            android:drawableStart="@drawable/ic_send_vector"
+            android:drawableStart="@drawable/ic_ph_paper_plane_right"
             android:gravity="center"
             android:padding="0dp"
+            android:scaleX="-1"
             android:text=""
             android:textColor="@android:color/white"
             android:textSize="@dimen/smaller_text_size" />

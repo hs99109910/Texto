@@ -14,6 +14,7 @@ import org.fossify.commons.extensions.*
 import org.fossify.commons.helpers.NavigationIcon
 import org.fossify.commons.helpers.PERMISSION_WRITE_STORAGE
 import org.fossify.commons.views.MyAppBarLayout
+import com.texto.sms.BuildConfig
 import com.texto.sms.R
 import com.texto.sms.databinding.ActivitySettingsBinding
 import com.texto.sms.extensions.config
@@ -87,12 +88,11 @@ class SettingsActivity : SimpleActivity() {
             
             // Set icon transparency
             navHomeIcon.alpha = 0.6f
-            navContactsIcon.alpha = 0.6f
             novaSearchIcon.alpha = 0.6f
+            // The current screen, so it is the one tab drawn at full strength.
+            navSettingsIcon.alpha = 0.9f
 
-            // No tab is highlighted here any more: settings is reached from the header's
-            // gear, not from the bar, so none of the three tabs is the current screen.
-            navContactsBtn.setBackgroundColor(Color.TRANSPARENT)
+            navSettingsBtn.setBackgroundColor(Color.TRANSPARENT)
 
             navHomeBtn.setOnClickListener {
                 finish() // Go back to main
@@ -100,10 +100,6 @@ class SettingsActivity : SimpleActivity() {
 
             navSearchBtn.setOnClickListener {
                 finish() // Go back to main and expand search
-            }
-
-            navContactsBtn.setOnClickListener {
-                startActivity(Intent(this@SettingsActivity, NewConversationActivity::class.java))
             }
         } else {
             novaNavContainer.beGone()
@@ -152,7 +148,7 @@ class SettingsActivity : SimpleActivity() {
             
             // Sync icon and divider colors with search bar text color
             binding.navHomeIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
-            binding.navContactsIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
+            binding.navSettingsIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
             binding.novaSearchIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
         } else {
             binding.novaNavContainer.foreground = null
@@ -433,13 +429,24 @@ class SettingsActivity : SimpleActivity() {
             }
         }
 
+        settingsAboutVersion.text = BuildConfig.VERSION_NAME
+        settingsAboutHolder.setOnClickListener {
+            startAboutActivity(
+                R.string.app_launcher_name,
+                0L,
+                BuildConfig.VERSION_NAME,
+                ArrayList<org.fossify.commons.models.FAQItem>(),
+                false
+            )
+        }
+
         settingsResetDefaults.setOnClickListener {
             config.resetColors()
             // resetColors() clears APP_THEME along with every colour, so without re-applying
             // here the screen would come back on the bare code defaults and only settle on
             // the real default theme at the next cold start, when App.onCreate notices that
             // nothing is stored. Reset now lands where a fresh install lands.
-            AppThemes.apply(config, AppThemes.byId(AppThemes.AURORA))
+            AppThemes.apply(config, AppThemes.byId(AppThemes.NOCTURNE))
             finish()
             startActivity(intent)
         }
@@ -751,7 +758,7 @@ class SettingsActivity : SimpleActivity() {
         listOf(
             settingsCardConversations, settingsCardFilters, settingsCardAppearance,
             settingsCardSizeFont, settingsCardTextColors, settingsCardConversationColors,
-            settingsCardBubbles
+            settingsCardBubbles, settingsCardAbout
         )
     }
 
@@ -765,12 +772,16 @@ class SettingsActivity : SimpleActivity() {
         val cardRadius = config.cardCornerRadiusDp * resources.displayMetrics.density
 
         settingsCards().forEach { card ->
+            // The design's settings card is the same flat 42% wash as a thread row, with no
+            // rim and no sheen; the rows inside it are separated by their own hairlines.
             NovaGlass.applyPanel(
                 view = card,
                 tint = config.recentColor,
                 cornerRadius = cardRadius,
-                opacity = if (config.glassTheme) 0.55f else 1f,
-                strokeWidthPx = 1.getScaledPx()
+                opacity = if (config.glassTheme) 0.42f else 1f,
+                strokeWidthPx = 1.getScaledPx(),
+                rimAlpha = 0f,
+                sheenAlpha = 0f
             )
             card.clipToOutline = true
             card.outlineProvider = object : android.view.ViewOutlineProvider() {
@@ -797,7 +808,9 @@ class SettingsActivity : SimpleActivity() {
     private fun tintRowsIn(view: View, textColor: Int) {
         when (view) {
             is TextView -> view.setTextColor(textColor)
-            is android.widget.ImageView -> view.applyColorFilter(textColor)
+            // Row glyphs are the design's one splash of the accent hue on this screen, so
+            // they deliberately do not follow the text colour the way everything else does.
+            is android.widget.ImageView -> view.applyColorFilter(config.auroraAccentColor)
             is ViewGroup -> {
                 for (i in 0 until view.childCount) {
                     tintRowsIn(view.getChildAt(i), textColor)

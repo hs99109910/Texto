@@ -32,6 +32,10 @@ object NovaGlass {
      * @param cornerRadius uniform radius in px, ignored when [cornerRadii] is given
      * @param cornerRadii per-corner radii (8 values, as GradientDrawable expects)
      * @param opacity 0f..1f of the tint fill; the lower the glassier
+     * @param rimAlpha overrides the hairline rim's own alpha. The default rim is sized to
+     *   read against a solid-ish fill; a panel that is nearly transparent needs a far
+     *   fainter one or the rim becomes the only thing you see.
+     * @param sheenAlpha overrides the top-down sheen's alpha, for the same reason
      * @param outlineColor optional user-configured outline drawn on top of the hairline rim
      */
     fun panel(
@@ -41,6 +45,8 @@ object NovaGlass {
         cornerRadii: FloatArray? = null,
         opacity: Float = 0.55f,
         strokeWidthPx: Int = 1,
+        rimAlpha: Float? = null,
+        sheenAlpha: Float = 0.14f,
         outlineColor: Int? = null,
         outlineWidthPx: Int = 0,
     ): Drawable {
@@ -75,7 +81,7 @@ object NovaGlass {
 
         val sheen = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(Color.WHITE.withAlpha(0.14f), Color.TRANSPARENT)
+            intArrayOf(Color.WHITE.withAlpha(sheenAlpha), Color.TRANSPARENT)
         ).apply {
             shape = GradientDrawable.RECTANGLE
             applyCorners()
@@ -85,9 +91,8 @@ object NovaGlass {
             shape = GradientDrawable.RECTANGLE
             applyCorners()
             setColor(Color.TRANSPARENT)
-            val rimColor =
-                if (isDarkTint) Color.WHITE.withAlpha(0.22f) else Color.WHITE.withAlpha(0.5f)
-            setStroke(strokeWidthPx, rimColor)
+            val defaultRimAlpha = if (isDarkTint) 0.22f else 0.5f
+            setStroke(strokeWidthPx, Color.WHITE.withAlpha(rimAlpha ?: defaultRimAlpha))
         }
 
         val layers = mutableListOf<android.graphics.drawable.Drawable>(fill, sheen, rim)
@@ -134,6 +139,8 @@ object NovaGlass {
         cornerRadius: Float,
         opacity: Float = 0.55f,
         strokeWidthPx: Int = 1,
+        rimAlpha: Float? = null,
+        sheenAlpha: Float = 0.14f,
         outlineColor: Int? = null,
         outlineWidthPx: Int = 0,
     ) {
@@ -143,6 +150,8 @@ object NovaGlass {
             cornerRadius = cornerRadius,
             opacity = opacity,
             strokeWidthPx = strokeWidthPx,
+            rimAlpha = rimAlpha,
+            sheenAlpha = sheenAlpha,
             outlineColor = outlineColor,
             outlineWidthPx = outlineWidthPx
         )

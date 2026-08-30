@@ -22,43 +22,29 @@ import kotlin.math.min
 object NovaAvatars {
 
     /**
-     * Corner radius as a fraction of the avatar's side, matching the design's
-     * `rounded-[38%]`. Rounded enough to read as a soft square, not a circle.
+     * Corner radius as a fraction of the avatar's side. The design draws a 44px avatar on a
+     * 16px radius, so a soft square rather than a circle.
      */
-    private const val CORNER_FRACTION = 0.38f
+    private const val CORNER_FRACTION = 0.364f
 
     /**
-     * Hues are spread over the full wheel but snapped to a 24-step grid, so two different
-     * contacts are either clearly the same colour or clearly different -- never almost-equal.
+     * The design's six avatar tints, verbatim. It cycles them by row index, which only works
+     * on a fixed mock list; here the choice is hashed from the name instead, so a contact
+     * keeps the same colour wherever they appear and however the list is sorted.
      */
-    private const val HUE_STEPS = 24
-
-    /**
-     * The design derives each avatar from `oklch(0.72 0.17 H)` to `oklch(0.6 0.19 H+45)`.
-     * HSV is close enough at these chromas and needs no colour-space maths at runtime; the
-     * saturation/value pairs below were picked to land on the same visual weight.
-     */
-    private const val START_SATURATION = 0.62f
-    private const val START_VALUE = 0.92f
-    private const val END_SATURATION = 0.78f
-    private const val END_VALUE = 0.74f
-    private const val HUE_SPREAD = 45f
-
-    /** Deterministic hue for [name], in degrees. */
-    fun hueFor(name: String): Float {
-        val key = name.trim().ifEmpty { "?" }
-        // String.hashCode is stable across JVM versions and platforms, unlike Object.hashCode.
-        val bucket = Math.floorMod(key.hashCode(), HUE_STEPS)
-        return bucket * (360f / HUE_STEPS)
-    }
+    private val TINTS = listOf(
+        Color.parseColor("#5B7CFF") to Color.parseColor("#2F6BFF"),
+        Color.parseColor("#C86BD8") to Color.parseColor("#7D3FC4"),
+        Color.parseColor("#3FC4A8") to Color.parseColor("#1F8F86"),
+        Color.parseColor("#FF8A5B") to Color.parseColor("#E0543C"),
+        Color.parseColor("#7F8CFF") to Color.parseColor("#4A4FD0"),
+        Color.parseColor("#5BC0FF") to Color.parseColor("#2F7AD8"),
+    )
 
     fun gradientFor(name: String): Pair<Int, Int> {
-        val hue = hueFor(name)
-        val start = Color.HSVToColor(floatArrayOf(hue, START_SATURATION, START_VALUE))
-        val end = Color.HSVToColor(
-            floatArrayOf((hue + HUE_SPREAD) % 360f, END_SATURATION, END_VALUE)
-        )
-        return start to end
+        val key = name.trim().ifEmpty { "?" }
+        // String.hashCode is stable across JVM versions and platforms, unlike Object.hashCode.
+        return TINTS[Math.floorMod(key.hashCode(), TINTS.size)]
     }
 
     /**

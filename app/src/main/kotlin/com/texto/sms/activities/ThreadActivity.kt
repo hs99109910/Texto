@@ -638,13 +638,40 @@ class ThreadActivity : SimpleActivity() {
         val mainTextColor = config.mainTextColor
 
         binding.messageHolder.apply {
-            threadSendMessage.setTextColor(inputBarColor)
+            val density = resources.displayMetrics.density
+
+            // The design's send control is an accent square, not a bare glyph on the bar.
+            threadSendMessage.setTextColor(config.sentBubbleTextColor)
             threadSendMessage.compoundDrawables.forEach {
-                it?.applyColorFilter(inputBarColor)
+                it?.applyColorFilter(config.sentBubbleTextColor)
+            }
+            threadSendMessage.background = android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
+                intArrayOf(config.accentGradientStart, config.accentGradientEnd)
+            ).apply {
+                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                cornerRadius = 16 * density
+            }
+
+            // The row behind the field: a wash of the bar colour with a hairline along its
+            // top edge, which is what separates the composer from the messages above it.
+            novaMessageBarRow.background = android.graphics.drawable.LayerDrawable(
+                arrayOf(
+                    android.graphics.drawable.ColorDrawable(
+                        config.inputBarBackgroundColor.withAlpha(0.60f)
+                    ),
+                    android.graphics.drawable.GradientDrawable().apply {
+                        shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                        setColor(config.mainTextColor.withAlpha(0.20f))
+                    }
+                )
+            ).apply {
+                setLayerHeight(1, density.toInt().coerceAtLeast(1))
+                setLayerGravity(1, android.view.Gravity.TOP)
             }
 
             confirmManageContacts.applyColorFilter(mainTextColor)
-            threadAddAttachment.applyColorFilter(inputBarColor)
+            threadAddAttachment.applyColorFilter(inputBarColor.withAlpha(0.36f))
             threadAddAttachment.alpha = 1.0f
 
             val properPrimaryColor = getProperPrimaryColor()
@@ -874,13 +901,13 @@ class ThreadActivity : SimpleActivity() {
         // Always create the call icon so refreshMenuItems() can toggle its visibility later,
         // once participants (and their phone numbers) have actually been loaded.
         val callItem = toolbar.menu.add(0, com.texto.sms.R.id.dial_number, 0, getString(org.fossify.commons.R.string.dial_number))
-        callItem.setIcon(org.fossify.commons.R.drawable.ic_phone_vector)
+        callItem.setIcon(com.texto.sms.R.drawable.ic_ph_phone)
         callItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
         callItem.isVisible = canDialCurrentParticipant()
 
         // Add a single custom overflow item
         val moreItem = toolbar.menu.add(0, com.texto.sms.R.id.more_options, 1, getString(R.string.more_options))
-        moreItem.setIcon(org.fossify.commons.R.drawable.ic_three_dots_vector)
+        moreItem.setIcon(com.texto.sms.R.drawable.ic_ph_dots_three_vertical)
         moreItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
 
         toolbar.setOnMenuItemClickListener { menuItem ->

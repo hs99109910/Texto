@@ -1,0 +1,15 @@
+<!-- Phosphor "paper-plane-right", lifted verbatim from the design's icon font. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024"
+    android:tint="#FFFFFFFF">
+    <group
+        android:scaleY="-1"
+        android:translateY="960">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M927.48 504l-672 383.56c-9.034 5.177-19.858 8.23-31.396 8.23-35.346 0-64-28.654-64-64 0-7.579 1.317-14.85 3.735-21.597l-0.14 0.447 122.52-362.64-122.52-362.68c-2.316-6.349-3.656-13.678-3.656-21.32 0-35.338 28.64-63.986 63.974-64h0.001c11.666 0.025 22.6 3.139 32.034 8.566l-0.314-0.166 671.68 384.2c19.669 11.172 32.722 31.98 32.722 55.836 0 23.776-12.965 44.523-32.21 55.559l-0.312 0.165zM224 64c0.008 0.072 0.013 0.155 0.013 0.24s-0.005 0.168-0.014 0.25l0.001-0.010 118.96 351.52h233.040c17.673 0 32 14.327 32 32s-14.327 32-32 32v0h-233.040l-118.72 351.36c-0.043 0.241-0.127 0.456-0.245 0.648l0.005-0.008 672-383.32z" />
+    </group>
+</vector>

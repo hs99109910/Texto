@@ -22,18 +22,59 @@
             android:background="@android:color/transparent"
             app:popupTheme="@style/NovaPopupTheme">
 
-            <TextView
-                android:id="@+id/nova_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:text="@string/app_launcher_name"
-                android:textColor="@android:color/white"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:layout_marginEnd="108dp"
-                android:ellipsize="end"
-                android:maxLines="1" />
+            <!--
+                The design's header: the name at the leading edge, the gear tile in the
+                corner opposite it. Both follow the locale, so under Persian the name reads
+                from the right and the gear sits on the left, exactly as the mockup draws it.
+            -->
+            <LinearLayout
+                android:id="@+id/nova_header_row"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="22dp"
+                android:paddingEnd="22dp">
+
+                <!--
+                    The wordmark is a Latin name, not a translated word, so it keeps its own
+                    direction whichever locale is running.
+                -->
+                <TextView
+                    android:id="@+id/nova_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:includeFontPadding="false"
+                    android:layoutDirection="ltr"
+                    android:letterSpacing="-0.02"
+                    android:maxLines="1"
+                    android:text="@string/app_launcher_name"
+                    android:textAlignment="viewStart"
+                    android:textColor="@android:color/white"
+                    android:textDirection="ltr"
+                    android:textSize="27sp" />
+
+                <!--
+                    The one header control. Everything the old overflow offered is reachable
+                    from settings now: archived conversations under their own heading, and
+                    "about" as the last card, so a second button had nothing left to open.
+                -->
+                <ImageView
+                    android:id="@+id/nova_menu_btn"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@drawable/nova_header_tile_bg"
+                    android:clickable="true"
+                    android:contentDescription="@string/settings_title"
+                    android:focusable="true"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_ph_gear_six"
+                    app:tint="@android:color/white" />
+
+            </LinearLayout>
 
         </com.google.android.material.appbar.MaterialToolbar>
 
@@ -185,35 +226,40 @@
         </RelativeLayout>
     </RelativeLayout>
 
-    <!-- NAVIGATION / SEARCH BAR -->
+    <!--
+        NAVIGATION / SEARCH BAR. The design's floating pill: three places you browse, in
+        locale order, with the compose action kept out of it as its own disc. 5dp of padding
+        and 3dp between tabs, matching the mockup.
+    -->
     <LinearLayout
         android:id="@+id/nova_nav_container"
-        android:layout_width="240dp"
-        android:layout_height="62dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_margin="16dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="22dp"
         android:background="@drawable/nova_searchbar_bg"
-        android:alpha="0.92"
         android:elevation="10dp"
         android:orientation="horizontal"
-        android:paddingStart="4dp"
-        android:paddingEnd="4dp"
+        android:padding="5dp"
         android:gravity="center_vertical">
 
-        <!-- HOME BUTTON -->
+        <!-- THREADS. First in locale order, and the screen you are on. -->
         <LinearLayout
             android:id="@+id/nav_home_btn"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/nova_nav_tab_active"
             android:gravity="center"
-            android:orientation="vertical">
+            android:minWidth="88dp"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="7dp">
             <ImageView
                 android:id="@+id/nav_home_icon"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/ic_home_modern"
-                android:alpha="0.6"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_ph_chat_teardrop_text"
                 app:tint="@android:color/white" />
             <TextView
                 android:id="@+id/nav_home_label"
@@ -221,19 +267,39 @@
                 android:text="@string/nav_conversations" />
         </LinearLayout>
 
-        <View
-            android:id="@+id/nav_divider1"
-            android:layout_width="1dp"
-            android:layout_height="24dp"
-            android:background="#22FFFFFF" />
+        <!-- CONTACTS. Reuses the new-conversation screen, which is the app's contact list. -->
+        <LinearLayout
+            android:id="@+id/nav_contacts_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:gravity="center"
+            android:minWidth="88dp"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="7dp">
+            <ImageView
+                android:id="@+id/nav_contacts_icon"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_ph_users"
+                app:tint="@android:color/white" />
+            <TextView
+                android:id="@+id/nav_contacts_label"
+                style="@style/NavBarLabel"
+                android:text="@string/nav_contacts" />
+        </LinearLayout>
 
         <!-- SEARCH BUTTON / INPUT CONTAINER -->
         <LinearLayout
             android:id="@+id/nav_search_container"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="3dp"
+            android:minWidth="88dp"
             android:orientation="horizontal"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="7dp"
             android:gravity="center">
 
             <!--
@@ -249,10 +315,9 @@
                 android:orientation="vertical">
                 <ImageView
                     android:id="@+id/nova_search_icon"
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@drawable/ic_search_vector"
-                    android:alpha="0.6"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_ph_magnifying_glass"
                     app:tint="@android:color/white" />
                 <TextView
                     android:id="@+id/nav_search_label"
@@ -264,6 +329,8 @@
                 android:id="@+id/nova_search_input"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:textAlignment="viewStart"
+                android:textDirection="locale"
                 android:paddingStart="8dp"
                 android:paddingEnd="12dp"
                 android:hint="@string/search"
@@ -275,89 +342,34 @@
                 android:visibility="gone" />
         </LinearLayout>
 
-        <View
-            android:id="@+id/nav_divider2"
-            android:layout_width="1dp"
-            android:layout_height="24dp"
-            android:background="#22FFFFFF" />
-
-        <!--
-            CONTACTS BUTTON. The design puts contacts in the bar's third slot and moves
-            settings behind the gear in the header, so the bar stays the three places you
-            browse rather than two places plus a configuration screen.
-        -->
-        <LinearLayout
-            android:id="@+id/nav_contacts_btn"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:orientation="vertical">
-            <ImageView
-                android:id="@+id/nav_contacts_icon"
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/ic_settings_person"
-                android:alpha="0.6"
-                app:tint="@android:color/white" />
-            <TextView
-                android:id="@+id/nav_contacts_label"
-                style="@style/NavBarLabel"
-                android:text="@string/nav_contacts" />
-        </LinearLayout>
-
     </LinearLayout>
 
     <!--
-        Settings moved off the bottom bar to make room for contacts, so it needs a home in
-        the header. Sits inboard of the overflow button, matching the design's gear in the
-        corner opposite the wordmark.
+        COMPOSE. The design keeps this out of the nav pill as its own accent disc, pinned to
+        the physical right corner above it (the mockup's `right: 18px` does not mirror under
+        RTL, and neither does this).
     -->
-    <ImageView
-        android:id="@+id/nova_settings_btn"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="top|end"
-        android:layout_marginTop="3dp"
-        android:layout_marginEnd="56dp"
-        android:background="?selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:contentDescription="@string/settings_title"
-        android:focusable="true"
-        android:padding="12dp"
-        android:src="@drawable/ic_settings_cog_vector"
-        app:tint="@android:color/white" />
-
-    <ImageView
-        android:id="@+id/nova_menu_btn"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="top|end"
-        android:layout_marginTop="3dp"
-        android:layout_marginEnd="8dp"
-        android:background="?selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:contentDescription="@string/more_options"
-        android:focusable="true"
-        android:padding="12dp"
-        android:src="@drawable/ic_more_vert_vector"
-        app:tint="@android:color/white" />
-
-    <!-- Sits above the floating nav bar, within thumb reach. -->
-    <org.fossify.commons.views.MyTextView
+    <FrameLayout
         android:id="@+id/conversations_fab"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_gravity="bottom|end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="88dp"
-        android:elevation="12dp"
-        android:gravity="center"
-        android:text="+"
-        android:textColor="#FFFFFF"
-        android:textSize="34sp"
+        android:layout_width="54dp"
+        android:layout_height="54dp"
+        android:layout_gravity="bottom|right"
+        android:layout_marginRight="18dp"
+        android:layout_marginBottom="42dp"
         android:clickable="true"
-        android:focusable="true"
-        android:includeFontPadding="false" />
+        android:contentDescription="@string/new_conversation"
+        android:elevation="12dp"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/conversations_fab_icon"
+            android:layout_width="23dp"
+            android:layout_height="23dp"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_ph_plus"
+            app:tint="@android:color/white" />
+
+    </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,0 +1,15 @@
+<!-- Phosphor "chat-teardrop-text", lifted verbatim from the design's icon font. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="1024"
+    android:viewportHeight="1024"
+    android:tint="#FFFFFFFF">
+    <group
+        android:scaleY="-1"
+        android:translateY="960">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M688 512c0-17.673-14.327-32-32-32v0h-272c-17.673 0-32 14.327-32 32s14.327 32 32 32v0h272c17.673 0 32-14.327 32-32v0zM656 416h-272c-17.673 0-32-14.327-32-32s14.327-32 32-32v0h272c17.673 0 32 14.327 32 32s-14.327 32-32 32v0zM928 464c-0.25-220.813-179.187-399.75-399.976-400h-336.024c-35.346 0-64 28.654-64 64v0 336c0 220.914 179.086 400 400 400s400-179.086 400-400v0zM864 464c0 185.568-150.432 336-336 336s-336-150.432-336-336v0-336h336c185.485 0.205 335.795 150.515 336 335.98v0.020z" />
+    </group>
+</vector>
