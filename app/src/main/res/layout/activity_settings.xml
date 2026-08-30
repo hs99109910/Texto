@@ -1236,33 +1236,28 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <!-- NAVIGATION BAR -->
+    <!--
+        NAVIGATION BAR. Same capsule as the home screen: full width, four equal slots, and
+        no dividers: the design separates the tabs with the lozenge behind the current one
+        rather than with rules between them.
+    -->
     <LinearLayout
         android:id="@+id/nova_nav_container"
-        android:layout_width="240dp"
-        android:layout_height="62dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:layout_margin="16dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="22dp"
         android:background="@drawable/nova_searchbar_bg"
-        android:alpha="0.92"
         android:elevation="10dp"
-        android:layoutDirection="ltr"
         android:orientation="horizontal"
-        android:paddingStart="4dp"
-        android:paddingEnd="4dp"
+        android:padding="6dp"
         android:gravity="center_vertical">
 
-        <!-- Same slot order as the home screen's bar: search, threads, then this screen. -->
-        <LinearLayout android:id="@+id/nav_search_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="?selectableItemBackground"><ImageView android:id="@+id/nova_search_icon" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_ph_magnifying_glass" android:alpha="0.6" app:tint="@android:color/white" /><TextView android:id="@+id/nav_search_label" style="@style/NavBarLabel" android:text="@string/search" /></LinearLayout>
-        <View android:id="@+id/nav_divider1" android:layout_width="1dp" android:layout_height="24dp" android:background="#33808080" />
-        <LinearLayout android:id="@+id/nav_home_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="?selectableItemBackground"><ImageView android:id="@+id/nav_home_icon" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_ph_chat_teardrop_text" android:alpha="0.6" app:tint="@android:color/white" /><TextView android:id="@+id/nav_home_label" style="@style/NavBarLabel" android:text="@string/nav_conversations" /></LinearLayout>
-        <View android:id="@+id/nav_divider2" android:layout_width="1dp" android:layout_height="24dp" android:background="#33808080" />
-        <!--
-            Settings is the screen you are on, so the third slot names it and is drawn at
-            full strength. The home screen's bar puts the compose button here instead, which
-            is why the two bars are wired separately.
-        -->
-        <LinearLayout android:id="@+id/nav_settings_btn" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:background="?selectableItemBackground"><ImageView android:id="@+id/nav_settings_icon" android:layout_width="22dp" android:layout_height="22dp" android:src="@drawable/ic_ph_gear_six" android:alpha="0.9" app:tint="@android:color/white" /><TextView android:id="@+id/nav_settings_label" style="@style/NavBarLabel" android:text="@string/settings_title" /></LinearLayout>
+        <LinearLayout android:id="@+id/nav_home_btn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:paddingHorizontal="4dp" android:paddingVertical="10dp"><ImageView android:id="@+id/nav_home_icon" android:layout_width="23dp" android:layout_height="23dp" android:src="@drawable/ic_ph_chat_teardrop_text" app:tint="@android:color/white" /><TextView android:id="@+id/nav_home_label" style="@style/NavBarLabel" android:text="@string/nav_conversations" /></LinearLayout>
+        <LinearLayout android:id="@+id/nav_search_btn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="3dp" android:orientation="vertical" android:gravity="center" android:paddingHorizontal="4dp" android:paddingVertical="10dp"><ImageView android:id="@+id/nav_search_icon" android:layout_width="23dp" android:layout_height="23dp" android:src="@drawable/ic_ph_magnifying_glass" app:tint="@android:color/white" /><TextView android:id="@+id/nav_search_label" style="@style/NavBarLabel" android:text="@string/search" /></LinearLayout>
+        <LinearLayout android:id="@+id/nav_settings_btn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="3dp" android:orientation="vertical" android:gravity="center" android:paddingHorizontal="4dp" android:paddingVertical="10dp"><ImageView android:id="@+id/nav_settings_icon" android:layout_width="23dp" android:layout_height="23dp" android:src="@drawable/ic_ph_gear_six" app:tint="@android:color/white" /><TextView android:id="@+id/nav_settings_label" style="@style/NavBarLabel" android:text="@string/settings_title" /></LinearLayout>
+
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

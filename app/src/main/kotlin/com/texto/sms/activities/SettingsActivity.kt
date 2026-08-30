@@ -72,27 +72,28 @@ class SettingsActivity : SimpleActivity() {
             androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(novaNavContainer) { v, insets ->
                 val navigationHeight = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.navigationBars()).bottom
                 v.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
-                    bottomMargin = 16.getScaledPx() + navigationHeight
+                    bottomMargin = 22.getScaledPx() + navigationHeight
                 }
                 insets
             }
-            
-            // Apply compact width and transparency
+
+            // Full width and self-sizing, exactly as on the home screen.
             novaNavContainer.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
-                width = 240.getScaledPx()
-                // Matches the home screen's bar, which grew to fit the tab captions.
-                height = 62.getScaledPx()
+                width = ViewGroup.LayoutParams.MATCH_PARENT
+                height = ViewGroup.LayoutParams.WRAP_CONTENT
                 gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
             }
-            novaNavContainer.alpha = 0.92f
-            
-            // Set icon transparency
-            navHomeIcon.alpha = 0.6f
-            novaSearchIcon.alpha = 0.6f
-            // The current screen, so it is the one tab drawn at full strength.
-            navSettingsIcon.alpha = 0.9f
 
-            navSettingsBtn.setBackgroundColor(Color.TRANSPARENT)
+            val idle = 0.36f
+            navHomeIcon.alpha = idle
+            navHomeLabel.alpha = idle
+            navSearchIcon.alpha = idle
+            navSearchLabel.alpha = idle
+            // The current screen, so it is the one tab drawn at full strength.
+            navSettingsIcon.alpha = 1f
+            navSettingsLabel.alpha = 1f
+
+            styleNavTabs()
 
             navHomeBtn.setOnClickListener {
                 finish() // Go back to main
@@ -101,8 +102,33 @@ class SettingsActivity : SimpleActivity() {
             navSearchBtn.setOnClickListener {
                 finish() // Go back to main and expand search
             }
+
+            navSettingsBtn.setOnClickListener { /* already here */ }
         } else {
             novaNavContainer.beGone()
+        }
+    }
+
+    /**
+     * The capsule's tabs, painted the same way the home screen paints its own so the two
+     * bars are one control that follows you between screens. Settings is the current tab
+     * here, so it is the one carrying the lozenge.
+     */
+    private fun styleNavTabs() = binding.apply {
+        val density = resources.displayMetrics.density
+        val accent = config.auroraAccentColor
+
+        navSettingsBtn.background = android.graphics.drawable.GradientDrawable().apply {
+            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+            cornerRadius = 27 * density
+            setColor(accent.withAlpha(0.18f))
+            setStroke(density.toInt().coerceAtLeast(1), accent.withAlpha(0.35f))
+        }
+        navHomeBtn.background = null
+        navSearchBtn.background = null
+
+        listOf(navHomeLabel, navSearchLabel, navSettingsLabel).forEach {
+            it.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.92f))
         }
     }
 
@@ -149,7 +175,7 @@ class SettingsActivity : SimpleActivity() {
             // Sync icon and divider colors with search bar text color
             binding.navHomeIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
             binding.navSettingsIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
-            binding.novaSearchIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
+            binding.navSearchIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
         } else {
             binding.novaNavContainer.foreground = null
         }
@@ -816,8 +842,18 @@ class SettingsActivity : SimpleActivity() {
                     tintRowsIn(view.getChildAt(i), textColor)
                 }
             }
+            // The hairlines between rows. They were a fixed white wash in XML, which only
+            // looked right on a dark theme; deriving them from the text colour keeps them
+            // legible whichever way the theme goes.
+            else -> if (view.id == View.NO_ID && view.layoutParams?.height == dividerHeight) {
+                view.setBackgroundColor(textColor.withAlpha(0.12f))
+            }
         }
     }
+
+    /** 1dp in pixels: how the row hairlines are recognised in [tintRowsIn]. */
+    private val dividerHeight: Int
+        get() = resources.displayMetrics.density.toInt().coerceAtLeast(1)
 
     private companion object {
         /** The design's `--destructive`, oklch(0.65 0.21 22). */

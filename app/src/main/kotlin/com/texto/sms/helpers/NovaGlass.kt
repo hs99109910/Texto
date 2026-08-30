@@ -111,6 +111,48 @@ object NovaGlass {
         return LayerDrawable(layers.toTypedArray())
     }
 
+    /**
+     * The design's bar recipe, shared by the header and the floating nav pill so the two
+     * read as the same material: a vertical wash of [tint] fading from full strength to
+     * about four fifths of it, under a hairline rim.
+     *
+     * [opacity] is the user's glass setting rather than the mockup's fixed 0.84, and the
+     * lower stop is derived from it, so turning the glass up or down keeps the fade instead
+     * of flattening it.
+     */
+    fun bar(
+        tint: Int,
+        cornerRadius: Float = 0f,
+        cornerRadii: FloatArray? = null,
+        opacity: Float = 0.84f,
+        strokeWidthPx: Int = 1,
+        rimAlpha: Float = 0.20f,
+    ): Drawable {
+        fun GradientDrawable.applyCorners() {
+            if (cornerRadii != null) this.cornerRadii = cornerRadii else this.cornerRadius = cornerRadius
+        }
+
+        val fill = GradientDrawable(
+            GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(tint.withAlpha(opacity), tint.withAlpha(opacity * FADE_RATIO))
+        ).apply {
+            shape = GradientDrawable.RECTANGLE
+            applyCorners()
+        }
+
+        val rim = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            applyCorners()
+            setColor(Color.TRANSPARENT)
+            setStroke(strokeWidthPx, Color.WHITE.withAlpha(rimAlpha))
+        }
+
+        return LayerDrawable(arrayOf(fill, rim))
+    }
+
+    /** The mockup's bar gradient runs .84 -> .66; keeping the ratio is what carries over. */
+    private const val FADE_RATIO = 0.79f
+
     /** Blurs everything behind a popup while it is open. No-op below Android 12. */
     fun setBlurBehind(activity: Activity, enabled: Boolean) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return

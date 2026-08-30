@@ -1,9 +1,15 @@
-<!-- Phosphor "paper-plane-right", lifted verbatim from the design's icon font. -->
+<!--
+    Phosphor "paper-plane-right", lifted verbatim from the design's icon font.
+    autoMirrored so it points the way the language reads: left under the app's Persian
+    locale, right if it is ever shown left-to-right. Mirroring it here rather than at the
+    call site keeps the flip off the button and its accent gradient.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="1024"
     android:viewportHeight="1024"
+    android:autoMirrored="true"
     android:tint="#FFFFFFFF">
     <group
         android:scaleY="-1"

@@ -28,6 +28,8 @@
     </plurals>
     <!-- New conversation -->
     <string name="new_conversation">گفتگوی جدید</string>
+    <!-- The compose tab caption in the bottom capsule; kept short so it fits a quarter of it. -->
+    <string name="nav_new_message">پیام جدید</string>
     <string name="add_contact_or_number">افزودن مخاطب یا شماره…</string>
     <string name="suggestions">پیشنهادها</string>
     <!-- Group conversation -->
@@ -82,6 +84,11 @@
     <string name="restore_whole_conversation_confirmation">آیا از بازگردانی همه پیام‌های این گفتگو مطمئن هستید؟</string>
     <string name="restore_confirmation">آیا از بازگردانی %s مطمئن هستید؟</string>
     <!-- Are you sure you want to delete 5 conversations? -->
+    <!-- The thread header status line for a group: "4 members". -->
+    <plurals name="thread_members">
+        <item quantity="one">%d عضو</item>
+        <item quantity="other">%d عضو</item>
+    </plurals>
     <plurals name="delete_conversations">
         <item quantity="one">%d گفتگو</item>
         <item quantity="other">%d گفتگو</item>
@@ -145,6 +152,7 @@
     <string name="sideloading_unmodded_title"></string>
     <!-- Nova additions -->
     <string name="more_options">گزینه‌های بیشتر</string>
+    <string name="back">بازگشت</string>
     <string name="manage_blocked_numbers">شماره‌های مسدود شده</string>
     <string name="blocked_numbers_unavailable">این دستگاه صفحه شماره‌های مسدود شده ندارد</string>
     <string name="no_conversations_in_filter">گفتگویی در این دسته نیست</string>

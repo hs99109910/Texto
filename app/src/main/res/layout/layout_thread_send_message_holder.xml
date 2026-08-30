@@ -187,8 +187,10 @@
         </LinearLayout>
 
         <!--
-            The paper plane points the way the language reads, so under RTL it is mirrored:
-            exactly what the design does to the same glyph.
+            The paper plane points the way the language reads, so under RTL it is mirrored.
+            The flip lives on the drawable (android:autoMirrored) rather than on the button:
+            scaleX="-1" here would have mirrored the accent gradient behind it too, leaving
+            the send square shaded the opposite way to every other accent surface.
         -->
         <org.fossify.commons.views.MyButton
             android:id="@+id/thread_send_message"
@@ -201,7 +203,6 @@
             android:drawableStart="@drawable/ic_ph_paper_plane_right"
             android:gravity="center"
             android:padding="0dp"
-            android:scaleX="-1"
             android:text=""
             android:textColor="@android:color/white"
             android:textSize="@dimen/smaller_text_size" />

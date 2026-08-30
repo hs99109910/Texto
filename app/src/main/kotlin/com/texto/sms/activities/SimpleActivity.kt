@@ -129,6 +129,7 @@ open class SimpleActivity : BaseSimpleActivity() {
             val id = view.id
             val excludedIds = listOf(
                 R.id.thread_toolbar_title,
+                R.id.thread_header_status,
                 R.id.nova_title,
                 R.id.settings_toolbar_title,
                 R.id.new_conversation_toolbar_title,
@@ -140,6 +141,8 @@ open class SimpleActivity : BaseSimpleActivity() {
                 R.id.thread_message_carrier_warning,
                 R.id.nav_home_icon,
                 R.id.nav_settings_icon,
+                R.id.nav_search_icon,
+                R.id.nav_add_icon,
                 R.id.nova_search_icon
             )
                              
@@ -249,7 +252,9 @@ open class SimpleActivity : BaseSimpleActivity() {
             // the filter chips row and the floating nav pill stay visually in step.
             val glassOpacity = config.glassOpacity / 100f
             val barShape = if (useNewUi) {
-                NovaGlass.panel(
+                // The same recipe the floating nav pill is painted with, so the two capsules
+                // are one material rather than a frosted panel above and a gradient below.
+                NovaGlass.bar(
                     tint = barColor,
                     cornerRadii = allCorners,
                     opacity = glassOpacity,
@@ -320,13 +325,12 @@ open class SimpleActivity : BaseSimpleActivity() {
             findViewById<View>(R.id.nova_nav_container)?.let {
                 val inputBarTextColor = config.inputBarTextColor
                 findViewById<ImageView>(R.id.nav_home_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
-                // Only the settings screen still has a third tab icon to tint; the home
-                // screen fills that slot with the accent compose disc, which keeps its own
-                // colours.
+                // The two capsules do not carry the same set of tabs, so every id either
+                // screen might have is looked up and whichever is inflated answers.
                 findViewById<ImageView>(R.id.nav_settings_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
                 findViewById<ImageView>(R.id.nova_search_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
-                findViewById<View>(R.id.nav_divider1)?.setBackgroundColor(inputBarTextColor.withAlpha(0.2f))
-                findViewById<View>(R.id.nav_divider2)?.setBackgroundColor(inputBarTextColor.withAlpha(0.2f))
+                findViewById<ImageView>(R.id.nav_search_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
+                findViewById<ImageView>(R.id.nav_add_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
             }
 
             // Filter chips row sits right under the top bar -- give it the same glass
@@ -410,21 +414,38 @@ open class SimpleActivity : BaseSimpleActivity() {
                 clearGlideTarget(inputBar)
                 inputBar.clipToOutline = false
                 if (config.glassTheme) {
-                    // The floating nav bar follows the user's glass setting alongside the top
-                    // bar and filter row; the typing bar keeps its own fixed value because its
-                    // text has to stay crisp while composing.
-                    val opacity = if (inputBar.id == R.id.nova_nav_container) {
-                        config.glassOpacity / 100f
+                    if (inputBar.id == R.id.nova_nav_container) {
+                        // The nav pill is a bar, not a panel: same gradient and rim as the
+                        // header, following the user's glass setting.
+                        inputBar.background = NovaGlass.bar(
+                            tint = inputBgColor,
+                            cornerRadius = inputRadius,
+                            opacity = config.glassOpacity / 100f,
+                            strokeWidthPx = 1.getScaledPx()
+                        )
+                    } else if (inputBar.id == R.id.nova_message_input_bar) {
+                        // Deliberately not glass. The composer sits inside the bar that is
+                        // already tinted behind it, so a frosted panel there stacked a sheen
+                        // and a bright rim on top of a surface that needs neither -- it read
+                        // as a second, brighter material floating on the composer. A flat
+                        // wash of the same colour at the design's weight is what the rest of
+                        // the theme uses for a filled field.
+                        inputBar.background = GradientDrawable().apply {
+                            shape = GradientDrawable.RECTANGLE
+                            cornerRadius = inputRadius
+                            setColor(inputBgColor.withAlpha(0.60f))
+                        }
                     } else {
-                        0.85f
+                        // The typing field keeps its own fixed value: its text has to stay
+                        // crisp while composing, whatever the bars are set to.
+                        NovaGlass.applyPanel(
+                            view = inputBar,
+                            tint = inputBgColor,
+                            cornerRadius = inputRadius,
+                            opacity = 0.85f,
+                            strokeWidthPx = 1.getScaledPx()
+                        )
                     }
-                    NovaGlass.applyPanel(
-                        view = inputBar,
-                        tint = inputBgColor,
-                        cornerRadius = inputRadius,
-                        opacity = opacity,
-                        strokeWidthPx = 1.getScaledPx()
-                    )
                 } else {
                     inputBar.background = GradientDrawable().apply {
                         shape = GradientDrawable.RECTANGLE

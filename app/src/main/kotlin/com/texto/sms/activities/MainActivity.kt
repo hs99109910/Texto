@@ -52,6 +52,12 @@ class MainActivity : SimpleActivity() {
     private companion object {
         /** What the design dims a nav tab you are not on to (`--txt3`, 36%). */
         const val NAV_IDLE_ALPHA = 0.36f
+
+        /** The lozenge behind the current tab, scaled up with the capsule. */
+        const val NAV_TAB_RADIUS_DP = 27
+
+        /** Tab glyph size. The mockup draws 18; the capsule here is about a third bigger. */
+        const val NAV_ICON_DP = 23
     }
 
     override var isSearchBarEnabled = false
@@ -159,7 +165,6 @@ class MainActivity : SimpleActivity() {
         setupNovaNavBar()
         setupOverlayBars()
 
-        styleFab()
         filterChipsAdapter?.notifyDataSetChanged()
         binding.novaSearchInput.setTextColor(config.inputBarTextColor)
         binding.novaSearchInput.setHintTextColor(config.inputBarTextColor.withAlpha(0.5f))
@@ -250,20 +255,19 @@ class MainActivity : SimpleActivity() {
         if (config.useNewUi) {
             novaNavContainer.beVisible()
 
-            // The design's pill sizes itself around three fixed-width tabs rather than
-            // splitting a fixed bar width between them, so it stays centred and the captions
-            // never crowd at large UI scales.
+            // The capsule spans the width now that compose lives inside it: four equal
+            // slots, sized up about a third from the mockup's so the labels sit comfortably.
             novaNavContainer.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
-                width = ViewGroup.LayoutParams.WRAP_CONTENT
+                width = ViewGroup.LayoutParams.MATCH_PARENT
                 gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
             }
 
-            // Only the current tab is drawn at full strength; the other two sit back at the
+            // Only the current tab is drawn at full strength; the rest sit back at the
             // design's tertiary text weight.
             navHomeIcon.alpha = 1f
             navHomeLabel.alpha = 1f
-            navContactsIcon.alpha = NAV_IDLE_ALPHA
-            navContactsLabel.alpha = NAV_IDLE_ALPHA
+            navAddIcon.alpha = NAV_IDLE_ALPHA
+            navAddLabel.alpha = NAV_IDLE_ALPHA
             novaSearchIcon.alpha = NAV_IDLE_ALPHA
             navSearchLabel.alpha = NAV_IDLE_ALPHA
 
@@ -273,12 +277,7 @@ class MainActivity : SimpleActivity() {
                 if (!isSearchExpanded) expandSearchBar()
             }
 
-            // The contacts tab reuses the new-conversation screen: it is already the app's
-            // contact list, and tapping a row there opens that person's thread, which is
-            // exactly what the design's contacts tab does.
-            navContactsBtn.setOnClickListener {
-                startActivity(Intent(this@MainActivity, NewConversationActivity::class.java))
-            }
+            navAddBtn.setOnClickListener { launchNewConversation() }
 
             navHomeBtn.setOnClickListener {
                 clearPendingScroll()
@@ -295,7 +294,7 @@ class MainActivity : SimpleActivity() {
             // Set initial state
             if (!isSearchExpanded) {
                 navHomeBtn.beVisible()
-                navContactsBtn.beVisible()
+                navAddBtn.beVisible()
                 novaSearchInput.beGone()
                 navSearchLabel.beVisible()
                 navSearchContainer.gravity = android.view.Gravity.CENTER
@@ -306,8 +305,8 @@ class MainActivity : SimpleActivity() {
     }
 
     /**
-     * The pill itself and the lozenge behind the current tab. Both are painted here rather
-     * than left to the XML placeholders so a theme change repaints them without reinflating.
+     * The capsule's tabs and the lozenge behind the current one, painted here rather than
+     * left to the XML placeholders so a theme change repaints them without reinflating.
      */
     private fun styleNavTabs() = binding.apply {
         val density = resources.displayMetrics.density
@@ -315,56 +314,59 @@ class MainActivity : SimpleActivity() {
 
         navHomeBtn.background = android.graphics.drawable.GradientDrawable().apply {
             shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-            cornerRadius = 21 * density
+            cornerRadius = NAV_TAB_RADIUS_DP * density
             setColor(accent.withAlpha(0.18f))
             setStroke(density.toInt().coerceAtLeast(1), accent.withAlpha(0.35f))
         }
-        navContactsBtn.background = null
+        navAddBtn.background = null
         navSearchContainer.background = null
 
-        listOf(navHomeBtn, navContactsBtn, navSearchContainer).forEach { tab ->
-            tab.minimumWidth = 88.getScaledPx()
-            tab.setPadding(20.getScaledPx(), 7.getScaledPx(), 20.getScaledPx(), 7.getScaledPx())
+        val padH = 4.getScaledPx()
+        val padV = 10.getScaledPx()
+        listOf(navHomeBtn, navAddBtn, navSearchContainer).forEach { tab ->
+            tab.minimumWidth = 0
+            tab.setPadding(padH, padV, padH, padV)
         }
-        listOf(navHomeIcon, navContactsIcon, novaSearchIcon).forEach { icon ->
+        val glyph = NAV_ICON_DP.getScaledPx()
+        listOf(navHomeIcon, navAddIcon, novaSearchIcon).forEach { icon ->
             icon.updateLayoutParams {
-                width = 18.getScaledPx()
-                height = 18.getScaledPx()
+                width = glyph
+                height = glyph
             }
+        }
+        listOf(navHomeLabel, navAddLabel, navSearchLabel).forEach { label ->
+            label.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.92f))
         }
     }
 
+    /**
+     * The capsule already spans the width, so searching does not resize it -- the other
+     * three tabs step aside and the search slot takes their weight, which is the same motion
+     * without a width animation fighting the layout.
+     */
     private fun expandSearchBar() = binding.apply {
         if (isSearchExpanded) return@apply
         isSearchExpanded = true
 
-        val startWidth = novaNavContainer.width.takeIf { it > 0 } ?: 280.getScaledPx()
-        val endWidth = root.width - 32.getScaledPx()
-
-        // The other two tabs step aside outright rather than shrinking to nothing: they are
-        // fixed-width in the design, so there is no weight left to animate them with.
         navHomeBtn.beGone()
-        navContactsBtn.beGone()
+        navAddBtn.beGone()
         navSearchLabel.beGone()
-        navSearchContainer.updateLayoutParams<LinearLayout.LayoutParams> { width = 0; weight = 1f }
         navSearchContainer.gravity = android.view.Gravity.CENTER_VERTICAL
         novaSearchInput.beVisible()
 
-        val animator = ValueAnimator.ofInt(startWidth, endWidth)
-        animator.duration = 400
-        animator.interpolator = OvershootInterpolator(1.0f)
+        // The top title bar and filter chips row are glass too -- brighten them in lockstep
+        // with the nav bar instead of leaving them dimmed while it isn't.
+        mainAppbar.alpha = 1.0f
+        filterBar.alpha = 1.0f
+        novaSearchIcon.alpha = 1f
 
+        val animator = ValueAnimator.ofFloat(0f, 1f)
+        animator.duration = 300
+        animator.interpolator = DecelerateInterpolator()
         animator.addUpdateListener { animation ->
-            novaNavContainer.updateLayoutParams { width = animation.animatedValue as Int }
+            novaSearchInput.alpha = animation.animatedValue as Float
         }
-
         animator.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationStart(animation: Animator) {
-                // The top title bar and filter chips row are glass too now -- brighten them
-                // in lockstep with the nav bar instead of leaving them dimmed while it isn't.
-                mainAppbar.alpha = 1.0f
-                filterBar.alpha = 1.0f
-            }
             override fun onAnimationEnd(animation: Animator) {
                 novaSearchInput.requestFocus()
                 showKeyboard(novaSearchInput)
@@ -379,39 +381,13 @@ class MainActivity : SimpleActivity() {
 
         hideKeyboard()
         novaSearchInput.beGone()
-
-        // Three 88dp tabs plus their gaps and the pill's own padding: what wrap_content will
-        // settle on once the tabs are back, so the animation lands on it rather than
-        // collapsing to nothing and snapping open.
-        val collapsedWidth = (3 * 88 + 2 * 3 + 2 * 5).getScaledPx()
-        val startWidth = novaNavContainer.width
-        val animator = ValueAnimator.ofInt(startWidth, collapsedWidth)
-        animator.duration = 300
-        animator.interpolator = DecelerateInterpolator()
-
-        animator.addUpdateListener { animation ->
-            novaNavContainer.updateLayoutParams { width = animation.animatedValue as Int }
-        }
-
-        animator.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                // Back to a self-sizing pill, which is what the collapsed design is.
-                navSearchContainer.updateLayoutParams<LinearLayout.LayoutParams> {
-                    width = ViewGroup.LayoutParams.WRAP_CONTENT
-                    weight = 0f
-                }
-                navSearchContainer.gravity = android.view.Gravity.CENTER
-                navSearchLabel.beVisible()
-                navHomeBtn.beVisible()
-                navContactsBtn.beVisible()
-                novaNavContainer.updateLayoutParams {
-                    width = ViewGroup.LayoutParams.WRAP_CONTENT
-                }
-                mainAppbar.alpha = 0.92f
-                filterBar.alpha = 0.92f
-            }
-        })
-        animator.start()
+        navSearchLabel.beVisible()
+        navSearchContainer.gravity = android.view.Gravity.CENTER
+        novaSearchIcon.alpha = NAV_IDLE_ALPHA
+        navHomeBtn.beVisible()
+        navAddBtn.beVisible()
+        mainAppbar.alpha = 0.92f
+        filterBar.alpha = 0.92f
     }
 
     private fun loadMessages() {
@@ -658,43 +634,6 @@ class MainActivity : SimpleActivity() {
     }
 
     /**
-     * The compose disc in the nav bar's trailing slot. Solid accent rather than glass: it is
-     * the one action in a row of places, and the design draws it as a filled circle so it
-     * still reads as the primary control now that it lives inside the bar.
-     */
-    private fun styleFab() = binding.conversationsFab.apply {
-        val density = resources.displayMetrics.density
-        val size = 54.getScaledPx()
-        // No bottom margin here: setupSearchEdgeToEdge owns it, so that it can keep the disc
-        // clear of the system bar and the keyboard.
-        updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
-            width = size
-            height = size
-            rightMargin = 18.getScaledPx()
-        }
-        // The design's compose disc: the accent gradient at 160deg with a bright hairline
-        // over it, on a 19dp radius rather than a full circle.
-        background = android.graphics.drawable.GradientDrawable(
-            android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
-            intArrayOf(config.accentGradientStart, config.accentGradientEnd)
-        ).apply {
-            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-            cornerRadius = 19 * density
-            setStroke(density.toInt().coerceAtLeast(1), Color.WHITE.withAlpha(0.26f))
-        }
-        alpha = 1f
-        elevation = 12 * density
-        outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
-        binding.conversationsFabIcon.updateLayoutParams<android.widget.FrameLayout.LayoutParams> {
-            width = 23.getScaledPx()
-            height = 23.getScaledPx()
-        }
-        binding.conversationsFabIcon.imageTintList =
-            android.content.res.ColorStateList.valueOf(config.sentBubbleTextColor)
-        bringToFront()
-    }
-
-    /**
      * How many conversations each chip currently holds. "All" is the whole list; every other
      * filter reuses the same predicate the list itself is filtered with, so a chip's badge can
      * never disagree with what tapping it shows.
@@ -862,7 +801,6 @@ class MainActivity : SimpleActivity() {
 
     private fun setupOneTimeViews() {
         binding.noConversationsPlaceholder2.setOnClickListener { launchNewConversation() }
-        binding.conversationsFab.setOnClickListener { launchNewConversation() }
         // The header's single control. The overflow menu it replaced offered archived
         // conversations, settings and about; all three live inside settings now, so the
         // gear opens that rather than a menu with one real entry left in it.
@@ -1230,11 +1168,6 @@ class MainActivity : SimpleActivity() {
             binding.novaNavContainer.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
                 bottomMargin = bottomInset + 22.getScaledPx()
             }
-            // The compose disc rides 20dp higher than the pill, as the design has it, so it
-            // has to follow the same inset rather than staying put when the bar appears.
-            binding.conversationsFab.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
-                bottomMargin = bottomInset + 42.getScaledPx()
-            }
             insets
         }
     }
@@ -1329,7 +1262,7 @@ class MainActivity : SimpleActivity() {
             
             // Sync icon and divider colors with search bar text color
             binding.navHomeIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
-            binding.navContactsIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
+            binding.navAddIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
             binding.novaSearchIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
         } else {
             binding.novaNavContainer.foreground = null

@@ -26,27 +26,110 @@
             app:popupTheme="@style/NovaPopupTheme">
 
             <!--
-                The app now runs right-to-left for real (supportsRtl plus the Persian locale
-                SimpleActivity.attachBaseContext installs), so "start" is the right edge and
-                this no longer needs the absolute "right" it used to be pinned to.
-                Auto-sizing shrinks long names down to 13sp instead of cutting them off.
+                The design's thread header, as one row: back, who you are talking to, and
+                the two actions. It follows the locale, so under Persian the back tile is on
+                the right and the actions fall to the left, which is how the mockup draws it.
+                The tiles' fills and radii are repainted from the live theme in
+                ThreadActivity.styleThreadHeader.
             -->
-            <TextView
-                android:id="@+id/thread_toolbar_title"
+            <LinearLayout
+                android:id="@+id/thread_header_row"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:ellipsize="end"
-                android:gravity="start|center_vertical"
-                android:maxLines="1"
-                android:textColor="#FFFFFF"
-                android:textDirection="anyRtl"
-                android:textStyle="bold"
-                app:autoSizeMaxTextSize="25sp"
-                app:autoSizeMinTextSize="12sp"
-                app:autoSizeStepGranularity="1sp"
-                app:autoSizeTextType="uniform"
-                tools:text="نام مخاطب" />
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp">
+
+                <ImageView
+                    android:id="@+id/thread_back_btn"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:clickable="true"
+                    android:contentDescription="@string/back"
+                    android:focusable="true"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_ph_arrow_right"
+                    app:tint="#FFFFFF" />
+
+                <ImageView
+                    android:id="@+id/thread_header_avatar"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="12dp"
+                    android:importantForAccessibility="no"
+                    android:scaleType="centerCrop"
+                    tools:src="@mipmap/ic_launcher" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/thread_toolbar_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false"
+                        android:maxLines="1"
+                        android:textAlignment="viewStart"
+                        android:textColor="#FFFFFF"
+                        android:textDirection="anyRtl"
+                        android:textSize="15.5sp"
+                        tools:text="نام مخاطب" />
+
+                    <!--
+                        SMS has no presence to report, so this line carries what the app
+                        actually knows about the other side: their number, or how many
+                        people are in the group.
+                    -->
+                    <TextView
+                        android:id="@+id/thread_header_status"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:ellipsize="end"
+                        android:includeFontPadding="false"
+                        android:maxLines="1"
+                        android:textAlignment="viewStart"
+                        android:textDirection="locale"
+                        android:textSize="11.5sp"
+                        android:visibility="gone"
+                        tools:text="+98 912 118 4402"
+                        tools:visibility="visible" />
+
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/thread_call_btn"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:layout_marginStart="6dp"
+                    android:clickable="true"
+                    android:contentDescription="@string/dial_number"
+                    android:focusable="true"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_ph_phone"
+                    android:visibility="gone"
+                    app:tint="#FFFFFF"
+                    tools:visibility="visible" />
+
+                <ImageView
+                    android:id="@+id/thread_menu_btn"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:layout_marginStart="6dp"
+                    android:clickable="true"
+                    android:contentDescription="@string/more_options"
+                    android:focusable="true"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_ph_dots_three_vertical"
+                    app:tint="#FFFFFF" />
+
+            </LinearLayout>
 
         </com.google.android.material.appbar.MaterialToolbar>
 

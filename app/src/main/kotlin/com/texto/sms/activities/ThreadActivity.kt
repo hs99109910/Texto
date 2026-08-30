@@ -24,9 +24,9 @@ import android.view.animation.AnimationUtils
 import android.view.animation.OvershootInterpolator
 import android.view.inputmethod.EditorInfo
 import android.webkit.MimeTypeMap
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.appcompat.widget.Toolbar
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -153,59 +153,40 @@ class ThreadActivity : SimpleActivity() {
         }
     }
 
+    /**
+     * The design's composer is one full-width row on every screen: a field that fills
+     * whatever the send disc leaves beside it. That replaced an older variant which sat as a
+     * 240dp pill in the middle and grew when you tapped it -- the field is a weighted child
+     * of the row now, so there is no free width for that animation to run in, and the send
+     * disc outside it had nothing sensible to do while the field was narrow.
+     *
+     * [expandInputBar] and [shrinkInputBar] survive as the focus half of that behaviour.
+     */
     private fun setupExpandingInputBar() {
         val inputBar = binding.messageHolder.novaMessageInputBar
         val inputField = binding.messageHolder.threadTypeMessage
-        
-        if (config.useNewUi) {
-            val alwaysExpand = config.alwaysExpandSearchBar
-            
-            // New UI: Small centered input bar that expands
-            inputBar.updateLayoutParams<androidx.constraintlayout.widget.ConstraintLayout.LayoutParams> {
-                width = if (alwaysExpand) androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_PARENT else 240.getScaledPx()
-                startToStart = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-            }
-            inputBar.alpha = 0.95f // 95% opacity
-            inputBar.elevation = 10f * resources.displayMetrics.density
-            inputBar.translationZ = 4f
-            
-            inputField.isFocusable = alwaysExpand
-            inputField.isFocusableInTouchMode = alwaysExpand
-            inputField.isEnabled = true
-            
-            inputBar.setOnClickListener {
-                if (!inputField.isFocusable) {
-                    expandInputBar()
-                }
-            }
-            
-            inputField.setOnClickListener {
-                if (!inputField.isFocusable) {
-                    expandInputBar()
-                }
-            }
-            
+        val isNewUi = config.useNewUi
+
+        inputBar.updateLayoutParams<LinearLayout.LayoutParams> {
+            width = 0
+            weight = 1f
+        }
+        inputBar.alpha = if (isNewUi) 0.95f else 1f
+        inputBar.elevation = if (isNewUi) 10f * resources.displayMetrics.density else 0f
+        inputBar.translationZ = if (isNewUi) 4f else 0f
+
+        val startsFocusable = !isNewUi || config.alwaysExpandSearchBar
+        inputField.isFocusable = startsFocusable
+        inputField.isFocusableInTouchMode = startsFocusable
+        inputField.isEnabled = true
+
+        if (isNewUi && !config.alwaysExpandSearchBar) {
+            inputBar.setOnClickListener { if (!inputField.isFocusable) expandInputBar() }
+            inputField.setOnClickListener { if (!inputField.isFocusable) expandInputBar() }
             inputField.setOnFocusChangeListener { _, hasFocus ->
-                if (!hasFocus && inputField.text?.isEmpty() == true && !alwaysExpand) {
-                    shrinkInputBar()
-                }
+                if (!hasFocus && inputField.text?.isEmpty() == true) shrinkInputBar()
             }
         } else {
-            // Classic UI: Full width, always focusable
-            inputBar.updateLayoutParams<androidx.constraintlayout.widget.ConstraintLayout.LayoutParams> {
-                width = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.MATCH_PARENT
-                startToStart = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-                endToEnd = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-            }
-            inputBar.alpha = 1.0f
-            inputBar.elevation = 0f
-            inputBar.translationZ = 0f
-            
-            inputField.isFocusable = true
-            inputField.isFocusableInTouchMode = true
-            inputField.isEnabled = true
-            
             inputBar.setOnClickListener(null)
             inputField.setOnClickListener(null)
             inputField.onFocusChangeListener = null
@@ -213,62 +194,22 @@ class ThreadActivity : SimpleActivity() {
         inputBar.requestLayout()
     }
 
+    /** Hands the field focus and opens the keyboard. */
     private fun expandInputBar() {
-        val inputBar = binding.messageHolder.novaMessageInputBar
         val inputField = binding.messageHolder.threadTypeMessage
-        
-        val startWidth = inputBar.width
-        val endWidth = binding.threadHolder.width - 32.getScaledPx()
-        
-        if (startWidth >= endWidth - 5) return // Already expanded
-        
-        val animator = android.animation.ValueAnimator.ofInt(startWidth, endWidth)
-        animator.duration = 450 // Slightly longer for the bounce to feel natural
-        // OvershootInterpolator provides the "bounce at the end" effect
-        animator.interpolator = android.view.animation.OvershootInterpolator(1.2f)
-        animator.addUpdateListener { animation ->
-            inputBar.updateLayoutParams {
-                width = animation.animatedValue as Int
-            }
-        }
-        animator.addListener(object : android.animation.AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: android.animation.Animator) {
-                inputField.isFocusable = true
-                inputField.isFocusableInTouchMode = true
-                inputField.requestFocus()
-                showKeyboard(inputField)
-            }
-        })
-        animator.start()
+        inputField.isFocusable = true
+        inputField.isFocusableInTouchMode = true
+        inputField.requestFocus()
+        showKeyboard(inputField)
     }
 
+    /** Gives the focus back up so the next tap on the row is what opens the keyboard. */
     private fun shrinkInputBar() {
         if (config.alwaysExpandSearchBar) return
-
-        val inputBar = binding.messageHolder.novaMessageInputBar
         val inputField = binding.messageHolder.threadTypeMessage
-        
-        val startWidth = inputBar.width
-        val endWidth = 240.getScaledPx()
-        
-        if (startWidth <= endWidth + 5) return // Already shrunk
-        
-        val animator = android.animation.ValueAnimator.ofInt(startWidth, endWidth)
-        animator.duration = 300 // Slightly slower shrink for smoothness
-        animator.interpolator = android.view.animation.DecelerateInterpolator()
-        animator.addUpdateListener { animation ->
-            inputBar.updateLayoutParams {
-                width = animation.animatedValue as Int
-            }
-        }
-        animator.addListener(object : android.animation.AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: android.animation.Animator) {
-                inputField.isFocusable = false
-                inputField.isFocusableInTouchMode = false
-                hideKeyboard()
-            }
-        })
-        animator.start()
+        inputField.isFocusable = false
+        inputField.isFocusableInTouchMode = false
+        hideKeyboard()
     }
 
     override fun onResume() {
@@ -277,15 +218,13 @@ class ThreadActivity : SimpleActivity() {
         applyOutlines()
         
         currentThreadId = threadId
+        // No navigation icon: the design's back control is the rounded tile at the head of
+        // the header row, which setupOptionsMenu wires up.
         setupTopAppBar(
             topAppBar = binding.threadAppbar,
-            navigationIcon = NavigationIcon.Arrow,
+            navigationIcon = NavigationIcon.None,
             topBarColor = Color.TRANSPARENT
         )
-        
-        binding.threadToolbar.setNavigationOnClickListener {
-            finish()
-        }
 
         isActivityVisible = true
 
@@ -322,7 +261,8 @@ class ThreadActivity : SimpleActivity() {
         }
 
         binding.messageHolder.novaMessageInputBar.apply {
-            minimumHeight = 55.getScaledPx()
+            // The design's composer field.
+            minimumHeight = 44.getScaledPx()
         }
 
         getOrCreateThreadAdapter().updateScaling()
@@ -331,6 +271,9 @@ class ThreadActivity : SimpleActivity() {
         binding.messageHolder.root.startAnimation(bottomAnim)
 
         applyCustomColors()
+        // After applyCustomColors, which would otherwise repaint the header tiles with the
+        // generic top-bar tint and undo the design's own weights.
+        styleThreadHeader()
 
         if (isFirstResume && config.useNewUi) {
             isFirstResume = false
@@ -894,35 +837,63 @@ class ThreadActivity : SimpleActivity() {
         checkSendMessageAvailability()
     }
 
+    /**
+     * The call and overflow controls are real views in the header row now, not toolbar menu
+     * items, so the design's rounded tiles can sit behind them. The menu itself is still
+     * inflated -- [refreshMenuItems] and [showThreadModernMenu] read it for the item list --
+     * it just no longer draws anything.
+     */
     private fun setupOptionsMenu() {
-        val toolbar = binding.threadToolbar
-        toolbar.menu.clear()
+        binding.threadCallBtn.beVisibleIf(canDialCurrentParticipant())
+        binding.threadCallBtn.setOnClickListener { dialNumber() }
+        binding.threadMenuBtn.setOnClickListener { showThreadModernMenu(it) }
+        binding.threadBackBtn.setOnClickListener { finish() }
+        styleThreadHeader()
+    }
 
-        // Always create the call icon so refreshMenuItems() can toggle its visibility later,
-        // once participants (and their phone numbers) have actually been loaded.
-        val callItem = toolbar.menu.add(0, com.texto.sms.R.id.dial_number, 0, getString(org.fossify.commons.R.string.dial_number))
-        callItem.setIcon(com.texto.sms.R.drawable.ic_ph_phone)
-        callItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
-        callItem.isVisible = canDialCurrentParticipant()
+    /**
+     * The header's three tiles and the line under the name, painted from the live theme. The
+     * design gives the back tile a 13dp radius and the two action tiles 12dp, all of them
+     * filled with the card colour at half strength.
+     */
+    private fun styleThreadHeader() {
+        val density = resources.displayMetrics.density
+        val fill = config.recentColor.withAlpha(0.5f)
+        val glyph = config.topBarTextColor.withAlpha(0.58f)
 
-        // Add a single custom overflow item
-        val moreItem = toolbar.menu.add(0, com.texto.sms.R.id.more_options, 1, getString(R.string.more_options))
-        moreItem.setIcon(com.texto.sms.R.drawable.ic_ph_dots_three_vertical)
-        moreItem.setShowAsAction(android.view.MenuItem.SHOW_AS_ACTION_ALWAYS)
-
-        toolbar.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                com.texto.sms.R.id.dial_number -> dialNumber()
-                com.texto.sms.R.id.more_options -> {
-                    // Trigger modern menu for everything else
-                    val overflowView = toolbar.findViewById<android.view.View>(menuItem.itemId) ?: toolbar
-                    showThreadModernMenu(overflowView)
-                }
+        fun tile(view: android.widget.ImageView, sizeDp: Int, radiusDp: Int) {
+            view.updateLayoutParams {
+                width = sizeDp.getScaledPx()
+                height = sizeDp.getScaledPx()
             }
-            true
+            view.background = android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                cornerRadius = radiusDp * density
+                setColor(fill)
+            }
+            view.imageTintList = android.content.res.ColorStateList.valueOf(glyph)
         }
-        
-        applyCustomColors() // Ensure the new programmatically added icons are tinted
+
+        tile(binding.threadBackBtn, 36, 13)
+        tile(binding.threadCallBtn, 34, 12)
+        tile(binding.threadMenuBtn, 34, 12)
+
+        binding.threadHeaderAvatar.updateLayoutParams {
+            width = 40.getScaledPx()
+            height = 40.getScaledPx()
+        }
+        com.texto.sms.helpers.NovaAvatars.clipToSquircle(binding.threadHeaderAvatar)
+
+        binding.threadToolbarTitle.setTextColor(config.topBarTextColor)
+        binding.threadToolbarTitle.setTextSize(
+            TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.2f)
+        )
+        // The design paints this one line in the accent hue -- the only coloured text in the
+        // header, which is what makes it read as status rather than a second title.
+        binding.threadHeaderStatus.setTextColor(config.auroraAccentColor)
+        binding.threadHeaderStatus.setTextSize(
+            TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.88f)
+        )
     }
 
     private fun showThreadModernMenu(anchor: android.view.View) {
@@ -994,12 +965,13 @@ class ThreadActivity : SimpleActivity() {
      * width the name needed. Measured from the icons that are really showing instead, so the
      * name starts right beside the call icon and runs as far left as it needs to.
      */
+    /**
+     * The call tile only earns its place when there is a number to dial; the title column
+     * takes the width back when there isn't. No margin to reserve any more -- the header is
+     * a row of siblings, so the tiles push the name over by existing.
+     */
     private fun updateTitleMargin() {
-        val iconCount = if (canDialCurrentParticipant()) 2 else 1
-        val density = resources.displayMetrics.density
-        binding.threadToolbarTitle.updateLayoutParams<Toolbar.LayoutParams> {
-            marginEnd = ((iconCount * TOOLBAR_ACTION_WIDTH_DP + 4) * density).toInt()
-        }
+        binding.threadCallBtn.beVisibleIf(canDialCurrentParticipant())
     }
 
     private fun refreshMenuItems() {
@@ -1094,6 +1066,29 @@ class ThreadActivity : SimpleActivity() {
         // Tapping the name reveals the numbers behind it, so a call or a copy is one
         // step away even when the thread is titled with a contact name.
         binding.threadToolbarTitle.setOnClickListener { showParticipantNumbers() }
+
+        // The design's status line. SMS has no presence to show, so it carries what is
+        // actually known: the number behind a one-to-one thread, or the head count of a
+        // group. Blank when the title already *is* the number, which would just repeat it.
+        val firstNumber = participants.firstOrNull()?.phoneNumbers?.firstOrNull()?.normalizedNumber
+        val status = when {
+            participants.size > 1 -> resources.getQuantityString(
+                R.plurals.thread_members, participants.size, participants.size
+            )
+            !firstNumber.isNullOrBlank() && firstNumber != finalTitle -> firstNumber
+            else -> ""
+        }
+        binding.threadHeaderStatus.text = status
+        binding.threadHeaderStatus.beVisibleIf(status.isNotEmpty())
+
+        binding.threadHeaderAvatar.beVisible()
+        val placeholder = com.texto.sms.helpers.NovaAvatars.letterAvatar(this, finalTitle)
+        SimpleContactsHelper(this).loadContactImage(
+            path = conversation?.photoUri.orEmpty(),
+            imageView = binding.threadHeaderAvatar,
+            placeholderName = finalTitle,
+            placeholderImage = placeholder
+        )
     }
 
     private fun showParticipantNumbers() {
@@ -1895,24 +1890,14 @@ class ThreadActivity : SimpleActivity() {
             binding.threadAppbar.foreground = null
         }
 
-        // Input Bar Outline
-        val inputBar = binding.messageHolder.root.findViewById<android.view.View>(R.id.nova_message_input_bar)
-        if (config.searchBarOutline && isNewUi && inputBar != null) {
-            val thickness = config.searchBarOutlineThickness
-            val thickStroke = (thickness * density).toInt()
-            val r_base = 100f * density
-            val drawable = android.graphics.drawable.GradientDrawable().apply {
-                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-                setStroke(thickStroke, config.searchBarOutlineColor)
-                cornerRadius = r_base
-                setColor(Color.TRANSPARENT)
-            }
-            val layerDrawable = android.graphics.drawable.LayerDrawable(arrayOf(drawable))
-            layerDrawable.setLayerInset(0, 0, 0, 0, 0)
-            inputBar.foreground = layerDrawable
-        } else if (inputBar != null) {
-            inputBar.foreground = null
-        }
+        // The composer carries no outline of its own. It used to take the same ring the
+        // floating search pill wears, drawn at a 100dp radius over a 22dp field, so the
+        // stroke followed a different curve to the edge underneath it and read as a halo
+        // sitting slightly off the shape. The field is a flat filled surface now, and the
+        // row it sits in is what separates it from the messages above.
+        binding.messageHolder.root
+            .findViewById<android.view.View>(R.id.nova_message_input_bar)
+            ?.foreground = null
     }
 
     companion object {
@@ -1920,7 +1905,6 @@ class ThreadActivity : SimpleActivity() {
         private const val MIN_DATE_TIME_DIFF_SECS = 300
 
         /** Width Toolbar gives each action item, independent of the app's UI scale. */
-        private const val TOOLBAR_ACTION_WIDTH_DP = 48
         private const val SCROLL_TO_BOTTOM_FAB_LIMIT = 20
         private const val PREFETCH_THRESHOLD = 45
     }
