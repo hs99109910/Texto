@@ -584,34 +584,32 @@ class ThreadActivity : SimpleActivity() {
             val density = resources.displayMetrics.density
 
             // The design's send control is an accent square, not a bare glyph on the bar.
+            // Painted through NovaGlass so it is the same accent surface as the unread
+            // badges, the active filter chip and the sent bubbles, rather than a second
+            // gradient built by hand that could drift from them.
+            val sendSide = 44.getScaledPx()
+            threadSendMessage.updateLayoutParams<LinearLayout.LayoutParams> {
+                width = sendSide
+                height = sendSide
+                marginEnd = 9.getScaledPx()
+            }
             threadSendMessage.setTextColor(config.sentBubbleTextColor)
             threadSendMessage.compoundDrawables.forEach {
                 it?.applyColorFilter(config.sentBubbleTextColor)
             }
-            threadSendMessage.background = android.graphics.drawable.GradientDrawable(
-                android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
-                intArrayOf(config.accentGradientStart, config.accentGradientEnd)
-            ).apply {
-                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-                cornerRadius = 16 * density
-            }
+            threadSendMessage.background = com.texto.sms.helpers.NovaGlass.accent(
+                start = config.accentGradientStart,
+                end = config.accentGradientEnd,
+                cornerRadius = sendSide * 0.36f
+            )
+            threadSendMessage.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
 
-            // The row behind the field: a wash of the bar colour with a hairline along its
-            // top edge, which is what separates the composer from the messages above it.
-            novaMessageBarRow.background = android.graphics.drawable.LayerDrawable(
-                arrayOf(
-                    android.graphics.drawable.ColorDrawable(
-                        config.inputBarBackgroundColor.withAlpha(0.60f)
-                    ),
-                    android.graphics.drawable.GradientDrawable().apply {
-                        shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-                        setColor(config.mainTextColor.withAlpha(0.20f))
-                    }
-                )
-            ).apply {
-                setLayerHeight(1, density.toInt().coerceAtLeast(1))
-                setLayerGravity(1, android.view.Gravity.TOP)
-            }
+            // No fill and no hairline on the row: the composer is two floating pieces on the
+            // screen's own ground, so anything painted here would read as a slab behind them.
+            novaMessageBarRow.background = null
+            novaMessageBarRow.setPadding(
+                14.getScaledPx(), 10.getScaledPx(), 14.getScaledPx(), 22.getScaledPx()
+            )
 
             confirmManageContacts.applyColorFilter(mainTextColor)
             threadAddAttachment.applyColorFilter(inputBarColor.withAlpha(0.36f))
@@ -1067,16 +1065,16 @@ class ThreadActivity : SimpleActivity() {
         // step away even when the thread is titled with a contact name.
         binding.threadToolbarTitle.setOnClickListener { showParticipantNumbers() }
 
-        // The design's status line. SMS has no presence to show, so it carries what is
-        // actually known: the number behind a one-to-one thread, or the head count of a
-        // group. Blank when the title already *is* the number, which would just repeat it.
-        val firstNumber = participants.firstOrNull()?.phoneNumbers?.firstOrNull()?.normalizedNumber
-        val status = when {
-            participants.size > 1 -> resources.getQuantityString(
+        // One-to-one threads carry nothing under the name. The title above is already
+        // either the contact's name or -- when there is no name to show -- the number
+        // itself, so a number on the second line was repeating the same person twice.
+        // Groups keep their head count, which is the one thing the title cannot say.
+        val status = if (participants.size > 1) {
+            resources.getQuantityString(
                 R.plurals.thread_members, participants.size, participants.size
             )
-            !firstNumber.isNullOrBlank() && firstNumber != finalTitle -> firstNumber
-            else -> ""
+        } else {
+            ""
         }
         binding.threadHeaderStatus.text = status
         binding.threadHeaderStatus.beVisibleIf(status.isNotEmpty())

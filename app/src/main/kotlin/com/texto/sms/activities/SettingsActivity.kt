@@ -4,6 +4,7 @@ import android.app.Activity
 import android.graphics.Color
 import android.content.Intent
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
@@ -816,20 +817,61 @@ class SettingsActivity : SimpleActivity() {
                 }
             }
             tintRowsIn(card, mainTextColor)
+            scaleRowsIn(card)
         }
 
-        // Section labels sit outside the cards, so they are tinted separately. The reset row
-        // is the one destructive action on the screen and keeps its own warning colour.
+        // Section labels sit outside the cards, so they are tinted and sized separately. The
+        // reset row is the one destructive action on the screen and keeps its warning colour.
         val holder = binding.settingsHolder
         for (i in 0 until holder.childCount) {
-            (holder.getChildAt(i) as? TextView)?.setTextColor(mainTextColor)
+            (holder.getChildAt(i) as? TextView)?.apply {
+                setTextColor(mainTextColor)
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.8f))
+            }
         }
-        binding.settingsResetDefaults.setTextColor(DESTRUCTIVE_COLOR)
+        binding.settingsResetDefaults.apply {
+            setTextColor(DESTRUCTIVE_COLOR)
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize())
+            val padV = 16.getScaledPx()
+            setPadding(0, padV, 0, padV)
+        }
     }
 
     /**
-     * Recursively tints a card's text and icons. Colour swatches are plain [View]s, so they
-     * fall through every branch here and keep the fill that represents their stored value.
+     * The rows are laid out in dp, which ignores the UI-scale setting the rest of the app
+     * honours -- at 1.4x the type grew but the rows around it did not, so the text crowded
+     * its own padding. Every measurement on a row is re-applied here through
+     * [getScaledPx]/[getScaledTextSize] instead of being duplicated across 1300 lines of XML.
+     *
+     * Recognises a row by shape rather than by id: a horizontal [LinearLayout] whose first
+     * child is the leading glyph. That keeps new rows working without being listed here.
+     */
+    private fun scaleRowsIn(card: View) {
+        val group = card as? ViewGroup ?: return
+        for (i in 0 until group.childCount) {
+            val row = group.getChildAt(i)
+            if (row !is ViewGroup) continue
+
+            if (row is android.widget.LinearLayout && row.orientation == android.widget.LinearLayout.HORIZONTAL) {
+                row.setPadding(
+                    16.getScaledPx(), 15.getScaledPx(), 16.getScaledPx(), 15.getScaledPx()
+                )
+                (row.getChildAt(0) as? android.widget.ImageView)?.updateLayoutParams<android.widget.LinearLayout.LayoutParams> {
+                    width = SETTINGS_GLYPH_DP.getScaledPx()
+                    height = SETTINGS_GLYPH_DP.getScaledPx()
+                    marginEnd = 13.getScaledPx()
+                }
+            } else {
+                // Nested holders (a row wrapped in another column) get the same pass.
+                scaleRowsIn(row)
+            }
+        }
+    }
+
+    /**
+     * Recursively tints a card's text and icons, and sizes its type. Colour swatches are
+     * plain [View]s, so they fall through every branch here and keep the fill that
+     * represents their stored value.
      */
     private fun tintRowsIn(view: View, textColor: Int) {
         when (view) {
@@ -858,5 +900,8 @@ class SettingsActivity : SimpleActivity() {
     private companion object {
         /** The design's `--destructive`, oklch(0.65 0.21 22). */
         val DESTRUCTIVE_COLOR = Color.parseColor("#F54651")
+
+        /** The design draws a settings row glyph at 19px, bare and in the accent hue. */
+        const val SETTINGS_GLYPH_DP = 19
     }
 }

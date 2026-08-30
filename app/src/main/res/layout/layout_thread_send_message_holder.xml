@@ -89,9 +89,10 @@
         tools:visibility="visible" />
 
     <!--
-        The design splits the composer in two: a rounded field carrying the attachment clip,
-        the text and the SIM badge, with the send disc as its own accent square beside it.
-        The row itself is the tinted bar behind both, hairlined along its top edge.
+        The composer is two floating pieces on the screen's own ground: a rounded field
+        carrying the attachment clip, the text and the SIM badge, and the send square beside
+        it. The row is a bare container: no fill and no hairline, so nothing reads as a
+        second surface behind the capsule.
     -->
     <LinearLayout
         android:id="@+id/nova_message_bar_row"
@@ -104,6 +105,25 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
+
+        <!--
+            Send sits first, so under the app's right-to-left layout it lands at the right
+            end of the row and the field fills what is left.
+        -->
+        <org.fossify.commons.views.MyButton
+            android:id="@+id/thread_send_message"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginEnd="9dp"
+            android:alpha="0.4"
+            android:clickable="false"
+            android:contentDescription="@string/ok"
+            android:drawableStart="@drawable/ic_ph_paper_plane_right"
+            android:gravity="center"
+            android:padding="0dp"
+            android:text=""
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/smaller_text_size" />
 
         <LinearLayout
             android:id="@+id/nova_message_input_bar"
@@ -185,27 +205,6 @@
                 tools:visibility="visible" />
 
         </LinearLayout>
-
-        <!--
-            The paper plane points the way the language reads, so under RTL it is mirrored.
-            The flip lives on the drawable (android:autoMirrored) rather than on the button:
-            scaleX="-1" here would have mirrored the accent gradient behind it too, leaving
-            the send square shaded the opposite way to every other accent surface.
-        -->
-        <org.fossify.commons.views.MyButton
-            android:id="@+id/thread_send_message"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_marginStart="9dp"
-            android:alpha="0.4"
-            android:clickable="false"
-            android:contentDescription="@string/ok"
-            android:drawableStart="@drawable/ic_ph_paper_plane_right"
-            android:gravity="center"
-            android:padding="0dp"
-            android:text=""
-            android:textColor="@android:color/white"
-            android:textSize="@dimen/smaller_text_size" />
 
     </LinearLayout>
 

@@ -333,30 +333,11 @@ open class SimpleActivity : BaseSimpleActivity() {
                 findViewById<ImageView>(R.id.nav_add_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
             }
 
-            // Filter chips row sits right under the top bar -- give it the same glass
-            // treatment (thinner and slightly airier) instead of the plain transparent
-            // background it had before. No status-bar inset needed since it already sits
-            // below the top bar.
-            findViewById<View>(R.id.filter_bar)?.let { filterBar ->
-                val filterRadius = 28 * density
-                if (useNewUi && config.glassTheme) {
-                    NovaGlass.applyPanel(
-                        view = filterBar,
-                        tint = barColor,
-                        cornerRadius = filterRadius,
-                        opacity = glassOpacity,
-                        strokeWidthPx = density.toInt().coerceAtLeast(1)
-                    )
-                } else if (useNewUi) {
-                    filterBar.background = GradientDrawable().apply {
-                        shape = GradientDrawable.RECTANGLE
-                        cornerRadius = filterRadius
-                        setColor(barColor)
-                    }
-                } else {
-                    filterBar.background = null
-                }
-            }
+            // The chips carry their own pills, so the row holding them stays bare. It used
+            // to be a second glass bar under the header, which stacked one rounded surface
+            // on another and made the chips read as the contents of a bar rather than as
+            // free controls sitting on the screen.
+            findViewById<View>(R.id.filter_bar)?.background = null
         }
         
         toolbar?.setBackgroundColor(Color.TRANSPARENT)
@@ -423,28 +404,17 @@ open class SimpleActivity : BaseSimpleActivity() {
                             opacity = config.glassOpacity / 100f,
                             strokeWidthPx = 1.getScaledPx()
                         )
-                    } else if (inputBar.id == R.id.nova_message_input_bar) {
-                        // Deliberately not glass. The composer sits inside the bar that is
-                        // already tinted behind it, so a frosted panel there stacked a sheen
-                        // and a bright rim on top of a surface that needs neither -- it read
-                        // as a second, brighter material floating on the composer. A flat
-                        // wash of the same colour at the design's weight is what the rest of
-                        // the theme uses for a filled field.
+                    } else {
+                        // Typing fields are deliberately not glass. A frosted panel put a
+                        // sheen and a bright rim on a surface that needs neither, and read
+                        // as a second, brighter material sitting on the field. A flat wash
+                        // of the same colour at the design weight is what the theme uses for
+                        // a filled field, and it keeps typed text crisp.
                         inputBar.background = GradientDrawable().apply {
                             shape = GradientDrawable.RECTANGLE
                             cornerRadius = inputRadius
                             setColor(inputBgColor.withAlpha(0.60f))
                         }
-                    } else {
-                        // The typing field keeps its own fixed value: its text has to stay
-                        // crisp while composing, whatever the bars are set to.
-                        NovaGlass.applyPanel(
-                            view = inputBar,
-                            tint = inputBgColor,
-                            cornerRadius = inputRadius,
-                            opacity = 0.85f,
-                            strokeWidthPx = 1.getScaledPx()
-                        )
                     }
                 } else {
                     inputBar.background = GradientDrawable().apply {
