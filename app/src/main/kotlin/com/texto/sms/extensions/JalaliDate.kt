@@ -130,8 +130,16 @@ fun DateTime.toJalaliDateText(): String {
 
 fun Int.toPersianDigits(): String = toString().toPersianDigits()
 
+/**
+ * Only ASCII `0`-`9` are mapped, deliberately.
+ *
+ * `Char.isDigit()` is true for Persian and Arabic-Indic digits as well, so a string that had
+ * already been shaped -- or that came out of `String.format` under the app's fa-IR locale,
+ * which emits Persian digits on its own -- indexed this array with `'۱' - '0'` = 1729 and
+ * took the process down. Converting an already-converted string is now a no-op.
+ */
 fun String.toPersianDigits(): String = map { c ->
-    if (c.isDigit()) PERSIAN_DIGITS[c - '0'] else c
+    if (c in '0'..'9') PERSIAN_DIGITS[c - '0'] else c
 }.joinToString("")
 
 /**
@@ -156,5 +164,53 @@ fun Long.formatJalaliDateOrTime(): String {
             cal.get(Calendar.DAY_OF_MONTH)
         )
         "%04d-%02d-%02d.%s".format(jalali.year, jalali.month, jalali.day, time)
+    }
+}
+
+/**
+ * Clock time alone, in Persian digits -- what the design prints inside each bubble.
+ * The day a message belongs to is carried by the date separator above it, so repeating it
+ * on every bubble would only crowd the line.
+ */
+fun Long.formatJalaliTimeOnly(): String {
+    val cal = Calendar.getInstance(TimeZone.getDefault())
+    cal.timeInMillis = this
+    // Formatted in a fixed locale, then shaped explicitly. Left to the default locale,
+    // `format` emits Persian digits by itself under fa-IR, which makes the result depend on
+    // the device locale rather than on this function.
+    return "%02d:%02d"
+        .format(java.util.Locale.US, cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
+        .toPersianDigits()
+}
+
+/**
+ * The separator between groups of messages: "امروز", "دیروز", a weekday name within the
+ * last week, or a full Jalali date beyond that. Replaces the old full timestamp, which
+ * repeated the clock time already shown inside every bubble.
+ */
+fun Long.formatJalaliDayLabel(): String {
+    val cal = Calendar.getInstance(TimeZone.getDefault())
+    cal.timeInMillis = this
+
+    val startOfDay = Calendar.getInstance(TimeZone.getDefault()).apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+    val dayMillis = 24L * 60 * 60 * 1000
+
+    return when {
+        this >= startOfDay -> "امروز"
+        this >= startOfDay - dayMillis -> "دیروز"
+        this >= startOfDay - 6 * dayMillis -> PERSIAN_WEEKDAY_NAMES[cal.get(Calendar.DAY_OF_WEEK)]
+        else -> {
+            val jalali = gregorianToJalali(
+                cal.get(Calendar.YEAR),
+                cal.get(Calendar.MONTH) + 1,
+                cal.get(Calendar.DAY_OF_MONTH)
+            )
+            "${jalali.day.toPersianDigits()} ${JALALI_MONTH_NAMES[jalali.month - 1]} ${jalali.year.toPersianDigits()}"
+        }
     }
 }

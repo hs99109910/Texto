@@ -800,9 +800,11 @@ fun Context.getPhoneNumberFromAddressId(canonicalAddressId: Int): String {
  * installed, so searching it missed the entire existing history. The system provider is
  * the real source of truth and is what gets queried here.
  */
-fun Context.searchMessagesInProvider(query: String, limit: Int = 200): ArrayList<Message> {
+fun Context.searchMessagesInProvider(query: String, limit: Int = 5000): ArrayList<Message> {
     val messages = ArrayList<Message>()
     if (query.isBlank()) return messages
+    val needle = query.foldPersian().trim()
+    if (needle.isEmpty()) return messages
 
     val projection = arrayOf(
         Sms._ID,
@@ -815,8 +817,13 @@ fun Context.searchMessagesInProvider(query: String, limit: Int = 200): ArrayList
         Sms.STATUS,
         Sms.SUBSCRIPTION_ID
     )
-    val selection = "${Sms.BODY} LIKE ?"
-    val selectionArgs = arrayOf("%$query%")
+    // No BODY filter in SQL. SQLite compares the raw code points, so a query typed with a
+    // Farsi yeh never matched a carrier message written with the Arabic one -- which is most
+    // bank and service SMS, and the reason some messages could not be found at all. The rows
+    // are scanned and matched in Kotlin against the folded text instead. `limit` bounds the
+    // scan; it was 200, which quietly hid every older match on a device with a long history.
+    val selection: String? = null
+    val selectionArgs: Array<String>? = null
     val sortOrder = "${Sms.DATE} DESC LIMIT $limit"
     val blockedNumbers = blockedNumbersSnapshot()
 
@@ -827,6 +834,7 @@ fun Context.searchMessagesInProvider(query: String, limit: Int = 200): ArrayList
 
             val id = cursor.getLongValue(Sms._ID)
             val body = cursor.getStringValue(Sms.BODY) ?: ""
+            if (!body.containsPersian(needle)) return@queryCursor
             val type = cursor.getIntValue(Sms.TYPE)
             val namePhoto = getNameAndPhotoFromPhoneNumber(senderNumber)
             var date = cursor.getLongValue(Sms.DATE)
@@ -867,7 +875,7 @@ fun Context.searchMessagesInProvider(query: String, limit: Int = 200): ArrayList
  * because it is recomputed whenever the list is rebuilt, it cannot go stale the way a
  * lazily filled cache does.
  */
-fun Context.getLatestSnippets(limit: Int = 2000): Map<Long, Pair<String, Int>> {
+fun Context.getLatestSnippets(limit: Int = 20000): Map<Long, Pair<String, Int>> {
     val snippets = HashMap<Long, Pair<String, Int>>()
     val projection = arrayOf(Sms.THREAD_ID, Sms.BODY, Sms.TYPE)
     val sortOrder = "${Sms.DATE} DESC LIMIT $limit"
