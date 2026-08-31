@@ -1405,18 +1405,35 @@ class ThreadActivity : SimpleActivity() {
         MessageDetailsDialog(this, message)
     }
 
+    /**
+     * Archiving, and its two siblings below, write to the SMS provider and then to Room.
+     * Room refuses to be touched from the main thread and takes the process down when it
+     * is, which is what these three did straight from the overflow menu. The provider write
+     * is slow I/O in its own right and does not belong there either.
+     */
     private fun archiveThread() {
-        try {
-            updateConversationArchivedStatus(threadId, true)
-            finish()
-        } catch (e: Exception) {
-            showErrorToast(e)
-        }
+        setConversationArchived(archived = true) { finish() }
     }
 
     private fun unarchiveThread() {
-        updateConversationArchivedStatus(threadId, false)
-        refreshMenuItems()
+        setConversationArchived(archived = false) { refreshMenuItems() }
+    }
+
+    private fun setConversationArchived(archived: Boolean, onDone: () -> Unit) {
+        ensureBackgroundThread {
+            try {
+                updateConversationArchivedStatus(threadId, archived)
+                runOnUiThread {
+                    if (isFinishing || isDestroyed) return@runOnUiThread
+                    onDone()
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    if (isFinishing || isDestroyed) return@runOnUiThread
+                    showErrorToast(e)
+                }
+            }
+        }
     }
 
     private fun managePeople() {
@@ -1456,8 +1473,13 @@ class ThreadActivity : SimpleActivity() {
         }
     }
     private fun markAsUnread() {
-        markThreadMessagesUnread(threadId)
-        finish()
+        ensureBackgroundThread {
+            markThreadMessagesUnread(threadId)
+            runOnUiThread {
+                if (isFinishing || isDestroyed) return@runOnUiThread
+                finish()
+            }
+        }
     }
     private fun tryBlocking() {
         val numbers = participants.getAddresses()
