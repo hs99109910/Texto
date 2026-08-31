@@ -977,7 +977,7 @@ class ThreadActivity : SimpleActivity() {
                 items.add(R.id.add_number_to_contact to getString(org.fossify.commons.R.string.add_number_to_contact))
             }
             if (!firstPhoneNumber.isNullOrEmpty()) {
-                items.add(R.id.copy_number to getString(org.fossify.commons.R.string.copy_to_clipboard))
+                items.add(R.id.copy_number to getString(R.string.copy_number_to_clipboard))
             }
         }
 

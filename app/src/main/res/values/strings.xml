@@ -35,6 +35,8 @@
     <!-- Group conversation -->
     <string name="members">اعضا</string>
     <string name="conversation_name">نام گفتگو</string>
+    <string name="notifications_title">اعلان‌ها</string>
+    <string name="customize_notifications_title">شخصی‌سازی اعلان‌ها</string>
     <string name="conversation_details">جزئیات گفتگو</string>
     <string name="rename_conversation">تغییر نام گفتگو</string>
     <string name="rename_conversation_warning">این نام را فقط شما می‌بینید</string>
@@ -290,7 +292,7 @@
     <string name="properties">جزئیات</string>
     <string name="dial_number">شماره‌گیری</string>
     <string name="add_number_to_contact">افزودن شماره به مخاطب</string>
-    <string name="copy_number_to_clipboard">کپی شماره</string>
+    <string name="copy_number_to_clipboard">کپی شماره در کلیپ‌بورد</string>
     <string name="block_number">مسدود کردن شماره</string>
     <!-- Settings: section labels and per-row subtitles (the redesigned grouped layout) -->
     <string name="settings_group_size_font">اندازه و فونت</string>

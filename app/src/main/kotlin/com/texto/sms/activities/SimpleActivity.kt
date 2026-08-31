@@ -12,6 +12,8 @@ import android.text.TextWatcher
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
+import android.widget.LinearLayout
+import android.widget.FrameLayout
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
@@ -230,14 +232,16 @@ open class SimpleActivity : BaseSimpleActivity() {
         }
         
         // 2. Apply top bar color (HARD RECURSIVE SHAPE GUARD)
-        val appBar = findViewById<AppBarLayout>(R.id.settings_appbar) ?: 
-                     findViewById<AppBarLayout>(R.id.thread_appbar) ?: 
+        val appBar = findViewById<AppBarLayout>(R.id.settings_appbar) ?:
+                     findViewById<AppBarLayout>(R.id.thread_appbar) ?:
                      findViewById<AppBarLayout>(R.id.main_appbar) ?:
+                     findViewById<AppBarLayout>(R.id.conversation_details_appbar) ?:
                      findViewById<AppBarLayout>(R.id.new_conversation_appbar)
                      
-        val toolbar = findViewById<Toolbar>(R.id.settings_toolbar) ?: 
-                      findViewById<Toolbar>(R.id.thread_toolbar) ?: 
+        val toolbar = findViewById<Toolbar>(R.id.settings_toolbar) ?:
+                      findViewById<Toolbar>(R.id.thread_toolbar) ?:
                       findViewById<Toolbar>(R.id.main_toolbar) ?:
+                      findViewById<Toolbar>(R.id.conversation_details_toolbar) ?:
                       findViewById<Toolbar>(R.id.new_conversation_toolbar)
         
         if (appBar != null) {
@@ -838,11 +842,10 @@ open class SimpleActivity : BaseSimpleActivity() {
                 it
             }
         }
-        val separatorColor = if (TextoGlass.isDark(barColor)) {
-            Color.WHITE.withAlpha(0.12f)
-        } else {
-            Color.BLACK.withAlpha(0.10f)
-        }
+        // No dividers. Rows separated by rules is the one visual idiom left over from the
+        // stock menu; every other list in the app separates by spacing and a capsule.
+        val separatorColor = Color.TRANSPARENT
+        val rowRadius = 100f * resources.displayMetrics.density
         val radius = 18f * resources.displayMetrics.density
 
         val container = android.widget.LinearLayout(this).apply {
@@ -975,71 +978,92 @@ open class SimpleActivity : BaseSimpleActivity() {
      * iOS-style frosted context menu: translucent tinted panel, hairline rim, hairline
      * separators between rows, and the content behind it blurred while it is open.
      */
+    /**
+     * The app's overflow menu.
+     *
+     * A plain [PopupWindow] over a column of capsules rather than a ListPopupWindow: that
+     * class caps its own height while measuring, and with rows this tall it silently dropped
+     * the last item off the bottom of the sheet. These menus are short enough that a column
+     * of views needs no recycling, and this way the sheet is exactly as tall as its content.
+     */
     fun showModernMenu(anchor: View, items: List<Pair<Int, String>>, callback: (Int) -> Unit) {
-        val popup = ListPopupWindow(this)
+        val density = resources.displayMetrics.density
+        val popup = android.widget.PopupWindow(this)
 
-        val barColor = if (config.topBarColor == 0) Color.BLACK else config.topBarColor
-        val barTextColor = config.topBarTextColor
-
-        // Safety: Ensure text is visible against the background
-        val finalTextColor = if (barTextColor == barColor || barTextColor == Color.TRANSPARENT) {
-            if (barColor == Color.WHITE) Color.BLACK else Color.WHITE
+        // The card colour, not the bar colour: this is a sheet, and the app's other sheets --
+        // the SIM chooser, the theme picker, the calendar -- are all cards.
+        val sheetColor = if (config.recentColor == 0) Color.BLACK else config.recentColor
+        val ink = config.mainTextColor
+        // Safety: keep the label legible if the two ever land on the same colour.
+        val labelColor = if (ink == sheetColor || ink == Color.TRANSPARENT) {
+            if (sheetColor == Color.WHITE) Color.BLACK else Color.WHITE
         } else {
-            barTextColor
+            ink
         }
 
-        val separatorColor = if (TextoGlass.isDark(barColor)) {
-            Color.WHITE.withAlpha(0.12f)
-        } else {
-            Color.BLACK.withAlpha(0.10f)
-        }
-
-        val adapter = object : ArrayAdapter<Pair<Int, String>>(this, android.R.layout.simple_list_item_1, items) {
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val view = super.getView(position, convertView, parent) as TextView
-                view.text = items[position].second
-                view.setTextColor(finalTextColor)
-                view.setPadding(20.getScaledPx(), 14.getScaledPx(), 20.getScaledPx(), 14.getScaledPx())
-                view.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.85f))
-                view.typeface = typefaceFor(android.graphics.Typeface.BOLD)
-                view.background = null
-                return view
-            }
-        }
-
-        popup.setAdapter(adapter)
-        popup.anchorView = anchor
-        popup.width = 240.getScaledPx()
-        popup.isModal = true
-        popup.setDropDownGravity(android.view.Gravity.END)
-        popup.horizontalOffset = (-10).getScaledPx()
-        popup.verticalOffset = 16.getScaledPx()
-
-        val radius = 20f * resources.displayMetrics.density
-        // A real blur behind the panel is only available on Android 12+; without it the
-        // panel stays denser so the text keeps its contrast.
-        val opacity = if (TextoGlass.supportsRealBlur) 0.55f else 0.88f
-        popup.setBackgroundDrawable(
-            TextoGlass.panel(
-                tint = barColor,
-                cornerRadius = radius,
-                opacity = opacity,
-                strokeWidthPx = 1.getScaledPx()
+        val gutter = 10.getScaledPx()
+        val column = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(gutter, gutter, gutter, gutter)
+            // The sheet follows the user's glass setting, like every other surface in the
+            // app. It used to be pinned at .55, which on a light theme left the conversation
+            // showing through the menu text.
+            background = TextoGlass.panel(
+                tint = sheetColor,
+                cornerRadius = 24f * density,
+                opacity = config.glassOpacity / 100f,
+                strokeWidthPx = 1.getScaledPx(),
+                sheenAlpha = 0f
             )
-        )
-
-        popup.setOnItemClickListener { _, _, position, _ ->
-            callback(items[position].first)
-            popup.dismiss()
+            outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+            clipToOutline = true
         }
 
-        popup.setOnDismissListener { TextoGlass.setBlurBehind(this, false) }
+        items.forEachIndexed { index, (id, label) ->
+            column.addView(
+                TextView(this).apply {
+                    text = label
+                    setTextColor(labelColor)
+                    val padH = 20.getScaledPx()
+                    val padV = 13.getScaledPx()
+                    setPadding(padH, padV, padH, padV)
+                    setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.85f))
+                    typeface = typefaceFor(android.graphics.Typeface.NORMAL)
+                    isClickable = true
+                    // Each row is its own capsule. Rows separated by hairlines was the last
+                    // idiom left over from the stock menu; everything else in the app
+                    // separates by spacing and a pill.
+                    background = TextoGlass.bar(
+                        tint = config.mainBackgroundColor,
+                        cornerRadius = 100f * density,
+                        opacity = 0.45f,
+                        strokeWidthPx = 1.getScaledPx(),
+                        rimAlpha = 0.12f
+                    )
+                    outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+                    layoutParams = LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    ).apply { if (index > 0) topMargin = 6.getScaledPx() }
+                    setOnClickListener {
+                        popup.dismiss()
+                        callback(id)
+                    }
+                }
+            )
+        }
 
-        popup.show()
-        popup.listView?.apply {
-            divider = ColorDrawable(separatorColor)
-            dividerHeight = 1
-            overScrollMode = View.OVER_SCROLL_NEVER
+        popup.apply {
+            contentView = column
+            width = 280.getScaledPx()
+            height = ViewGroup.LayoutParams.WRAP_CONTENT
+            isOutsideTouchable = true
+            isFocusable = true
+            setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            elevation = 12 * density
+            setOnDismissListener { TextoGlass.setBlurBehind(this@SimpleActivity, false) }
+            // Under RTL the anchor sits at the top left, so the sheet hangs from its end.
+            showAsDropDown(anchor, (-10).getScaledPx(), 16.getScaledPx(), android.view.Gravity.END)
         }
         TextoGlass.setBlurBehind(this, true)
     }
