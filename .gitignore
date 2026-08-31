@@ -17,3 +17,6 @@ keystore.properties
 fastlane/fastlane.json
 fastlane/report.xml
 .kotlin/
+
+# Source artwork dropped in for conversion; the app resources are what ships.
+/_incoming/
