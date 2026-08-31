@@ -2115,16 +2115,18 @@ class ThreadActivity : SimpleActivity() {
                 basePadding
             }
             
-            // The header is a floating glass capsule over this list. The padding keeps the
-            // newest message clear of it at rest, but clipToPadding stays false so the thread
-            // still uses the whole screen: messages scroll up behind the capsule instead of
-            // stopping at it, which is what a short thread needs to fill the window at all.
-            val topInset = insets.getInsets(systemBarsType).top +
-                resources.getDimensionPixelSize(R.dimen.thread_header_height)
-
+            // No top inset for the header. thread_holder carries
+            // appbar_scrolling_view_behavior, so the CoordinatorLayout already offsets this
+            // list below the app bar : padding for the header on top of that is the same
+            // space counted twice. It went unnoticed while the thread was anchored to its
+            // newest message, because the gap sat above content that was scrolled off; it
+            // showed the moment a search left a short list reading from the top, opening the
+            // results a header and a status bar down the screen.
+            //
+            // A small breathing gap is kept so the first bubble is not flush against the bar.
             view.setPadding(
                 view.paddingLeft,
-                topInset,
+                TOP_GAP_DP.getScaledPx(),
                 view.paddingRight,
                 finalBottomPadding
             )
@@ -2252,6 +2254,9 @@ class ThreadActivity : SimpleActivity() {
     }
 
     companion object {
+        /** Breathing room above the first bubble; the app bar's own offset is separate. */
+        private const val TOP_GAP_DP = 12
+
         var currentThreadId = 0L
         private const val MIN_DATE_TIME_DIFF_SECS = 300
 
