@@ -321,6 +321,49 @@
                 android:orientation="vertical">
 
                 <LinearLayout
+                    android:id="@+id/settings_dark_mode_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                            android:id="@+id/settings_dark_mode_icon"
+                            android:src="@drawable/ic_ph_moon_stars"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_dark_mode" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_dark_mode_sub" />
+                    </LinearLayout>
+                    <org.fossify.commons.views.MyMaterialSwitch
+                        android:id="@+id/settings_dark_mode_switch"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="46dp"
+                    android:layout_marginEnd="14dp"
+                    android:background="#1FFFFFFF" />
+
+                <LinearLayout
                     android:id="@+id/settings_app_theme_holder"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -582,7 +625,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:valueFrom="20"
+                        android:valueFrom="40"
                         android:valueTo="100"
                         android:stepSize="1" />
                 </LinearLayout>
@@ -1242,13 +1285,13 @@
         rather than with rules between them.
     -->
     <LinearLayout
-        android:id="@+id/nova_nav_container"
+        android:id="@+id/texto_nav_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="22dp"
-        android:background="@drawable/nova_searchbar_bg"
+        android:background="@drawable/texto_searchbar_bg"
         android:elevation="10dp"
         android:orientation="horizontal"
         android:padding="6dp"

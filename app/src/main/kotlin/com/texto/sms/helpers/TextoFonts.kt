@@ -11,7 +11,7 @@ import android.graphics.Typeface
  * only family that supplies a real bold cut; the rest fall back to the synthetic bold
  * Android derives from their single regular file.
  */
-object NovaFonts {
+object TextoFonts {
 
     const val FONT_B_KOODAK = 6
     const val FONT_B_NAZANIN = 7

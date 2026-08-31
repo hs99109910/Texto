@@ -8,6 +8,8 @@
     <dimen name="attachment_preview_max_width">156dp</dimen>
     <dimen name="remove_attachment_size">24dp</dimen>
     <dimen name="pin_icon_size">15dp</dimen>
+    <!-- The thread toolbar, so the message list can be padded clear of the floating header. -->
+    <dimen name="thread_header_height">70dp</dimen>
     <dimen name="vcard_property_start_margin">64dp</dimen>
     <dimen name="small_icon_size">20dp</dimen>
     <dimen name="medium_icon_size">36dp</dimen>

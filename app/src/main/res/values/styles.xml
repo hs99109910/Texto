@@ -13,41 +13,41 @@
         <item name="android:windowActivityTransitions">true</item>
         <item name="android:windowAnimationStyle">@style/WindowAnimation</item>
         <item name="windowActionModeOverlay">true</item>
-        <item name="actionModeStyle">@style/NovaActionModeStyle</item>
-        <item name="android:actionModeStyle">@style/NovaActionModeStyle</item>
+        <item name="actionModeStyle">@style/TextoActionModeStyle</item>
+        <item name="android:actionModeStyle">@style/TextoActionModeStyle</item>
 
         <!-- Every confirmation prompt (delete, archive, restore, empty bin) is built through
              commons' getAlertDialogBuilder(), so theming it here is what makes all of them
              match the app instead of showing the stock Material sheet. -->
-        <item name="alertDialogTheme">@style/NovaDialogTheme</item>
-        <item name="materialAlertDialogTheme">@style/NovaDialogTheme</item>
+        <item name="alertDialogTheme">@style/TextoDialogTheme</item>
+        <item name="materialAlertDialogTheme">@style/TextoDialogTheme</item>
     </style>
 
-    <style name="NovaDialogTheme" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
-        <item name="android:windowBackground">@drawable/nova_dialog_background</item>
+    <style name="TextoDialogTheme" parent="ThemeOverlay.MaterialComponents.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/texto_dialog_background</item>
         <item name="android:backgroundDimAmount">0.6</item>
         <item name="android:textColorPrimary">#FFFFFF</item>
         <item name="android:textColorSecondary">#B3FFFFFF</item>
         <item name="android:textColorAlertDialogListItem">#FFFFFF</item>
         <item name="colorControlNormal">#FFFFFF</item>
         <item name="colorControlActivated">@color/colorPrimary</item>
-        <item name="buttonBarPositiveButtonStyle">@style/NovaDialogButton</item>
-        <item name="buttonBarNegativeButtonStyle">@style/NovaDialogButton</item>
-        <item name="buttonBarNeutralButtonStyle">@style/NovaDialogButton</item>
-        <item name="shapeAppearanceMediumComponent">@style/NovaDialogShape</item>
+        <item name="buttonBarPositiveButtonStyle">@style/TextoDialogButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/TextoDialogButton</item>
+        <item name="buttonBarNeutralButtonStyle">@style/TextoDialogButton</item>
+        <item name="shapeAppearanceMediumComponent">@style/TextoDialogShape</item>
     </style>
 
-    <style name="NovaDialogShape" parent="ShapeAppearance.MaterialComponents.MediumComponent">
+    <style name="TextoDialogShape" parent="ShapeAppearance.MaterialComponents.MediumComponent">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">24dp</item>
     </style>
 
-    <style name="NovaDialogButton" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
+    <style name="TextoDialogButton" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
         <item name="android:textColor">@color/colorPrimary</item>
         <item name="android:textSize">15sp</item>
     </style>
 
-    <style name="NovaActionModeStyle" parent="Widget.AppCompat.ActionMode">
+    <style name="TextoActionModeStyle" parent="Widget.AppCompat.ActionMode">
         <item name="background">@android:color/transparent</item>
         <item name="android:background">@android:color/transparent</item>
         <item name="height">0dp</item>
@@ -67,22 +67,22 @@
         <item name="cornerSize">10dp</item>
     </style>
 
-    <style name="NovaToolbarTitle">
+    <style name="TextoToolbarTitle">
         <item name="android:textSize">28sp</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">#FFFFFF</item>
     </style>
 
-    <style name="NovaPopupTheme" parent="ThemeOverlay.AppCompat.Dark">
+    <style name="TextoPopupTheme" parent="ThemeOverlay.AppCompat.Dark">
         <item name="android:background">#333333</item>
         <item name="android:textColor">#FFFFFF</item>
         <item name="android:textColorPrimary">#FFFFFF</item>
         <item name="android:textColorSecondary">#EEEEEE</item>
-        <item name="android:itemTextAppearance">@style/NovaMenuText</item>
+        <item name="android:itemTextAppearance">@style/TextoMenuText</item>
         <item name="actionMenuTextColor">#FFFFFF</item>
     </style>
 
-    <style name="NovaMenuText">
+    <style name="TextoMenuText">
         <item name="android:textColor">#FFFFFF</item>
         <item name="android:textSize">16sp</item>
         <item name="android:textStyle">bold</item>

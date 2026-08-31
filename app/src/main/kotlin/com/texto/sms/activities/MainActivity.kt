@@ -36,6 +36,8 @@ import com.texto.sms.databinding.ActivityMainBinding
 import com.texto.sms.extensions.*
 import com.texto.sms.dialogs.EditFilterDialog
 import com.texto.sms.helpers.MessageFilter
+import com.texto.sms.helpers.NAV_ICON_DP
+import com.texto.sms.helpers.NAV_TAB_RADIUS_DP
 import com.texto.sms.helpers.SEARCHED_MESSAGE_ID
 import com.texto.sms.helpers.THREAD_ID
 import com.texto.sms.helpers.THREAD_TITLE
@@ -50,15 +52,26 @@ import org.greenrobot.eventbus.ThreadMode
 class MainActivity : SimpleActivity() {
 
     private companion object {
-        /** What the design dims a nav tab you are not on to (`--txt3`, 36%). */
-        const val NAV_IDLE_ALPHA = 0.36f
+        /**
+         * Filter chips are full pills in the design (`border-radius: 999px`). Any radius past
+         * half the chip's height rounds the ends completely, so this only has to clear the
+         * tallest a chip gets at the largest UI scale.
+         */
+        const val CHIP_PILL_RADIUS_DP = 100
 
-        /** The lozenge behind the current tab, scaled up with the capsule. */
-        const val NAV_TAB_RADIUS_DP = 27
+        /** The design's wordmark, 20% up from the 34dp it shipped at. */
+        const val LOGO_HEIGHT_DP = 41
 
-        /** Tab glyph size. The mockup draws 18; the capsule here is about a third bigger. */
-        const val NAV_ICON_DP = 23
+        /** Matches the other panel transitions in the app. */
+        const val SEARCH_ANIM_MILLIS = 260L
     }
+
+    /** The date window the search is narrowed to; [SearchDateRange.ANY] means no narrowing. */
+    private var searchDateRange = com.texto.sms.helpers.SearchDateRange.ANY
+
+    /** The conversation filter the search is narrowed to, independent of the home screen's. */
+    private var searchFilter: MessageFilter = MessageFilter.all("همه")
+    private var searchFilterChipsAdapter: com.texto.sms.adapters.FilterChipsAdapter? = null
 
     override var isSearchBarEnabled = false
 
@@ -107,7 +120,7 @@ class MainActivity : SimpleActivity() {
         setupSearchEdgeToEdge()
         setupTopAppBar(binding.mainAppbar, NavigationIcon.None, Color.TRANSPARENT)
 
-        setupNovaNavBar()
+        setupTextoNavBar()
 
         // Opening the app starts on the filter the user nominated in settings, rather than
         // wherever they happened to leave the chips last time. Written through activeFilterId
@@ -119,14 +132,25 @@ class MainActivity : SimpleActivity() {
         // No update check: it contacted the upstream project's GitHub repo on every
         // launch and would have offered to install their APK over this build.
 
+        // Dismissing the keyboard no longer closes search: the panel carries a filter row and
+        // a date range that are worth keeping while you scroll the results.
         ViewCompat.setOnApplyWindowInsetsListener(binding.mainCoordinator) { _, insets ->
-            val isImeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
-            if (wasImeVisible && !isImeVisible && config.useNewUi && binding.novaSearchInput.text?.isEmpty() == true) {
-                shrinkSearchBar()
-            }
-            wasImeVisible = isImeVisible
+            wasImeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
             insets
         }
+
+        // Back closes the search panel first and only then leaves the app, so search is a
+        // state you can step out of rather than a screen you get stuck in.
+        onBackPressedDispatcher.addCallback(this, object : androidx.activity.OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (isSearchExpanded) {
+                    shrinkSearchBar()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
     }
 
     override fun onResume() {
@@ -162,12 +186,12 @@ class MainActivity : SimpleActivity() {
 
         getOrCreateConversationsAdapter().updateScaling()
         applyCustomColors()
-        setupNovaNavBar()
+        setupTextoNavBar()
         setupOverlayBars()
 
         filterChipsAdapter?.notifyDataSetChanged()
-        binding.novaSearchInput.setTextColor(config.inputBarTextColor)
-        binding.novaSearchInput.setHintTextColor(config.inputBarTextColor.withAlpha(0.5f))
+        binding.textoSearchInput.setTextColor(config.inputBarTextColor)
+        binding.textoSearchInput.setHintTextColor(config.inputBarTextColor.withAlpha(0.5f))
 
         if (isFirstResume && config.useNewUi) {
             isFirstResume = false
@@ -230,49 +254,52 @@ class MainActivity : SimpleActivity() {
      * the same hairline every glass surface carries. Painted from the theme rather than left
      * on the XML placeholder so a theme change repaints it in place.
      */
-    private fun styleHeaderGear() = binding.novaMenuBtn.apply {
+    /**
+     * The header's one control, drawn the way the design draws every small round control:
+     * a 40dp disc (`border-radius: 999px`) filled with `--inset` behind the `--divider`
+     * hairline, carrying a `--muted` glyph. Same recipe as the thread header's action tiles
+     * and the composer's clip and SIM discs, which is what ties the three bars together.
+     */
+    private fun styleHeaderGear() = binding.textoMenuBtn.apply {
         val density = resources.displayMetrics.density
-        val size = 38.getScaledPx()
+        val size = 40.getScaledPx()
         updateLayoutParams<LinearLayout.LayoutParams> {
             width = size
             height = size
         }
-        val pad = 10.getScaledPx()
+        val pad = 11.getScaledPx()
         setPadding(pad, pad, pad, pad)
         background = android.graphics.drawable.GradientDrawable().apply {
-            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-            cornerRadius = 14 * density
-            setColor(config.recentColor.withAlpha(0.55f))
+            shape = android.graphics.drawable.GradientDrawable.OVAL
+            setColor(config.mainBackgroundColor.withAlpha(0.55f))
             setStroke(
                 density.toInt().coerceAtLeast(1),
-                com.texto.sms.helpers.NovaGlass.rimFor(config.recentColor, 0.20f)
+                com.texto.sms.helpers.TextoGlass.rimFor(config.recentColor, 0.22f)
             )
         }
+        outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
         imageTintList = android.content.res.ColorStateList.valueOf(
-            config.topBarTextColor.withAlpha(0.58f)
+            config.topBarTextColor.withAlpha(0.68f)
         )
         alpha = 1f
     }
 
-    private fun setupNovaNavBar() = binding.apply {
+    private fun setupTextoNavBar() = binding.apply {
         if (config.useNewUi) {
-            novaNavContainer.beVisible()
+            textoNavContainer.beVisible()
 
             // The capsule spans the width now that compose lives inside it: four equal
             // slots, sized up about a third from the mockup's so the labels sit comfortably.
-            novaNavContainer.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
+            textoNavContainer.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
                 width = ViewGroup.LayoutParams.MATCH_PARENT
                 gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
             }
 
-            // Only the current tab is drawn at full strength; the rest sit back at the
-            // design's tertiary text weight.
-            navHomeIcon.alpha = 1f
-            navHomeLabel.alpha = 1f
-            navAddIcon.alpha = NAV_IDLE_ALPHA
-            navAddLabel.alpha = NAV_IDLE_ALPHA
-            novaSearchIcon.alpha = NAV_IDLE_ALPHA
-            navSearchLabel.alpha = NAV_IDLE_ALPHA
+            // Every tab draws at full opacity: styleNavTabs separates the current one from
+            // the rest with the design's own `--primary`/`--muted` pair, and dimming on top
+            // of that would take the idle tabs well below the contrast the design gives them.
+            listOf(navHomeIcon, navAddIcon, textoSearchIcon).forEach { it.alpha = 1f }
+            listOf(navHomeLabel, navAddLabel, navSearchLabel).forEach { it.alpha = 1f }
 
             styleNavTabs()
 
@@ -283,27 +310,41 @@ class MainActivity : SimpleActivity() {
             navAddBtn.setOnClickListener { launchNewConversation() }
 
             navHomeBtn.setOnClickListener {
-                clearPendingScroll()
-                binding.conversationsList.smoothScrollToPosition(0)
+                // While searching, this tab is the way back to the list rather than a
+                // scroll-to-top on a list that is not on screen.
+                if (isSearchExpanded) {
+                    shrinkSearchBar()
+                } else {
+                    clearPendingScroll()
+                    binding.conversationsList.smoothScrollToPosition(0)
+                }
             }
 
-            if (novaSearchInput.tag != "text_watcher_attached") {
-                novaSearchInput.addTextChangedListener { text ->
+            if (textoSearchInput.tag != "text_watcher_attached") {
+                textoSearchInput.addTextChangedListener { text ->
                     searchTextChanged(text?.toString() ?: "")
                 }
-                novaSearchInput.tag = "text_watcher_attached"
+                textoSearchInput.tag = "text_watcher_attached"
+            }
+
+            textoSearchClear.setOnClickListener {
+                if (textoSearchInput.text?.isNotEmpty() == true) {
+                    textoSearchInput.setText("")
+                } else {
+                    // Nothing typed, so the X is the way out of search rather than a no-op.
+                    shrinkSearchBar()
+                }
             }
 
             // Set initial state
             if (!isSearchExpanded) {
                 navHomeBtn.beVisible()
                 navAddBtn.beVisible()
-                novaSearchInput.beGone()
                 navSearchLabel.beVisible()
                 navSearchContainer.gravity = android.view.Gravity.CENTER
             }
         } else {
-            novaNavContainer.beGone()
+            textoNavContainer.beGone()
         }
     }
 
@@ -313,16 +354,36 @@ class MainActivity : SimpleActivity() {
      */
     private fun styleNavTabs() = binding.apply {
         val density = resources.displayMetrics.density
-        val accent = config.auroraAccentColor
+        // The lozenge marks where you actually are, so while the search panel is up it sits
+        // behind the search tab rather than staying on a conversation list that is not on
+        // screen. Painted per tab from the same recipe, so only which one gets it changes.
+        val activeTab: android.view.View = if (isSearchExpanded) navSearchContainer else navHomeBtn
+        // `--primary`, the accent the design tints the active tab with -- not `--primary-alt`
+        // (auroraAccentColor), which is only the third halo hue behind the app.
+        val accent = config.accentGradientStart
+        val muted = config.mainTextColor.withAlpha(0.68f)
 
-        navHomeBtn.background = android.graphics.drawable.GradientDrawable().apply {
+        val activeLozenge = android.graphics.drawable.GradientDrawable().apply {
             shape = android.graphics.drawable.GradientDrawable.RECTANGLE
             cornerRadius = NAV_TAB_RADIUS_DP * density
-            setColor(accent.withAlpha(0.18f))
-            setStroke(density.toInt().coerceAtLeast(1), accent.withAlpha(0.35f))
+            // `background: var(--primary-soft)` over `border: 1px solid primary/0.25`.
+            setColor(accent.withAlpha(0.16f))
+            setStroke(density.toInt().coerceAtLeast(1), accent.withAlpha(0.25f))
         }
-        navAddBtn.background = null
-        navSearchContainer.background = null
+        listOf(navHomeBtn, navAddBtn, navSearchContainer).forEach { tab ->
+            tab.background = if (tab === activeTab) activeLozenge else null
+        }
+
+        // The design carries the active/idle distinction in colour -- `--primary` against
+        // `--muted` -- rather than by fading the whole tab, so the idle tabs get the muted
+        // ink at full opacity instead of the accent at 36%.
+        val searchIsActive = activeTab === navSearchContainer
+        navHomeIcon.applyColorFilter(if (searchIsActive) muted else accent)
+        navHomeLabel.setTextColor(if (searchIsActive) muted else accent)
+        textoSearchIcon.applyColorFilter(if (searchIsActive) accent else muted)
+        navSearchLabel.setTextColor(if (searchIsActive) accent else muted)
+        navAddIcon.applyColorFilter(muted)
+        navAddLabel.setTextColor(muted)
 
         val padH = 4.getScaledPx()
         val padV = 10.getScaledPx()
@@ -331,51 +392,66 @@ class MainActivity : SimpleActivity() {
             tab.setPadding(padH, padV, padH, padV)
         }
         val glyph = NAV_ICON_DP.getScaledPx()
-        listOf(navHomeIcon, navAddIcon, novaSearchIcon).forEach { icon ->
+        listOf(navHomeIcon, navAddIcon, textoSearchIcon).forEach { icon ->
             icon.updateLayoutParams {
                 width = glyph
                 height = glyph
             }
         }
         listOf(navHomeLabel, navAddLabel, navSearchLabel).forEach { label ->
-            label.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.92f))
+            label.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
         }
     }
 
     /**
-     * The capsule already spans the width, so searching does not resize it -- the other
-     * three tabs step aside and the search slot takes their weight, which is the same motion
-     * without a width animation fighting the layout.
+     * Search opens as its own panel across the top rather than swallowing the bottom capsule,
+     * so the three nav tabs stay reachable the whole time. The panel slides down from behind
+     * the header on the same decelerate curve the rest of the app animates on, and the
+     * conversation list underneath cross-fades out.
      */
     private fun expandSearchBar() = binding.apply {
         if (isSearchExpanded) return@apply
         isSearchExpanded = true
 
-        navHomeBtn.beGone()
-        navAddBtn.beGone()
-        navSearchLabel.beGone()
-        navSearchContainer.gravity = android.view.Gravity.CENTER_VERTICAL
-        novaSearchInput.beVisible()
+        // The header capsule and the home filter row step aside entirely while searching.
+        // They sit above this panel in the same space, so leaving them up hid the field and
+        // its chips behind the wordmark; search gets the top of the screen to itself.
+        mainAppbar.beGone()
+        filterBar.beGone()
 
-        // The top title bar and filter chips row are glass too -- brighten them in lockstep
-        // with the nav bar instead of leaving them dimmed while it isn't.
-        mainAppbar.alpha = 1.0f
-        filterBar.alpha = 1.0f
-        novaSearchIcon.alpha = 1f
+        buildSearchFilterChips()
+        buildSearchDateChips()
+        styleSearchPanel()
+        styleNavTabs()
 
-        val animator = ValueAnimator.ofFloat(0f, 1f)
-        animator.duration = 300
-        animator.interpolator = DecelerateInterpolator()
-        animator.addUpdateListener { animation ->
-            novaSearchInput.alpha = animation.animatedValue as Float
-        }
-        animator.addListener(object : AnimatorListenerAdapter() {
-            override fun onAnimationEnd(animation: Animator) {
-                novaSearchInput.requestFocus()
-                showKeyboard(novaSearchInput)
+        searchHolder.beVisible()
+        searchHolder.alpha = 0f
+        textoSearchPanel.translationY = -textoSearchPanel.height.toFloat().coerceAtLeast(1f)
+
+        searchHolder.animate()
+            .alpha(1f)
+            .setDuration(SEARCH_ANIM_MILLIS)
+            .setInterpolator(DecelerateInterpolator())
+            .start()
+        textoSearchPanel.animate()
+            .translationY(0f)
+            .setDuration(SEARCH_ANIM_MILLIS)
+            .setInterpolator(DecelerateInterpolator())
+            .withEndAction {
+                if (isFinishing || isDestroyed) return@withEndAction
+                textoSearchInput.requestFocus()
+                showKeyboard(textoSearchInput)
             }
-        })
-        animator.start()
+            .start()
+
+        // The list behind it steps aside rather than sitting under a translucent panel.
+        mainNestedScrollview.getChildAt(0)?.animate()
+            ?.alpha(0f)
+            ?.setDuration(SEARCH_ANIM_MILLIS)
+            ?.withEndAction { mainNestedScrollview.getChildAt(0)?.beGone() }
+            ?.start()
+
+        applySearch()
     }
 
     private fun shrinkSearchBar() = binding.apply {
@@ -383,14 +459,269 @@ class MainActivity : SimpleActivity() {
         isSearchExpanded = false
 
         hideKeyboard()
-        novaSearchInput.beGone()
-        navSearchLabel.beVisible()
-        navSearchContainer.gravity = android.view.Gravity.CENTER
-        novaSearchIcon.alpha = NAV_IDLE_ALPHA
-        navHomeBtn.beVisible()
-        navAddBtn.beVisible()
-        mainAppbar.alpha = 0.92f
-        filterBar.alpha = 0.92f
+        textoSearchInput.setText("")
+        searchDateRange = com.texto.sms.helpers.SearchDateRange.ANY
+        searchFilter = MessageFilter.all(getString(R.string.filter_all))
+
+        val panelHeight = textoSearchPanel.height.toFloat().coerceAtLeast(1f)
+        textoSearchPanel.animate()
+            .translationY(-panelHeight)
+            .setDuration(SEARCH_ANIM_MILLIS)
+            .setInterpolator(DecelerateInterpolator())
+            .start()
+        searchHolder.animate()
+            .alpha(0f)
+            .setDuration(SEARCH_ANIM_MILLIS)
+            .setInterpolator(DecelerateInterpolator())
+            .withEndAction {
+                if (isFinishing || isDestroyed) return@withEndAction
+                searchHolder.beGone()
+                textoSearchPanel.translationY = 0f
+            }
+            .start()
+
+        mainNestedScrollview.getChildAt(0)?.apply {
+            beVisible()
+            animate().alpha(1f).setDuration(SEARCH_ANIM_MILLIS).start()
+        }
+
+        mainAppbar.beVisible()
+        filterBar.beVisible()
+        // Full view alpha: how see-through these are is the glass setting's job alone. A
+        // 0.92 here multiplied against the fill and put the bars below whatever the slider
+        // said, which is part of why its top end never looked opaque.
+        mainAppbar.alpha = 1f
+        filterBar.alpha = 1f
+        styleNavTabs()
+    }
+
+    /**
+     * Paints the search panel from the live theme: the field is the same glass capsule the
+     * header and nav pill are, and the date chip is styled by [styleFilterChip] so it is
+     * visibly the same control as the filter chips beside it.
+     */
+    private fun styleSearchPanel() = binding.apply {
+        val density = resources.displayMetrics.density
+
+        // The panel owns the top of the screen once the header steps aside, so it carries the
+        // status-bar inset itself. Read from the window rather than assumed, so it is right
+        // whatever the device puts up there.
+        textoSearchPanel.setPadding(
+            textoSearchPanel.paddingLeft,
+            statusBarInsetOf(textoSearchPanel) + 8.getScaledPx(),
+            textoSearchPanel.paddingRight,
+            textoSearchPanel.paddingBottom
+        )
+
+        textoSearchCapsule.background = com.texto.sms.helpers.TextoGlass.bar(
+            tint = config.inputBarBackgroundColor,
+            cornerRadius = CHIP_PILL_RADIUS_DP * density,
+            opacity = config.glassOpacity / 100f,
+            strokeWidthPx = 1.getScaledPx()
+        )
+        textoSearchCapsule.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+
+        textoSearchPanelIcon.applyColorFilter(config.inputBarTextColor.withAlpha(0.68f))
+        textoSearchClear.applyColorFilter(config.inputBarTextColor.withAlpha(0.68f))
+        textoSearchInput.setTextColor(config.inputBarTextColor)
+        textoSearchInput.setHintTextColor(config.inputBarTextColor.withAlpha(0.5f))
+        textoSearchInput.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize())
+
+        searchResultCount.setTextColor(config.mainTextColor.withAlpha(0.68f))
+        searchResultCount.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.7f))
+
+        buildSearchDateChips()
+    }
+
+    /**
+     * The conversation filters, reused verbatim on the search panel so the same audience
+     * chips narrow a search that narrow the home list.
+     */
+    private fun buildSearchFilterChips() {
+        val filters = currentFilters()
+        if (searchFilterChipsAdapter == null) {
+            searchFilterChipsAdapter = com.texto.sms.adapters.FilterChipsAdapter(
+                onSelect = { filter ->
+                    searchFilter = filter
+                    searchFilterChipsAdapter?.submitFilters(
+                        currentFilters(), searchFilter.id, filterCounts(currentFilters())
+                    )
+                    applySearch()
+                },
+                onEditRequested = { },
+                onAddRequested = { },
+                styleChip = { chip, filterId, isActive -> styleFilterChip(chip, filterId, isActive) }
+            )
+            binding.searchFilterBar.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(
+                this, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false
+            )
+            binding.searchFilterBar.adapter = searchFilterChipsAdapter
+        }
+        searchFilterChipsAdapter?.submitFilters(filters, searchFilter.id, filterCounts(filters))
+    }
+
+    /**
+     * The date row: every window the search offers, as its own chip, plus one that opens the
+     * Jalali calendar for anything else.
+     *
+     * This used to be a single chip that opened a list dialog, which hid the whole control
+     * behind two taps and a screen change. The presets are the common case, so they are on
+     * the panel where the filter chips are, drawn to the same recipe so the two rows read as
+     * one set of controls rather than two unrelated ones.
+     */
+    private fun buildSearchDateChips() {
+        val row = binding.searchDateChips
+        row.removeAllViews()
+        // The chip the row should be showing once it is laid out: null while the filter is
+        // "any", which is the first chip and so is already where the row starts.
+        var activeChip: android.view.View? = null
+        val range = com.texto.sms.helpers.SearchDateRange
+
+        // Two windows and a calendar, rather than the six that pushed everything else off
+        // the row. Today, yesterday and the quarter are all a couple of taps away in the
+        // picker, and a row you can read at a glance is worth more than the shortcut.
+        val presets = listOf(
+            range.ID_WEEK to R.string.search_date_week,
+            range.ID_MONTH to R.string.search_date_month,
+        )
+
+        presets.forEach { (id, labelRes) ->
+            val isActive = searchDateRange.id == id
+            val chip = dateChip(getString(labelRes), isActive) {
+                // Tapping the one that is already on clears it. With "any" no longer a chip
+                // of its own, this is the only way back to an unfiltered search.
+                searchDateRange = if (isActive) range.ANY else range.preset(id)
+                buildSearchDateChips()
+                applySearch()
+            }
+            if (isActive) activeChip = chip
+            row.addView(chip)
+        }
+
+        // The custom chip carries the picked window once there is one, so the row still says
+        // what is being filtered on without a second label to read.
+        // Deliberately not drawn like the two beside it. This one opens a calendar rather
+        // than toggling, and a chip that looks identical to its neighbours promises a filter
+        // you switch on: the caret and the accent outline say a screen is coming.
+        val isCustom = searchDateRange.id == range.ID_CUSTOM
+        val customChip = dateChip(
+            if (isCustom) {
+                range.labelOf(this, searchDateRange)
+            } else {
+                getString(R.string.search_date_picked)
+            },
+            isCustom,
+            opensPicker = true
+        ) {
+            com.texto.sms.helpers.JalaliRangePicker(this).show { start, end ->
+                searchDateRange = range.custom(start, end)
+                buildSearchDateChips()
+                applySearch()
+            }
+        }
+        if (isCustom) activeChip = customChip
+        row.addView(customChip)
+
+        // Where the row should sit once it has been measured. A HorizontalScrollView counts
+        // scrollX from the visual left whichever way the layout runs, so leaving it at 0
+        // under RTL showed the row's *end* : it opened on "select a range" with everything
+        // before it off screen. Anchored to the start, unless something further along is
+        // picked, in which case that is what needs to be on screen.
+        val target = activeChip
+        binding.searchDateBar.post {
+            if (target == null) {
+                binding.searchDateBar.fullScroll(android.view.View.FOCUS_RIGHT)
+            } else {
+                val centred = target.left - (binding.searchDateBar.width - target.width) / 2
+                binding.searchDateBar.scrollTo(centred.coerceAtLeast(0), 0)
+            }
+        }
+    }
+
+    /**
+     * One chip on the date row, painted to the same recipe as a conversation filter chip.
+     *
+     * [opensPicker] marks the one that leads to the calendar instead of switching a filter
+     * on: it keeps the accent outline and carries a caret, so the row does not offer three
+     * identical-looking controls of which one behaves differently.
+     */
+    private fun dateChip(
+        label: String,
+        isActive: Boolean,
+        opensPicker: Boolean = false,
+        onTap: () -> Unit,
+    ): TextView {
+        val density = resources.displayMetrics.density
+        return TextView(this).apply {
+            text = label
+            maxLines = 1
+            includeFontPadding = false
+            isClickable = true
+            val chipRadius = CHIP_PILL_RADIUS_DP * density
+            background = when {
+                isActive -> com.texto.sms.helpers.TextoGlass.accent(
+                    start = config.accentGradientStart,
+                    end = config.accentGradientEnd,
+                    cornerRadius = chipRadius,
+                    mid = config.accentGradientMid
+                )
+                opensPicker -> android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                    cornerRadius = chipRadius
+                    setColor(config.accentGradientStart.withAlpha(0.10f))
+                    setStroke(1.getScaledPx(), config.accentGradientStart.withAlpha(0.55f))
+                }
+                else -> com.texto.sms.helpers.TextoGlass.bar(
+                    tint = config.recentColor,
+                    cornerRadius = chipRadius,
+                    opacity = 0.5f,
+                    strokeWidthPx = 1.getScaledPx(),
+                    rimAlpha = 0.18f
+                )
+            }
+            val padH = 14.getScaledPx()
+            val padV = 8.getScaledPx()
+            setPadding(padH, padV, padH, padV)
+            outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+            elevation = if (isActive) 6 * density else 0f
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
+            setTextColor(
+                when {
+                    isActive -> config.sentBubbleTextColor
+                    opensPicker -> config.accentGradientStart
+                    else -> config.mainTextColor.withAlpha(0.58f)
+                }
+            )
+            typeface = typefaceFor(
+                if (isActive || opensPicker) {
+                    android.graphics.Typeface.BOLD
+                } else {
+                    android.graphics.Typeface.NORMAL
+                }
+            )
+            if (opensPicker) {
+                // A caret at the label's end : the same shorthand the rest of the app uses
+                // for "this opens something". Rotated because only the one caret ships.
+                val caret = androidx.appcompat.content.res.AppCompatResources
+                    .getDrawable(context, R.drawable.ic_ph_caret_left)?.mutate()?.apply {
+                        val side = 14.getScaledPx()
+                        setBounds(0, 0, side, side)
+                        setTint(if (isActive) config.sentBubbleTextColor else config.accentGradientStart)
+                    }
+                setCompoundDrawablesRelative(caret, null, null, null)
+                compoundDrawablePadding = 6.getScaledPx()
+            }
+            layoutParams = LinearLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { marginStart = 6.getScaledPx() }
+            setOnClickListener { onTap() }
+        }
+    }
+
+    /** Re-runs the search with whatever combination of query, filter and date is set. */
+    private fun applySearch() {
+        searchTextChanged(binding.textoSearchInput.text?.toString().orEmpty())
     }
 
     private fun loadMessages() {
@@ -642,19 +973,42 @@ class MainActivity : SimpleActivity() {
      * never disagree with what tapping it shows.
      */
     /**
-     * The wordmark, painted with the skin's accent gradient rather than a flat colour. The
-     * shader has to be rebuilt whenever the text's measured width changes, so it is applied
-     * on layout rather than once: a shader sized to a stale width leaves the tail of the word
-     * a single colour.
+     * The wordmark image carries its own neon cyan-to-magenta colouring baked into the PNG,
+     * so nothing here recolours it -- except on a light ground, where the import's own CSS
+     * (`saturate(1.1) brightness(0.72) contrast(1.12)`) darkens it a touch for legibility.
+     * That is reproduced as a [ColorMatrix] rather than a flat tint, which would just paint
+     * over the gradient the mark is drawn with.
      */
-    private fun styleAppTitle() = binding.novaTitle.apply {
-        // Flat, not the accent gradient it used to carry: the design draws the name in the
-        // same colour as the rest of the bar's text, and a shader here would also override
-        // whatever top-bar text colour the user picked in settings.
-        paint.shader = null
-        setTextColor(config.topBarTextColor)
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.55f))
-        invalidate()
+    private fun styleAppTitle() = binding.textoTitle.apply {
+        updateLayoutParams<LinearLayout.LayoutParams> {
+            height = LOGO_HEIGHT_DP.getScaledPx()
+        }
+        colorFilter = if (com.texto.sms.helpers.TextoGlass.isDark(config.mainBackgroundColor)) {
+            null
+        } else {
+            val saturation = android.graphics.ColorMatrix().apply { setSaturation(1.1f) }
+            val brightness = android.graphics.ColorMatrix(
+                floatArrayOf(
+                    0.72f, 0f, 0f, 0f, 0f,
+                    0f, 0.72f, 0f, 0f, 0f,
+                    0f, 0f, 0.72f, 0f, 0f,
+                    0f, 0f, 0f, 1f, 0f
+                )
+            )
+            val contrastScale = 1.12f
+            val contrastTranslate = (1 - contrastScale) * 127.5f
+            val contrast = android.graphics.ColorMatrix(
+                floatArrayOf(
+                    contrastScale, 0f, 0f, 0f, contrastTranslate,
+                    0f, contrastScale, 0f, 0f, contrastTranslate,
+                    0f, 0f, contrastScale, 0f, contrastTranslate,
+                    0f, 0f, 0f, 1f, 0f
+                )
+            )
+            saturation.postConcat(brightness)
+            saturation.postConcat(contrast)
+            android.graphics.ColorMatrixColorFilter(saturation)
+        }
     }
 
     private fun filterCounts(filters: List<MessageFilter>): Map<String, Int> =
@@ -677,52 +1031,64 @@ class MainActivity : SimpleActivity() {
         val density = resources.displayMetrics.density
         val stroke = 1.getScaledPx()
 
-        // Straight from the design: the selected chip is a solid fill of the sent colour
-        // with a soft shadow under it and no rim; the rest are a 50% wash of the card colour
-        // behind a 10%-white hairline.
+        // Straight from the design's chip rule: a full pill (`border-radius: 999px`), the
+        // active one filled with the accent *gradient* -- `var(--grad)`, not a flat stop --
+        // under a glow, the rest a glass wash behind the shared `--divider` hairline.
         val textColor = if (isActive) {
             config.sentBubbleTextColor
         } else {
             config.mainTextColor.withAlpha(0.58f)
         }
-        chip.background = android.graphics.drawable.GradientDrawable().apply {
-            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-            cornerRadius = 20 * density
-            if (isActive) {
-                setColor(config.accentGradientEnd)
-            } else {
-                setColor(config.recentColor.withAlpha(0.5f))
-                setStroke(stroke, config.mainTextColor.withAlpha(0.10f))
-            }
+        val chipRadius = CHIP_PILL_RADIUS_DP * density
+        chip.background = if (isActive) {
+            com.texto.sms.helpers.TextoGlass.accent(
+                start = config.accentGradientStart,
+                end = config.accentGradientEnd,
+                cornerRadius = chipRadius,
+                mid = config.accentGradientMid
+            )
+        } else {
+            com.texto.sms.helpers.TextoGlass.bar(
+                tint = config.recentColor,
+                cornerRadius = chipRadius,
+                opacity = 0.5f,
+                strokeWidthPx = stroke,
+                rimAlpha = 0.22f
+            )
         }
         val horizontal = if (filterId == com.texto.sms.adapters.FilterChipsAdapter.ADD_CHIP_ID) {
             18.getScaledPx()
         } else {
-            14.getScaledPx()
+            // The design's own 8px/16px chip padding.
+            16.getScaledPx()
         }
         chip.setPadding(horizontal, 8.getScaledPx(), horizontal, 8.getScaledPx())
         chip.alpha = 1f
         chip.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+        // `box-shadow: var(--glow)` on the active chip only.
         chip.elevation = if (isActive) 6 * density else 0f
 
         views.label.apply {
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.96f))
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
             setTextColor(textColor)
-            typeface = typefaceFor(android.graphics.Typeface.BOLD)
+            typeface = typefaceFor(
+                if (isActive) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL
+            )
         }
 
-        // The count sits in its own pill, a wash of the chip's own text colour so it reads as
-        // secondary on both the active gradient and the inactive tint.
+        // The count sits in its own pill: `--pill-on` over the active gradient, `--pill` over
+        // the glass. Both are a wash of the chip's own ink, which is what those two tokens
+        // resolve to on either ground.
         views.count.apply {
             setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.62f))
             setTextColor(textColor)
             typeface = typefaceFor(android.graphics.Typeface.BOLD)
-            val padH = 5.getScaledPx()
-            setPadding(padH, 1.getScaledPx(), padH, 1.getScaledPx())
+            val padH = 6.getScaledPx()
+            setPadding(padH, 2.getScaledPx(), padH, 2.getScaledPx())
             background = android.graphics.drawable.GradientDrawable().apply {
                 shape = android.graphics.drawable.GradientDrawable.RECTANGLE
                 cornerRadius = 100f * density
-                setColor(textColor.withAlpha(if (isActive) 0.22f else 0.14f))
+                setColor(textColor.withAlpha(if (isActive) 0.25f else 0.10f))
             }
         }
     }
@@ -811,7 +1177,7 @@ class MainActivity : SimpleActivity() {
         // The header's single control. The overflow menu it replaced offered archived
         // conversations, settings and about; all three live inside settings now, so the
         // gear opens that rather than a menu with one real entry left in it.
-        binding.novaMenuBtn.setOnClickListener {
+        binding.textoMenuBtn.setOnClickListener {
             startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
         }
         buildFilterChips()
@@ -832,9 +1198,9 @@ class MainActivity : SimpleActivity() {
         )
 
         val searchAnim = AnimationUtils.loadAnimation(this, R.anim.slide_in_bottom)
-        binding.novaNavContainer.startAnimation(searchAnim)
+        binding.textoNavContainer.startAnimation(searchAnim)
 
-        binding.novaSearchInput.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize())
+        binding.textoSearchInput.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize())
     }
 
     private fun getCachedConversations(isManualReorder: Boolean = false) {
@@ -1076,55 +1442,78 @@ class MainActivity : SimpleActivity() {
         startActivity(Intent(this, NewConversationActivity::class.java))
     }
 
+    /**
+     * Runs whatever combination of the three search inputs is set: the typed text, the filter
+     * chip and the date range. Any one of them alone narrows the results, and they stack --
+     * so a date on its own lists everything from that window, and a filter on its own lists
+     * that chip's threads, without a query being typed at all.
+     */
     private fun searchTextChanged(text: String) {
         lastSearchedText = text
-        if (text.length >= 2) {
-            binding.mainNestedScrollview.getChildAt(0).beGone()
-            binding.searchHolder.beVisible()
-            binding.searchHolder.animate().alpha(1f).setDuration(200L).start()
-            ensureBackgroundThread {
-                val searchQuery = "%$text%"
-                // The provider holds every message on the device; the Room table only has
-                // the ones that arrived since install, so both are searched and merged.
+
+        val hasQuery = text.length >= 2
+        val hasFilter = searchFilter.id != MessageFilter.ID_ALL
+        val hasDate = !searchDateRange.isAny
+
+        if (!hasQuery && !hasFilter && !hasDate) {
+            // Nothing to narrow by: show the prompt rather than dumping every message.
+            binding.searchResultCount.text = ""
+            showSearchResults(emptyList(), emptyList(), text, isPrompting = true)
+            return
+        }
+
+        val range = searchDateRange
+        val filter = searchFilter
+
+        ensureBackgroundThread {
+            // The provider holds every message on the device; the Room table only has the
+            // ones that arrived since install, so both are searched and merged.
+            val messages = if (hasQuery) {
                 val fromProvider = searchMessagesInProvider(text)
-                val fromCache = messagesDB.getMessagesWithText(searchQuery)
-                val messages = (fromProvider + fromCache)
-                    .distinctBy { it.id }
-                    .sortedByDescending { it.date }
+                val fromCache = messagesDB.getMessagesWithText("%$text%")
+                (fromProvider + fromCache).distinctBy { it.id }
+            } else {
+                // No query, so there is nothing to match message bodies against; the result
+                // set is built from conversations alone.
+                emptyList()
+            }.filter { range.contains(it.date) }.sortedByDescending { it.date }
 
-                val conversations = conversationsDB.getConversationsWithText(searchQuery)
-
-                // Searching while a filter chip is active stays inside that chip: the
-                // results are narrowed to the threads the filter itself would show, so
-                // "search" means "search in what I am looking at" rather than silently
-                // reaching across every conversation on the device.
-                val allowedThreads = if (activeFilter.id == MessageFilter.ID_ALL) {
-                    null
-                } else {
-                    allConversations
-                        .filter {
-                            com.texto.sms.helpers.MessageClassifier
-                                .matches(it, activeFilter, contactPhoneNumbers)
-                        }
-                        .map { it.threadId }
-                        .toSet()
+            // Room's LIKE has the same Persian problem as the provider's, so the cached
+            // titles are re-filtered here rather than trusted: a thread named with an Arabic
+            // yeh was invisible to a query typed with the Farsi one. The wide query stays as
+            // the cheap first pass; this narrows it correctly.
+            val conversations = conversationsDB
+                .getConversationsWithText("%%")
+                .filter { conversation ->
+                    val matchesText = !hasQuery ||
+                        conversation.title.containsPersian(text) ||
+                        conversation.phoneNumber.containsPersian(text)
+                    matchesText && range.contains(conversation.date)
                 }
 
-                val visibleMessages = allowedThreads
-                    ?.let { allowed -> messages.filter { it.threadId in allowed } }
-                    ?: messages
-                val visibleConversations = allowedThreads
-                    ?.let { allowed -> conversations.filter { it.threadId in allowed } }
-                    ?: conversations
-
-                if (text == lastSearchedText) {
-                    showSearchResults(visibleMessages, visibleConversations, text)
-                }
+            // A filter narrows both halves to the threads that chip would show.
+            val allowedThreads = if (!hasFilter) {
+                null
+            } else {
+                allConversations
+                    .filter {
+                        com.texto.sms.helpers.MessageClassifier
+                            .matches(it, filter, contactPhoneNumbers)
+                    }
+                    .map { it.threadId }
+                    .toSet()
             }
-        } else {
-            binding.mainNestedScrollview.getChildAt(0).beVisible()
-            binding.searchHolder.beGone()
-            binding.searchHolder.alpha = 0f
+
+            val visibleMessages = allowedThreads
+                ?.let { allowed -> messages.filter { it.threadId in allowed } }
+                ?: messages
+            val visibleConversations = allowedThreads
+                ?.let { allowed -> conversations.filter { it.threadId in allowed } }
+                ?: conversations
+
+            if (text == lastSearchedText) {
+                showSearchResults(visibleMessages, visibleConversations, text)
+            }
         }
     }
 
@@ -1155,10 +1544,14 @@ class MainActivity : SimpleActivity() {
             filterBar.doOnLayout {
                 if (isFinishing || isDestroyed) return@doOnLayout
                 val inset = appbar.height + barsGap + filterBar.height + barsGap
-                listOf(binding.conversationsList, binding.searchResultsList).forEach { list ->
-                    if (list.paddingTop != inset) {
-                        list.setPadding(list.paddingLeft, inset, list.paddingRight, list.paddingBottom)
-                        list.scrollToPosition(0)
+                // Only the conversation list. The search results sit below the search
+                // panel, which is a view in the layout rather than a floating bar, so the
+                // same inset there is counted twice: it opened the results 630px down the
+                // screen with nothing in the gap.
+                binding.conversationsList.apply {
+                    if (paddingTop != inset) {
+                        setPadding(paddingLeft, inset, paddingRight, paddingBottom)
+                        scrollToPosition(0)
                     }
                 }
                 // The empty-state text is already positioned with layout_below="filter_bar",
@@ -1168,18 +1561,23 @@ class MainActivity : SimpleActivity() {
     }
 
     private fun setupSearchEdgeToEdge() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.novaSearchInput) { _, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.textoSearchInput) { _, insets ->
             val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val bottomInset = if (imeInsets.bottom > 0) imeInsets.bottom else systemBars.bottom
-            binding.novaNavContainer.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
+            binding.textoNavContainer.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
                 bottomMargin = bottomInset + 22.getScaledPx()
             }
             insets
         }
     }
 
-    private fun showSearchResults(messages: List<Message>, conversations: List<Conversation>, searchedText: String) {
+    private fun showSearchResults(
+        messages: List<Message>,
+        conversations: List<Conversation>,
+        searchedText: String,
+        isPrompting: Boolean = false,
+    ) {
         val results = ArrayList<SearchResult>()
         conversations.forEach { conv ->
             val date = (conv.date * 1000L).formatJalaliDateOrTime()
@@ -1195,8 +1593,24 @@ class MainActivity : SimpleActivity() {
         }
         runOnUiThread {
             if (isFinishing || isDestroyed) return@runOnUiThread
+
+            // Two different empty states: "type something" before anything is narrowed, and
+            // "nothing matched" once it has been.
             binding.searchPlaceholder.beGoneIf(results.isNotEmpty())
-            binding.searchPlaceholder2.beGoneIf(results.isNotEmpty())
+            binding.searchPlaceholder2.beGone()
+            binding.searchPlaceholder.text = getString(
+                if (isPrompting) R.string.search_type_more else R.string.search_no_results
+            )
+            binding.searchResultCount.text = if (isPrompting) {
+                ""
+            } else {
+                resources.getQuantityString(
+                    R.plurals.search_results_count,
+                    results.size,
+                    results.size.toString().toPersianDigits()
+                )
+            }
+
             val curr = binding.searchResultsList.adapter
             if (curr == null) {
                 SearchResultsAdapter(this, results, binding.searchResultsList, searchedText) {
@@ -1265,14 +1679,14 @@ class MainActivity : SimpleActivity() {
             }
             val layerDrawable = android.graphics.drawable.LayerDrawable(arrayOf(drawable))
             layerDrawable.setLayerInset(0, 0, 0, 0, 0)
-            binding.novaNavContainer.foreground = layerDrawable
+            binding.textoNavContainer.foreground = layerDrawable
             
             // Sync icon and divider colors with search bar text color
             binding.navHomeIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
             binding.navAddIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
-            binding.novaSearchIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
+            binding.textoSearchIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
         } else {
-            binding.novaNavContainer.foreground = null
+            binding.textoNavContainer.foreground = null
         }
     }
 

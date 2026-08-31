@@ -15,7 +15,7 @@
         android:id="@+id/selection_bar_pill"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:background="@drawable/nova_searchbar_bg"
+        android:background="@drawable/texto_searchbar_bg"
         android:elevation="10dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"

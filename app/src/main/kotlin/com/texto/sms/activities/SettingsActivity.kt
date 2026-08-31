@@ -15,6 +15,7 @@ import org.fossify.commons.extensions.*
 import org.fossify.commons.helpers.NavigationIcon
 import org.fossify.commons.helpers.PERMISSION_WRITE_STORAGE
 import org.fossify.commons.views.MyAppBarLayout
+import com.texto.sms.helpers.textoCapsuleDialog
 import com.texto.sms.BuildConfig
 import com.texto.sms.R
 import com.texto.sms.databinding.ActivitySettingsBinding
@@ -43,6 +44,7 @@ class SettingsActivity : SimpleActivity() {
         setupUIScale()
         setupGlassOpacity()
         setupAppTheme()
+        setupDarkModeSwitch()
         setupBlockedNumbers()
         setupConversationScreens()
         setupContactsOnlyFilter()
@@ -59,18 +61,20 @@ class SettingsActivity : SimpleActivity() {
         super.onResume()
         applyOutlines()
         updateCustomizationUI()
-        setupNovaNavBar()
+        setupTextoNavBar()
         // Ensure UI is fully up to date for modern design
         updateAppFonts(binding.root)
         applyCustomColors()
+        // After applyCustomColors, which is what repaints on a theme change.
+        styleAllSwitches(binding.root)
     }
 
-    private fun setupNovaNavBar() = binding.apply {
+    private fun setupTextoNavBar() = binding.apply {
         if (config.useNewUi) {
-            novaNavContainer.beVisible()
+            textoNavContainer.beVisible()
             
             // Sync edge-to-edge padding to match Home screen
-            androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(novaNavContainer) { v, insets ->
+            androidx.core.view.ViewCompat.setOnApplyWindowInsetsListener(textoNavContainer) { v, insets ->
                 val navigationHeight = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.navigationBars()).bottom
                 v.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
                     bottomMargin = 22.getScaledPx() + navigationHeight
@@ -79,20 +83,17 @@ class SettingsActivity : SimpleActivity() {
             }
 
             // Full width and self-sizing, exactly as on the home screen.
-            novaNavContainer.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
+            textoNavContainer.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
                 width = ViewGroup.LayoutParams.MATCH_PARENT
                 height = ViewGroup.LayoutParams.WRAP_CONTENT
                 gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
             }
 
-            val idle = 0.36f
-            navHomeIcon.alpha = idle
-            navHomeLabel.alpha = idle
-            navSearchIcon.alpha = idle
-            navSearchLabel.alpha = idle
-            // The current screen, so it is the one tab drawn at full strength.
-            navSettingsIcon.alpha = 1f
-            navSettingsLabel.alpha = 1f
+            // Every tab at full opacity, exactly as on the home screen: styleNavTabs marks
+            // the current one in colour, and fading the others on top of that took them well
+            // below the contrast the design gives them.
+            listOf(navHomeIcon, navSearchIcon, navSettingsIcon).forEach { it.alpha = 1f }
+            listOf(navHomeLabel, navSearchLabel, navSettingsLabel).forEach { it.alpha = 1f }
 
             styleNavTabs()
 
@@ -106,7 +107,7 @@ class SettingsActivity : SimpleActivity() {
 
             navSettingsBtn.setOnClickListener { /* already here */ }
         } else {
-            novaNavContainer.beGone()
+            textoNavContainer.beGone()
         }
     }
 
@@ -117,19 +118,35 @@ class SettingsActivity : SimpleActivity() {
      */
     private fun styleNavTabs() = binding.apply {
         val density = resources.displayMetrics.density
-        val accent = config.auroraAccentColor
+        // `--primary`, the same token the home screen's capsule uses. This read
+        // auroraAccentColor, which is the third *halo* hue rather than the accent, so the
+        // lozenge and the current tab's ink went blue here and teal one screen away.
+        val accent = config.accentGradientStart
+        val muted = config.mainTextColor.withAlpha(0.68f)
 
         navSettingsBtn.background = android.graphics.drawable.GradientDrawable().apply {
             shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-            cornerRadius = 27 * density
-            setColor(accent.withAlpha(0.18f))
-            setStroke(density.toInt().coerceAtLeast(1), accent.withAlpha(0.35f))
+            cornerRadius = com.texto.sms.helpers.NAV_TAB_RADIUS_DP * density
+            setColor(accent.withAlpha(0.16f))
+            setStroke(density.toInt().coerceAtLeast(1), accent.withAlpha(0.25f))
         }
         navHomeBtn.background = null
         navSearchBtn.background = null
 
+        navSettingsIcon.applyColorFilter(accent)
+        navSettingsLabel.setTextColor(accent)
+        listOf(navHomeIcon, navSearchIcon).forEach { it.applyColorFilter(muted) }
+        listOf(navHomeLabel, navSearchLabel).forEach { it.setTextColor(muted) }
+
+        val glyph = com.texto.sms.helpers.NAV_ICON_DP.getScaledPx()
+        listOf(navHomeIcon, navSearchIcon, navSettingsIcon).forEach { icon ->
+            icon.updateLayoutParams {
+                width = glyph
+                height = glyph
+            }
+        }
         listOf(navHomeLabel, navSearchLabel, navSettingsLabel).forEach {
-            it.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.92f))
+            it.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
         }
     }
 
@@ -171,14 +188,14 @@ class SettingsActivity : SimpleActivity() {
             }
             val layerDrawable = android.graphics.drawable.LayerDrawable(arrayOf(drawable))
             layerDrawable.setLayerInset(0, 0, 0, 0, 0)
-            binding.novaNavContainer.foreground = layerDrawable
+            binding.textoNavContainer.foreground = layerDrawable
             
             // Sync icon and divider colors with search bar text color
             binding.navHomeIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
             binding.navSettingsIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
             binding.navSearchIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
         } else {
-            binding.novaNavContainer.foreground = null
+            binding.textoNavContainer.foreground = null
         }
     }
 
@@ -473,7 +490,7 @@ class SettingsActivity : SimpleActivity() {
             // here the screen would come back on the bare code defaults and only settle on
             // the real default theme at the next cold start, when App.onCreate notices that
             // nothing is stored. Reset now lands where a fresh install lands.
-            AppThemes.apply(config, AppThemes.byId(AppThemes.NOCTURNE))
+            AppThemes.apply(config, AppThemes.byId(AppThemes.NEON))
             finish()
             startActivity(intent)
         }
@@ -614,26 +631,77 @@ class SettingsActivity : SimpleActivity() {
      * Picking a theme rewrites the individual colour settings, so the rest of the
      * customisation screen keeps working and anything can still be tweaked afterwards.
      */
+    /**
+     * The swatch row now only picks a skin -- Classic, Aurora, Nocturne or Neon -- and leaves
+     * day/night to the "تم تاریک" switch above it. Aurora and Nocturne used to list their
+     * light variant as a second, separate entry; that pairing now lives in
+     * [com.texto.sms.helpers.AppThemes.families] instead, one row per skin regardless of which
+     * of its two variants is actually applied.
+     */
     private fun setupAppTheme() = binding.apply {
         settingsAppTheme.text =
-            com.texto.sms.helpers.AppThemes.byId(config.appTheme).label
+            com.texto.sms.helpers.AppThemes.familyOf(config.appTheme).label
 
         settingsAppThemeHolder.setOnClickListener {
-            val themes = com.texto.sms.helpers.AppThemes.all
-            val items = themes.mapIndexed { index, theme ->
-                org.fossify.commons.models.RadioItem(index, theme.label)
-            } as ArrayList<org.fossify.commons.models.RadioItem>
-
-            val current = themes.indexOfFirst { it.id == config.appTheme }.coerceAtLeast(0)
-            org.fossify.commons.dialogs.RadioGroupDialog(this@SettingsActivity, items, current) {
-                val theme = themes[it as Int]
-                com.texto.sms.helpers.AppThemes.apply(config, theme)
-                settingsAppTheme.text = theme.label
-                updateCustomizationUI()
-                updateAppFonts(binding.root)
-                applyCustomColors()
-                toast(R.string.theme_applied)
+            val isDark = com.texto.sms.helpers.AppThemes.isDarkVariant(config.appTheme)
+            // The same capsule rows the SIM chooser uses, each carrying the skin's own accent
+            // as its swatch: a radio list named four themes without showing any of them, and
+            // came up on commons' light dialog ground in a face nothing else here uses.
+            val choices = com.texto.sms.helpers.AppThemes.families.map { family ->
+                val preview = family.forDark(isDark)
+                com.texto.sms.helpers.CapsuleChoice(
+                    label = family.label,
+                    swatch = preview.accentGradient.first,
+                    swatchEnd = preview.accentGradient.second,
+                    isActive = family.has(config.appTheme),
+                    onPick = {
+                        com.texto.sms.helpers.AppThemes.apply(config, preview)
+                        settingsAppTheme.text = family.label
+                        updateCustomizationUI()
+                        updateAppFonts(binding.root)
+                        applyCustomColors()
+                        refreshDarkModeSwitch()
+                        toast(R.string.theme_applied)
+                    }
+                )
             }
+
+            textoCapsuleDialog(getString(R.string.app_theme), choices)
+        }
+    }
+
+    /**
+     * Day/night for whichever skin is active. Switching it re-applies the *same* family at
+     * the other variant -- the swatch row's own selection never changes -- so this is the one
+     * place a light/dark pair actually differs from picking a whole new theme. Classic has no
+     * counterpart (both its slots are the same instance), so the switch disables itself rather
+     * than accepting a tap that would visibly flip with nothing behind it to apply.
+     */
+    private fun setupDarkModeSwitch() = binding.apply {
+        refreshDarkModeSwitch()
+        settingsDarkModeHolder.setOnClickListener {
+            // Guarded on the switch's own enabled state: the row forwarded taps to toggle()
+            // unconditionally, so tapping it under Classic -- whose switch is deliberately
+            // disabled because the skin has no light counterpart -- still flipped it.
+            if (settingsDarkModeSwitch.isEnabled) settingsDarkModeSwitch.toggle()
+        }
+    }
+
+    /** Re-reads which family is active and whether it actually has two variants to switch between. */
+    private fun refreshDarkModeSwitch() = binding.apply {
+        val family = com.texto.sms.helpers.AppThemes.familyOf(config.appTheme)
+        val hasCounterpart = family.dark.id != family.light.id
+        settingsDarkModeSwitch.setOnCheckedChangeListener(null)
+        settingsDarkModeSwitch.isChecked = com.texto.sms.helpers.AppThemes.isDarkVariant(config.appTheme)
+        settingsDarkModeSwitch.isEnabled = hasCounterpart
+        settingsDarkModeHolder.alpha = if (hasCounterpart) 1f else 0.45f
+        settingsDarkModeSwitch.setOnCheckedChangeListener { _, isChecked ->
+            val target = family.forDark(isChecked)
+            if (target.id == config.appTheme) return@setOnCheckedChangeListener
+            com.texto.sms.helpers.AppThemes.apply(config, target)
+            updateCustomizationUI()
+            updateAppFonts(binding.root)
+            applyCustomColors()
         }
     }
 
@@ -676,6 +744,61 @@ class SettingsActivity : SimpleActivity() {
      * when the section holding the slider is expanded. Snap and clamp before assigning so a
      * stored preference can never take the screen down.
      */
+    /**
+     * Paints a slider from the live theme.
+     *
+     * Material's default track and thumb come from the base (light) theme's colour attributes,
+     * so both sliders came up in a palette that belonged to no skin the app actually ships:
+     * the two controls on this screen were the only things on it not following the theme.
+     */
+    /**
+     * Paints a switch from the live theme, for the same reason the sliders needed it: the
+     * Material default track is the base theme's lavender, which belongs to no skin the app
+     * ships and was the last thing on this screen not following the accent.
+     */
+    private fun com.google.android.material.materialswitch.MaterialSwitch.applyTextoStyle() {
+        val accent = config.accentGradientStart
+        val states = arrayOf(
+            intArrayOf(android.R.attr.state_checked),
+            intArrayOf(-android.R.attr.state_checked)
+        )
+        trackTintList = android.content.res.ColorStateList(
+            states, intArrayOf(accent.withAlpha(0.45f), config.mainTextColor.withAlpha(0.16f))
+        )
+        thumbTintList = android.content.res.ColorStateList(
+            states, intArrayOf(accent, config.mainTextColor.withAlpha(0.62f))
+        )
+        trackDecorationTintList = android.content.res.ColorStateList(
+            states, intArrayOf(android.graphics.Color.TRANSPARENT, android.graphics.Color.TRANSPARENT)
+        )
+    }
+
+    /** Every switch on the screen, found by walking the tree so a new row is covered too. */
+    private fun styleAllSwitches(view: android.view.View) {
+        if (view is com.google.android.material.materialswitch.MaterialSwitch) {
+            view.applyTextoStyle()
+            return
+        }
+        if (view is android.view.ViewGroup) {
+            for (i in 0 until view.childCount) styleAllSwitches(view.getChildAt(i))
+        }
+    }
+
+    private fun com.google.android.material.slider.Slider.applyTextoStyle() {
+        val accent = config.accentGradientStart
+        trackActiveTintList = android.content.res.ColorStateList.valueOf(accent)
+        trackInactiveTintList =
+            android.content.res.ColorStateList.valueOf(config.mainTextColor.withAlpha(0.16f))
+        thumbTintList = android.content.res.ColorStateList.valueOf(accent)
+        haloTintList = android.content.res.ColorStateList.valueOf(accent.withAlpha(0.20f))
+        // The step is one unit on both sliders, so the tick marks would be a solid line.
+        tickActiveTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.TRANSPARENT)
+        tickInactiveTintList = android.content.res.ColorStateList.valueOf(android.graphics.Color.TRANSPARENT)
+        trackHeight = 6.getScaledPx()
+        thumbRadius = 9.getScaledPx()
+        thumbStrokeWidth = 0f
+    }
+
     private fun com.google.android.material.slider.Slider.setSteppedValue(raw: Float) {
         val snapped = if (stepSize > 0f) {
             valueFrom + Math.round((raw - valueFrom) / stepSize) * stepSize
@@ -686,8 +809,10 @@ class SettingsActivity : SimpleActivity() {
     }
 
     private fun setupUIScale() = binding.apply {
+        settingsUiScaleSlider.applyTextoStyle()
         settingsUiScaleSlider.setSteppedValue(config.uiScale)
         settingsUiScaleValue.text = uiScaleLabel(config.uiScale)
+        settingsUiScaleValue.setTextColor(config.accentGradientStart)
         settingsUiScaleSlider.addOnChangeListener { _, value, fromUser ->
             if (fromUser) {
                 config.uiScale = value
@@ -701,8 +826,10 @@ class SettingsActivity : SimpleActivity() {
         "${Math.round(value * 100)}٪".toPersianDigits()
 
     private fun setupGlassOpacity() = binding.apply {
+        settingsGlassOpacitySlider.applyTextoStyle()
         settingsGlassOpacitySlider.setSteppedValue(config.glassOpacity.toFloat())
         settingsGlassOpacityValue.text = glassOpacityLabel(config.glassOpacity)
+        settingsGlassOpacityValue.setTextColor(config.accentGradientStart)
         settingsGlassOpacitySlider.addOnChangeListener { _, value, fromUser ->
             if (fromUser) {
                 config.glassOpacity = value.toInt()
@@ -753,20 +880,20 @@ class SettingsActivity : SimpleActivity() {
             )
 
             // Persian typefaces, greyed out with a hint until their file is dropped in assets/fonts.
-            com.texto.sms.helpers.NovaFonts.displayNames.forEach { (id, name) ->
-                val installed = com.texto.sms.helpers.NovaFonts.isInstalled(this@SettingsActivity, id)
+            com.texto.sms.helpers.TextoFonts.displayNames.forEach { (id, name) ->
+                val installed = com.texto.sms.helpers.TextoFonts.isInstalled(this@SettingsActivity, id)
                 val label = if (installed) name else "$name — ${getString(R.string.font_not_installed)}"
                 items.add(org.fossify.commons.models.RadioItem(id, label))
             }
 
-            org.fossify.commons.dialogs.RadioGroupDialog(this@SettingsActivity, items, config.fontFamilyNova) {
+            org.fossify.commons.dialogs.RadioGroupDialog(this@SettingsActivity, items, config.fontFamilyTexto) {
                 val selected = it as Int
-                if (com.texto.sms.helpers.NovaFonts.isPersianFont(selected) &&
-                    !com.texto.sms.helpers.NovaFonts.isInstalled(this@SettingsActivity, selected)
+                if (com.texto.sms.helpers.TextoFonts.isPersianFont(selected) &&
+                    !com.texto.sms.helpers.TextoFonts.isInstalled(this@SettingsActivity, selected)
                 ) {
                     toast(R.string.font_not_installed)
                 }
-                config.fontFamilyNova = selected
+                config.fontFamilyTexto = selected
                 settingsFont.text = getFontText()
                 updateAppFonts(binding.root)
                 applyCustomColors()
@@ -777,7 +904,7 @@ class SettingsActivity : SimpleActivity() {
     /** Anything that is not a bundled Persian face now reads as the system font, which also
      *  covers a value left behind by one of the Latin families that has been dropped. */
     private fun getFontText(): String =
-        com.texto.sms.helpers.NovaFonts.displayNames[config.fontFamilyNova]
+        com.texto.sms.helpers.TextoFonts.displayNames[config.fontFamilyTexto]
             ?: getString(R.string.font_system_default)
 
     /** Every grouped card on the screen, in display order. */
@@ -799,15 +926,16 @@ class SettingsActivity : SimpleActivity() {
         val cardRadius = config.cardCornerRadiusDp * resources.displayMetrics.density
 
         settingsCards().forEach { card ->
-            // The design's settings card is the same flat 42% wash as a thread row, with no
-            // rim and no sheen; the rows inside it are separated by their own hairlines.
-            NovaGlass.applyPanel(
+            // The design's settings card is the same glass wash as a thread row, behind the
+            // shared `--divider` hairline: `border: 1px solid var(--divider)` on
+            // `background: var(--glass)`. The rows inside it keep their own separators.
+            TextoGlass.applyPanel(
                 view = card,
                 tint = config.recentColor,
                 cornerRadius = cardRadius,
-                opacity = if (config.glassTheme) 0.42f else 1f,
+                opacity = if (config.glassTheme) 0.68f else 1f,
                 strokeWidthPx = 1.getScaledPx(),
-                rimAlpha = 0f,
+                rimAlpha = 0.22f,
                 sheenAlpha = 0f
             )
             card.clipToOutline = true
@@ -856,10 +984,29 @@ class SettingsActivity : SimpleActivity() {
                 row.setPadding(
                     16.getScaledPx(), 15.getScaledPx(), 16.getScaledPx(), 15.getScaledPx()
                 )
-                (row.getChildAt(0) as? android.widget.ImageView)?.updateLayoutParams<android.widget.LinearLayout.LayoutParams> {
-                    width = SETTINGS_GLYPH_DP.getScaledPx()
-                    height = SETTINGS_GLYPH_DP.getScaledPx()
-                    marginEnd = 13.getScaledPx()
+                // The design seats each row's glyph in its own tile rather than letting it
+                // sit bare on the card: a 36px square on a 0.9rem radius, filled with
+                // `--primary-soft` behind the `--divider` hairline. The glyph itself keeps
+                // the accent colour tintRowsIn gives it.
+                (row.getChildAt(0) as? android.widget.ImageView)?.apply {
+                    val tile = SETTINGS_TILE_DP.getScaledPx()
+                    updateLayoutParams<android.widget.LinearLayout.LayoutParams> {
+                        width = tile
+                        height = tile
+                        marginEnd = 13.getScaledPx()
+                    }
+                    val inset = (tile - SETTINGS_GLYPH_DP.getScaledPx()) / 2
+                    setPadding(inset, inset, inset, inset)
+                    val accent = config.accentGradientStart
+                    background = android.graphics.drawable.GradientDrawable().apply {
+                        shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                        cornerRadius = SETTINGS_TILE_RADIUS_DP * resources.displayMetrics.density
+                        setColor(accent.withAlpha(0.14f))
+                        setStroke(
+                            1.getScaledPx(),
+                            com.texto.sms.helpers.TextoGlass.rimFor(config.recentColor, 0.22f)
+                        )
+                    }
                 }
             } else {
                 // Nested holders (a row wrapped in another column) get the same pass.
@@ -901,7 +1048,11 @@ class SettingsActivity : SimpleActivity() {
         /** The design's `--destructive`, oklch(0.65 0.21 22). */
         val DESTRUCTIVE_COLOR = Color.parseColor("#F54651")
 
-        /** The design draws a settings row glyph at 19px, bare and in the accent hue. */
-        const val SETTINGS_GLYPH_DP = 19
+        /** The design draws a settings row glyph at 18px, seated in its own tile. */
+        const val SETTINGS_GLYPH_DP = 18
+
+        /** That tile: 36px on a 0.9rem radius, filled with `--primary-soft`. */
+        const val SETTINGS_TILE_DP = 36
+        const val SETTINGS_TILE_RADIUS_DP = 14
     }
 }

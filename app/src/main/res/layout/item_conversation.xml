@@ -9,10 +9,10 @@
     android:clickable="true"
     android:focusable="true"
     android:minHeight="@dimen/two_line_list_item_min_height"
-    android:paddingStart="@dimen/activity_margin"
-    android:paddingTop="@dimen/medium_margin"
-    android:paddingEnd="@dimen/activity_margin"
-    android:paddingBottom="@dimen/medium_margin">
+    android:paddingStart="16dp"
+    android:paddingTop="14dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="14dp">
 
     <ImageView
         android:id="@+id/conversation_image"
@@ -27,7 +27,7 @@
         android:id="@+id/conversation_address"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/activity_margin"
+        android:layout_marginHorizontal="14dp"
         android:ellipsize="end"
         android:maxLines="1"
         android:textAlignment="viewStart"
@@ -95,7 +95,7 @@
         android:layout_height="@dimen/small_icon_size"
         android:alpha="0.7"
         android:padding="@dimen/tiny_margin"
-        android:src="@drawable/ic_pin_filled_vector"
+        android:src="@drawable/ic_ph_push_pin"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/conversation_body_short"
         app:layout_constraintEnd_toStartOf="@id/unread_count_badge"

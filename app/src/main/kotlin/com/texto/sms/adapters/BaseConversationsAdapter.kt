@@ -29,8 +29,8 @@ import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.databinding.ItemConversationBinding
 import com.texto.sms.extensions.*
-import com.texto.sms.helpers.NovaAvatars
-import com.texto.sms.helpers.NovaGlass
+import com.texto.sms.helpers.TextoAvatars
+import com.texto.sms.helpers.TextoGlass
 import com.texto.sms.models.Conversation
 
 @Suppress("LeakingThis")
@@ -597,8 +597,8 @@ abstract class BaseConversationsAdapter(
             setupBadgeCount(recentUnreadBadge, isUnread, conversation.unreadCount)
 
             recentImage.updateLayoutParams {
-                // The design's avatar is 44dp, not the commons list-icon size.
-                val size = 44.getScaledPxIn(activity as SimpleActivity)
+                // The design's list avatar is 48dp, not the commons list-icon size.
+                val size = 48.getScaledPxIn(activity as SimpleActivity)
                 width = size
                 height = size
             }
@@ -641,17 +641,22 @@ abstract class BaseConversationsAdapter(
                 activity.config.cardCornerRadiusDp * resources.displayMetrics.density
 
             if (activity.config.glassTheme) {
-                // The design's thread card is a flat wash of the card colour at 42% with no
-                // border and no sheen at all -- what separates one row from the next is the
-                // gap and the fill, not an edge. A selected row deepens to make the
-                // selection obvious.
-                NovaGlass.applyPanel(
+                // The design's row is a glass wash of the card colour behind a `--divider`
+                // hairline: `border: 1px solid var(--divider)` on `background: var(--glass)`.
+                // The rim is what gives a row its edge against the halo field behind it --
+                // without it the cards bleed into the background on the paler themes.
+                //
+                // Kept deliberately faint. `--divider` is a hairline, not an outline: at .22
+                // it read as a drawn border and gave every row a raised, chip-like edge the
+                // design does not have. .10 still separates the card from the halo field
+                // behind it without announcing itself.
+                TextoGlass.applyPanel(
                     view = recentFrame,
                     tint = baseColor,
                     cornerRadius = cardRadius,
-                    opacity = if (isSelected) 0.66f else 0.42f,
+                    opacity = if (isSelected) 0.82f else 0.68f,
                     strokeWidthPx = (resources.displayMetrics.density).toInt().coerceAtLeast(1),
-                    rimAlpha = 0f,
+                    rimAlpha = 0.10f,
                     sheenAlpha = 0f,
                     outlineColor = outlineColor,
                     outlineWidthPx = outlineThickness
@@ -751,8 +756,8 @@ abstract class BaseConversationsAdapter(
                 true
             }
 
-            val placeholder = NovaAvatars.letterAvatar(activity, conversation.title)
-            NovaAvatars.clipToSquircle(recentImage)
+            val placeholder = TextoAvatars.letterAvatar(activity, conversation.title)
+            TextoAvatars.clipToSquircle(recentImage)
 
             SimpleContactsHelper(activity).loadContactImage(
                 path = conversation.photoUri,
@@ -897,14 +902,16 @@ abstract class BaseConversationsAdapter(
             // Gradient squircle monogram instead of the library's flat circular letter icon.
             // Group threads get one too: the icon the commons helper draws is a circle and
             // would be the only round avatar left in the list.
-            val placeholder = NovaAvatars.letterAvatar(activity, conversation.title)
+            val placeholder = TextoAvatars.letterAvatar(activity, conversation.title)
 
             conversationImage.updateLayoutParams {
-                width = (activity as SimpleActivity).getScaledDimen(org.fossify.commons.R.dimen.list_icon_size_medium)
-                height = (activity as SimpleActivity).getScaledDimen(org.fossify.commons.R.dimen.list_icon_size_medium)
+                // The design's list avatar is 48dp, not the commons list-icon size.
+                val side = 48.getScaledPxIn(activity as SimpleActivity)
+                width = side
+                height = side
             }
             // Real contact photos get clipped to the same silhouette as the generated ones.
-            NovaAvatars.clipToSquircle(conversationImage)
+            TextoAvatars.clipToSquircle(conversationImage)
 
             SimpleContactsHelper(activity).loadContactImage(
                 path = conversation.photoUri,
@@ -927,10 +934,10 @@ abstract class BaseConversationsAdapter(
                 val config = activity.config
                 setTextColor(config.sentBubbleTextColor)
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.85f)
-                // The design's badge is a 19dp lozenge on a 10dp radius that grows wider for
-                // a two-digit count rather than staying a fixed circle, and it is filled
-                // with the flat sent colour rather than the accent gradient.
-                val size = 19.getScaledPxIn(activity as SimpleActivity)
+                // `background: var(--grad)` -- the accent gradient, the same surface the
+                // avatars and the active filter chip carry, not a flat stop off it. The
+                // badge is a 20dp pill that grows wider for a two-digit count.
+                val size = 20.getScaledPxIn(activity as SimpleActivity)
                 val pad = 5.getScaledPxIn(activity as SimpleActivity)
                 updateLayoutParams {
                     width = ViewGroup.LayoutParams.WRAP_CONTENT
@@ -938,11 +945,12 @@ abstract class BaseConversationsAdapter(
                 }
                 minWidth = size
                 setPadding(pad, 0, pad, 0)
-                background = GradientDrawable().apply {
-                    shape = GradientDrawable.RECTANGLE
-                    cornerRadius = size / 2f
-                    setColor(config.accentGradientEnd)
-                }
+                background = TextoGlass.accent(
+                    start = config.accentGradientStart,
+                    end = config.accentGradientEnd,
+                    cornerRadius = size / 2f,
+                    mid = config.accentGradientMid
+                )
             }
         }
     }

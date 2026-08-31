@@ -18,6 +18,9 @@ import android.telephony.SmsMessage
 import android.telephony.SubscriptionInfo
 import android.text.TextUtils
 import android.util.TypedValue
+import android.widget.TextView
+import androidx.activity.addCallback
+import androidx.core.graphics.drawable.toDrawable
 import android.view.KeyEvent
 import android.view.WindowManager
 import android.view.animation.AnimationUtils
@@ -31,6 +34,7 @@ import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
+import androidx.core.widget.addTextChangedListener
 import androidx.documentfile.provider.DocumentFile
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -49,6 +53,8 @@ import com.texto.sms.dialogs.MessageDetailsDialog
 import com.texto.sms.dialogs.RenameConversationDialog
 import com.texto.sms.dialogs.ScheduleMessageDialog
 import com.texto.sms.extensions.*
+import com.texto.sms.helpers.CapsuleChoice
+import com.texto.sms.helpers.textoCapsuleDialog
 import com.texto.sms.helpers.*
 import com.texto.sms.messaging.isLongMmsMessage
 import com.texto.sms.messaging.isShortCodeWithLetters
@@ -74,6 +80,15 @@ class ThreadActivity : SimpleActivity() {
     private var isFirstResume = true
     private var refreshedSinceSent = false
     private var threadItems = ArrayList<ThreadItem>()
+
+    /**
+     * The in-thread search term, or empty when the bar is closed.
+     *
+     * Held on the activity rather than read off the field, because the refresh paths below
+     * run from background work and from EventBus and have to know whether what they are
+     * about to submit should be filtered.
+     */
+    private var threadSearchQuery = ""
     private var bus: EventBus? = null
     private var conversation: Conversation? = null
     private var participants = ArrayList<SimpleContact>()
@@ -141,6 +156,7 @@ class ThreadActivity : SimpleActivity() {
         (binding.threadMessagesList.layoutManager as LinearLayoutManager).stackFromEnd = true
         loadConversation()
         setupExpandingInputBar()
+        setupThreadSearch()
 
         // Keyboard Sync: Shrink input bar when keyboard goes down
         ViewCompat.setOnApplyWindowInsetsListener(binding.threadHolder) { _, insets ->
@@ -163,7 +179,7 @@ class ThreadActivity : SimpleActivity() {
      * [expandInputBar] and [shrinkInputBar] survive as the focus half of that behaviour.
      */
     private fun setupExpandingInputBar() {
-        val inputBar = binding.messageHolder.novaMessageInputBar
+        val inputBar = binding.messageHolder.textoMessageInputBar
         val inputField = binding.messageHolder.threadTypeMessage
         val isNewUi = config.useNewUi
 
@@ -260,9 +276,12 @@ class ThreadActivity : SimpleActivity() {
             bottomMargin = 20.getScaledPx()
         }
 
-        binding.messageHolder.novaMessageInputBar.apply {
-            // The design's composer field.
-            minimumHeight = 44.getScaledPx()
+        binding.messageHolder.textoMessageInputBar.apply {
+            // The capsule now holds the 44dp send disc plus its own 8dp of padding, so it
+            // has to clear 60dp rather than the 44 it needed when send sat outside it.
+            minimumHeight = 60.getScaledPx()
+            val pad = 8.getScaledPx()
+            setPadding(pad, pad, pad, pad)
         }
 
         getOrCreateThreadAdapter().updateScaling()
@@ -424,10 +443,14 @@ class ThreadActivity : SimpleActivity() {
                 val forceScrollOnOpen = isFromNotification
                 isFromNotification = false
                 getOrCreateThreadAdapter().apply {
-                    updateMessages(threadItems) {
+                    updateMessages(visibleThreadItems()) {
                         isRefreshing = false
                         if (isFinishing || isDestroyed) return@updateMessages
-                        scrollToBottom(forceScroll || forceScrollOnOpen)
+                        // Not while searching: the results are a list you read from the top,
+                        // and snapping to its end every time one arrives fights that.
+                        if (threadSearchQuery.isEmpty()) {
+                            scrollToBottom(forceScroll || forceScrollOnOpen)
+                        }
                     }
                 }
             }
@@ -525,6 +548,11 @@ class ThreadActivity : SimpleActivity() {
     }
 
     private fun loadMoreMessages() {
+        // A filtered thread is short, so it sits at the top of the list from the moment the
+        // first character is typed -- which fired this, which re-submitted the *unfiltered*
+        // items and wiped the results before they could be read. Paging waits for the search
+        // to close.
+        if (threadSearchQuery.isNotEmpty()) return
         if (messages.isEmpty() || allMessagesFetched || loadingOlderMessages) return
         loadingOlderMessages = true
         val cutoff = messages.first().date
@@ -534,7 +562,7 @@ class ThreadActivity : SimpleActivity() {
             runOnUiThread {
                 if (isFinishing || isDestroyed) return@runOnUiThread
                 loadingOlderMessages = false
-                getOrCreateThreadAdapter().updateMessages(threadItems)
+                getOrCreateThreadAdapter().updateMessages(visibleThreadItems())
             }
         }
     }
@@ -583,37 +611,45 @@ class ThreadActivity : SimpleActivity() {
         binding.messageHolder.apply {
             val density = resources.displayMetrics.density
 
-            // The design's send control is an accent square, not a bare glyph on the bar.
-            // Painted through NovaGlass so it is the same accent surface as the unread
-            // badges, the active filter chip and the sent bubbles, rather than a second
-            // gradient built by hand that could drift from them.
+            // The design's send control is a full accent disc (`border-radius: 999px`, not a
+            // squircle) under a glow, painted through TextoGlass so it is the same accent
+            // surface as the unread badges, the active filter chip and the sent bubbles.
             val sendSide = 44.getScaledPx()
             threadSendMessage.updateLayoutParams<LinearLayout.LayoutParams> {
                 width = sendSide
                 height = sendSide
-                marginEnd = 9.getScaledPx()
+                marginStart = 8.getScaledPx()
+                marginEnd = 0
             }
-            threadSendMessage.setTextColor(config.sentBubbleTextColor)
-            threadSendMessage.compoundDrawables.forEach {
-                it?.applyColorFilter(config.sentBubbleTextColor)
-            }
-            threadSendMessage.background = com.texto.sms.helpers.NovaGlass.accent(
+            threadSendMessage.imageTintList =
+                android.content.res.ColorStateList.valueOf(config.sentBubbleTextColor)
+            threadSendMessage.background = com.texto.sms.helpers.TextoGlass.accent(
                 start = config.accentGradientStart,
                 end = config.accentGradientEnd,
-                cornerRadius = sendSide * 0.36f
+                cornerRadius = sendSide / 2f,
+                mid = config.accentGradientMid
             )
             threadSendMessage.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+            threadSendMessage.elevation = 6 * density
 
-            // No fill and no hairline on the row: the composer is two floating pieces on the
-            // screen's own ground, so anything painted here would read as a slab behind them.
-            novaMessageBarRow.background = null
-            novaMessageBarRow.setPadding(
-                14.getScaledPx(), 10.getScaledPx(), 14.getScaledPx(), 22.getScaledPx()
+            // No fill and no hairline on the row: everything the composer draws belongs to
+            // the capsule inside it, so anything painted here would read as a second slab.
+            textoMessageBarRow.background = null
+            textoMessageBarRow.setPadding(
+                12.getScaledPx(), 6.getScaledPx(), 12.getScaledPx(), 14.getScaledPx()
             )
 
             confirmManageContacts.applyColorFilter(mainTextColor)
-            threadAddAttachment.applyColorFilter(inputBarColor.withAlpha(0.36f))
+
+            // The clip and the SIM are 42dp discs filled with `--inset` behind the shared
+            // `--divider` hairline, with a `--muted` glyph -- the design's own small-control
+            // recipe, which the header's action tiles use too.
+            styleComposerDisc(threadAddAttachment, inputBarColor)
             threadAddAttachment.alpha = 1.0f
+
+            styleComposerDisc(threadAddEmoji, inputBarColor)
+            threadAddEmoji.alpha = 1.0f
+            threadAddEmoji.setOnClickListener { showEmojiPicker() }
 
             val properPrimaryColor = getProperPrimaryColor()
             // threadMessagesFastscroller removed
@@ -855,36 +891,44 @@ class ThreadActivity : SimpleActivity() {
      * filled with the card colour at half strength.
      */
     private fun styleThreadHeader() {
-        val density = resources.displayMetrics.density
-        val fill = config.recentColor.withAlpha(0.5f)
-        val glyph = config.topBarTextColor.withAlpha(0.58f)
+        val fill = config.mainBackgroundColor.withAlpha(0.55f)
+        val rim = com.texto.sms.helpers.TextoGlass.rimFor(config.recentColor, 0.22f)
+        val glyph = config.topBarTextColor.withAlpha(0.68f)
 
-        fun tile(view: android.widget.ImageView, sizeDp: Int, radiusDp: Int) {
+        // Every header control is a full disc in the design (`border-radius: 999px`) filled
+        // with `--inset` behind the `--divider` hairline -- the same recipe the composer's
+        // clip and SIM discs use, which is what makes the two bars read as one material.
+        fun tile(view: android.widget.ImageView, sizeDp: Int) {
+            val side = sizeDp.getScaledPx()
             view.updateLayoutParams {
-                width = sizeDp.getScaledPx()
-                height = sizeDp.getScaledPx()
+                width = side
+                height = side
             }
             view.background = android.graphics.drawable.GradientDrawable().apply {
-                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-                cornerRadius = radiusDp * density
+                shape = android.graphics.drawable.GradientDrawable.OVAL
                 setColor(fill)
+                setStroke(1.getScaledPx(), rim)
             }
+            view.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
             view.imageTintList = android.content.res.ColorStateList.valueOf(glyph)
         }
 
-        tile(binding.threadBackBtn, 36, 13)
-        tile(binding.threadCallBtn, 34, 12)
-        tile(binding.threadMenuBtn, 34, 12)
+        tile(binding.threadBackBtn, 40)
+        tile(binding.threadSearchBtn, 38)
+        tile(binding.threadCallBtn, 38)
+        tile(binding.threadMenuBtn, 38)
 
+        // The design's header avatar is 42dp on a 16dp radius, and carries the accent
+        // gradient rather than the neutral tile fill the actions use.
         binding.threadHeaderAvatar.updateLayoutParams {
-            width = 40.getScaledPx()
-            height = 40.getScaledPx()
+            width = 42.getScaledPx()
+            height = 42.getScaledPx()
         }
-        com.texto.sms.helpers.NovaAvatars.clipToSquircle(binding.threadHeaderAvatar)
+        com.texto.sms.helpers.TextoAvatars.clipToSquircle(binding.threadHeaderAvatar)
 
         binding.threadToolbarTitle.setTextColor(config.topBarTextColor)
         binding.threadToolbarTitle.setTextSize(
-            TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.2f)
+            TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.95f)
         )
         // The design paints this one line in the accent hue -- the only coloured text in the
         // header, which is what makes it read as status rather than a second title.
@@ -1080,7 +1124,7 @@ class ThreadActivity : SimpleActivity() {
         binding.threadHeaderStatus.beVisibleIf(status.isNotEmpty())
 
         binding.threadHeaderAvatar.beVisible()
-        val placeholder = com.texto.sms.helpers.NovaAvatars.letterAvatar(this, finalTitle)
+        val placeholder = com.texto.sms.helpers.TextoAvatars.letterAvatar(this, finalTitle)
         SimpleContactsHelper(this).loadContactImage(
             path = conversation?.photoUri.orEmpty(),
             imageView = binding.threadHeaderAvatar,
@@ -1696,7 +1740,8 @@ class ThreadActivity : SimpleActivity() {
     }
 
     private fun updateMessageType() {
-        binding.messageHolder.threadSendMessage.text = ""
+        // Nothing to do since send became an icon: it never carried a label, and the empty
+        // string this used to write was only there to keep a Button from showing one.
     }
 
     @SuppressLint("MissingPermission")
@@ -1708,45 +1753,346 @@ class ThreadActivity : SimpleActivity() {
             availableSIMCards.add(SIMCard(index + 1, info.subscriptionId, info.displayName.toString()))
         }
 
-        // Identified by colour rather than a tiny digit: the slot number was too small to
-        // read, so the badge is a tinted SIM glyph whose colour the user picks in Settings.
+        // The design's SIM control: a disc the same size as the clip beside it, with the
+        // slot's digit riding its upper corner as a small filled badge. The digit alone was
+        // too small to read on its own, and colour alone said nothing about which slot it
+        // was -- the design carries both, so this does too.
+        val simHolder = binding.messageHolder.threadSimHolder
         val simIcon = binding.messageHolder.threadSelectSimIcon
         val simNumber = binding.messageHolder.threadSelectSimNumber
         val number = participants.firstOrNull()?.phoneNumbers?.firstOrNull()?.normalizedNumber
 
-        simNumber.beGone()
         if (availableSIMCards.size < 2 || number.isNullOrEmpty()) {
+            simHolder.beGone()
             simIcon.beGone()
+            simNumber.beGone()
             return
         }
 
         currentSIMCardIndex = config.getUseSIMIdAtNumber(number)
             .coerceIn(0, availableSIMCards.lastIndex)
+        simHolder.beVisible()
         simIcon.beVisible()
-        simIcon.updateLayoutParams {
-            width = SIM_BADGE_SIZE_DP.getScaledPx()
-            height = SIM_BADGE_SIZE_DP.getScaledPx()
+        simNumber.beVisible()
+
+        val discSide = COMPOSER_DISC_DP.getScaledPx()
+        simHolder.updateLayoutParams<LinearLayout.LayoutParams> {
+            width = discSide
+            height = discSide
+            marginStart = 8.getScaledPx()
         }
-        simIcon.setPadding(0, 0, 0, 0)
-        simIcon.translationX = -SIM_BADGE_LEFT_SHIFT_DP.getScaledPx().toFloat()
+        styleComposerDisc(simIcon, config.inputBarTextColor)
+
+        val badgeSide = SIM_BADGE_SIZE_DP.getScaledPx()
+        simNumber.updateLayoutParams<android.widget.FrameLayout.LayoutParams> {
+            width = badgeSide
+            height = badgeSide
+        }
+        simNumber.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.58f))
+        simNumber.typeface = typefaceFor(android.graphics.Typeface.BOLD)
 
         fun renderSelectedSIM() {
-            simIcon.applyColorFilter(config.getSimColor(currentSIMCardIndex))
+            val simColor = config.getSimColor(currentSIMCardIndex)
+            // The glyph takes the slot's colour; the disc under it stays the neutral inset
+            // the design gives every small control.
+            simIcon.applyColorFilter(simColor)
+            simNumber.text = (currentSIMCardIndex + 1).toString()
+            simNumber.setTextColor(config.mainBackgroundColor)
+            simNumber.background = android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.OVAL
+                setColor(simColor)
+                // The ring that lifts the badge off the disc behind it.
+                setStroke(
+                    (1.5f * resources.displayMetrics.density).toInt().coerceAtLeast(1),
+                    config.recentColor
+                )
+            }
         }
 
         // Tapping opens the list of SIMs to choose from; it used to silently cycle to the
         // next one, which gave no indication of what was picked or what else was available.
-        simIcon.setOnClickListener {
-            val items = availableSIMCards.mapIndexed { index, card ->
-                org.fossify.commons.models.RadioItem(index, card.label)
-            } as ArrayList<org.fossify.commons.models.RadioItem>
-            org.fossify.commons.dialogs.RadioGroupDialog(this, items, currentSIMCardIndex) {
-                currentSIMCardIndex = (it as Int).coerceIn(0, availableSIMCards.lastIndex)
-                config.saveUseSIMIdAtNumber(number, currentSIMCardIndex)
-                renderSelectedSIM()
+        val pickSim = android.view.View.OnClickListener { showSimPicker(number) { renderSelectedSIM() } }
+        // The badge sits on top of the glyph, so it has to carry the handler too or a tap
+        // landing on the digit would fall through to the capsule and do nothing.
+        simIcon.setOnClickListener(pickSim)
+        simNumber.setOnClickListener(pickSim)
+        renderSelectedSIM()
+    }
+
+    /**
+     * In-thread search: narrows the thread to the messages whose body matches, so you can
+     * find something inside one long conversation without leaving it.
+     *
+     * Matching goes through [containsPersian] for the same reason the global search does :
+     * carriers send the Arabic forms of letters a Persian keyboard never types.
+     */
+    private fun setupThreadSearch() {
+        val input = binding.threadSearchInput
+
+        binding.threadSearchBtn.setOnClickListener {
+            if (binding.threadSearchBar.isVisible()) closeThreadSearch() else openThreadSearch()
+        }
+
+        binding.threadSearchClose.setOnClickListener {
+            // Something typed: clear it and stay in search. Nothing typed: the X is the way
+            // out, rather than a button that visibly does nothing.
+            if (input.text?.isNotEmpty() == true) input.setText("") else closeThreadSearch()
+        }
+
+        if (input.tag != "thread_search_watcher") {
+            input.addTextChangedListener { text ->
+                applyThreadSearch(text?.toString().orEmpty())
+            }
+            input.tag = "thread_search_watcher"
+        }
+
+        onBackPressedDispatcher.addCallback(this) {
+            if (binding.threadSearchBar.isVisible()) {
+                closeThreadSearch()
+            } else {
+                isEnabled = false
+                onBackPressedDispatcher.onBackPressed()
             }
         }
-        renderSelectedSIM()
+    }
+
+    private fun openThreadSearch() {
+        binding.threadSearchBar.beVisible()
+        styleThreadSearchBar()
+        binding.threadSearchInput.requestFocus()
+        showKeyboard(binding.threadSearchInput)
+        styleThreadSearchButton()
+    }
+
+    private fun closeThreadSearch() {
+        hideKeyboard()
+        binding.threadSearchInput.setText("")
+        binding.threadSearchBar.beGone()
+        applyThreadSearch("")
+        styleThreadSearchButton()
+    }
+
+    /** Marks the header magnifier while the bar is open, the way the nav capsule marks its tab. */
+    private fun styleThreadSearchButton() {
+        val isOpen = binding.threadSearchBar.isVisible()
+        binding.threadSearchBtn.applyColorFilter(
+            if (isOpen) config.accentGradientStart else config.mainTextColor
+        )
+    }
+
+    /**
+     * What the adapter should be showing right now.
+     *
+     * Every refresh path submits through this rather than handing over [threadItems] raw.
+     * They used to submit the unfiltered list directly, so an arriving message, a resume, or
+     * the pager firing on a now:short list all silently threw the search results away.
+     */
+    private fun visibleThreadItems(): ArrayList<ThreadItem> {
+        val needle = threadSearchQuery
+        if (needle.isEmpty()) return threadItems
+
+        val matches = threadItems.filter {
+            it is com.texto.sms.models.Message && it.body.containsPersian(needle)
+        }
+
+        // Date separators are kept for the days that still have a hit, so a result is still
+        // anchored to when it was sent. A bare list of bubbles out of context was most of
+        // what made the filtered view hard to read.
+        val keptDates = matches.mapNotNull { (it as? com.texto.sms.models.Message)?.date }.toSet()
+        return ArrayList(
+            threadItems.filter { item ->
+                when (item) {
+                    is com.texto.sms.models.Message -> item.body.containsPersian(needle)
+                    is com.texto.sms.models.ThreadItem.ThreadDateTime ->
+                        keptDates.any { isSameDayAs(it, item.date) }
+                    else -> false
+                }
+            }
+        )
+    }
+
+    private fun isSameDayAs(a: Int, b: Int): Boolean {
+        val cal = java.util.Calendar.getInstance()
+        cal.timeInMillis = a * 1000L
+        val dayA = cal.get(java.util.Calendar.YEAR) * 1000 + cal.get(java.util.Calendar.DAY_OF_YEAR)
+        cal.timeInMillis = b * 1000L
+        val dayB = cal.get(java.util.Calendar.YEAR) * 1000 + cal.get(java.util.Calendar.DAY_OF_YEAR)
+        return dayA == dayB
+    }
+
+    private fun applyThreadSearch(query: String) {
+        threadSearchQuery = query.trim()
+        val shown = visibleThreadItems()
+        val hits = shown.count { it is com.texto.sms.models.Message }
+
+        binding.threadSearchCount.apply {
+            if (threadSearchQuery.isEmpty()) {
+                beGone()
+            } else {
+                beVisible()
+                text = resources.getQuantityString(
+                    R.plurals.search_results_count, hits, hits.toString().toPersianDigits()
+                )
+            }
+        }
+
+        // A thread reads from the bottom, so the list is anchored there; a handful of search
+        // hits anchored the same way sat at the foot of an empty screen. Results read from
+        // the top, and the anchor goes back when the search closes.
+        (binding.threadMessagesList.layoutManager as? androidx.recyclerview.widget.LinearLayoutManager)
+            ?.stackFromEnd = threadSearchQuery.isEmpty()
+
+        // The adapter highlights the term inside each bubble, so a long message says which
+        // part of it actually matched instead of leaving you to find it by eye.
+        getOrCreateThreadAdapter().setSearchTerm(threadSearchQuery)
+        getOrCreateThreadAdapter().updateMessages(shown) {
+            if (isFinishing || isDestroyed) return@updateMessages
+            if (threadSearchQuery.isNotEmpty()) binding.threadMessagesList.scrollToPosition(0)
+        }
+
+        binding.threadSearchEmpty.apply {
+            beVisibleIf(threadSearchQuery.isNotEmpty() && hits == 0)
+            setTextColor(config.mainTextColor.withAlpha(0.68f))
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize())
+        }
+    }
+
+    /** Paints the in-thread search bar as the same glass capsule the composer is. */
+    private fun styleThreadSearchBar() = binding.apply {
+        threadSearchBar.background = com.texto.sms.helpers.TextoGlass.bar(
+            tint = config.inputBarBackgroundColor,
+            cornerRadius = 100f * resources.displayMetrics.density,
+            opacity = config.glassOpacity / 100f,
+            strokeWidthPx = 1.getScaledPx()
+        )
+        threadSearchBar.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+        threadSearchIcon.applyColorFilter(config.inputBarTextColor.withAlpha(0.68f))
+        threadSearchClose.applyColorFilter(config.inputBarTextColor.withAlpha(0.68f))
+        threadSearchInput.setTextColor(config.inputBarTextColor)
+        threadSearchInput.setHintTextColor(config.inputBarTextColor.withAlpha(0.5f))
+        threadSearchInput.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize())
+        threadSearchCount.setTextColor(config.accentGradientStart)
+        threadSearchCount.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.7f))
+    }
+
+    /**
+     * The SIM chooser. Each row carries the slot's own colour twice over : as a filled dot
+     * and as the colour's name in brackets after the carrier : because the badge on the
+     * composer identifies a slot by colour alone, and a list that only spelled out carrier
+     * names never said which colour went with which.
+     *
+     * Built by [textoCapsuleDialog] rather than commons' `setupDialogStuff`, which drew its
+     * title bar from the base (light) theme and left a white strip above the rows in a face
+     * nothing else in the app uses.
+     */
+    private fun showSimPicker(number: String, onPicked: () -> Unit) {
+        val choices = availableSIMCards.mapIndexed { index, card ->
+            val simColor = config.getSimColor(index)
+            CapsuleChoice(
+                label = card.label,
+                subtitle = com.texto.sms.helpers.ColorNames.of(this, simColor),
+                swatch = simColor,
+                isActive = index == currentSIMCardIndex,
+                onPick = {
+                    currentSIMCardIndex = index.coerceIn(0, availableSIMCards.lastIndex)
+                    config.saveUseSIMIdAtNumber(number, currentSIMCardIndex)
+                    onPicked()
+                }
+            )
+        }
+
+        textoCapsuleDialog(getString(R.string.select_sim_card), choices)
+    }
+
+    /**
+     * A short grid of common emoji, inserted at the cursor. Android exposes no intent for
+     * "open the keyboard's emoji panel", so the design's smiley gets its own small picker
+     * rather than a button that does nothing.
+     */
+    private fun showEmojiPicker() {
+        val emoji = listOf(
+            "🙂", "😀", "😂", "😍", "😉", "😊", "🤔", "😅",
+            "👍", "🙏", "❤️", "🌹", "🎉", "✅", "❌", "🔥",
+            "😢", "😭", "😡", "😴", "🤝", "💐", "☕", "📞"
+        )
+
+        val popup = android.widget.PopupWindow(this)
+        val columns = 6
+        val cell = 44.getScaledPx()
+        val grid = android.widget.GridLayout(this).apply {
+            columnCount = columns
+            val pad = 10.getScaledPx()
+            setPadding(pad, pad, pad, pad)
+            background = com.texto.sms.helpers.TextoGlass.bar(
+                tint = config.recentColor,
+                cornerRadius = 22 * resources.displayMetrics.density,
+                opacity = 0.98f,
+                strokeWidthPx = 1.getScaledPx()
+            )
+        }
+
+        emoji.forEach { glyph ->
+            val cellView = TextView(this).apply {
+                text = glyph
+                gravity = android.view.Gravity.CENTER
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.4f))
+                layoutParams = android.widget.GridLayout.LayoutParams().apply {
+                    width = cell
+                    height = cell
+                }
+                isClickable = true
+                setBackgroundResource(
+                    org.fossify.commons.R.drawable.ripple_background
+                )
+                setOnClickListener {
+                    val field = binding.messageHolder.threadTypeMessage
+                    val at = field.selectionStart.coerceAtLeast(0)
+                    field.text?.insert(at, glyph)
+                    popup.dismiss()
+                }
+            }
+            grid.addView(cellView)
+        }
+
+        popup.apply {
+            contentView = grid
+            width = android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+            height = android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+            isOutsideTouchable = true
+            isFocusable = true
+            setBackgroundDrawable(android.graphics.Color.TRANSPARENT.toDrawable())
+            elevation = 12 * resources.displayMetrics.density
+            showAsDropDown(
+                binding.messageHolder.threadAddEmoji,
+                0,
+                -(cell * 5),
+                android.view.Gravity.CENTER
+            )
+        }
+    }
+
+    /**
+     * The design's small round control, shared by the composer's clip and SIM: a disc filled
+     * with `--inset` behind the `--divider` hairline, carrying a `--muted` glyph.
+     */
+    private fun styleComposerDisc(view: android.widget.ImageView, inkColor: Int) {
+        val side = COMPOSER_DISC_DP.getScaledPx()
+        view.updateLayoutParams {
+            width = side
+            height = side
+        }
+        val pad = 12.getScaledPx()
+        view.setPadding(pad, pad, pad, pad)
+        view.applyColorFilter(inkColor.withAlpha(0.68f))
+        view.background = android.graphics.drawable.GradientDrawable().apply {
+            shape = android.graphics.drawable.GradientDrawable.OVAL
+            setColor(config.mainBackgroundColor.withAlpha(0.55f))
+            setStroke(
+                1.getScaledPx(),
+                com.texto.sms.helpers.TextoGlass.rimFor(config.recentColor, 0.22f)
+            )
+        }
+        view.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
     }
 
     private fun setupMessagingEdgeToEdge() {
@@ -1769,9 +2115,16 @@ class ThreadActivity : SimpleActivity() {
                 basePadding
             }
             
+            // The header is a floating glass capsule over this list. The padding keeps the
+            // newest message clear of it at rest, but clipToPadding stays false so the thread
+            // still uses the whole screen: messages scroll up behind the capsule instead of
+            // stopping at it, which is what a short thread needs to fill the window at all.
+            val topInset = insets.getInsets(systemBarsType).top +
+                resources.getDimensionPixelSize(R.dimen.thread_header_height)
+
             view.setPadding(
                 view.paddingLeft,
-                view.paddingTop,
+                topInset,
                 view.paddingRight,
                 finalBottomPadding
             )
@@ -1868,7 +2221,7 @@ class ThreadActivity : SimpleActivity() {
         val density = resources.displayMetrics.density
         val isNewUi = config.useNewUi
         
-        // Top Bar Outline (Matching nova_topbar_bg corners)
+        // Top Bar Outline (Matching texto_topbar_bg corners)
         if (config.topBarOutline && isNewUi) {
             val r26 = 26f * density
             val thickness = config.topBarOutlineThickness
@@ -1894,7 +2247,7 @@ class ThreadActivity : SimpleActivity() {
         // sitting slightly off the shape. The field is a flat filled surface now, and the
         // row it sits in is what separates it from the messages above.
         binding.messageHolder.root
-            .findViewById<android.view.View>(R.id.nova_message_input_bar)
+            .findViewById<android.view.View>(R.id.texto_message_input_bar)
             ?.foreground = null
     }
 

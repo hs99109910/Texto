@@ -91,9 +91,9 @@ open class SimpleActivity : BaseSimpleActivity() {
             ?.getInsets(WindowInsetsCompat.Type.statusBars())?.top ?: 0
 
     fun getCustomTypeface(): android.graphics.Typeface? {
-        val id = config.fontFamilyNova
-        if (NovaFonts.isPersianFont(id)) {
-            NovaFonts.getTypeface(this, id)?.let { return it }
+        val id = config.fontFamilyTexto
+        if (TextoFonts.isPersianFont(id)) {
+            TextoFonts.getTypeface(this, id)?.let { return it }
             // Font file not supplied yet, fall back to the system default.
             return null
         }
@@ -104,9 +104,9 @@ open class SimpleActivity : BaseSimpleActivity() {
 
     /** Resolves the selected family at [style], using a real bold cut when the family ships one. */
     fun getCustomTypeface(style: Int): android.graphics.Typeface? {
-        val id = config.fontFamilyNova
-        if (!NovaFonts.isPersianFont(id)) return null
-        return NovaFonts.create(this, id, style)
+        val id = config.fontFamilyTexto
+        if (!TextoFonts.isPersianFont(id)) return null
+        return TextoFonts.create(this, id, style)
     }
 
     /**
@@ -130,11 +130,11 @@ open class SimpleActivity : BaseSimpleActivity() {
             val excludedIds = listOf(
                 R.id.thread_toolbar_title,
                 R.id.thread_header_status,
-                R.id.nova_title,
+                R.id.texto_title,
                 R.id.settings_toolbar_title,
                 R.id.new_conversation_toolbar_title,
                 R.id.thread_message_body,
-                R.id.nova_search_input,
+                R.id.texto_search_input,
                 R.id.new_conversation_address,
                 R.id.thread_type_message,
                 R.id.thread_sim_number,
@@ -143,7 +143,12 @@ open class SimpleActivity : BaseSimpleActivity() {
                 R.id.nav_settings_icon,
                 R.id.nav_search_icon,
                 R.id.nav_add_icon,
-                R.id.nova_search_icon
+                R.id.texto_search_icon,
+                // The two slider read-outs carry the accent, and this pass would otherwise
+                // put them straight back to the plain text colour on every resume.
+                R.id.settings_ui_scale_value,
+                R.id.settings_glass_opacity_value,
+                R.id.thread_search_count
             )
                              
             if (!excludedIds.contains(id)) {
@@ -183,13 +188,13 @@ open class SimpleActivity : BaseSimpleActivity() {
             // "رنگ سایه‌دار" is the skin's aurora field: the chosen colour as the ground with
             // three slowly drifting halos in the accent hues over it.
             releaseAuroraBackground()
+            // The halos are the theme's own, not the accent trio. Reusing the accent meant a
+            // skin with a bright cyan-to-violet accent washed its near-black ground in bright
+            // teal and purple; the design's radials are much deeper than the accent above them.
             val aurora = AuroraBackgroundDrawable(
                 groundColor = config.mainBgGradientStart,
-                haloColors = listOf(
-                    config.accentGradientStart,
-                    config.accentGradientEnd,
-                    config.auroraAccentColor
-                ),
+                haloColors = config.auroraHaloColors,
+                haloOpacity = config.auroraHaloOpacity,
                 animate = config.auroraAnimate
             )
             auroraBackground = aurora
@@ -221,7 +226,7 @@ open class SimpleActivity : BaseSimpleActivity() {
         }
         runCatching {
             WindowInsetsControllerCompat(window, window.decorView).isAppearanceLightStatusBars =
-                behindStatusBar != null && !NovaGlass.isDark(behindStatusBar)
+                behindStatusBar != null && !TextoGlass.isDark(behindStatusBar)
         }
         
         // 2. Apply top bar color (HARD RECURSIVE SHAPE GUARD)
@@ -254,7 +259,7 @@ open class SimpleActivity : BaseSimpleActivity() {
             val barShape = if (useNewUi) {
                 // The same recipe the floating nav pill is painted with, so the two capsules
                 // are one material rather than a frosted panel above and a gradient below.
-                NovaGlass.bar(
+                TextoGlass.bar(
                     tint = barColor,
                     cornerRadii = allCorners,
                     opacity = glassOpacity,
@@ -322,13 +327,13 @@ open class SimpleActivity : BaseSimpleActivity() {
             }
             
             // Force tinting for the nav bar icons if they exist
-            findViewById<View>(R.id.nova_nav_container)?.let {
+            findViewById<View>(R.id.texto_nav_container)?.let {
                 val inputBarTextColor = config.inputBarTextColor
                 findViewById<ImageView>(R.id.nav_home_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
                 // The two capsules do not carry the same set of tabs, so every id either
                 // screen might have is looked up and whichever is inflated answers.
                 findViewById<ImageView>(R.id.nav_settings_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
-                findViewById<ImageView>(R.id.nova_search_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
+                findViewById<ImageView>(R.id.texto_search_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
                 findViewById<ImageView>(R.id.nav_search_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
                 findViewById<ImageView>(R.id.nav_add_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
             }
@@ -362,20 +367,27 @@ open class SimpleActivity : BaseSimpleActivity() {
             }
         }
         
-        val titleText = findViewById<TextView>(R.id.thread_toolbar_title) ?: 
-                         findViewById<TextView>(R.id.nova_title) ?: 
-                         findViewById<TextView>(R.id.settings_toolbar_title) ?:
-                         findViewById<TextView>(R.id.new_conversation_toolbar_title)
+        // texto_title is an ImageView on the main screen now (the wordmark logo) and a
+        // TextView everywhere else it appears, so each candidate is fetched as a plain View
+        // and safe-cast rather than typed at the findViewById call -- a typed lookup throws
+        // the moment it resolves to the wrong kind of view instead of just skipping it.
+        val titleText = (findViewById<View>(R.id.thread_toolbar_title) as? TextView)
+            ?: (findViewById<View>(R.id.texto_title) as? TextView)
+            ?: (findViewById<View>(R.id.settings_toolbar_title) as? TextView)
+            ?: (findViewById<View>(R.id.new_conversation_toolbar_title) as? TextView)
         titleText?.setTextColor(config.topBarTextColor)
         
         // 4. Apply input bar colors (Maintaining Rounded Shape)
-        val inputBar = findViewById<View>(R.id.nova_nav_container) ?: 
-                       findViewById<View>(R.id.nova_message_input_bar) ?:
+        val inputBar = findViewById<View>(R.id.texto_nav_container) ?: 
+                       findViewById<View>(R.id.texto_message_input_bar) ?:
                        findViewById<View>(R.id.new_conversation_search_container)
         if (inputBar != null) {
             val inputBgColor = config.inputBarBackgroundColor
-            // The design draws the floating nav pill on 26dp and the typing bar on 28dp.
-            val inputRadius = if (inputBar.id == R.id.nova_nav_container) {
+            // The design draws the nav pill and the composer capsule on the same 1.6rem, and
+            // the new-conversation search field a little tighter.
+            val isFloatingCapsule =
+                inputBar.id == R.id.texto_nav_container || inputBar.id == R.id.texto_message_input_bar
+            val inputRadius = if (isFloatingCapsule) {
                 26 * density
             } else {
                 22 * density
@@ -395,10 +407,13 @@ open class SimpleActivity : BaseSimpleActivity() {
                 clearGlideTarget(inputBar)
                 inputBar.clipToOutline = false
                 if (config.glassTheme) {
-                    if (inputBar.id == R.id.nova_nav_container) {
-                        // The nav pill is a bar, not a panel: same gradient and rim as the
-                        // header, following the user's glass setting.
-                        inputBar.background = NovaGlass.bar(
+                    if (isFloatingCapsule) {
+                        // The nav pill and the composer are bars, not panels: same gradient
+                        // and rim as the header, following the user's glass setting. The
+                        // composer joined them when the send disc moved inside it -- it is
+                        // the outer surface now, not a field sitting on one, and the design
+                        // draws it with the same glass/divider/capsule-shadow recipe.
+                        inputBar.background = TextoGlass.bar(
                             tint = inputBgColor,
                             cornerRadius = inputRadius,
                             opacity = config.glassOpacity / 100f,
@@ -428,14 +443,14 @@ open class SimpleActivity : BaseSimpleActivity() {
         
         // 5. Targeted EditText coloring for live typed text
         val inputEditTexts = listOfNotNull(
-            findViewById<EditText>(R.id.nova_search_input),
+            findViewById<EditText>(R.id.texto_search_input),
             findViewById<EditText>(R.id.new_conversation_address),
             findViewById<EditText>(R.id.thread_type_message),
         )
         
         val textColorCSL = ColorStateList.valueOf(config.inputBarTextColor)
         val searchIcons = listOfNotNull(
-            findViewById<ImageView>(R.id.nova_search_icon),
+            findViewById<ImageView>(R.id.texto_search_icon),
             findViewById<ImageView>(R.id.new_conversation_search_icon)
         )
         
@@ -717,7 +732,7 @@ open class SimpleActivity : BaseSimpleActivity() {
             val baseColor = if (config.topBarColor != 0) config.topBarColor else Color.BLACK
             findViewById<View>(R.id.selection_bar_pill)?.let {
                 if (config.glassTheme) {
-                    NovaGlass.applyPanel(
+                    TextoGlass.applyPanel(
                         view = it,
                         tint = baseColor,
                         cornerRadius = 1000f,
@@ -772,7 +787,7 @@ open class SimpleActivity : BaseSimpleActivity() {
     override fun onPause() {
         super.onPause()
         // A popup can be dismissed by the activity going away; never leave the blur on.
-        NovaGlass.setBlurBehind(this, false)
+        TextoGlass.setBlurBehind(this, false)
     }
 
     override fun onDestroy() {
@@ -823,7 +838,7 @@ open class SimpleActivity : BaseSimpleActivity() {
                 it
             }
         }
-        val separatorColor = if (NovaGlass.isDark(barColor)) {
+        val separatorColor = if (TextoGlass.isDark(barColor)) {
             Color.WHITE.withAlpha(0.12f)
         } else {
             Color.BLACK.withAlpha(0.10f)
@@ -833,7 +848,7 @@ open class SimpleActivity : BaseSimpleActivity() {
         val container = android.widget.LinearLayout(this).apply {
             orientation = android.widget.LinearLayout.VERTICAL
             background = if (config.glassTheme) {
-                NovaGlass.panel(
+                TextoGlass.panel(
                     tint = barColor,
                     cornerRadius = radius,
                     opacity = 0.92f,
@@ -973,7 +988,7 @@ open class SimpleActivity : BaseSimpleActivity() {
             barTextColor
         }
 
-        val separatorColor = if (NovaGlass.isDark(barColor)) {
+        val separatorColor = if (TextoGlass.isDark(barColor)) {
             Color.WHITE.withAlpha(0.12f)
         } else {
             Color.BLACK.withAlpha(0.10f)
@@ -1003,9 +1018,9 @@ open class SimpleActivity : BaseSimpleActivity() {
         val radius = 20f * resources.displayMetrics.density
         // A real blur behind the panel is only available on Android 12+; without it the
         // panel stays denser so the text keeps its contrast.
-        val opacity = if (NovaGlass.supportsRealBlur) 0.55f else 0.88f
+        val opacity = if (TextoGlass.supportsRealBlur) 0.55f else 0.88f
         popup.setBackgroundDrawable(
-            NovaGlass.panel(
+            TextoGlass.panel(
                 tint = barColor,
                 cornerRadius = radius,
                 opacity = opacity,
@@ -1018,7 +1033,7 @@ open class SimpleActivity : BaseSimpleActivity() {
             popup.dismiss()
         }
 
-        popup.setOnDismissListener { NovaGlass.setBlurBehind(this, false) }
+        popup.setOnDismissListener { TextoGlass.setBlurBehind(this, false) }
 
         popup.show()
         popup.listView?.apply {
@@ -1026,7 +1041,7 @@ open class SimpleActivity : BaseSimpleActivity() {
             dividerHeight = 1
             overScrollMode = View.OVER_SCROLL_NEVER
         }
-        NovaGlass.setBlurBehind(this, true)
+        TextoGlass.setBlurBehind(this, true)
     }
 
     private fun clearGlideTarget(view: View) {

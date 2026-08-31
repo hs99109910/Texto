@@ -15,6 +15,11 @@ const val THREAD_ATTACHMENT_URI = "thread_attachment_uri"
 const val THREAD_ATTACHMENT_URIS = "thread_attachment_uris"
 const val SEARCHED_MESSAGE_ID = "searched_message_id"
 const val USE_SIM_ID_PREFIX = "use_sim_id_"
+/**
+ * Legacy channel id. The name is historical and deliberately not renamed: Android keys a
+ * user's per-channel sound and importance settings by this string, so changing it would
+ * silently create a second, default channel and strand what they had configured.
+ */
 const val NOTIFICATION_CHANNEL_ID = "nova_messages"
 const val SHOW_CHARACTER_COUNTER = "show_character_counter"
 const val USE_SIMPLE_CHARACTERS = "use_simple_characters"
@@ -63,12 +68,30 @@ const val CONVERSATION_ORDER = "conversation_order"
 const val CONTACT_SORTING_MODE = "contact_sorting_mode"
 const val RECENT_COLOR = "recent_color"
 const val UI_SCALE = "ui_scale"
+/** Legacy storage key; renaming it would drop the font the user already picked. */
 const val FONT_FAMILY = "font_family_nova"
 const val FONT_TYPE = "font_type"
-const val FONT_FAMILY_NOVA = "font_family_nova"
+/** Same legacy key as [FONT_FAMILY], kept for the same reason. */
+const val FONT_FAMILY_TEXTO = "font_family_nova"
 const val APP_THEME = "app_theme"
 /** One-shot marker for the move onto the Nocturne design. See App.onCreate. */
 const val NOCTURNE_REFRESH_APPLIED = "nocturne_refresh_applied"
+/** One-shot marker for the move onto the Neon design that replaced it. See App.onCreate. */
+const val NEON_REFRESH_APPLIED = "neon_refresh_applied"
+const val GLASS_RECALIBRATED = "glass_recalibrated"
+
+/**
+ * Floor of the glass slider. Below this the bars stop reading as surfaces at all, so the
+ * bottom of the old 20-100 travel was dead space that squeezed the usable part of the
+ * control into its top third.
+ */
+const val GLASS_OPACITY_MIN = 40
+
+/** The lozenge behind the current nav tab, scaled up with the capsule. */
+const val NAV_TAB_RADIUS_DP = 27
+
+/** Nav tab glyph size. The mockup draws 18; the capsule here is about a third bigger. */
+const val NAV_ICON_DP = 23
 const val MAIN_BG_GRADIENT_START = "main_bg_gradient_start"
 const val MAIN_BG_GRADIENT_END = "main_bg_gradient_end"
 const val CARD_CORNER_RADIUS = "card_corner_radius"
@@ -82,11 +105,15 @@ const val GLASS_THEME = "glass_theme"
 const val GLASS_OPACITY = "glass_opacity"
 const val SIM_COLOR_PREFIX = "sim_color_"
 
-/** 1.5x the original half-size badge, so the SIM marker stays easy to tap and see. */
-const val SIM_BADGE_SIZE_DP = 21
+/**
+ * The digit badge riding the SIM disc's upper corner, as the design draws it: a 16px dot on
+ * a 42px control. Rounded up a hair so the numeral inside still has room at the app's
+ * smallest UI scale.
+ */
+const val SIM_BADGE_SIZE_DP = 17
 
-/** Small nudge toward the message field so the enlarged badge doesn't crowd the send button. */
-const val SIM_BADGE_LEFT_SHIFT_DP = 3
+/** The design's small round composer controls -- the attachment clip and the SIM picker. */
+const val COMPOSER_DISC_DP = 42
 
 // Customization constants
 const val TOP_BAR_COLOR = "top_bar_color"
@@ -129,9 +156,28 @@ const val BG_MODE_LINEAR = 3
  */
 const val ACCENT_GRADIENT_START = "accent_gradient_start"
 const val ACCENT_GRADIENT_END = "accent_gradient_end"
+const val ACCENT_GRADIENT_MID = "accent_gradient_mid"
+/** Where the accent gradient's middle stop sits, matching the design's `--grad` 55%. */
+const val ACCENT_GRADIENT_MID_POSITION = 0.55f
 
 /** Third aurora hue, used only by the background halos. */
 const val AURORA_ACCENT_COLOR = "aurora_accent_color"
+
+/**
+ * The three halo colours painted over the main background.
+ *
+ * Separate from the accent gradient on purpose. They used to BE the accent trio, which meant
+ * a skin whose accent is a bright cyan-to-violet washed its own near-black ground in bright
+ * teal and purple -- nothing like the design, whose halos are far deeper colours than the
+ * accent they sit under. 0 in any slot falls back to the accent trio, so older themes keep
+ * the look they had.
+ */
+const val AURORA_HALO_ONE = "aurora_halo_one"
+const val AURORA_HALO_TWO = "aurora_halo_two"
+const val AURORA_HALO_THREE = "aurora_halo_three"
+
+/** Multiplier on every halo's alpha, so a light skin can keep the hues but calm them down. */
+const val AURORA_HALO_OPACITY = "aurora_halo_opacity"
 
 /** Slow drifting halos behind the app; off leaves them painted but still. */
 const val AURORA_ANIMATE = "aurora_animate"

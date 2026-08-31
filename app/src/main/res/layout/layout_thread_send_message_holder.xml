@@ -80,7 +80,7 @@
         android:scrollbars="none"
         android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toTopOf="@id/nova_message_bar_row"
+        app:layout_constraintBottom_toTopOf="@id/texto_message_bar_row"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_goneMarginTop="@dimen/medium_margin"
@@ -89,60 +89,83 @@
         tools:visibility="visible" />
 
     <!--
-        The composer is two floating pieces on the screen's own ground: a rounded field
-        carrying the attachment clip, the text and the SIM badge, and the send square beside
-        it. The row is a bare container: no fill and no hairline, so nothing reads as a
-        second surface behind the capsule.
+        The design's composer: ONE capsule holding everything, rather than the field and a
+        separate send disc sitting side by side. Children run in DOM order, which under the
+        app's right-to-left layout puts the first child against the right edge, so the order
+        below reads on screen as: clip (far right), SIM, the text, then send (far left) -
+        exactly the arrangement the mockup draws.
+
+        texto_message_bar_row is a bare container with no fill of its own; every surface here
+        belongs to the capsule.
     -->
     <LinearLayout
-        android:id="@+id/nova_message_bar_row"
+        android:id="@+id/texto_message_bar_row"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="bottom"
-        android:paddingHorizontal="14dp"
-        android:paddingTop="10dp"
-        android:paddingBottom="22dp"
+        android:paddingHorizontal="12dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="14dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <!--
-            Send sits first, so under the app's right-to-left layout it lands at the right
-            end of the row and the field fills what is left.
-        -->
-        <org.fossify.commons.views.MyButton
-            android:id="@+id/thread_send_message"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_marginEnd="9dp"
-            android:alpha="0.4"
-            android:clickable="false"
-            android:contentDescription="@string/ok"
-            android:drawableStart="@drawable/ic_ph_paper_plane_right"
-            android:gravity="center"
-            android:padding="0dp"
-            android:text=""
-            android:textColor="@android:color/white"
-            android:textSize="@dimen/smaller_text_size" />
-
         <LinearLayout
-            android:id="@+id/nova_message_input_bar"
+            android:id="@+id/texto_message_input_bar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="@drawable/nova_searchbar_bg"
-            android:gravity="center_vertical"
-            android:minHeight="44dp"
-            android:paddingHorizontal="14dp"
-            android:paddingVertical="4dp">
+            android:background="@drawable/texto_searchbar_bg"
+            android:gravity="bottom"
+            android:minHeight="60dp"
+            android:padding="8dp">
 
+            <!-- ATTACH. First child: the far right of the capsule under RTL. -->
             <ImageView
                 android:id="@+id/thread_add_attachment"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:background="?selectableItemBackgroundBorderless"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
                 android:contentDescription="@string/attachment"
+                android:padding="12dp"
+                android:scaleType="fitCenter"
                 android:src="@drawable/ic_ph_paperclip" />
+
+            <!--
+                SIM. A 42dp disc like the clip, with the active SIM's digit riding its upper
+                corner as a small badge, the way the design draws it.
+            -->
+            <FrameLayout
+                android:id="@+id/thread_sim_holder"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginStart="8dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:id="@+id/thread_select_sim_icon"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/select_sim_card"
+                    android:padding="12dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_ph_sim_card"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+                <TextView
+                    android:id="@+id/thread_select_sim_number"
+                    android:layout_width="17dp"
+                    android:layout_height="17dp"
+                    android:layout_gravity="top|start"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:textSize="9sp"
+                    android:visibility="gone"
+                    tools:ignore="SmallSp"
+                    tools:text="1"
+                    tools:visibility="visible" />
+            </FrameLayout>
 
             <org.fossify.commons.views.MyEditText
                 android:id="@+id/thread_type_message"
@@ -152,48 +175,18 @@
                 android:background="@android:color/transparent"
                 android:gravity="center_vertical"
                 android:hint="@string/type_a_message"
-                android:paddingHorizontal="10dp"
-                android:paddingVertical="8dp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="11dp"
                 android:textColorHint="#888888"
                 android:textColor="@android:color/white"
                 android:inputType="textCapSentences|textMultiLine"
                 android:maxLines="8" />
 
-            <FrameLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
-                <ImageView
-                    android:id="@+id/thread_select_sim_icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:alpha="0.9"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:paddingStart="@dimen/medium_margin"
-                    android:paddingTop="@dimen/normal_margin"
-                    android:paddingEnd="@dimen/medium_margin"
-                    android:paddingBottom="@dimen/normal_margin"
-                    android:src="@drawable/ic_ph_sim_card"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
-
-                <TextView
-                    android:id="@+id/thread_select_sim_number"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:textSize="@dimen/normal_text_size"
-                    android:visibility="gone"
-                    tools:text="1"
-                    tools:textColor="@color/dark_grey"
-                    tools:visibility="visible" />
-            </FrameLayout>
-
             <org.fossify.commons.views.MyTextView
                 android:id="@+id/thread_character_counter"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
                 android:gravity="center"
                 android:paddingStart="@dimen/small_margin"
                 android:paddingEnd="@dimen/small_margin"
@@ -203,6 +196,36 @@
                 android:visibility="gone"
                 tools:ignore="HardcodedText"
                 tools:visibility="visible" />
+
+            <ImageView
+                android:id="@+id/thread_add_emoji"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:layout_marginStart="8dp"
+                android:contentDescription="@string/insert_emoji"
+                android:padding="12dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_ph_smiley" />
+
+            <!--
+                SEND. Last child: the far left of the capsule under RTL, as the design has it.
+
+                An ImageView rather than a Button carrying a compound drawable. As a
+                `drawableStart` the glyph is laid out against the start edge of the (empty)
+                text block instead of the middle of the control, which left it off-centre and
+                clipped by the 44dp disc. scaleType=fitCenter puts it where it belongs.
+            -->
+            <ImageView
+                android:id="@+id/thread_send_message"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="8dp"
+                android:alpha="0.4"
+                android:clickable="false"
+                android:contentDescription="@string/ok"
+                android:padding="12dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_ph_paper_plane_right" />
 
         </LinearLayout>
 

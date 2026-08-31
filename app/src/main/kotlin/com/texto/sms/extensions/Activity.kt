@@ -65,6 +65,8 @@ fun Activity.launchViewIntent(uri: Uri, mimetype: String, filename: String) {
 }
 
 fun Activity.startContactDetailsIntent(contact: SimpleContact) {
+    // Another app's package id, not ours: renaming it would just look for something that
+    // is not installed and quietly disable the contacts hand-off.
     val simpleContacts = "org.nova.contacts"
     val simpleContactsDebug = "org.nova.contacts.debug"
     if (

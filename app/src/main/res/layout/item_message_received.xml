@@ -15,7 +15,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.8">
+        app:layout_constraintWidth_percent="0.78">
 
         <ImageView
             android:id="@+id/thread_message_sender_photo"
@@ -50,7 +50,11 @@
             android:visibility="gone"
             tools:ignore="ContentDescription" />
 
-        <FrameLayout
+        <!--
+            Same body + meta stack as the sent bubble, minus the delivery ticks: an incoming
+            message has no delivery state of its own to report.
+        -->
+        <LinearLayout
             android:id="@+id/thread_message_body_holder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -59,18 +63,33 @@
             android:layout_alignParentStart="true"
             android:background="@drawable/item_received_background"
             android:clickable="true"
-            android:focusable="true">
+            android:focusable="true"
+            android:orientation="vertical"
+            android:paddingHorizontal="14dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="8dp">
 
             <org.fossify.commons.views.MyTextView
                 android:id="@+id/thread_message_body"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:drawablePadding="8dp"
-                android:padding="@dimen/normal_margin"
                 android:textSize="@dimen/normal_text_size"
                 tools:drawableEndCompat="@drawable/scheduled_message_icon"
                 tools:text="Message content" />
-        </FrameLayout>
+
+            <org.fossify.commons.views.MyTextView
+                android:id="@+id/thread_message_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginTop="4dp"
+                android:includeFontPadding="false"
+                android:layoutDirection="ltr"
+                android:textSize="10sp"
+                tools:ignore="SmallSp"
+                tools:text="10:12" />
+        </LinearLayout>
 
         <org.fossify.commons.views.MyTextView
             android:id="@+id/thread_message_carrier_warning"

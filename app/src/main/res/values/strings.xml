@@ -132,6 +132,47 @@
     <string name="invalid_short_code_desc">فقط می‌توانید به کدهای کوتاه عددی مانند «۵۰۳۵۰۱» پاسخ دهید، نه کدهایی که حروف و عدد دارند مانند «AB-CD0».</string>
     <string name="attachment_sized_exceeds_max_limit">حجم پیوست از حد مجاز MMS بیشتر است</string>
     <string name="sim_card_not_available">سیم‌کارت در دسترس نیست</string>
+    <string name="select_sim_card">انتخاب سیم‌کارت</string>
+    <string name="no_browser_found">مرورگری برای باز کردن این لینک پیدا نشد</string>
+    <string name="insert_emoji">درج شکلک</string>
+    <!-- %1$s is the carrier name, %2$s the colour assigned to that SIM slot. -->
+    <string name="sim_card_with_color">%1$s (%2$s)</string>
+    <string name="color_red">قرمز</string>
+    <string name="color_orange">نارنجی</string>
+    <string name="color_yellow">زرد</string>
+    <string name="color_green">سبز</string>
+    <string name="color_teal">فیروزه‌ای</string>
+    <string name="color_blue">آبی</string>
+    <string name="color_purple">بنفش</string>
+    <string name="color_pink">صورتی</string>
+    <string name="color_black">مشکی</string>
+    <string name="color_grey">خاکستری</string>
+    <string name="color_white">سفید</string>
+    <string name="search_hint">نام، شماره یا متن پیام…</string>
+    <string name="clear_search">پاک کردن جستجو</string>
+    <string name="search_date_any">هر زمان</string>
+    <string name="search_date_title">بازهٔ زمانی</string>
+    <string name="search_date_today">امروز</string>
+    <string name="search_date_yesterday">دیروز</string>
+    <string name="search_date_week">۷ روز اخیر</string>
+    <string name="search_date_month">۳۰ روز اخیر</string>
+    <string name="search_date_quarter">۳ ماه اخیر</string>
+    <string name="search_date_custom">انتخاب بازه…</string>
+    <!-- %1$s is the start of the range, %2$s the end, both Jalali. -->
+    <string name="search_date_range">%1$s تا %2$s</string>
+    <string name="search_date_pick_hint">روز شروع را انتخاب کنید</string>
+    <string name="search_date_pick_end">از %1$s : روز پایان را انتخاب کنید</string>
+    <string name="search_in_conversation">جستجو در این گفتگو</string>
+    <plurals name="search_results_count">
+        <item quantity="one">%s نتیجه</item>
+        <item quantity="other">%s نتیجه</item>
+    </plurals>
+    <string name="search_no_results">نتیجه‌ای یافت نشد</string>
+    <string name="search_type_more">برای شروع جستجو دست‌کم دو حرف بنویسید</string>
+    <string name="action_confirm">تأیید</string>
+    <string name="action_cancel">انصراف</string>
+    <string name="search_date_picked">تاریخ انتخابی</string>
+    <string name="search_in_thread">جستجو در این گفتگو</string>
     <string name="couldnt_download_mms">دریافت MMS ممکن نشد</string>
     <!-- FAQ -->
     <string name="faq_1_title">چرا برنامه به اینترنت نیاز دارد؟</string>
@@ -145,12 +186,12 @@
     <string name="faq_4_text">باید گزینه «ارسال پیام‌های گروهی به‌صورت MMS» را در تنظیمات فعال کنید. این کار باعث می‌شود پیام‌های گروهی به‌صورت MMS واقعی ارسال شوند و همه شرکت‌کنندگان پاسخ یکدیگر را ببینند.</string>
     <!--
         Haven't found some strings? There's more at
-        https://github.com/NovaOrg/Commons/tree/master/commons/src/main/res
+        https://github.com/TextoOrg/Commons/tree/master/commons/src/main/res
     -->
     <string name="restart_app_for_changes_to_take_effect">برای اعمال تغییرات باید برنامه را دوباره اجرا کنید</string>
     <string name="sideloading_unmodded"></string>
     <string name="sideloading_unmodded_title"></string>
-    <!-- Nova additions -->
+    <!-- Texto additions -->
     <string name="more_options">گزینه‌های بیشتر</string>
     <string name="back">بازگشت</string>
     <string name="manage_blocked_numbers">شماره‌های مسدود شده</string>
@@ -189,6 +230,8 @@
     <string name="copy_number_value">کپی عدد</string>
     <string name="forward_number_value">فوروارد عدد</string>
     <string name="app_theme">پوستهٔ برنامه</string>
+    <string name="settings_dark_mode">تم تاریک</string>
+    <string name="settings_dark_mode_sub">تغییر بین حالت تاریک و روشن</string>
     <string name="theme_applied">پوسته اعمال شد</string>
     <string name="glass_theme">پوسته شیشه‌ای</string>
     <string name="selected">انتخاب‌شده</string>

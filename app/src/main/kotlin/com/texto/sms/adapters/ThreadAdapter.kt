@@ -69,6 +69,18 @@ class ThreadAdapter(
     private var fontSize = (activity as SimpleActivity).getScaledTextSize()
     private var lastAnimatedPosition = -1
 
+    /**
+     * The in-thread search term, highlighted inside each bubble so a long message says which
+     * part of it matched. Empty when no search is running.
+     */
+    private var searchTerm = ""
+
+    fun setSearchTerm(term: String) {
+        if (term == searchTerm) return
+        searchTerm = term
+        notifyItemRangeChanged(0, itemCount)
+    }
+
     fun updateScaling() {
         fontSize = (activity as SimpleActivity).getScaledTextSize()
         notifyItemRangeChanged(0, itemCount)
@@ -184,6 +196,22 @@ class ThreadAdapter(
      * at the top stays up, so dismissing this popup still leaves multi-select available.
      */
     /** Call, copy or forward just the number that was tapped, not the whole message. */
+    /**
+     * Hands a link in a message to whatever the phone uses for the web. Wrapped because an
+     * SMS can carry a malformed address and a device can genuinely have no browser -- neither
+     * should take the thread down.
+     */
+    private fun openMessageLink(url: String) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url)).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            activity.startActivity(intent)
+        } catch (_: Exception) {
+            activity.toast(R.string.no_browser_found)
+        }
+    }
+
     private fun showNumberActions(anchor: View, number: String) {
         val simpleActivity = activity as? SimpleActivity ?: return
         if (simpleActivity.isFinishing || simpleActivity.isDestroyed) return
@@ -474,6 +502,41 @@ class ThreadAdapter(
         }
     }
 
+    /**
+     * Paints every occurrence of the search term with the accent behind it.
+     *
+     * Matching folds both sides through [foldPersian] the same way the filter does, and the
+     * fold is length:preserving per character, so an index found in the folded string points
+     * at the same character in the original. Spans go on the TextView's existing text, so
+     * the number and link spans already installed survive.
+     */
+    private fun highlightSearchTerm(view: TextView, body: String, ink: Int) {
+        if (searchTerm.isEmpty() || body.isEmpty()) return
+        val haystack = body.foldPersian().lowercase()
+        val needle = searchTerm.foldPersian().lowercase()
+        if (needle.isEmpty() || haystack.length != body.length) return
+
+        val spannable = android.text.SpannableString(view.text)
+        var from = haystack.indexOf(needle)
+        var found = false
+        while (from >= 0) {
+            val to = (from + needle.length).coerceAtMost(spannable.length)
+            spannable.setSpan(
+                android.text.style.BackgroundColorSpan(
+                    activity.config.accentGradientStart.withAlpha(0.35f)
+                ),
+                from, to, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            spannable.setSpan(
+                android.text.style.StyleSpan(Typeface.BOLD),
+                from, to, android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            found = true
+            from = haystack.indexOf(needle, from + needle.length)
+        }
+        if (found) view.text = spannable
+    }
+
     private fun setupView(holder: ViewHolder, binding: ViewBinding, message: Message) {
         val isSelected = selectedKeys.contains(message.getSelectionKey())
         val isReceived = message.isReceivedMessage()
@@ -492,6 +555,26 @@ class ThreadAdapter(
         holderView.visibility = View.VISIBLE
         wrapper.visibility = View.VISIBLE
 
+        // The design carries each message's own clock time inside its bubble. The row between
+        // bubbles is now only a date separator, so this is the only place a time is shown.
+        val timeView = if (binding is ItemMessageReceivedBinding) {
+            binding.threadMessageTime
+        } else {
+            (binding as ItemMessageSentBinding).threadMessageTime
+        }
+        timeView.apply {
+            text = (message.date * 1000L).formatJalaliTimeOnly()
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.68f)
+            // `--meta-on-primary` over the sent gradient, `--muted` on a received bubble.
+            val ink = if (isReceived) {
+                activity.config.receivedBubbleTextColor
+            } else {
+                activity.config.sentBubbleTextColor
+            }
+            setTextColor(ink.withAlpha(if (isReceived) 0.6f else 0.7f))
+            typeface = Typeface.create((activity as SimpleActivity).getCustomTypeface(), Typeface.NORMAL)
+        }
+
         // One tick once sent, two once the carrier reports delivery. Only meaningful on
         // outgoing messages, and only when delivery reports are switched on.
         if (binding is ItemMessageSentBinding) {
@@ -499,8 +582,11 @@ class ThreadAdapter(
             val isSent = message.type == android.provider.Telephony.Sms.MESSAGE_TYPE_SENT
             binding.deliveryStatus.apply {
                 beVisibleIf(!isReceived && isSent)
+                // The design's own delivery glyphs: `check-check` once delivered, `check`
+                // once sent. Same pair as the rest of the skin's icon set, rather than the
+                // two one-off tick drawables this used to carry.
                 setImageResource(
-                    if (isDelivered) R.drawable.ic_check_delivered else R.drawable.ic_check_single
+                    if (isDelivered) R.drawable.ic_ph_checks else R.drawable.ic_ph_check
                 )
                 // A delivered pair is wider than a single tick, so the view has to grow
                 // with it or the second tick gets clipped.
@@ -550,17 +636,21 @@ class ThreadAdapter(
             
             if (isNewUi) {
                 val density = resources.displayMetrics.density
+                // `1.25rem` and `0.35rem`, the design's two bubble radii.
                 val r20 = 20f * density
-                val r7 = 7f * density
+                val r6 = 5.6f * density
 
-                // The design tucks the tail into each bubble's *outer* bottom corner: the
-                // sent column sits on the left under RTL, so its short corner is bottom-left,
-                // and the received column mirrors it. cornerRadii is in physical corners
+                // The design tucks the tail into each bubble's *inner* bottom corner -- the
+                // one facing the middle of the thread, not the screen edge:
+                //   mine:   border-radius: 1.25rem 1.25rem 0.35rem 1.25rem  (short bottom-right)
+                //   theirs: border-radius: 1.25rem 1.25rem 1.25rem 0.35rem  (short bottom-left)
+                // Under RTL the sent column sits on the left, so its short corner points
+                // right, back towards the received column. cornerRadii is in physical corners
                 // (TL, TR, BR, BL) and is not flipped for us, hence the explicit sides.
                 val baseRadii = if (isReceived) {
-                    floatArrayOf(r20, r20, r20, r20, r7, r7, r20, r20)
+                    floatArrayOf(r20, r20, r20, r20, r20, r20, r6, r6)
                 } else {
-                    floatArrayOf(r20, r20, r20, r20, r20, r20, r7, r7)
+                    floatArrayOf(r20, r20, r20, r20, r6, r6, r20, r20)
                 }
 
                 val outlineOn =
@@ -586,15 +676,22 @@ class ThreadAdapter(
                 // Sent bubbles carry the skin's accent gradient; received ones stay a single
                 // tint so the two sides never compete for attention.
                 val tintEnd = if (isReceived) null else config.accentGradientEnd
+                val tintMid = if (isReceived || config.accentGradientMid == 0) {
+                    null
+                } else {
+                    config.accentGradientMid
+                }
 
-                // The design's own weights: the sent bubble is its accent gradient at full
-                // strength, the received one a 70% wash of the card colour. Neither carries
-                // a rim or a sheen -- the fill alone is the bubble.
-                background = com.texto.sms.helpers.NovaGlass.panel(
+                // Both bubbles are solid in the design: `background: var(--bubble-in)` and
+                // `background: var(--grad)`, with no transparency at all. Drawing the
+                // received one at 70% let the background halos through it, so its colour
+                // drifted with whatever was behind it instead of staying --bubble-in.
+                background = com.texto.sms.helpers.TextoGlass.panel(
                     tint = if (isReceived) bgColor else config.accentGradientStart,
                     tintEnd = tintEnd,
+                    tintMid = tintMid,
                     cornerRadii = baseRadii,
-                    opacity = if (isReceived) 0.70f else 1f,
+                    opacity = 1f,
                     strokeWidthPx = density.toInt().coerceAtLeast(1),
                     rimAlpha = 0f,
                     sheenAlpha = 0f,
@@ -602,9 +699,10 @@ class ThreadAdapter(
                     outlineWidthPx = outlineWidth
                 )
 
-                // The design floats the sent bubble over the ground and leaves the received
-                // one flat against it.
-                elevation = if (isReceived) 0f else 4f * density
+                // Both bubbles sit flush. The design gives the sent one only `var(--soft)`,
+                // a shadow tuned almost to nothing; a real 4dp lift instead put a visible
+                // edge under it and made it read as raised against a flat mockup.
+                elevation = 0f
                 clipToOutline = false 
                 outlineProvider = object : android.view.ViewOutlineProvider() {
                     override fun getOutline(view: View, outline: android.graphics.Outline) {
@@ -676,10 +774,17 @@ class ThreadAdapter(
             setLinkTextColor(if (isReceived) activity.getProperPrimaryColor() else finalTextColor)
 
             // Figures in the body become tappable so a single account number, code or
-            // amount can be copied or forwarded without hand-selecting text.
-            com.texto.sms.helpers.NumberSpans.apply(this, message.body) { number ->
-                showNumberActions(this, number)
-            }
+            // amount can be copied or forwarded without hand-selecting text; web addresses
+            // open in the phone's browser.
+            com.texto.sms.helpers.NumberSpans.apply(
+                textView = this,
+                text = message.body,
+                onNumberTapped = { number -> showNumberActions(this, number) },
+                onUrlTapped = { url -> openMessageLink(url) }
+            )
+            // Layered over whatever spans NumberSpans just installed rather than replacing
+            // the text, so a number inside a search hit stays tappable.
+            highlightSearchTerm(this, message.body, finalTextColor)
             visibility = if (message.body.isNotEmpty()) View.VISIBLE else View.GONE
             setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize)
             
@@ -856,33 +961,40 @@ class ThreadAdapter(
 
     private fun setupDateTime(view: View, dateTime: ThreadDateTime) {
         ItemThreadDateTimeBinding.bind(view).apply {
+            val simpleActivity = activity as SimpleActivity
+            val config = activity.config
             threadDateTime.apply {
                 visibility = View.VISIBLE
-                text = (dateTime.date * 1000L).formatJalaliDateOrTime()
-                setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.8f)
-                val customTypeface = (activity as SimpleActivity).getCustomTypeface()
-                typeface = Typeface.create(customTypeface, Typeface.NORMAL)
+                // A day label, not a full timestamp: the clock time now lives inside each
+                // bubble, so repeating it here said the same thing twice.
+                text = (dateTime.date * 1000L).formatJalaliDayLabel()
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.68f)
+                typeface = Typeface.create(simpleActivity.getCustomTypeface(), Typeface.NORMAL)
+
+                // The design's date chip: a glass pill behind the `--divider` hairline.
+                val padH = with(simpleActivity) { 14.getScaledPx() }
+                val padV = with(simpleActivity) { 5.getScaledPx() }
+                setPadding(padH, padV, padH, padV)
+                background = TextoGlass.bar(
+                    tint = config.recentColor,
+                    cornerRadius = 100f * resources.displayMetrics.density,
+                    opacity = 0.5f,
+                    strokeWidthPx = with(simpleActivity) { 1.getScaledPx() },
+                    rimAlpha = 0.22f
+                )
+                outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
             }
-            
-            val dateTimeColor = activity.config.mainTextColor
+
+            val dateTimeColor = config.mainTextColor
             if (dateTimeColor != 0 && dateTimeColor != Color.TRANSPARENT) {
-                threadDateTime.setTextColor(dateTimeColor)
+                threadDateTime.setTextColor(dateTimeColor.withAlpha(0.68f))
                 threadDateTime.alpha = 1.0f
             }
 
-            threadSimIcon.beVisibleIf(hasMultipleSIMCards)
-            // The slot digit is gone: at this size it was unreadable and it shared the
-            // icon's colour anyway. The badge is now half as big and simply carries the
-            // colour the user assigned to that SIM in Settings.
+            // The SIM marker belongs to the composer now, where it says which card the next
+            // message goes out on. On a date separator it labelled nothing.
+            threadSimIcon.beGone()
             threadSimNumber.beGone()
-            if (hasMultipleSIMCards) {
-                val slot = dateTime.simID.toIntOrNull()?.minus(1)?.coerceAtLeast(0) ?: 0
-                threadSimIcon.applyColorFilter(activity.config.getSimColor(slot))
-                threadSimIcon.updateLayoutParams {
-                    width = (fontSize * 0.6f).toInt()
-                    height = (fontSize * 0.6f).toInt()
-                }
-            }
         }
     }
 

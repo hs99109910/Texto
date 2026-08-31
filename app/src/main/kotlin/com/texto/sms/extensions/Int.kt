@@ -6,7 +6,7 @@ import android.graphics.Typeface
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import com.texto.sms.helpers.NovaFonts
+import com.texto.sms.helpers.TextoFonts
 
 fun Int.withAlpha(alpha: Float): Int {
     val a = (alpha * 255).toInt().coerceIn(0, 255)
@@ -55,7 +55,7 @@ fun Int.getScaledDimen(context: Context): Int {
  * the app switched to the selected Persian face.
  */
 fun Context.getCustomTypeface(): Typeface? =
-    NovaFonts.getTypeface(this, config.fontFamilyNova)
+    TextoFonts.getTypeface(this, config.fontFamilyTexto)
 
 fun View.updateAppFonts() {
     if (this is ViewGroup) {

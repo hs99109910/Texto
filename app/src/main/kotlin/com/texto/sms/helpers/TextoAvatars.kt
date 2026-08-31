@@ -1,8 +1,8 @@
 package com.texto.sms.helpers
 
 import android.content.Context
+import com.texto.sms.extensions.config
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.Rect
@@ -12,14 +12,14 @@ import android.graphics.drawable.Drawable
 import kotlin.math.min
 
 /**
- * Contact avatars in the skin's own language: a squircle filled with a two-stop gradient
- * derived from the contact's name, with their initials on top. Replaces the flat circular
- * letter icon the commons library draws.
+ * Contact avatars in the skin's own language: a squircle filled with the active theme's
+ * accent gradient, with the contact's initials on top. Replaces the flat circular letter
+ * icon the commons library draws.
  *
- * The hue is hashed from the name, so the same person keeps the same colour on every device
- * and across restarts without anything being stored.
+ * Nothing here is per-contact but the initials -- the design paints every avatar from the
+ * same `--grad`/`--primary-fg` pair, so an avatar follows the theme rather than the name.
  */
-object NovaAvatars {
+object TextoAvatars {
 
     /**
      * Corner radius as a fraction of the avatar's side. The design draws a 44px avatar on a
@@ -28,24 +28,18 @@ object NovaAvatars {
     private const val CORNER_FRACTION = 0.364f
 
     /**
-     * The design's six avatar tints, verbatim. It cycles them by row index, which only works
-     * on a fixed mock list; here the choice is hashed from the name instead, so a contact
-     * keeps the same colour wherever they appear and however the list is sorted.
+     * Every avatar carries the active theme's own accent gradient -- `var(--grad)` in the
+     * design, which paints all of them the same way rather than varying by contact. The six
+     * per-name tints this used to hash into were the previous design's, and they survived a
+     * theme change untouched, so switching skins left the list's avatars on the old palette.
      */
-    private val TINTS = listOf(
-        Color.parseColor("#5B7CFF") to Color.parseColor("#2F6BFF"),
-        Color.parseColor("#C86BD8") to Color.parseColor("#7D3FC4"),
-        Color.parseColor("#3FC4A8") to Color.parseColor("#1F8F86"),
-        Color.parseColor("#FF8A5B") to Color.parseColor("#E0543C"),
-        Color.parseColor("#7F8CFF") to Color.parseColor("#4A4FD0"),
-        Color.parseColor("#5BC0FF") to Color.parseColor("#2F7AD8"),
-    )
-
-    fun gradientFor(name: String): Pair<Int, Int> {
-        val key = name.trim().ifEmpty { "?" }
-        // String.hashCode is stable across JVM versions and platforms, unlike Object.hashCode.
-        return TINTS[Math.floorMod(key.hashCode(), TINTS.size)]
+    fun gradientFor(context: Context): Pair<Int, Int> {
+        val config = context.config
+        return config.accentGradientStart to config.accentGradientEnd
     }
+
+    /** The accent gradient's middle stop, or 0 when the theme only defines two. */
+    private fun midStopFor(context: Context): Int = context.config.accentGradientMid
 
     /**
      * Clips [view] to the same squircle the generated avatars use, so a contact who *does*
@@ -68,7 +62,11 @@ object NovaAvatars {
      */
     fun letterAvatar(context: Context, name: String): Drawable = LetterAvatarDrawable(
         initials = initialsOf(name),
-        gradient = gradientFor(name),
+        gradient = gradientFor(context),
+        midStop = midStopFor(context),
+        // The design sets the monogram in `--primary-fg`, the same ink the sent bubble uses
+        // on the same gradient, rather than always-white.
+        textColor = context.config.sentBubbleTextColor,
         density = context.resources.displayMetrics.density
     )
 
@@ -97,12 +95,14 @@ object NovaAvatars {
     private class LetterAvatarDrawable(
         private val initials: String,
         private val gradient: Pair<Int, Int>,
+        private val midStop: Int,
+        private val textColor: Int,
         private val density: Float,
     ) : Drawable() {
 
         private val fillPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.WHITE
+            color = textColor
             textAlign = Paint.Align.CENTER
             isFakeBoldText = true
         }
@@ -116,10 +116,21 @@ object NovaAvatars {
             val side = min(b.width(), b.height()).toFloat()
             val radius = side * CORNER_FRACTION
 
-            fillPaint.shader = LinearGradient(
-                b.left.toFloat(), b.top.toFloat(), b.right.toFloat(), b.bottom.toFloat(),
-                gradient.first, gradient.second, Shader.TileMode.CLAMP
-            )
+            // Three stops when the theme defines a middle one, so an avatar carries the same
+            // cyan-through-sky-blue-to-violet run the sent bubbles and badges do.
+            fillPaint.shader = if (midStop == 0) {
+                LinearGradient(
+                    b.left.toFloat(), b.top.toFloat(), b.right.toFloat(), b.bottom.toFloat(),
+                    gradient.first, gradient.second, Shader.TileMode.CLAMP
+                )
+            } else {
+                LinearGradient(
+                    b.left.toFloat(), b.top.toFloat(), b.right.toFloat(), b.bottom.toFloat(),
+                    intArrayOf(gradient.first, midStop, gradient.second),
+                    floatArrayOf(0f, ACCENT_GRADIENT_MID_POSITION, 1f),
+                    Shader.TileMode.CLAMP
+                )
+            }
             canvas.drawRoundRect(rect, radius, radius, fillPaint)
 
             textPaint.textSize = side * 0.36f

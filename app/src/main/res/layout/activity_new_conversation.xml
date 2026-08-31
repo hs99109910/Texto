@@ -111,7 +111,7 @@
         android:layout_height="55dp"
         android:layout_margin="16dp"
         android:layout_gravity="bottom"
-        android:background="@drawable/nova_searchbar_bg"
+        android:background="@drawable/texto_searchbar_bg"
         android:gravity="center_vertical"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"

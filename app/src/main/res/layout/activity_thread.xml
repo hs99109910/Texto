@@ -23,7 +23,7 @@
             app:contentInsetStartWithNavigation="0dp"
             app:contentInsetEnd="0dp"
             app:contentInsetEndWithActions="0dp"
-            app:popupTheme="@style/NovaPopupTheme">
+            app:popupTheme="@style/TextoPopupTheme">
 
             <!--
                 The design's thread header, as one row: back, who you are talking to, and
@@ -38,13 +38,13 @@
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingStart="18dp"
-                android:paddingEnd="18dp">
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp">
 
                 <ImageView
                     android:id="@+id/thread_back_btn"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:clickable="true"
                     android:contentDescription="@string/back"
                     android:focusable="true"
@@ -54,8 +54,8 @@
 
                 <ImageView
                     android:id="@+id/thread_header_avatar"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="42dp"
+                    android:layout_height="42dp"
                     android:layout_marginStart="12dp"
                     android:importantForAccessibility="no"
                     android:scaleType="centerCrop"
@@ -104,9 +104,21 @@
                 </LinearLayout>
 
                 <ImageView
+                    android:id="@+id/thread_search_btn"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_marginStart="6dp"
+                    android:clickable="true"
+                    android:contentDescription="@string/search_in_thread"
+                    android:focusable="true"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_ph_magnifying_glass"
+                    app:tint="#FFFFFF" />
+
+                <ImageView
                     android:id="@+id/thread_call_btn"
-                    android:layout_width="34dp"
-                    android:layout_height="34dp"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
                     android:layout_marginStart="6dp"
                     android:clickable="true"
                     android:contentDescription="@string/dial_number"
@@ -119,8 +131,8 @@
 
                 <ImageView
                     android:id="@+id/thread_menu_btn"
-                    android:layout_width="34dp"
-                    android:layout_height="34dp"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
                     android:layout_marginStart="6dp"
                     android:clickable="true"
                     android:contentDescription="@string/more_options"
@@ -132,6 +144,62 @@
             </LinearLayout>
 
         </com.google.android.material.appbar.MaterialToolbar>
+
+        <!--
+            In-thread search. Sits under the header capsule and only appears once the header's
+            magnifier is tapped, so a thread you are only reading keeps its full height.
+        -->
+        <LinearLayout
+            android:id="@+id/thread_search_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:layout_marginHorizontal="12dp"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="6dp"
+            android:visibility="gone"
+            tools:visibility="visible">
+
+            <ImageView
+                android:id="@+id/thread_search_icon"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_ph_magnifying_glass" />
+
+            <EditText
+                android:id="@+id/thread_search_input"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:hint="@string/search_in_thread"
+                android:imeOptions="actionSearch"
+                android:inputType="text"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp"
+                android:textAlignment="viewStart"
+                android:textDirection="locale" />
+
+            <TextView
+                android:id="@+id/thread_search_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:includeFontPadding="false"
+                tools:text="۳ نتیجه" />
+
+            <ImageView
+                android:id="@+id/thread_search_close"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:clickable="true"
+                android:contentDescription="@string/clear_search"
+                android:focusable="true"
+                android:src="@drawable/ic_ph_x" />
+
+        </LinearLayout>
 
         <include
             android:id="@+id/selection_bar"
@@ -245,6 +313,21 @@
             app:stackFromEnd="true"
             tools:itemCount="3"
             tools:listitem="@layout/item_message" />
+
+        <!-- Says so when a search matches nothing, instead of leaving a blank thread. -->
+        <TextView
+            android:id="@+id/thread_search_empty"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="32dp"
+            android:gravity="center"
+            android:layout_marginTop="48dp"
+            android:text="@string/search_no_results"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/thread_messages_list"
+            tools:visibility="visible" />
 
         <TextView
             android:id="@+id/scrollToBottomFab"

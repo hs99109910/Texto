@@ -15,7 +15,7 @@ import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.databinding.ItemSearchResultBinding
 import com.texto.sms.extensions.*
 import com.texto.sms.models.SearchResult
-import com.texto.sms.helpers.NovaAvatars
+import com.texto.sms.helpers.TextoAvatars
 
 class SearchResultsAdapter(
     activity: SimpleActivity, var searchResults: ArrayList<SearchResult>, recyclerView: MyRecyclerView, highlightText: String, itemClick: (Any) -> Unit
@@ -96,12 +96,12 @@ class SearchResultsAdapter(
                 typeface = Typeface.create(customTypeface, Typeface.NORMAL)
             }
 
-            NovaAvatars.clipToSquircle(searchResultImage)
+            TextoAvatars.clipToSquircle(searchResultImage)
             SimpleContactsHelper(activity).loadContactImage(
                 path = searchResult.photoUri,
                 imageView = searchResultImage,
                 placeholderName = searchResult.title,
-                placeholderImage = NovaAvatars.letterAvatar(activity, searchResult.title)
+                placeholderImage = TextoAvatars.letterAvatar(activity, searchResult.title)
             )
         }
     }

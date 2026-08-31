@@ -16,7 +16,7 @@ import org.fossify.commons.helpers.ensureBackgroundThread
 import com.texto.sms.R
 import com.texto.sms.databinding.ActivityBlockedNumbersBinding
 import com.texto.sms.extensions.config
-import com.texto.sms.helpers.NovaGlass
+import com.texto.sms.helpers.TextoGlass
 import com.texto.sms.helpers.allBlockedNumbers
 import com.texto.sms.helpers.unblockNumber
 
@@ -68,7 +68,7 @@ class BlockedNumbersActivity : SimpleActivity() {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
             setPadding(16.getScaledPx(), 12.getScaledPx(), 8.getScaledPx(), 12.getScaledPx())
-            NovaGlass.applyPanel(
+            TextoGlass.applyPanel(
                 view = this,
                 tint = if (config.topBarColor != 0) config.topBarColor else Color.BLACK,
                 cornerRadius = 18f * density,

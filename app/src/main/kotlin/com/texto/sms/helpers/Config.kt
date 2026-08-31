@@ -11,8 +11,12 @@ class Config(context: Context) : BaseConfig(context) {
         fun newInstance(context: Context) = Config(context)
         
         // FINAL ABSOLUTE DEFAULTS
-        /** Opaque enough that text scrolling under a bar stays out of the way of its title. */
-        const val DEFAULT_GLASS_OPACITY = 88
+        /**
+         * Solid by default. The glass look is still there in the rim, the shadow and the
+         * capsule geometry; what the old translucent default bought was a bar you could read
+         * message text through, which is the one thing a bar must not do.
+         */
+        const val DEFAULT_GLASS_OPACITY = 100
 
         val DEFAULT_DARK_GREY = Color.parseColor("#333333")
         val DEFAULT_LIGHT_GREY = Color.parseColor("#E0E0E0")
@@ -209,19 +213,31 @@ class Config(context: Context) : BaseConfig(context) {
             .remove(TOP_BAR_IMAGE).remove(MAIN_BACKGROUND_IMAGE).remove(INPUT_BAR_IMAGE)
             .remove(TOP_BAR_BG_MODE).remove(MAIN_BG_MODE).remove(INPUT_BAR_BG_MODE)
             .remove(APP_THEME).remove(MAIN_BG_GRADIENT_START).remove(MAIN_BG_GRADIENT_END)
-            .remove(ACCENT_GRADIENT_START).remove(ACCENT_GRADIENT_END)
+            .remove(ACCENT_GRADIENT_START).remove(ACCENT_GRADIENT_END).remove(ACCENT_GRADIENT_MID)
             .remove(AURORA_ACCENT_COLOR).remove(AURORA_ANIMATE)
+            .remove(AURORA_HALO_ONE).remove(AURORA_HALO_TWO).remove(AURORA_HALO_THREE)
+            .remove(AURORA_HALO_OPACITY)
             .remove(CARD_CORNER_RADIUS).apply()
     }
 
     var appTheme: Int
-        get() = prefs.getInt(APP_THEME, AppThemes.NOCTURNE)
+        get() = prefs.getInt(APP_THEME, AppThemes.NEON)
         set(appTheme) = prefs.edit().putInt(APP_THEME, appTheme).apply()
 
     /** Set once the install has been moved onto the Nocturne design. See App.onCreate. */
     var nocturneRefreshApplied: Boolean
         get() = prefs.getBoolean(NOCTURNE_REFRESH_APPLIED, false)
         set(applied) = prefs.edit().putBoolean(NOCTURNE_REFRESH_APPLIED, applied).apply()
+
+    /** Set once the install has been moved onto the Neon design. See App.onCreate. */
+    /** One-time move onto the recalibrated glass scale; see [GLASS_OPACITY_MIN]. */
+    var glassRecalibrated: Boolean
+        get() = prefs.getBoolean(GLASS_RECALIBRATED, false)
+        set(done) = prefs.edit().putBoolean(GLASS_RECALIBRATED, done).apply()
+
+    var neonRefreshApplied: Boolean
+        get() = prefs.getBoolean(NEON_REFRESH_APPLIED, false)
+        set(applied) = prefs.edit().putBoolean(NEON_REFRESH_APPLIED, applied).apply()
 
     /**
      * False until a theme has actually been written, which is what separates a fresh install
@@ -251,6 +267,49 @@ class Config(context: Context) : BaseConfig(context) {
     var accentGradientEnd: Int
         get() = prefs.getInt(ACCENT_GRADIENT_END, AURORA_BLUE)
         set(color) = prefs.edit().putInt(ACCENT_GRADIENT_END, color).apply()
+
+    /**
+     * Optional middle stop of the accent gradient, at [ACCENT_GRADIENT_MID_POSITION].
+     *
+     * The design's `--grad` runs through three colours, and the middle one is not what a
+     * straight two-stop blend produces: cyan to violet interpolates through a dull grey-mauve
+     * in sRGB, where the design passes through a bright sky blue. Dropping the stop was what
+     * made the accent read as flat and muddy next to the mockup even though both ends matched
+     * exactly. 0 means "no middle stop", so a user-picked two-colour accent still works.
+     */
+    var accentGradientMid: Int
+        get() = prefs.getInt(ACCENT_GRADIENT_MID, 0)
+        set(color) = prefs.edit().putInt(ACCENT_GRADIENT_MID, color).apply()
+
+    /**
+     * The three halos painted over the main background, deliberately independent of the
+     * accent gradient. 0 in a slot means "unset", and [auroraHaloColors] falls back to the
+     * accent trio there so themes that never defined halos look exactly as they did.
+     */
+    var auroraHaloOne: Int
+        get() = prefs.getInt(AURORA_HALO_ONE, 0)
+        set(color) = prefs.edit().putInt(AURORA_HALO_ONE, color).apply()
+
+    var auroraHaloTwo: Int
+        get() = prefs.getInt(AURORA_HALO_TWO, 0)
+        set(color) = prefs.edit().putInt(AURORA_HALO_TWO, color).apply()
+
+    var auroraHaloThree: Int
+        get() = prefs.getInt(AURORA_HALO_THREE, 0)
+        set(color) = prefs.edit().putInt(AURORA_HALO_THREE, color).apply()
+
+    /** 0f..1f multiplier on every halo's alpha. */
+    var auroraHaloOpacity: Float
+        get() = prefs.getFloat(AURORA_HALO_OPACITY, 1f).coerceIn(0f, 1f)
+        set(value) = prefs.edit().putFloat(AURORA_HALO_OPACITY, value).apply()
+
+    /** Halo colours for the background, falling back to the accent trio slot by slot. */
+    val auroraHaloColors: List<Int>
+        get() = listOf(
+            auroraHaloOne.takeIf { it != 0 } ?: accentGradientStart,
+            auroraHaloTwo.takeIf { it != 0 } ?: accentGradientEnd,
+            auroraHaloThree.takeIf { it != 0 } ?: auroraAccentColor
+        )
 
     /** Third halo hue behind the app, alongside the two accent-gradient stops. */
     var auroraAccentColor: Int
@@ -307,17 +366,23 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getBoolean(GLASS_THEME, true)
         set(glassTheme) = prefs.edit().putBoolean(GLASS_THEME, glassTheme).apply()
 
-    /** How opaque the frosted surfaces are, as a percentage. Lower reads as more see-through. */
+    /**
+     * How opaque the frosted surfaces are, as a percentage. Lower reads as more see-through.
+     *
+     * The floor is 40 rather than 20: below that the bars stopped being surfaces and the
+     * lower half of the slider's travel was all unusable, which left the usable part of the
+     * control squeezed into its top third.
+     */
     var glassOpacity: Int
-        get() = prefs.getInt(GLASS_OPACITY, DEFAULT_GLASS_OPACITY).coerceIn(20, 100)
+        get() = prefs.getInt(GLASS_OPACITY, DEFAULT_GLASS_OPACITY).coerceIn(GLASS_OPACITY_MIN, 100)
         set(glassOpacity) = prefs.edit().putInt(GLASS_OPACITY, glassOpacity).apply()
 
-    var fontFamilyNova: Int
+    var fontFamilyTexto: Int
         // Vazirmatn is the app's default face -- it ships with the app (SIL OFL) and is the
-        // only bundled family with a real bold cut. NovaFonts falls back to the system font
+        // only bundled family with a real bold cut. TextoFonts falls back to the system font
         // on its own if the asset is ever missing, so this is safe even without the file.
-        get() = prefs.getInt(FONT_FAMILY_NOVA, NovaFonts.FONT_VAZIRMATN)
-        set(fontFamilyNova) = prefs.edit().putInt(FONT_FAMILY_NOVA, fontFamilyNova).apply()
+        get() = prefs.getInt(FONT_FAMILY_TEXTO, TextoFonts.FONT_VAZIRMATN)
+        set(fontFamilyTexto) = prefs.edit().putInt(FONT_FAMILY_TEXTO, fontFamilyTexto).apply()
 
     var topBarColor: Int
         get() = prefs.getInt(TOP_BAR_COLOR, 0)
@@ -510,7 +575,7 @@ class Config(context: Context) : BaseConfig(context) {
             TOP_BAR_CROP_RECT, MAIN_BG_CROP_RECT, INPUT_BAR_CROP_RECT,
             TOP_BAR_BG_MODE, MAIN_BG_MODE, INPUT_BAR_BG_MODE,
             RECENT_COLOR,
-            FONT_FAMILY_NOVA, UI_SCALE, ALWAYS_EXPAND_SEARCH_BAR, USE_NEW_UI,
+            FONT_FAMILY_TEXTO, UI_SCALE, ALWAYS_EXPAND_SEARCH_BAR, USE_NEW_UI,
             APP_THEME, GLASS_THEME, CARD_CORNER_RADIUS, MAIN_BG_GRADIENT_START, MAIN_BG_GRADIENT_END,
             TOP_BAR_OUTLINE, TOP_BAR_OUTLINE_COLOR, SEARCH_BAR_OUTLINE, SEARCH_BAR_OUTLINE_COLOR,
             BIG_CONTACTS_OUTLINE, BIG_CONTACTS_OUTLINE_COLOR, SMALL_CONTACTS_OUTLINE, SMALL_CONTACTS_OUTLINE_COLOR,
@@ -543,7 +608,7 @@ class Config(context: Context) : BaseConfig(context) {
             TOP_BAR_CROP_RECT, MAIN_BG_CROP_RECT, INPUT_BAR_CROP_RECT,
             TOP_BAR_BG_MODE, MAIN_BG_MODE, INPUT_BAR_BG_MODE,
             RECENT_COLOR,
-            FONT_FAMILY_NOVA, UI_SCALE, ALWAYS_EXPAND_SEARCH_BAR, USE_NEW_UI,
+            FONT_FAMILY_TEXTO, UI_SCALE, ALWAYS_EXPAND_SEARCH_BAR, USE_NEW_UI,
             APP_THEME, GLASS_THEME, CARD_CORNER_RADIUS, MAIN_BG_GRADIENT_START, MAIN_BG_GRADIENT_END,
             TOP_BAR_OUTLINE, TOP_BAR_OUTLINE_COLOR, SEARCH_BAR_OUTLINE, SEARCH_BAR_OUTLINE_COLOR,
             BIG_CONTACTS_OUTLINE, BIG_CONTACTS_OUTLINE_COLOR, SMALL_CONTACTS_OUTLINE, SMALL_CONTACTS_OUTLINE_COLOR,

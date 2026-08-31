@@ -17,7 +17,7 @@ import androidx.annotation.RequiresApi
  * top-down sheen. On Android 12+ the content behind a popup is blurred for real,
  * everywhere else the scrim alone carries the effect.
  */
-object NovaGlass {
+object TextoGlass {
 
     private const val BLUR_RADIUS = 28f
 
@@ -41,6 +41,8 @@ object NovaGlass {
     fun panel(
         tint: Int,
         tintEnd: Int? = null,
+        /** Middle stop of the [tint]-to-[tintEnd] gradient; null for a plain two-stop blend. */
+        tintMid: Int? = null,
         cornerRadius: Float = 0f,
         cornerRadii: FloatArray? = null,
         opacity: Float = 0.55f,
@@ -61,19 +63,24 @@ object NovaGlass {
         }
 
         val fill = if (tintEnd != null) {
-            GradientDrawable(
-                GradientDrawable.Orientation.TL_BR,
+            // Same three-stop rule as accent(): the design's `--grad` passes through a colour
+            // the straight blend between its ends never reaches.
+            val stops = if (tintMid == null) {
                 intArrayOf(tint.withAlpha(opacity), tintEnd.withAlpha(opacity))
-            )
-        } else {
-            GradientDrawable(
-                GradientDrawable.Orientation.TOP_BOTTOM,
+            } else {
                 intArrayOf(
-                    lighten(tint, 1.25f).withAlpha(opacity),
                     tint.withAlpha(opacity),
-                    darken(tint, 0.85f).withAlpha(opacity)
+                    tintMid.withAlpha(opacity),
+                    tintEnd.withAlpha(opacity)
                 )
-            )
+            }
+            GradientDrawable(GradientDrawable.Orientation.TL_BR, stops)
+        } else {
+            // A flat fill, as the design has it: every card, sheet and received bubble is a
+            // plain `var(--glass)`. This used to be a light-to-dark vertical wash (1.25x at
+            // the top down to 0.85x at the bottom), which is what made the cards and bubbles
+            // read as embossed against a design that draws them flush.
+            GradientDrawable().apply { setColor(tint.withAlpha(opacity)) }
         }.apply {
             shape = GradientDrawable.RECTANGLE
             applyCorners()
@@ -131,9 +138,19 @@ object NovaGlass {
             if (cornerRadii != null) this.cornerRadii = cornerRadii else this.cornerRadius = cornerRadius
         }
 
+        // The fade closes as the glass is turned up, rather than staying a fixed ratio.
+
+        // Held at .79 the bar's lower edge could never exceed 79% opaque, so the settings slider
+
+        // ran out of travel with the bar still visibly see-through: the "least transparent"
+
+        // setting was not opaque, and there was no way to ask for more.
+
+        val fade = FADE_RATIO + (1f - FADE_RATIO) * opacity * opacity
+
         val fill = GradientDrawable(
             GradientDrawable.Orientation.TOP_BOTTOM,
-            intArrayOf(tint.withAlpha(opacity), tint.withAlpha(opacity * FADE_RATIO))
+            intArrayOf(tint.withAlpha(opacity), tint.withAlpha(opacity * fade))
         ).apply {
             shape = GradientDrawable.RECTANGLE
             applyCorners()
@@ -221,14 +238,23 @@ object NovaGlass {
     }
 
     /**
-     * Solid accent gradient with no glass treatment, for the small emphasis surfaces the skin
-     * paints with the accent pair: unread badges, the active filter chip, the FAB.
+     * Solid accent gradient with no glass treatment, for the emphasis surfaces the skin paints
+     * with the accent: sent bubbles, avatars, unread badges, the active filter chip, the send
+     * disc.
+     *
+     * [mid] is the design's third stop. Passing 0 (the stored "unset") falls back to a plain
+     * two-stop blend, which is what a user-picked accent pair gets. It matters more than it
+     * looks: the design's cyan-to-violet runs through a bright sky blue, and the straight
+     * blend between its two ends instead passes through a dull grey-mauve, which is what made
+     * the accent read as washed out even with both ends matching the mockup exactly.
      */
-    fun accent(start: Int, end: Int, cornerRadius: Float): GradientDrawable =
-        GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(start, end)).apply {
+    fun accent(start: Int, end: Int, cornerRadius: Float, mid: Int = 0): GradientDrawable {
+        val colors = if (mid == 0) intArrayOf(start, end) else intArrayOf(start, mid, end)
+        return GradientDrawable(GradientDrawable.Orientation.TL_BR, colors).apply {
             shape = GradientDrawable.RECTANGLE
             this.cornerRadius = cornerRadius
         }
+    }
 
     fun isDark(color: Int): Boolean {
         val luminance =

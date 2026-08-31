@@ -110,7 +110,7 @@ fun Context.sendMessageCompat(
  */
 fun isShortCodeWithLetters(address: String): Boolean {
     if (Patterns.EMAIL_ADDRESS.matcher(address).matches()) {
-        // emails are not short codes: https://github.com/NovaOrg/Messages/issues/115
+        // emails are not short codes: https://github.com/TextoOrg/Messages/issues/115
         return false
     }
 

@@ -15,7 +15,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.8">
+        app:layout_constraintWidth_percent="0.78">
 
         <ImageView
             android:id="@+id/thread_message_sender_photo"
@@ -50,7 +50,12 @@
             android:visibility="gone"
             tools:ignore="ContentDescription" />
 
-        <FrameLayout
+        <!--
+            The design puts the time and the delivery ticks INSIDE the bubble, on their own
+            line under the text, rather than on a separate row between bubbles. That is what
+            the meta row below is: a vertical stack of body + meta inside the bubble's fill.
+        -->
+        <LinearLayout
             android:id="@+id/thread_message_body_holder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -59,18 +64,57 @@
             android:layout_alignParentEnd="true"
             android:background="@drawable/item_sent_background"
             android:clickable="true"
-            android:focusable="true">
+            android:focusable="true"
+            android:orientation="vertical"
+            android:paddingHorizontal="14dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="8dp">
 
             <org.fossify.commons.views.MyTextView
                 android:id="@+id/thread_message_body"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:drawablePadding="8dp"
-                android:padding="@dimen/normal_margin"
                 android:textSize="@dimen/normal_text_size"
                 tools:drawableEndCompat="@drawable/scheduled_message_icon"
                 tools:text="Message content" />
-        </FrameLayout>
+
+            <!--
+                Left-aligned inside the bubble whichever way the locale runs, matching the
+                design's `justify-content: flex-start` on this row.
+            -->
+            <LinearLayout
+                android:id="@+id/thread_message_meta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginTop="4dp"
+                android:gravity="center_vertical"
+                android:layoutDirection="ltr"
+                android:orientation="horizontal">
+
+                <org.fossify.commons.views.MyTextView
+                    android:id="@+id/thread_message_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:includeFontPadding="false"
+                    android:textSize="10sp"
+                    tools:ignore="SmallSp"
+                    tools:text="10:14" />
+
+                <!-- Single tick once the network accepts the message, double once delivered. -->
+                <ImageView
+                    android:id="@+id/delivery_status"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_marginStart="4dp"
+                    android:contentDescription="@string/delivered"
+                    android:src="@drawable/ic_ph_check"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+            </LinearLayout>
+        </LinearLayout>
 
         <org.fossify.commons.views.MyTextView
             android:id="@+id/thread_message_carrier_warning"
@@ -105,22 +149,6 @@
             android:contentDescription="@string/selected"
             android:elevation="6dp"
             android:src="@drawable/ic_check_circle_filled"
-            android:visibility="gone"
-            tools:visibility="visible" />
-
-        <!-- Single tick once the network accepts the message, double once the carrier
-             reports it delivered. -->
-        <ImageView
-            android:id="@+id/delivery_status"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:layout_below="@+id/thread_message_body_holder"
-            android:layout_alignEnd="@+id/thread_message_body_holder"
-            android:layout_marginTop="1dp"
-            android:layout_marginEnd="4dp"
-            android:alpha="0.75"
-            android:contentDescription="@string/delivered"
-            android:src="@drawable/ic_check_single"
             android:visibility="gone"
             tools:visibility="visible" />
 
