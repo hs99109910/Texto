@@ -5,6 +5,10 @@
     Filled rather than the Phosphor outline: at the size this is drawn, an outline collapses
     into a smudge and the slot colour is the whole of what the marker says, so the shape has
     to carry that colour across its whole area.
+
+    The body runs y 3:21 of the 24 viewport rather than 2:22 : a card at the full height
+    stood too tall beside the date. The width is unchanged, and the chamfer keeps its
+    proportion to the height.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
@@ -13,5 +17,5 @@
     android:viewportHeight="24">
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M10.4,2 L17,2 C18.1,2 19,2.9 19,4 L19,20 C19,21.1 18.1,22 17,22 L7,22 C5.9,22 5,21.1 5,20 L5,7.4 Z" />
+        android:pathData="M9.86,3 L17,3 C18.1,3 19,3.9 19,5 L19,19 C19,20.1 18.1,21 17,21 L7,21 C5.9,21 5,20.1 5,19 L5,7.86 Z" />
 </vector>
