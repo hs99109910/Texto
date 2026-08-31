@@ -88,6 +88,33 @@ open class SimpleActivity : BaseSimpleActivity() {
     }
 
     /** Height of the status-bar strip the top bar keeps clear of, 0 before the first layout. */
+    private companion object {
+        /** Every screen's app bar. Order only decides which wins if two are ever inflated. */
+        val APP_BAR_IDS = listOf(
+            R.id.settings_appbar,
+            R.id.thread_appbar,
+            R.id.main_appbar,
+            R.id.conversation_details_appbar,
+            R.id.archive_appbar,
+            R.id.recycle_bin_appbar,
+            R.id.blocked_numbers_appbar,
+            R.id.vcard_appbar,
+            R.id.new_conversation_appbar,
+        )
+
+        val TOOLBAR_IDS = listOf(
+            R.id.settings_toolbar,
+            R.id.thread_toolbar,
+            R.id.main_toolbar,
+            R.id.conversation_details_toolbar,
+            R.id.archive_toolbar,
+            R.id.recycle_bin_toolbar,
+            R.id.blocked_numbers_toolbar,
+            R.id.vcard_toolbar,
+            R.id.new_conversation_toolbar,
+        )
+    }
+
     protected fun statusBarInsetOf(view: View): Int =
         ViewCompat.getRootWindowInsets(view)
             ?.getInsets(WindowInsetsCompat.Type.statusBars())?.top ?: 0
@@ -232,17 +259,14 @@ open class SimpleActivity : BaseSimpleActivity() {
         }
         
         // 2. Apply top bar color (HARD RECURSIVE SHAPE GUARD)
-        val appBar = findViewById<AppBarLayout>(R.id.settings_appbar) ?:
-                     findViewById<AppBarLayout>(R.id.thread_appbar) ?:
-                     findViewById<AppBarLayout>(R.id.main_appbar) ?:
-                     findViewById<AppBarLayout>(R.id.conversation_details_appbar) ?:
-                     findViewById<AppBarLayout>(R.id.new_conversation_appbar)
-                     
-        val toolbar = findViewById<Toolbar>(R.id.settings_toolbar) ?:
-                      findViewById<Toolbar>(R.id.thread_toolbar) ?:
-                      findViewById<Toolbar>(R.id.main_toolbar) ?:
-                      findViewById<Toolbar>(R.id.conversation_details_toolbar) ?:
-                      findViewById<Toolbar>(R.id.new_conversation_toolbar)
+        //
+        // Every screen's bar, by id. This was a chain of elvis operators that each new
+        // screen had to be added to by hand, and four of them never were: the archive, the
+        // recycle bin, the blocked numbers and the vCard viewer kept the base theme's flat
+        // rectangle while everything else had the floating capsule. A list is at least
+        // obviously a list of everything.
+        val appBar = APP_BAR_IDS.firstNotNullOfOrNull { findViewById<AppBarLayout>(it) }
+        val toolbar = TOOLBAR_IDS.firstNotNullOfOrNull { findViewById<Toolbar>(it) }
         
         if (appBar != null) {
             val barColor = if (config.topBarColor != 0) config.topBarColor else Color.BLACK

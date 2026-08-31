@@ -14,7 +14,7 @@
             android:id="@+id/vcard_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/color_primary"
+            android:background="@android:color/transparent"
             app:menu="@menu/menu_vcard"
             app:title="@string/contact_details"
             app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle" />

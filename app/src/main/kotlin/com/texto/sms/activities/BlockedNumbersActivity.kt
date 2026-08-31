@@ -40,6 +40,8 @@ class BlockedNumbersActivity : SimpleActivity() {
         super.onResume()
         setupTopAppBar(binding.blockedNumbersAppbar, NavigationIcon.Arrow)
         reload()
+        applyCustomColors()
+        updateAppFonts(binding.root)
     }
 
     private fun reload() {

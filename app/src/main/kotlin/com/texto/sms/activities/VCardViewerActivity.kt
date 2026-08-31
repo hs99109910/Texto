@@ -45,6 +45,7 @@ class VCardViewerActivity : SimpleActivity() {
         super.onResume()
         setupTopAppBar(binding.vcardAppbar, NavigationIcon.Arrow)
         applyCustomColors()
+        updateAppFonts(binding.root)
     }
 
     private fun setupOptionsMenu(vCardUri: Uri) {

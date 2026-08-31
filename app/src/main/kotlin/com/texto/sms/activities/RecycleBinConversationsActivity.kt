@@ -46,6 +46,7 @@ class RecycleBinConversationsActivity : SimpleActivity() {
         setupTopAppBar(binding.recycleBinAppbar, NavigationIcon.Arrow)
         loadRecycleBinConversations()
         applyCustomColors()
+        updateAppFonts(binding.root)
     }
 
     override fun onDestroy() {
@@ -144,6 +145,7 @@ class RecycleBinConversationsActivity : SimpleActivity() {
 
     private fun showOrHidePlaceholder(show: Boolean) {
         binding.noConversationsPlaceholder.beVisibleIf(show)
+        binding.noConversationsPlaceholder.setTextColor(config.mainTextColor)
         binding.noConversationsPlaceholder.text = getString(R.string.no_conversations_found)
     }
 

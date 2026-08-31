@@ -47,6 +47,7 @@ class ArchivedConversationsActivity : SimpleActivity() {
         setupTopAppBar(binding.archiveAppbar, NavigationIcon.Arrow)
         loadArchivedConversations()
         applyCustomColors()
+        updateAppFonts(binding.root)
     }
 
     override fun onDestroy() {
@@ -143,7 +144,7 @@ class ArchivedConversationsActivity : SimpleActivity() {
 
     private fun showOrHidePlaceholder(show: Boolean) {
         binding.noConversationsPlaceholder.beVisibleIf(show)
-        binding.noConversationsPlaceholder.setTextColor(getProperTextColor())
+        binding.noConversationsPlaceholder.setTextColor(config.mainTextColor)
         binding.noConversationsPlaceholder.text = getString(R.string.no_archived_conversations)
     }
 

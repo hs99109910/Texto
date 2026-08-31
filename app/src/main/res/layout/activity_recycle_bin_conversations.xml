@@ -15,7 +15,7 @@
             android:id="@+id/recycle_bin_toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="@color/color_primary"
+            android:background="@android:color/transparent"
             app:title="@string/recycle_bin"
             app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle" />
 
