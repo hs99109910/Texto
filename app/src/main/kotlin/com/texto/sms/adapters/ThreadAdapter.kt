@@ -991,10 +991,34 @@ class ThreadAdapter(
                 threadDateTime.alpha = 1.0f
             }
 
-            // The SIM marker belongs to the composer now, where it says which card the next
-            // message goes out on. On a date separator it labelled nothing.
-            threadSimIcon.beGone()
+            // The SIM this day's messages went out on, as a filled dot in the colour that
+            // slot carries everywhere else in the app. Only worth drawing on a dual-SIM
+            // phone, where which card a message used is a real question.
+            //
+            // A dot rather than the old SIM glyph: inside the date pill at this size the
+            // glyph read as a smudge, and the colour is the whole of what it says.
             threadSimNumber.beGone()
+            threadSimIcon.beVisibleIf(hasMultipleSIMCards)
+            if (hasMultipleSIMCards) {
+                val slot = dateTime.simID.toIntOrNull()?.minus(1)?.coerceAtLeast(0) ?: 0
+                val simColor = config.getSimColor(slot)
+                val side = (fontSize * 0.55f).toInt().coerceAtLeast(1)
+                threadSimIcon.setImageDrawable(null)
+                threadSimIcon.background = GradientDrawable().apply {
+                    shape = GradientDrawable.OVAL
+                    setColor(simColor)
+                    // A rim in the pill's own ink, so a slot colour close to the card
+                    // still reads as a dot rather than dissolving into it.
+                    setStroke(
+                        with(simpleActivity) { 1.getScaledPx() },
+                        config.mainTextColor.withAlpha(0.35f)
+                    )
+                }
+                threadSimIcon.updateLayoutParams {
+                    width = side
+                    height = side
+                }
+            }
         }
     }
 
