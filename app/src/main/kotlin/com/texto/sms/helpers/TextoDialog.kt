@@ -10,6 +10,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -33,6 +34,137 @@ data class CapsuleChoice(
     val isActive: Boolean = false,
     val onPick: () -> Unit,
 )
+
+/**
+ * A one-field sheet, drawn to the same recipe as [textoCapsuleDialog].
+ *
+ * Commons' setupDialogStuff puts a title bar and buttons from the base (light) theme above
+ * whatever content it is given, which is what left a white strip and a face nothing else in
+ * the app uses on the rename dialog.
+ */
+fun SimpleActivity.textoInputDialog(
+    title: String,
+    hint: String,
+    initialText: String = "",
+    onConfirm: (String) -> Unit,
+): AlertDialog {
+    val density = resources.displayMetrics.density
+    var dialog: AlertDialog? = null
+
+    val sheet = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        val pad = 18.getScaledPx()
+        setPadding(pad, pad, pad, pad)
+        background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 26 * density
+            setColor(config.recentColor)
+            setStroke(1.getScaledPx(), TextoGlass.rimFor(config.recentColor, 0.18f))
+        }
+        outlineProvider = ViewOutlineProvider.BACKGROUND
+        clipToOutline = true
+    }
+
+    sheet.addView(
+        TextView(this).apply {
+            text = title
+            setTextColor(config.mainTextColor)
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.05f))
+            typeface = typefaceFor(Typeface.BOLD)
+            setPadding(8.getScaledPx(), 0, 8.getScaledPx(), 12.getScaledPx())
+        }
+    )
+
+    // The field is the same glass capsule the search bar and the composer are.
+    val field = EditText(this).apply {
+        setText(initialText)
+        setSelection(text.length)
+        this.hint = hint
+        setSingleLine()
+        setTextColor(config.inputBarTextColor)
+        setHintTextColor(config.inputBarTextColor.withAlpha(0.5f))
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize())
+        textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+        background = TextoGlass.bar(
+            tint = config.inputBarBackgroundColor,
+            cornerRadius = 100f * density,
+            opacity = 0.6f,
+            strokeWidthPx = 1.getScaledPx()
+        )
+        outlineProvider = ViewOutlineProvider.BACKGROUND
+        val padH = 18.getScaledPx()
+        val padV = 14.getScaledPx()
+        setPadding(padH, padV, padH, padV)
+    }
+    sheet.addView(
+        field,
+        LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+    )
+
+    val buttons = LinearLayout(this).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+        setPadding(0, 14.getScaledPx(), 0, 0)
+    }
+
+    fun button(label: String, filled: Boolean, onTap: () -> Unit) = TextView(this).apply {
+        text = label
+        gravity = Gravity.CENTER
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.88f))
+        typeface = typefaceFor(if (filled) Typeface.BOLD else Typeface.NORMAL)
+        setTextColor(if (filled) config.sentBubbleTextColor else config.mainTextColor)
+        val padV = 12.getScaledPx()
+        setPadding(0, padV, 0, padV)
+        background = if (filled) {
+            TextoGlass.accent(
+                start = config.accentGradientStart,
+                end = config.accentGradientEnd,
+                cornerRadius = 100f * density,
+                mid = config.accentGradientMid
+            )
+        } else {
+            TextoGlass.bar(
+                tint = config.mainBackgroundColor,
+                cornerRadius = 100f * density,
+                opacity = 0.5f,
+                strokeWidthPx = 1.getScaledPx(),
+                rimAlpha = 0.18f
+            )
+        }
+        outlineProvider = ViewOutlineProvider.BACKGROUND
+        isClickable = true
+        layoutParams = LinearLayout.LayoutParams(
+            0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f
+        ).apply { marginStart = 8.getScaledPx() }
+        setOnClickListener { onTap() }
+    }
+
+    buttons.addView(
+        button(getString(com.texto.sms.R.string.action_confirm), filled = true) {
+            onConfirm(field.text.toString())
+            dialog?.dismiss()
+        }
+    )
+    buttons.addView(
+        button(getString(com.texto.sms.R.string.action_cancel), filled = false) {
+            dialog?.dismiss()
+        }
+    )
+    sheet.addView(buttons)
+
+    dialog = AlertDialog.Builder(this)
+        .setView(sheet)
+        .create()
+        .apply {
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            show()
+        }
+
+    field.requestFocus()
+    return dialog
+}
 
 /**
  * The app's own chooser sheet.

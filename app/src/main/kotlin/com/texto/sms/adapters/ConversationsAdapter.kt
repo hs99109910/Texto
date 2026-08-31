@@ -255,7 +255,7 @@ class ConversationsAdapter(
     }
 
     private fun renameConversation(conversation: Conversation) {
-        RenameConversationDialog(activity, conversation) {
+        RenameConversationDialog(activity as SimpleActivity, conversation) {
             ensureBackgroundThread {
                 val updatedConv = activity.renameConversation(conversation, newTitle = it)
                 activity.runOnUiThread {

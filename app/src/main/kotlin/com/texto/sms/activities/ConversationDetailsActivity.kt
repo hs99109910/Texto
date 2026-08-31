@@ -21,7 +21,10 @@ import com.texto.sms.dialogs.RenameConversationDialog
 import com.texto.sms.extensions.*
 import com.texto.sms.helpers.THREAD_ID
 import com.texto.sms.models.Conversation
+import android.util.TypedValue
+import android.view.View
 import com.texto.sms.helpers.TextoAvatars
+import com.texto.sms.helpers.TextoGlass
 
 class ConversationDetailsActivity : SimpleActivity() {
 
@@ -60,40 +63,86 @@ class ConversationDetailsActivity : SimpleActivity() {
         super.onResume()
         setupTopAppBar(binding.conversationDetailsAppbar, NavigationIcon.Arrow)
         applyCustomColors()
-        
-        // Final force-binding for modernization
-        val mainTextColor = config.mainTextColor
-        binding.membersHeadingLabel.setTextColor(mainTextColor)
-        
-        // Setup Hero Gradient
-        val baseColor = config.recentColor
-        val lightened = baseColor.adjustColor(1.2f)
-        val darkened = baseColor.adjustColor(0.8f)
-        val gd = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(lightened, baseColor, darkened))
-        gd.cornerRadius = 24.getScaledPx(this).toFloat()
-        binding.detailsHeroGradient.background = gd
-        
-        // Hero Shadows
-        binding.detailsHeroSection.elevation = 10f * resources.displayMetrics.density
-        binding.detailsHeroSection.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+        styleDetails()
+    }
 
-        // Apply Outlines for Hero
-        if (config.topBarOutline && config.useNewUi) {
-            val thickness = config.topBarOutlineThickness
-            val thickStroke = (thickness * resources.displayMetrics.density).toInt()
-            val r_base = 24.getScaledPx(this).toFloat()
-            val outline = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE
-                setStroke(thickStroke, config.topBarOutlineColor)
-                setColor(android.graphics.Color.TRANSPARENT)
-                cornerRadius = r_base
-            }
-            val drawable = LayerDrawable(arrayOf(outline))
-            drawable.setLayerInset(0, 0, 0, 0, 0)
-            binding.detailsHeroSection.foreground = drawable
-        } else {
-            binding.detailsHeroSection.foreground = null
+    /**
+     * Paints the screen from the live theme.
+     *
+     * This one was never brought onto the new design: its three rows were filled with
+     * `pill_background_small`, whose solid colour is `colorPrimary` -- the Fossify red -- so
+     * they came up as red bars in whatever theme the user had picked, with white-on-red text
+     * and a 6dp lift the rest of the app had already dropped. Everything here now reads from
+     * Config, the way every other screen does.
+     */
+    private fun styleDetails() = binding.apply {
+        val density = resources.displayMetrics.density
+        val ink = config.mainTextColor
+        val cardRadius = config.cardCornerRadiusDp * density
+
+        // The hero card: a flat wash of the card colour behind the divider hairline, not the
+        // lighten/darken gradient that made every surface in the app look embossed.
+        detailsHeroGradient.background = TextoGlass.panel(
+            tint = config.recentColor,
+            cornerRadius = cardRadius,
+            opacity = 0.68f,
+            strokeWidthPx = 1.getScaledPx(),
+            rimAlpha = 0.10f,
+            sheenAlpha = 0f
+        )
+        detailsHeroSection.elevation = 0f
+        detailsHeroSection.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+
+        detailsHeroName.setTextColor(ink)
+        detailsHeroName.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.3f))
+        TextoAvatars.clipToSquircle(detailsHeroImage)
+
+        // The rows are the same glass capsule the filter chips and the composer are.
+        val rowRadius = 100f * density
+        fun row(view: View) {
+            view.background = TextoGlass.bar(
+                tint = config.recentColor,
+                cornerRadius = rowRadius,
+                opacity = 0.5f,
+                strokeWidthPx = 1.getScaledPx(),
+                rimAlpha = 0.18f
+            )
+            view.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+            view.elevation = 0f
         }
+        row(detailsRenamePill)
+        row(detailsNotificationsPill)
+        row(detailsCustomizePill)
+
+        listOf(conversationNameLabel, notificationsLabel, detailsCustomizeLabel).forEach {
+            it.setTextColor(ink)
+            it.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.92f))
+        }
+        listOf(detailsRenameIcon, detailsCustomizeIcon).forEach {
+            it.applyColorFilter(ink.withAlpha(0.68f))
+        }
+
+        // The heading is the one accented thing on the screen, the way the thread header's
+        // status line is: it reads as a section marker rather than a second title.
+        membersHeadingLabel.setTextColor(config.accentGradientStart)
+        membersHeadingLabel.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.0f))
+
+        conversationDetailsToolbarTitle.setTextColor(config.topBarTextColor)
+        conversationDetailsToolbarTitle.setTextSize(
+            TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.35f)
+        )
+
+        val accent = config.accentGradientStart
+        val states = arrayOf(
+            intArrayOf(android.R.attr.state_checked),
+            intArrayOf(-android.R.attr.state_checked)
+        )
+        customNotificationsSwitch.trackTintList = android.content.res.ColorStateList(
+            states, intArrayOf(accent.withAlpha(0.45f), ink.withAlpha(0.16f))
+        )
+        customNotificationsSwitch.thumbTintList = android.content.res.ColorStateList(
+            states, intArrayOf(accent, ink.withAlpha(0.62f))
+        )
     }
 
     private fun setupHeroSection() {

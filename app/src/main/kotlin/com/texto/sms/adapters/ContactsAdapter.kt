@@ -19,6 +19,7 @@ import com.texto.sms.databinding.ItemConversationRecentBinding
 import com.texto.sms.models.ConversationListItem
 import java.util.ArrayList
 import com.texto.sms.helpers.TextoAvatars
+import com.texto.sms.helpers.TextoGlass
 
 class ContactsAdapter(
     activity: SimpleActivity,
@@ -157,29 +158,36 @@ class ContactsAdapter(
                 placeholderImage = TextoAvatars.letterAvatar(activity, contact.name)
             )
 
-            // Setup modern gradient/outline
-            val baseColor = activity.config.recentColor
-            val lightened = baseColor.adjustColor(1.2f)
-            val darkened = baseColor.adjustColor(0.8f)
-            val gd = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(lightened, baseColor, darkened))
-            val r_base = 1000f
-            
+            // A flat glass capsule, the same one the filter chips and the composer are.
+            // The lighten/darken wash plus 6dp of lift was the embossed look the rest of the
+            // app dropped, and it left these chips floating above a flat card.
             val density = resources.displayMetrics.density
-            if (activity.config.smallContactsOutline && activity.config.useNewUi) {
-                val thickness = activity.config.smallContactsOutlineThickness
-                val thickStroke = (thickness * density).toInt()
-                gd.cornerRadius = r_base
-                gd.setStroke(thickStroke, activity.config.smallContactsOutlineColor)
-                
-                val layerDrawable = LayerDrawable(arrayOf(gd))
-                layerDrawable.setLayerInset(0, 0, 0, 0, 0)
-                pillFrame.background = layerDrawable
-            } else {
-                gd.cornerRadius = r_base
-                pillFrame.background = gd
-            }
-            
-            pillFrame.elevation = 6f * density
+            val radius = 1000f
+            val base = TextoGlass.bar(
+                tint = activity.config.recentColor,
+                cornerRadius = radius,
+                opacity = 0.55f,
+                strokeWidthPx = 1,
+                rimAlpha = 0.14f
+            )
+
+            pillFrame.background =
+                if (activity.config.smallContactsOutline && activity.config.useNewUi) {
+                    val thickStroke =
+                        (activity.config.smallContactsOutlineThickness * density).toInt()
+                    val outline = GradientDrawable().apply {
+                        shape = GradientDrawable.RECTANGLE
+                        cornerRadius = radius
+                        setColor(Color.TRANSPARENT)
+                        setStroke(thickStroke, activity.config.smallContactsOutlineColor)
+                    }
+                    LayerDrawable(arrayOf(base, outline))
+                } else {
+                    base
+                }
+
+            pillFrame.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+            pillFrame.elevation = 0f
             pillFrame.setOnClickListener { holder.viewClicked(item) }
         }
     }
