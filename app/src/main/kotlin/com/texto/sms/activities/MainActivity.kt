@@ -550,6 +550,7 @@ class MainActivity : SimpleActivity() {
                 },
                 onEditRequested = { },
                 onAddRequested = { },
+                showAddChip = false,
                 styleChip = { chip, filterId, isActive -> styleFilterChip(chip, filterId, isActive) }
             )
             binding.searchFilterBar.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(

@@ -38,6 +38,12 @@ class FilterChipsAdapter(
     private val onSelect: (MessageFilter) -> Unit,
     private val onEditRequested: (MessageFilter) -> Unit,
     private val onAddRequested: () -> Unit,
+    /**
+     * Whether to append the trailing "+" chip. The search panel reuses this row to narrow a
+     * search by the same audiences, where making a new filter is not on offer: the chip was
+     * there, did nothing, and read as a control.
+     */
+    private val showAddChip: Boolean = true,
     private val styleChip: (chip: FilterChipViews, filterId: String, isActive: Boolean) -> Unit,
 ) : RecyclerView.Adapter<FilterChipsAdapter.ViewHolder>() {
 
@@ -73,7 +79,7 @@ class FilterChipsAdapter(
         activeId: String,
         filterCounts: Map<String, Int> = emptyMap(),
     ) {
-        items = filters + addChipFilter
+        items = if (showAddChip) filters + addChipFilter else filters
         activeFilterId = activeId
         counts = filterCounts
         notifyDataSetChanged()
