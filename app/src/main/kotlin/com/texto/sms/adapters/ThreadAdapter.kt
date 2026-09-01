@@ -138,7 +138,6 @@ class ThreadAdapter(
     }
 
     override fun onActionModeCreated() {
-        android.util.Log.d("ThreadSelection", "Action mode created")
         updateCustomSelectionBar()
     }
 
@@ -800,12 +799,10 @@ class ThreadAdapter(
             isLongClickable = true
 
             setOnClickListener {
-                android.util.Log.d("ReactionInteraction", "bodyView tapped for message ${message.id}, delegating to bodyHolder")
                 bodyHolder.performClick()
             }
             
             setOnLongClickListener {
-                android.util.Log.d("ReactionInteraction", "bodyView long-pressed for message ${message.id}, delegating to bodyHolder")
                 bodyHolder.performLongClick()
             }
 

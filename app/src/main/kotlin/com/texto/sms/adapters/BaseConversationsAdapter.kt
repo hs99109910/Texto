@@ -239,7 +239,6 @@ abstract class BaseConversationsAdapter(
 
     fun onDragStarted(position: Int) {
         if (!activity.config.useNewUi || position < 2) return
-        android.util.Log.d("DRAG_DEBUG", "Drag STARTED at position: $position")
         isDragging = true
         pendingNotify = false
         initialDragPosition = position
@@ -276,7 +275,6 @@ abstract class BaseConversationsAdapter(
 
     fun onDragEnded() {
         if (!isDragging) {
-            android.util.Log.d("DRAG_DEBUG", "onDragEnded called but isDragging was FALSE (already handled or never started)")
             return
         }
         
@@ -285,7 +283,6 @@ abstract class BaseConversationsAdapter(
         val end = hoveredPosition 
         val oldHover = hoveredPosition
 
-        android.util.Log.d("DRAG_DEBUG", "Drag ENDED. Start: $start, End (Hover): $end")
 
         // Immediately set isDragging to false to prevent multiple calls or interruptions
         isDragging = false

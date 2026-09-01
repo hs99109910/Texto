@@ -63,7 +63,7 @@ class NotificationHelper(private val context: Context) {
                 context,
                 notificationId,
                 contentIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
         val deleteSmsIntent = Intent(context, DeleteSmsReceiver::class.java).apply {
@@ -75,7 +75,7 @@ class NotificationHelper(private val context: Context) {
                 context,
                 notificationId,
                 deleteSmsIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
         var copyCodeAction: NotificationCompat.Action? = null
@@ -90,7 +90,7 @@ class NotificationHelper(private val context: Context) {
                     context,
                     notificationId,
                     copyCodeIntent,
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
             copyCodeAction = NotificationCompat.Action.Builder(
                 R.drawable.ic_copy_vector,
@@ -111,6 +111,10 @@ class NotificationHelper(private val context: Context) {
                 putExtra(THREAD_ID, threadId)
                 putExtra(THREAD_NUMBER, address)
             }
+            // The one that has to stay mutable: RemoteInput fills the typed reply into this
+            // intent as it is delivered. Every other intent here carries only extras this code
+            // has already set, so they are immutable and cannot be rewritten by whoever ends
+            // up holding them.
 
             val replyPendingIntent =
                 PendingIntent.getBroadcast(
@@ -211,7 +215,7 @@ class NotificationHelper(private val context: Context) {
             context,
             notificationId,
             intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val summaryText =

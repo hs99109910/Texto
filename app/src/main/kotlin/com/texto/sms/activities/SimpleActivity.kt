@@ -713,7 +713,6 @@ open class SimpleActivity : BaseSimpleActivity() {
     }
 
     fun toggleCustomSelectionBar(show: Boolean, count: Int = 0, actions: List<Int> = emptyList(), onAction: (Int) -> Unit = {}) {
-        android.util.Log.d("SelectionBar", "toggleCustomSelectionBar: show=$show, count=$count")
         
         selectionBackCallback.isEnabled = show
         if (show) {

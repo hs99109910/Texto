@@ -31,7 +31,6 @@ class ModernDragCallback(private val adapter: BaseConversationsAdapter) : ItemTo
 
     override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
         super.onSelectedChanged(viewHolder, actionState)
-        android.util.Log.d("DRAG_DEBUG", "onSelectedChanged: actionState=$actionState, hasViewHolder=${viewHolder != null}")
         if (actionState == ItemTouchHelper.ACTION_STATE_DRAG) {
             viewHolder?.bindingAdapterPosition?.let { pos ->
                 adapter.onDragStarted(pos)
