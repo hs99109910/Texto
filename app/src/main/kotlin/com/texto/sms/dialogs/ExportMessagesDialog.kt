@@ -76,7 +76,7 @@ class ExportMessagesDialog(
                 it.alpha = MEDIUM_ALPHA
             }
 
-            binding.exportProgress.setIndicatorColor(activity.getProperPrimaryColor())
+            binding.exportProgress.setIndicatorColor(activity.config.accentGradientStart)
             binding.exportProgress.post {
                 binding.exportProgress.show()
             }

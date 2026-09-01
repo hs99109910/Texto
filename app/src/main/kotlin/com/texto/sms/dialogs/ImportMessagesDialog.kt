@@ -29,7 +29,7 @@ class ImportMessagesDialog(
             importMmsCheckbox.isChecked = config.importMms
         }
 
-        binding.importProgress.setIndicatorColor(activity.getProperPrimaryColor())
+        binding.importProgress.setIndicatorColor(activity.config.accentGradientStart)
 
         activity.getAlertDialogBuilder()
             .setPositiveButton(org.fossify.commons.R.string.ok, null)

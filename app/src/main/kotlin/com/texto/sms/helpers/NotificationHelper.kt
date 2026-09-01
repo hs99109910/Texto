@@ -150,7 +150,7 @@ class NotificationHelper(private val context: Context) {
                 }
             }
 
-            color = context.getProperPrimaryColor()
+            color = context.config.accentGradientStart
             setSmallIcon(R.drawable.ic_notification_bubble)
             setContentIntent(contentPendingIntent)
             priority = NotificationCompat.PRIORITY_MAX
@@ -220,7 +220,7 @@ class NotificationHelper(private val context: Context) {
         val builder = NotificationCompat.Builder(context, notificationChannelId)
             .setContentTitle(context.getString(R.string.message_not_sent_short))
             .setContentText(summaryText)
-            .setColor(context.getProperPrimaryColor())
+            .setColor(context.config.accentGradientStart)
             .setSmallIcon(R.drawable.ic_notification_bubble)
             .setLargeIcon(largeIcon)
             .setStyle(NotificationCompat.BigTextStyle().bigText(summaryText))

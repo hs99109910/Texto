@@ -771,7 +771,7 @@ class ThreadAdapter(
             
             setTextColor(finalTextColor)
             alpha = 1.0f
-            setLinkTextColor(if (isReceived) activity.getProperPrimaryColor() else finalTextColor)
+            setLinkTextColor(if (isReceived) activity.config.accentGradientStart else finalTextColor)
 
             // Figures in the body become tappable so a single account number, code or
             // amount can be copied or forwarded without hand-selecting text; web addresses
@@ -880,7 +880,7 @@ class ThreadAdapter(
                         height = (maxChatBubbleWidth * 0.6f).toInt()
                     }
                     imageViewBinding.attachmentImage.setImageResource(R.drawable.ic_image_vector)
-                    imageViewBinding.attachmentImage.applyColorFilter(activity.getProperPrimaryColor())
+                    imageViewBinding.attachmentImage.applyColorFilter(activity.config.accentGradientStart)
                     playOutline.beGone()
                     return true
                 }
@@ -1025,12 +1025,12 @@ class ThreadAdapter(
 
     private fun setupThreadError(view: View) {
         val binding = ItemThreadErrorBinding.bind(view)
-        binding.threadError.setTextColor(activity.getProperTextColor())
+        binding.threadError.setTextColor(activity.config.mainTextColor)
     }
 
     private fun setupThreadSending(view: View) {
         ItemThreadSendingBinding.bind(view).threadSending.apply {
-            setTextColor(activity.getProperTextColor())
+            setTextColor(activity.config.mainTextColor)
             setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.8f)
         }
     }

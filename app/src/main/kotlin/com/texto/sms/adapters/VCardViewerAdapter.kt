@@ -28,7 +28,7 @@ class VCardViewerAdapter(
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var fontSize = activity.getScaledTextSize()
-    private var textColor = activity.getProperTextColor()
+    private var textColor = activity.config.mainTextColor
     private val layoutInflater = activity.layoutInflater
 
     override fun getItemCount() = items.size

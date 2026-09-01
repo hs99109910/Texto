@@ -38,7 +38,7 @@ class AttachmentsAdapter(
 
     private val config = activity.config
     private val resources = activity.resources
-    private val primaryColor = activity.getProperPrimaryColor()
+    private val primaryColor = activity.config.accentGradientStart
     private val imageCompressor by lazy { ImageCompressor(activity) }
     private val videoCompressor by lazy { VideoCompressor(activity) }
 

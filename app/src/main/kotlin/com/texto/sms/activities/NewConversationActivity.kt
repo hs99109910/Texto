@@ -85,7 +85,7 @@ class NewConversationActivity : SimpleActivity() {
         }
         binding.newConversationToolbar.title = "" // Clear standard title to use custom TextView
 
-        binding.noContactsPlaceholder2.setTextColor(getProperPrimaryColor())
+        binding.noContactsPlaceholder2.setTextColor(config.accentGradientStart)
         binding.noContactsPlaceholder2.underlineText()
         updateActivityCustomColors()
 
@@ -180,7 +180,7 @@ class NewConversationActivity : SimpleActivity() {
         binding.newConversationConfirm.applyColorFilter(config.inputBarTextColor)
 
         // Fast Scroller Sync
-        val properPrimaryColor = getProperPrimaryColor()
+        val properPrimaryColor = config.accentGradientStart
         binding.contactsLetterFastscroller.textColor = mainTextColor.getColorStateList()
         binding.contactsLetterFastscroller.pressedTextColor = properPrimaryColor
         binding.contactsLetterFastscrollerThumb.setupWithFastScroller(binding.contactsLetterFastscroller)
@@ -217,7 +217,7 @@ class NewConversationActivity : SimpleActivity() {
 
             val shortCodeWithLetters = isShortCodeWithLetters(searchString)
             binding.newConversationConfirm.beVisibleIf(searchString.isNotEmpty() && !shortCodeWithLetters)
-            binding.newConversationConfirm.applyColorFilter(getProperTextColor())
+            binding.newConversationConfirm.applyColorFilter(config.inputBarTextColor)
             binding.newConversationConfirm.setOnClickListener {
                 if (searchString.isPhoneNumber()) {
                     launchThreadActivity(searchString, searchString)

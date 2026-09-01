@@ -1,5 +1,6 @@
 package com.texto.sms.dialogs
 
+import com.texto.sms.extensions.config
 import android.content.res.ColorStateList
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
@@ -42,8 +43,8 @@ class PersianDatePickerDialog(
     private var dialog: AlertDialog? = null
 
     init {
-        val textColor = activity.getProperTextColor()
-        val primaryColor = activity.getProperPrimaryColor()
+        val textColor = activity.config.mainTextColor
+        val primaryColor = activity.config.accentGradientStart
 
         binding.customDateLabel.setTextColor(textColor)
 

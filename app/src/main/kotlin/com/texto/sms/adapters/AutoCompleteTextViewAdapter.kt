@@ -35,7 +35,7 @@ class AutoCompleteTextViewAdapter(val activity: SimpleActivity, val contacts: Ar
                 isFocusable = false
             }
 
-            val backgroundColor = activity.getProperBackgroundColor()
+            val backgroundColor = activity.config.mainBackgroundColor
             val customTypeface = activity.getCustomTypeface()
             itemContactFrame.setBackgroundColor(backgroundColor.darkenColor())
             itemContactName.apply {

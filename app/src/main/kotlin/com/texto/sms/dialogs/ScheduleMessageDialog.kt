@@ -1,5 +1,6 @@
 package com.texto.sms.dialogs
 
+import com.texto.sms.extensions.config
 import android.app.TimePickerDialog
 import android.app.TimePickerDialog.OnTimeSetListener
 import android.text.format.DateFormat
@@ -28,7 +29,7 @@ class ScheduleMessageDialog(
     private val callback: (dateTime: DateTime?) -> Unit
 ) {
     private val binding = ScheduleMessageDialogBinding.inflate(activity.layoutInflater)
-    private val textColor = activity.getProperTextColor()
+    private val textColor = activity.config.mainTextColor
 
     private var previewDialog: AlertDialog? = null
     private var previewShown = false

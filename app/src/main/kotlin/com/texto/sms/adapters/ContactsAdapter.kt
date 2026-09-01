@@ -131,6 +131,11 @@ class ContactsAdapter(
             conversationAddress.setTextColor(mainTextColor)
             conversationBodyShort.setTextColor(mainTextColor)
             conversationBodyShort.alpha = 0.7f
+            // The marker carried commons' own colour straight from the layout, which belonged to
+            // neither this skin nor the tonality. The conversations list already paints it as body
+            // ink, and the new row layout folds the draft into the body line outright, so body ink
+            // is what the app means by it.
+            draftIndicator.setTextColor(mainTextColor)
             
             val baseColor = activity.config.mainBackgroundColor.adjustColor(1.1f)
             val gd = GradientDrawable().apply {

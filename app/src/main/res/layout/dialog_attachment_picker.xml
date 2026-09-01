@@ -10,8 +10,8 @@
         android:id="@+id/picker_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Choose Attachment"
-        android:textColor="#FFFFFF"
+        android:text="@string/picker_title"
+
         android:textSize="20sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -19,43 +19,43 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout android:id="@+id/picker_image" style="@style/PickerItemStyle">
-        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_image_vector" android:contentDescription="Image"/>
-        <TextView style="@style/PickerTextStyle" android:text="Image" />
+        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_image_vector" android:contentDescription="@string/picker_image"/>
+        <TextView style="@style/PickerTextStyle" android:text="@string/picker_image" />
     </LinearLayout>
 
     <LinearLayout android:id="@+id/picker_video" style="@style/PickerItemStyle">
-        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_videocam_vector" android:contentDescription="Video"/>
-        <TextView style="@style/PickerTextStyle" android:text="Video" />
+        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_videocam_vector" android:contentDescription="@string/picker_video"/>
+        <TextView style="@style/PickerTextStyle" android:text="@string/picker_video" />
     </LinearLayout>
 
     <LinearLayout android:id="@+id/picker_camera" style="@style/PickerItemStyle">
-        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_video_camera_vector" android:contentDescription="Camera"/>
-        <TextView style="@style/PickerTextStyle" android:text="Camera" />
+        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_video_camera_vector" android:contentDescription="@string/picker_camera"/>
+        <TextView style="@style/PickerTextStyle" android:text="@string/picker_camera" />
     </LinearLayout>
 
     <LinearLayout android:id="@+id/picker_camera_video" style="@style/PickerItemStyle">
-        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_videocam_vector" android:contentDescription="Rec Video"/>
-        <TextView style="@style/PickerTextStyle" android:text="Rec Video" />
+        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_videocam_vector" android:contentDescription="@string/picker_camera_video"/>
+        <TextView style="@style/PickerTextStyle" android:text="@string/picker_camera_video" />
     </LinearLayout>
 
     <LinearLayout android:id="@+id/picker_audio" style="@style/PickerItemStyle">
-        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_music_vector" android:contentDescription="Audio"/>
-        <TextView style="@style/PickerTextStyle" android:text="Audio" />
+        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_music_vector" android:contentDescription="@string/picker_audio"/>
+        <TextView style="@style/PickerTextStyle" android:text="@string/picker_audio" />
     </LinearLayout>
 
     <LinearLayout android:id="@+id/picker_file" style="@style/PickerItemStyle">
-        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_document_vector" android:contentDescription="File"/>
-        <TextView style="@style/PickerTextStyle" android:text="File" />
+        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_document_vector" android:contentDescription="@string/picker_file"/>
+        <TextView style="@style/PickerTextStyle" android:text="@string/picker_file" />
     </LinearLayout>
 
     <LinearLayout android:id="@+id/picker_contact" style="@style/PickerItemStyle">
-        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_person_vector" android:contentDescription="Contact"/>
-        <TextView style="@style/PickerTextStyle" android:text="Contact" />
+        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_person_vector" android:contentDescription="@string/picker_contact"/>
+        <TextView style="@style/PickerTextStyle" android:text="@string/picker_contact" />
     </LinearLayout>
 
     <LinearLayout android:id="@+id/picker_schedule" style="@style/PickerItemStyle">
-        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_schedule_send_vector" android:contentDescription="Schedule"/>
-        <TextView style="@style/PickerTextStyle" android:text="Schedule" />
+        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_schedule_send_vector" android:contentDescription="@string/picker_schedule"/>
+        <TextView style="@style/PickerTextStyle" android:text="@string/picker_schedule" />
     </LinearLayout>
 
     <androidx.constraintlayout.helper.widget.Flow
