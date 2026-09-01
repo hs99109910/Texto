@@ -28,7 +28,14 @@ object TextoLauncherIcon {
 
     private const val DEGREES_PER_STEP = 360 / STEPS
 
-    private fun aliasName(index: Int) = ".IconH%02d".format(index)
+    /**
+     * Built by hand rather than with a format string. The app's locale is hard locked to
+     * fa-IR, under which `"%02d".format(n)` emits Persian digits, so this asked the package
+     * manager for a component called `IconH۰۷` and it threw: the component really does not
+     * exist under that name. A class name is not display text and must never be shaped.
+     */
+    private fun aliasName(index: Int) =
+        ".IconH" + (if (index < 10) "0" else "") + index.toString()
 
     /** The alias nearest [shiftDegrees], which may be any angle the strip can produce. */
     fun indexFor(shiftDegrees: Int): Int =
