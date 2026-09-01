@@ -1,25 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-    The launcher's ground. The design's own near-black, lifted toward the mark's violet end
-    across the diagonal so the blue:to:purple stroke has something to sit against without the
-    icon reading as a flat black tile among other launcher icons.
+    The launcher's ground, still colourless the way Google Messages leaves its own, but no
+    longer flat paper: a radial highlight off the upper left falling to a cool neutral at the
+    lower right, with a second pass deepening the bottom edge.
+
+    The light comes from the same direction as the mark's own bevel and its cast shadow falls
+    the same way, so the tile reads as one lit object rather than a raised mark sitting on a
+    flat sheet.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+
     <path android:pathData="M0,0h108v108h-108z">
-        <aapt:attr xmlns:aapt="http://schemas.android.com/aapt" name="android:fillColor">
+        <aapt:attr name="android:fillColor">
             <gradient
+                android:type="radial"
+                android:centerX="32"
+                android:centerY="26"
+                android:gradientRadius="104">
+                <item android:offset="0" android:color="#FFFFFFFF" />
+                <item android:offset="0.45" android:color="#FFF5F8FA" />
+                <item android:offset="1" android:color="#FFD8DEE5" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- The bottom edge, weighted so the ground turns away from the light. -->
+    <path android:pathData="M0,0h108v108h-108z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
                 android:startX="0"
-                android:startY="0"
-                android:endX="108"
-                android:endY="108"
-                android:type="linear">
-                <item android:offset="0" android:color="#FF0B1020" />
-                <item android:offset="0.55" android:color="#FF141A2E" />
-                <item android:offset="1" android:color="#FF1E1436" />
+                android:startY="54"
+                android:endX="0"
+                android:endY="108">
+                <item android:offset="0" android:color="#00000000" />
+                <item android:offset="1" android:color="#14000000" />
             </gradient>
         </aapt:attr>
     </path>

@@ -53,11 +53,172 @@
             android:name=".activities.SplashActivity"
             android:exported="true"
             android:theme="@style/SplashTheme">
+        </activity>
+        <!--
+            The launcher draws an app's icon from static resources in its own process, so
+            nothing the app runs can recolour it. Twelve pre rendered rotations of the mark are
+            declared as aliases instead, and the tonality strip enables whichever one is
+            nearest the angle the user picked : see TextoLauncherIcon.
+
+            Only one is ever enabled. The launcher entry lives here rather than on
+            SplashActivity, which the aliases target, so exactly one icon shows.
+        -->
+        <activity-alias
+            android:name=".IconH00"
+            android:targetActivity=".activities.SplashActivity"
+            android:exported="true"
+            android:enabled="true"
+            android:icon="@mipmap/ic_launcher_h00"
+            android:roundIcon="@mipmap/ic_launcher_h00"
+            android:label="@string/app_launcher_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconH01"
+            android:targetActivity=".activities.SplashActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_launcher_h01"
+            android:roundIcon="@mipmap/ic_launcher_h01"
+            android:label="@string/app_launcher_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconH02"
+            android:targetActivity=".activities.SplashActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_launcher_h02"
+            android:roundIcon="@mipmap/ic_launcher_h02"
+            android:label="@string/app_launcher_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconH03"
+            android:targetActivity=".activities.SplashActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_launcher_h03"
+            android:roundIcon="@mipmap/ic_launcher_h03"
+            android:label="@string/app_launcher_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconH04"
+            android:targetActivity=".activities.SplashActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_launcher_h04"
+            android:roundIcon="@mipmap/ic_launcher_h04"
+            android:label="@string/app_launcher_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconH05"
+            android:targetActivity=".activities.SplashActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_launcher_h05"
+            android:roundIcon="@mipmap/ic_launcher_h05"
+            android:label="@string/app_launcher_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconH06"
+            android:targetActivity=".activities.SplashActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_launcher_h06"
+            android:roundIcon="@mipmap/ic_launcher_h06"
+            android:label="@string/app_launcher_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconH07"
+            android:targetActivity=".activities.SplashActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_launcher_h07"
+            android:roundIcon="@mipmap/ic_launcher_h07"
+            android:label="@string/app_launcher_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconH08"
+            android:targetActivity=".activities.SplashActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_launcher_h08"
+            android:roundIcon="@mipmap/ic_launcher_h08"
+            android:label="@string/app_launcher_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconH09"
+            android:targetActivity=".activities.SplashActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_launcher_h09"
+            android:roundIcon="@mipmap/ic_launcher_h09"
+            android:label="@string/app_launcher_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconH10"
+            android:targetActivity=".activities.SplashActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_launcher_h10"
+            android:roundIcon="@mipmap/ic_launcher_h10"
+            android:label="@string/app_launcher_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".IconH11"
+            android:targetActivity=".activities.SplashActivity"
+            android:exported="true"
+            android:enabled="false"
+            android:icon="@mipmap/ic_launcher_h11"
+            android:roundIcon="@mipmap/ic_launcher_h11"
+            android:label="@string/app_launcher_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
 
         <activity
             android:name=".activities.MainActivity"
