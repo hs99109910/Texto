@@ -27,6 +27,41 @@ object TextoAvatars {
      */
     private const val CORNER_FRACTION = 0.364f
 
+    /** How far the tile is lifted off the row behind it, in dp. */
+    private const val AVATAR_ELEVATION_DP = 3f
+
+    /**
+     * How much of the accent ramp's spread the avatar gives up, 0f..1f.
+     *
+     * The tile is small and now carries a shadow, and at that size the full accent ramp read
+     * as two colours fighting rather than one surface. Each stop is pulled this far toward
+     * the ramp's own average, which keeps the hue run and the overall brightness but flattens
+     * the travel between the ends. The badges, chips and bubbles keep the full ramp.
+     */
+    private const val GRADIENT_SOFTENING = 0.20f
+
+    /** [color] moved [amount] of the way toward [target]. */
+    private fun blend(color: Int, target: Int, amount: Float): Int = android.graphics.Color.argb(
+        android.graphics.Color.alpha(color),
+        (android.graphics.Color.red(color) +
+            (android.graphics.Color.red(target) - android.graphics.Color.red(color)) * amount).toInt(),
+        (android.graphics.Color.green(color) +
+            (android.graphics.Color.green(target) - android.graphics.Color.green(color)) * amount).toInt(),
+        (android.graphics.Color.blue(color) +
+            (android.graphics.Color.blue(target) - android.graphics.Color.blue(color)) * amount).toInt()
+    )
+
+    /** Every stop pulled [GRADIENT_SOFTENING] toward the set's average colour. */
+    private fun soften(stops: IntArray): IntArray {
+        val n = stops.size
+        val mean = android.graphics.Color.rgb(
+            stops.sumOf { android.graphics.Color.red(it) } / n,
+            stops.sumOf { android.graphics.Color.green(it) } / n,
+            stops.sumOf { android.graphics.Color.blue(it) } / n
+        )
+        return IntArray(n) { blend(stops[it], mean, GRADIENT_SOFTENING) }
+    }
+
     /**
      * Every avatar carries the active theme's own accent gradient -- `var(--grad)` in the
      * design, which paints all of them the same way rather than varying by contact. The six
@@ -53,6 +88,10 @@ object TextoAvatars {
             }
         }
         view.clipToOutline = true
+        // The outline is already the squircle, so elevation casts a shadow of exactly the
+        // tile's shape and lifts it off the card it sits on. Every avatar in the app goes
+        // through this call, so they all lift by the same amount.
+        view.elevation = AVATAR_ELEVATION_DP * view.resources.displayMetrics.density
     }
 
     /**
@@ -119,14 +158,15 @@ object TextoAvatars {
             // Three stops when the theme defines a middle one, so an avatar carries the same
             // cyan-through-sky-blue-to-violet run the sent bubbles and badges do.
             fillPaint.shader = if (midStop == 0) {
+                val stops = soften(intArrayOf(gradient.first, gradient.second))
                 LinearGradient(
                     b.left.toFloat(), b.top.toFloat(), b.right.toFloat(), b.bottom.toFloat(),
-                    gradient.first, gradient.second, Shader.TileMode.CLAMP
+                    stops[0], stops[1], Shader.TileMode.CLAMP
                 )
             } else {
                 LinearGradient(
                     b.left.toFloat(), b.top.toFloat(), b.right.toFloat(), b.bottom.toFloat(),
-                    intArrayOf(gradient.first, midStop, gradient.second),
+                    soften(intArrayOf(gradient.first, midStop, gradient.second)),
                     floatArrayOf(0f, ACCENT_GRADIENT_MID_POSITION, 1f),
                     Shader.TileMode.CLAMP
                 )
