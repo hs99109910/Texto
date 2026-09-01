@@ -79,6 +79,7 @@ const val NOCTURNE_REFRESH_APPLIED = "nocturne_refresh_applied"
 /** One-shot marker for the move onto the Neon design that replaced it. See App.onCreate. */
 const val NEON_REFRESH_APPLIED = "neon_refresh_applied"
 const val GLASS_RECALIBRATED = "glass_recalibrated"
+const val NEON_LIGHT_DEFAULT_APPLIED = "neon_light_default_applied"
 
 /**
  * Floor of the glass slider. Below this the bars stop reading as surfaces at all, so the
@@ -106,14 +107,14 @@ const val GLASS_OPACITY = "glass_opacity"
 const val SIM_COLOR_PREFIX = "sim_color_"
 
 /**
- * The digit badge riding the SIM disc's upper corner, as the design draws it: a 16px dot on
- * a 42px control. Rounded up a hair so the numeral inside still has room at the app's
+ * The digit badge riding the SIM disc's upper corner, as the design draws it: a 15px dot on
+ * a 38px control. Rounded up a hair so the numeral inside still has room at the app's
  * smallest UI scale.
  */
-const val SIM_BADGE_SIZE_DP = 17
+const val SIM_BADGE_SIZE_DP = 16
 
 /** The design's small round composer controls -- the attachment clip and the SIM picker. */
-const val COMPOSER_DISC_DP = 42
+const val COMPOSER_DISC_DP = 38
 
 // Customization constants
 const val TOP_BAR_COLOR = "top_bar_color"
@@ -157,6 +158,7 @@ const val BG_MODE_LINEAR = 3
 const val ACCENT_GRADIENT_START = "accent_gradient_start"
 const val ACCENT_GRADIENT_END = "accent_gradient_end"
 const val ACCENT_GRADIENT_MID = "accent_gradient_mid"
+const val ACCENT_HUE_SHIFT = "accent_hue_shift"
 /** Where the accent gradient's middle stop sits, matching the design's `--grad` 55%. */
 const val ACCENT_GRADIENT_MID_POSITION = 0.55f
 

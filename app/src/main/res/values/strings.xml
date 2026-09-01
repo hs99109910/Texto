@@ -7,6 +7,15 @@
     <string name="message_sending_error">پیام شما به «%s» ارسال نشد</string>
     <string name="add_person">افزودن مخاطب</string>
     <string name="attachment">پیوست</string>
+    <string name="picker_title">انتخاب پیوست</string>
+    <string name="picker_image">تصویر</string>
+    <string name="picker_video">ویدیو</string>
+    <string name="picker_camera">دوربین</string>
+    <string name="picker_camera_video">فیلم‌برداری</string>
+    <string name="picker_audio">صدا</string>
+    <string name="picker_file">فایل</string>
+    <string name="picker_contact">مخاطب</string>
+    <string name="picker_schedule">زمان‌بندی</string>
     <string name="no_conversations_found">هیچ گفتگویی یافت نشد</string>
     <string name="start_conversation">شروع گفتگو</string>
     <string name="reply">پاسخ</string>
@@ -247,6 +256,7 @@
     <string name="settings_input_bar_background">نوار جستجو و نوشتن</string>
     <string name="settings_ui_scale">مقیاس رابط</string>
     <string name="settings_glass_opacity">شفافیت نوارهای شیشه‌ای</string>
+    <string name="settings_accent_hue">تنالیتهٔ رنگ تم</string>
     <string name="settings_sim1_color">رنگ سیم‌کارت ۱</string>
     <string name="settings_sim2_color">رنگ سیم‌کارت ۲</string>
     <string name="search">جستجو</string>
@@ -310,6 +320,8 @@
     <string name="settings_aurora_animate_sub">هاله‌های رنگی به‌آرامی جابه‌جا می‌شوند</string>
     <string name="settings_ui_scale_sub">اندازه کلی دکمه‌ها و فاصله‌ها</string>
     <string name="settings_glass_opacity_sub">هرچه کمتر، نوارها شفاف‌تر</string>
+    <string name="settings_accent_hue_sub">رنگ‌های تم را روی چرخه می‌چرخاند. وسط نوار، رنگ خودِ تم است.</string>
+    <string name="settings_accent_hue_original">رنگ تم</string>
     <string name="settings_font_size_sub">اندازه متن پیام‌ها و فهرست‌ها</string>
     <string name="settings_font_sub">قلم مورد استفاده در کل برنامه</string>
     <string name="settings_top_bar_text_sub">رنگ عنوان و آیکون‌های نوار بالا</string>

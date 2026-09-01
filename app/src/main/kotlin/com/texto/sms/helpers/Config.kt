@@ -240,6 +240,16 @@ class Config(context: Context) : BaseConfig(context) {
         set(applied) = prefs.edit().putBoolean(NEON_REFRESH_APPLIED, applied).apply()
 
     /**
+     * Set once the install has been moved onto Neon's light variant, which is the default
+     * now rather than its dark one. Needs its own flag because [neonRefreshApplied] is
+     * already true on every install that has run since Neon landed, so reusing it would move
+     * nobody.
+     */
+    var neonLightDefaultApplied: Boolean
+        get() = prefs.getBoolean(NEON_LIGHT_DEFAULT_APPLIED, false)
+        set(applied) = prefs.edit().putBoolean(NEON_LIGHT_DEFAULT_APPLIED, applied).apply()
+
+    /**
      * False until a theme has actually been written, which is what separates a fresh install
      * from someone who deliberately picked Classic. appRunCount cannot answer this: App
      * forces it to 100 on every launch to suppress the upstream first-run popups.
@@ -260,12 +270,35 @@ class Config(context: Context) : BaseConfig(context) {
      * filter chip, FAB, active nav tab -- is painted with this one pair, which is what makes
      * them read as a set. Defaults keep a theme-less install on the Aurora cyan-to-blue.
      */
+    /**
+     * How far around the colour wheel the user has dragged the tonality strip, in degrees.
+     *
+     * It is applied on the way OUT of the accent getters below rather than written into
+     * them, which is what keeps it orthogonal to the theme: picking a new skin rewrites the
+     * stored colours and the shift rides along untouched, and dragging back to 0 restores
+     * the skin's own hues exactly instead of leaving them somewhere approximate. Every
+     * accent surface in the app already reads these getters, so nothing else has to know
+     * this exists.
+     */
+    var accentHueShift: Int
+        get() = prefs.getInt(ACCENT_HUE_SHIFT, 0).mod(360)
+        set(degrees) = prefs.edit().putInt(ACCENT_HUE_SHIFT, degrees.mod(360)).apply()
+
+    /**
+     * 0 is not a colour here, it is the "unset" marker that [accentGradientMid] and the halo
+     * slots are tested against. Rotating it would produce a transparent black that is no
+     * longer `== 0`, so every one of those checks would silently start taking the wrong
+     * branch: the middle gradient stop would come back from the dead as a smear of nothing.
+     */
+    private fun tinted(color: Int): Int =
+        if (color == 0 || accentHueShift == 0) color else TextoTint.rotateHue(color, accentHueShift)
+
     var accentGradientStart: Int
-        get() = prefs.getInt(ACCENT_GRADIENT_START, AURORA_CYAN)
+        get() = tinted(prefs.getInt(ACCENT_GRADIENT_START, AURORA_CYAN))
         set(color) = prefs.edit().putInt(ACCENT_GRADIENT_START, color).apply()
 
     var accentGradientEnd: Int
-        get() = prefs.getInt(ACCENT_GRADIENT_END, AURORA_BLUE)
+        get() = tinted(prefs.getInt(ACCENT_GRADIENT_END, AURORA_BLUE))
         set(color) = prefs.edit().putInt(ACCENT_GRADIENT_END, color).apply()
 
     /**
@@ -278,7 +311,7 @@ class Config(context: Context) : BaseConfig(context) {
      * exactly. 0 means "no middle stop", so a user-picked two-colour accent still works.
      */
     var accentGradientMid: Int
-        get() = prefs.getInt(ACCENT_GRADIENT_MID, 0)
+        get() = tinted(prefs.getInt(ACCENT_GRADIENT_MID, 0))
         set(color) = prefs.edit().putInt(ACCENT_GRADIENT_MID, color).apply()
 
     /**
@@ -287,15 +320,15 @@ class Config(context: Context) : BaseConfig(context) {
      * accent trio there so themes that never defined halos look exactly as they did.
      */
     var auroraHaloOne: Int
-        get() = prefs.getInt(AURORA_HALO_ONE, 0)
+        get() = tinted(prefs.getInt(AURORA_HALO_ONE, 0))
         set(color) = prefs.edit().putInt(AURORA_HALO_ONE, color).apply()
 
     var auroraHaloTwo: Int
-        get() = prefs.getInt(AURORA_HALO_TWO, 0)
+        get() = tinted(prefs.getInt(AURORA_HALO_TWO, 0))
         set(color) = prefs.edit().putInt(AURORA_HALO_TWO, color).apply()
 
     var auroraHaloThree: Int
-        get() = prefs.getInt(AURORA_HALO_THREE, 0)
+        get() = tinted(prefs.getInt(AURORA_HALO_THREE, 0))
         set(color) = prefs.edit().putInt(AURORA_HALO_THREE, color).apply()
 
     /** 0f..1f multiplier on every halo's alpha. */
@@ -313,7 +346,7 @@ class Config(context: Context) : BaseConfig(context) {
 
     /** Third halo hue behind the app, alongside the two accent-gradient stops. */
     var auroraAccentColor: Int
-        get() = prefs.getInt(AURORA_ACCENT_COLOR, AURORA_MAGENTA)
+        get() = tinted(prefs.getInt(AURORA_ACCENT_COLOR, AURORA_MAGENTA))
         set(color) = prefs.edit().putInt(AURORA_ACCENT_COLOR, color).apply()
 
     /** Whether the background halos drift. Off still paints them, just frozen. */

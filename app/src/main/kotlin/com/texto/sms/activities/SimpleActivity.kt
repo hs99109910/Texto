@@ -169,7 +169,6 @@ open class SimpleActivity : BaseSimpleActivity() {
                 R.id.thread_sim_number,
                 R.id.thread_message_carrier_warning,
                 R.id.nav_home_icon,
-                R.id.nav_settings_icon,
                 R.id.nav_search_icon,
                 R.id.nav_add_icon,
                 R.id.texto_search_icon,
@@ -177,6 +176,7 @@ open class SimpleActivity : BaseSimpleActivity() {
                 // put them straight back to the plain text colour on every resume.
                 R.id.settings_ui_scale_value,
                 R.id.settings_glass_opacity_value,
+                R.id.settings_accent_hue_value,
                 R.id.thread_search_count
             )
                              
@@ -358,9 +358,6 @@ open class SimpleActivity : BaseSimpleActivity() {
             findViewById<View>(R.id.texto_nav_container)?.let {
                 val inputBarTextColor = config.inputBarTextColor
                 findViewById<ImageView>(R.id.nav_home_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
-                // The two capsules do not carry the same set of tabs, so every id either
-                // screen might have is looked up and whichever is inflated answers.
-                findViewById<ImageView>(R.id.nav_settings_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
                 findViewById<ImageView>(R.id.texto_search_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
                 findViewById<ImageView>(R.id.nav_search_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
                 findViewById<ImageView>(R.id.nav_add_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
@@ -513,7 +510,6 @@ open class SimpleActivity : BaseSimpleActivity() {
         val mainTextCol = config.mainTextColor
         val settingsLabels = listOf(
             R.id.settings_top_bar_label,
-            R.id.settings_main_bg_label,
             R.id.settings_ui_scale_label,
             R.id.settings_font_size_label,
             R.id.settings_font_label,

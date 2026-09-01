@@ -43,6 +43,7 @@ class SettingsActivity : SimpleActivity() {
         setupCustomization()
         setupUIScale()
         setupGlassOpacity()
+        setupAccentHue()
         setupAppTheme()
         setupDarkModeSwitch()
         setupBlockedNumbers()
@@ -52,8 +53,7 @@ class SettingsActivity : SimpleActivity() {
         setupDefaultFilter()
         setupFontSize()
         setupFontFamily()
-        setupBgModes()
-        setupAuroraAnimate()
+        setupBarBgMode()
         updateAppFonts(binding.root)
     }
 
@@ -92,8 +92,8 @@ class SettingsActivity : SimpleActivity() {
             // Every tab at full opacity, exactly as on the home screen: styleNavTabs marks
             // the current one in colour, and fading the others on top of that took them well
             // below the contrast the design gives them.
-            listOf(navHomeIcon, navSearchIcon, navSettingsIcon).forEach { it.alpha = 1f }
-            listOf(navHomeLabel, navSearchLabel, navSettingsLabel).forEach { it.alpha = 1f }
+            listOf(navHomeIcon, navSearchIcon, navAddIcon).forEach { it.alpha = 1f }
+            listOf(navHomeLabel, navSearchLabel, navAddLabel).forEach { it.alpha = 1f }
 
             styleNavTabs()
 
@@ -105,7 +105,9 @@ class SettingsActivity : SimpleActivity() {
                 finish() // Go back to main and expand search
             }
 
-            navSettingsBtn.setOnClickListener { /* already here */ }
+            navAddBtn.setOnClickListener {
+                startActivity(Intent(this@SettingsActivity, NewConversationActivity::class.java))
+            }
         } else {
             textoNavContainer.beGone()
         }
@@ -113,39 +115,30 @@ class SettingsActivity : SimpleActivity() {
 
     /**
      * The capsule's tabs, painted the same way the home screen paints its own so the two
-     * bars are one control that follows you between screens. Settings is the current tab
-     * here, so it is the one carrying the lozenge.
+     * bars are one control that follows you between screens, carrying the same three
+     * destinations in the same order.
      */
     private fun styleNavTabs() = binding.apply {
-        val density = resources.displayMetrics.density
-        // `--primary`, the same token the home screen's capsule uses. This read
-        // auroraAccentColor, which is the third *halo* hue rather than the accent, so the
-        // lozenge and the current tab's ink went blue here and teal one screen away.
-        val accent = config.accentGradientStart
         val muted = config.mainTextColor.withAlpha(0.68f)
 
-        navSettingsBtn.background = android.graphics.drawable.GradientDrawable().apply {
-            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-            cornerRadius = com.texto.sms.helpers.NAV_TAB_RADIUS_DP * density
-            setColor(accent.withAlpha(0.16f))
-            setStroke(density.toInt().coerceAtLeast(1), accent.withAlpha(0.25f))
-        }
-        navHomeBtn.background = null
-        navSearchBtn.background = null
+        // No lozenge on this screen. The capsule carries the home screen's three
+        // destinations, and settings is not one of them : it is reached from the header gear.
+        // Marking a tab here would mean marking a screen you are not on.
+        listOf(navAddBtn, navHomeBtn, navSearchBtn).forEach { it.background = null }
 
-        navSettingsIcon.applyColorFilter(accent)
-        navSettingsLabel.setTextColor(accent)
-        listOf(navHomeIcon, navSearchIcon).forEach { it.applyColorFilter(muted) }
-        listOf(navHomeLabel, navSearchLabel).forEach { it.setTextColor(muted) }
+        val icons = listOf(navHomeIcon, navSearchIcon, navAddIcon)
+        val labels = listOf(navHomeLabel, navSearchLabel, navAddLabel)
+        icons.forEach { it.applyColorFilter(muted) }
+        labels.forEach { it.setTextColor(muted) }
 
         val glyph = com.texto.sms.helpers.NAV_ICON_DP.getScaledPx()
-        listOf(navHomeIcon, navSearchIcon, navSettingsIcon).forEach { icon ->
+        icons.forEach { icon ->
             icon.updateLayoutParams {
                 width = glyph
                 height = glyph
             }
         }
-        listOf(navHomeLabel, navSearchLabel, navSettingsLabel).forEach {
+        labels.forEach {
             it.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
         }
     }
@@ -192,7 +185,7 @@ class SettingsActivity : SimpleActivity() {
             
             // Sync icon and divider colors with search bar text color
             binding.navHomeIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
-            binding.navSettingsIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
+            binding.navAddIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
             binding.navSearchIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
         } else {
             binding.textoNavContainer.foreground = null
@@ -227,7 +220,6 @@ class SettingsActivity : SimpleActivity() {
         // Force all color previews to update based on current config
         updatePreview(settingsTopBarColorPreview, if (config.topBarColor == 0) Color.BLACK else config.topBarColor)
         updatePreview(settingsTopBarTextColorPreview, config.topBarTextColor)
-        updatePreview(settingsMainBackgroundColorPreview, config.mainBackgroundColor)
         updatePreview(settingsMainTextColorPreview, config.mainTextColor)
         updatePreview(settingsInputBarTextColorPreview, config.inputBarTextColor)
 
@@ -290,65 +282,19 @@ class SettingsActivity : SimpleActivity() {
         startActivityForResult(intent, CROP_RESULT_INTENT)
     }
 
-    private fun setupBgModes() = binding.apply {
-        // Top & bottom bars only support a plain colour now (no mode picker for them at all)
-        // -- migrate away from a stale Image selection from before this was simplified, so the
-        // preview swatch and renderer agree on what's actually shown.
+    /**
+     * The main background's mode picker and the halo animation switch were taken out of
+     * the menu. Their stored values are deliberately left alone : the background still
+     * renders in whatever mode it was in and the halos still drift if they were drifting, so
+     * this only removes the controls, not the behaviour.
+     *
+     * What survives here is the top and bottom bars, which stopped supporting anything but a
+     * plain colour: an install carrying a stale Image selection from before that would paint
+     * one thing and preview another.
+     */
+    private fun setupBarBgMode() {
         if (config.topBarBgMode != BG_MODE_COLOR) {
             config.topBarBgMode = BG_MODE_COLOR
-        }
-
-        // The main background picks between a flat colour, the auto-shaded aurora halo field,
-        // and a plain two-stop gradient. The mode values are not contiguous -- BG_MODE_IMAGE(1)
-        // sits between COLOR(0) and GRADIENT(2) -- so position and stored mode are mapped
-        // through mainModeValues rather than assumed equal.
-        val mainModes = arrayListOf(
-            getString(R.string.bg_mode_color),
-            getString(R.string.bg_mode_gradient),
-            getString(R.string.bg_mode_linear)
-        )
-        val mainModeValues = intArrayOf(BG_MODE_COLOR, BG_MODE_GRADIENT, BG_MODE_LINEAR)
-
-        val adapter = object : ArrayAdapter<String>(this@SettingsActivity, android.R.layout.simple_spinner_item, mainModes) {
-            override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val view = super.getView(position, convertView, parent) as TextView
-                view.setTextColor(config.mainTextColor)
-                return view
-            }
-
-            override fun getDropDownView(position: Int, convertView: View?, parent: ViewGroup): View {
-                val view = super.getDropDownView(position, convertView, parent) as TextView
-                view.setTextColor(config.mainTextColor)
-                return view
-            }
-        }
-
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        settingsMainBgModeSpinner.adapter = adapter
-        // The dropdown popup is its own window with a system-default (usually light)
-        // background, unrelated to the settings row it opens from. On Aurora the label text
-        // is white, so without an explicit popup background it was white-on-white.
-        settingsMainBgModeSpinner.setPopupBackgroundDrawable(android.graphics.drawable.ColorDrawable(config.mainBackgroundColor))
-        settingsMainBgModeSpinner.setSelection(mainModeValues.indexOf(config.mainBgMode).coerceAtLeast(0))
-        settingsMainBgModeSpinner.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: android.widget.AdapterView<*>?, view: View?, position: Int, id: Long) {
-                val newMode = mainModeValues[position]
-                if (newMode != config.mainBgMode) {
-                    config.mainBgMode = newMode
-                    if (newMode == BG_MODE_GRADIENT || newMode == BG_MODE_LINEAR) {
-                        // Switching to shaded should look different right away, so seed the
-                        // shade from the current flat colour instead of leaving a flat gradient.
-                        config.mainBgGradientStart = config.mainBackgroundColor
-                        config.mainBgGradientEnd = adjustColor(config.mainBackgroundColor, 0.75f)
-                    }
-                    updateCustomizationUI()
-                    applyCustomColors()
-                    // Force refresh of the spinner text color immediately
-                    (settingsMainBgModeSpinner.selectedView as? TextView)?.setTextColor(config.mainTextColor)
-                }
-            }
-            override fun onNothingSelected(parent: android.widget.AdapterView<*>?) {}
         }
     }
 
@@ -366,7 +312,6 @@ class SettingsActivity : SimpleActivity() {
 
         updatePreview(settingsTopBarColorPreview, if (config.topBarColor == 0) Color.BLACK else config.topBarColor)
         updatePreview(settingsTopBarTextColorPreview, config.topBarTextColor)
-        updatePreview(settingsMainBackgroundColorPreview, config.mainBackgroundColor)
         updatePreview(settingsMainTextColorPreview, config.mainTextColor)
         updatePreview(settingsInputBarTextColorPreview, config.inputBarTextColor)
 
@@ -506,31 +451,6 @@ class SettingsActivity : SimpleActivity() {
             }
         }
 
-        settingsMainBgPreviewContainer.setOnClickListener {
-            if (config.mainBgMode == BG_MODE_GRADIENT || config.mainBgMode == BG_MODE_LINEAR) {
-                // Both gradient modes read the stops rather than mainBackgroundColor, so the
-                // picker has to write the stops too or tapping the swatch would change nothing.
-                // One colour is all the user picks; the second stop is an automatic shade.
-                org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.mainBgGradientStart) { wasPositive, color ->
-                    if (wasPositive) {
-                        config.mainBackgroundColor = color
-                        config.mainBgGradientStart = color
-                        config.mainBgGradientEnd = adjustColor(color, 0.75f)
-                        updatePreview(settingsMainBackgroundColorPreview, color)
-                        applyCustomColors()
-                    }
-                }
-            } else {
-                org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.mainBackgroundColor) { wasPositive, color ->
-                    if (wasPositive) {
-                        config.mainBackgroundColor = color
-                        updatePreview(settingsMainBackgroundColorPreview, color)
-                        applyCustomColors()
-                    }
-                }
-            }
-        }
-
     }
 
 
@@ -546,19 +466,6 @@ class SettingsActivity : SimpleActivity() {
      * The halos are always painted; this only decides whether they drift. Applying it needs a
      * fresh drawable, which is what applyCustomColors() builds.
      */
-    private fun setupAuroraAnimate() = binding.apply {
-        settingsAuroraAnimateLabel.setTextColor(config.mainTextColor)
-        settingsAuroraAnimateSwitch.isChecked = config.auroraAnimate
-        settingsAuroraAnimateSwitch.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked == config.auroraAnimate) return@setOnCheckedChangeListener
-            config.auroraAnimate = isChecked
-            applyCustomColors()
-        }
-        settingsAuroraAnimateHolder.setOnClickListener {
-            settingsAuroraAnimateSwitch.toggle()
-        }
-    }
-
     private fun setupContactsOnlyFilter() = binding.apply {
         settingsContactsOnlyFilterSwitch.isChecked = config.showContactsOnlyFilter
         settingsContactsOnlyFilterSwitch.setOnCheckedChangeListener { _, isChecked ->
@@ -657,6 +564,7 @@ class SettingsActivity : SimpleActivity() {
                     onPick = {
                         com.texto.sms.helpers.AppThemes.apply(config, preview)
                         settingsAppTheme.text = family.label
+                        setupAccentHue()
                         updateCustomizationUI()
                         updateAppFonts(binding.root)
                         applyCustomColors()
@@ -699,6 +607,7 @@ class SettingsActivity : SimpleActivity() {
             val target = family.forDark(isChecked)
             if (target.id == config.appTheme) return@setOnCheckedChangeListener
             com.texto.sms.helpers.AppThemes.apply(config, target)
+            setupAccentHue()
             updateCustomizationUI()
             updateAppFonts(binding.root)
             applyCustomColors()
@@ -842,6 +751,65 @@ class SettingsActivity : SimpleActivity() {
 
     /** The stored value is opacity; the design's label reads as transparency, so invert it. */
     private fun glassOpacityLabel(opacity: Int) = "${100 - opacity}٪".toPersianDigits()
+
+    /**
+     * The tonality strip. Dragging it rewrites one number, and every accent surface in the
+     * app follows because they all read [Config]'s accent getters, which apply the rotation
+     * on the way out.
+     *
+     * The strip needs the skin's UNROTATED accent to build its preview, and the getter cannot
+     * give it that -- by the time a colour leaves Config the rotation is already in it. Undoing
+     * the current shift recovers the stored value without reaching past Config into raw prefs,
+     * and it stays correct for a hand-picked accent, which reading the theme table would not.
+     */
+    private fun setupAccentHue() = binding.apply {
+        val stored = config.accentHueShift
+        val signed = if (stored > 180) stored - 360 else stored
+        settingsAccentHueStrip.baseColor =
+            com.texto.sms.helpers.TextoTint.rotateHue(config.accentGradientMid.takeIf { it != 0 }
+                ?: config.accentGradientEnd, -signed)
+        settingsAccentHueStrip.inkColor = config.mainTextColor
+        settingsAccentHueStrip.shift = signed
+        settingsAccentHueValue.text = accentHueLabel(signed)
+        settingsAccentHueValue.setTextColor(config.accentGradientStart)
+
+        settingsAccentHueStrip.onShiftChanged = { degrees, committed ->
+            config.accentHueShift = degrees
+            settingsAccentHueValue.text = accentHueLabel(degrees)
+            settingsAccentHueValue.setTextColor(config.accentGradientStart)
+            // Repaint on every move so the whole settings screen previews the new tonality
+            // live; the heavier font pass can wait for the finger to lift.
+            applyCustomColors()
+            if (committed) {
+                updateCustomizationUI()
+                updateAppFonts(binding.root)
+                // The nav capsule and the switches are painted from their own setup passes
+                // rather than by applyCustomColors, so without these two they keep the old
+                // tonality until the screen is next resumed : the one corner of the screen
+                // that visibly disagreed with the strip being dragged.
+                styleNavTabs()
+                styleAllSwitches(binding.root)
+                // The two sliders carry the accent on their track and read-out. Restyled
+                // directly rather than by re-running their setup functions, which would
+                // stack a second change listener on each one every time the strip is let go.
+                settingsUiScaleSlider.applyTextoStyle()
+                settingsUiScaleValue.setTextColor(config.accentGradientStart)
+                settingsGlassOpacitySlider.applyTextoStyle()
+                settingsGlassOpacityValue.setTextColor(config.accentGradientStart)
+                // Only once the finger lifts. The launcher icon is swapped by enabling a
+                // different manifest component, which is far too heavy to do on every frame
+                // of a drag, and most launchers animate the change.
+                com.texto.sms.helpers.TextoLauncherIcon.apply(
+                    this@SettingsActivity, config.accentHueShift
+                )
+            }
+        }
+    }
+
+    /** Centre reads as the theme's own colour rather than as a meaningless zero. */
+    private fun accentHueLabel(degrees: Int) =
+        if (degrees == 0) getString(R.string.settings_accent_hue_original)
+        else "${degrees}°".toPersianDigits()
 
     private fun setupFontSize() = binding.apply {
         settingsFontSize.text = getFontSizeText()

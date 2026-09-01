@@ -103,7 +103,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:gravity="bottom"
-        android:paddingHorizontal="12dp"
+        android:paddingHorizontal="10dp"
         android:paddingTop="6dp"
         android:paddingBottom="14dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -118,27 +118,27 @@
             android:background="@drawable/texto_searchbar_bg"
             android:gravity="bottom"
             android:minHeight="60dp"
-            android:padding="8dp">
+            android:padding="6dp">
 
             <!-- ATTACH. First child: the far right of the capsule under RTL. -->
             <ImageView
                 android:id="@+id/thread_add_attachment"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
                 android:contentDescription="@string/attachment"
-                android:padding="12dp"
+                android:padding="10dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_ph_paperclip" />
 
             <!--
-                SIM. A 42dp disc like the clip, with the active SIM's digit riding its upper
+                SIM. A 38dp disc like the clip, with the active SIM's digit riding its upper
                 corner as a small badge, the way the design draws it.
             -->
             <FrameLayout
                 android:id="@+id/thread_sim_holder"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginStart="8dp"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginStart="4dp"
                 android:visibility="gone"
                 tools:visibility="visible">
 
@@ -147,7 +147,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:contentDescription="@string/select_sim_card"
-                    android:padding="12dp"
+                    android:padding="10dp"
                     android:scaleType="fitCenter"
                     android:src="@drawable/ic_ph_sim_card"
                     android:visibility="gone"
@@ -155,8 +155,8 @@
 
                 <TextView
                     android:id="@+id/thread_select_sim_number"
-                    android:layout_width="17dp"
-                    android:layout_height="17dp"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
                     android:layout_gravity="top|start"
                     android:gravity="center"
                     android:includeFontPadding="false"
@@ -175,7 +175,7 @@
                 android:background="@android:color/transparent"
                 android:gravity="center_vertical"
                 android:hint="@string/type_a_message"
-                android:paddingHorizontal="8dp"
+                android:paddingHorizontal="6dp"
                 android:paddingVertical="11dp"
                 android:textColorHint="#888888"
                 android:textColor="@android:color/white"
@@ -199,11 +199,11 @@
 
             <ImageView
                 android:id="@+id/thread_add_emoji"
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginStart="8dp"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:layout_marginStart="4dp"
                 android:contentDescription="@string/insert_emoji"
-                android:padding="12dp"
+                android:padding="10dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_ph_smiley" />
 
@@ -217,13 +217,13 @@
             -->
             <ImageView
                 android:id="@+id/thread_send_message"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:layout_marginStart="8dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
                 android:alpha="0.4"
                 android:clickable="false"
                 android:contentDescription="@string/ok"
-                android:padding="12dp"
+                android:padding="10dp"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_ph_paper_plane_right" />
 

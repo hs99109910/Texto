@@ -210,7 +210,7 @@ class MainActivity : SimpleActivity() {
     override fun onPause() {
         super.onPause()
         isActivityVisible = false
-        storedTextColor = getProperTextColor()
+        storedTextColor = config.mainTextColor
         rememberScrollPosition()
     }
 
@@ -984,8 +984,16 @@ class MainActivity : SimpleActivity() {
         updateLayoutParams<LinearLayout.LayoutParams> {
             height = LOGO_HEIGHT_DP.getScaledPx()
         }
+        // The tonality strip has to reach the wordmark too, or the one mark the user looks at
+        // most stays on the skin's original hues while everything around it has moved. It is
+        // a bitmap, so the rotation is a matrix rather than a colour, and it goes FIRST: the
+        // light-ground darkening below is a correction for legibility on this background and
+        // has to act on whatever hue the mark ends up wearing, not the other way round.
+        val hueShift = config.accentHueShift
+        val hue = if (hueShift == 0) null else com.texto.sms.helpers.TextoTint.hueRotationMatrix(hueShift)
+
         colorFilter = if (com.texto.sms.helpers.TextoGlass.isDark(config.mainBackgroundColor)) {
-            null
+            hue?.let { android.graphics.ColorMatrixColorFilter(it) }
         } else {
             val saturation = android.graphics.ColorMatrix().apply { setSaturation(1.1f) }
             val brightness = android.graphics.ColorMatrix(
@@ -1006,9 +1014,11 @@ class MainActivity : SimpleActivity() {
                     0f, 0f, 0f, 1f, 0f
                 )
             )
-            saturation.postConcat(brightness)
-            saturation.postConcat(contrast)
-            android.graphics.ColorMatrixColorFilter(saturation)
+            val combined = hue ?: android.graphics.ColorMatrix()
+            combined.postConcat(saturation)
+            combined.postConcat(brightness)
+            combined.postConcat(contrast)
+            android.graphics.ColorMatrixColorFilter(combined)
         }
     }
 

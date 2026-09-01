@@ -60,10 +60,19 @@ class App : FossifyApp() {
         //
         // nocturneRefreshApplied is left set on installs that already ran it, so nobody gets
         // moved twice; this flag supersedes it.
-        if (!config.hasStoredAppTheme || !config.neonRefreshApplied) {
-            AppThemes.apply(config, AppThemes.byId(AppThemes.NEON))
+        //
+        // The default is Neon's LIGHT variant now, not its dark one, and the surfaces open
+        // solid rather than frosted. Both are carried by neonLightDefaultApplied so installs
+        // that already ran the earlier Neon migration -- which set neonRefreshApplied, and so
+        // would never enter this block again -- are moved across exactly once too.
+        if (!config.hasStoredAppTheme || !config.neonRefreshApplied ||
+            !config.neonLightDefaultApplied
+        ) {
+            AppThemes.apply(config, AppThemes.byId(AppThemes.NEON_LIGHT))
+            config.glassOpacity = Config.DEFAULT_GLASS_OPACITY
             config.neonRefreshApplied = true
             config.nocturneRefreshApplied = true
+            config.neonLightDefaultApplied = true
         }
 
         // Filters used to carry a keyword list. The field is gone from the model and the

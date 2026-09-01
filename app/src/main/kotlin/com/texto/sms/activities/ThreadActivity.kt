@@ -614,11 +614,11 @@ class ThreadActivity : SimpleActivity() {
             // The design's send control is a full accent disc (`border-radius: 999px`, not a
             // squircle) under a glow, painted through TextoGlass so it is the same accent
             // surface as the unread badges, the active filter chip and the sent bubbles.
-            val sendSide = 44.getScaledPx()
+            val sendSide = 40.getScaledPx()
             threadSendMessage.updateLayoutParams<LinearLayout.LayoutParams> {
                 width = sendSide
                 height = sendSide
-                marginStart = 8.getScaledPx()
+                marginStart = 4.getScaledPx()
                 marginEnd = 0
             }
             threadSendMessage.imageTintList =
@@ -636,12 +636,12 @@ class ThreadActivity : SimpleActivity() {
             // the capsule inside it, so anything painted here would read as a second slab.
             textoMessageBarRow.background = null
             textoMessageBarRow.setPadding(
-                12.getScaledPx(), 6.getScaledPx(), 12.getScaledPx(), 14.getScaledPx()
+                10.getScaledPx(), 6.getScaledPx(), 10.getScaledPx(), 14.getScaledPx()
             )
 
             confirmManageContacts.applyColorFilter(mainTextColor)
 
-            // The clip and the SIM are 42dp discs filled with `--inset` behind the shared
+            // The clip and the SIM are 38dp discs filled with `--inset` behind the shared
             // `--divider` hairline, with a `--muted` glyph -- the design's own small-control
             // recipe, which the header's action tiles use too.
             styleComposerDisc(threadAddAttachment, inputBarColor)
@@ -651,7 +651,6 @@ class ThreadActivity : SimpleActivity() {
             threadAddEmoji.alpha = 1.0f
             threadAddEmoji.setOnClickListener { showEmojiPicker() }
 
-            val properPrimaryColor = getProperPrimaryColor()
             // threadMessagesFastscroller removed
 
             threadCharacterCounter.beGone()
@@ -1801,7 +1800,7 @@ class ThreadActivity : SimpleActivity() {
         simHolder.updateLayoutParams<LinearLayout.LayoutParams> {
             width = discSide
             height = discSide
-            marginStart = 8.getScaledPx()
+            marginStart = 4.getScaledPx()
         }
         styleComposerDisc(simIcon, config.inputBarTextColor)
 
@@ -2103,7 +2102,7 @@ class ThreadActivity : SimpleActivity() {
             width = side
             height = side
         }
-        val pad = 12.getScaledPx()
+        val pad = 10.getScaledPx()
         view.setPadding(pad, pad, pad, pad)
         view.applyColorFilter(inkColor.withAlpha(0.68f))
         view.background = android.graphics.drawable.GradientDrawable().apply {

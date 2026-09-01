@@ -398,6 +398,46 @@
                         android:id="@+id/settings_app_theme"
                         style="@style/SettingsRowValue" />
                 </LinearLayout>
+                <!--
+                    The tonality strip, directly under the theme it modifies because it is not
+                    a setting of its own : it is a dial on the row above. Rotating rather than
+                    replacing keeps the skin's three stop accent ramp intact, so every surface
+                    painted with it (the wordmark, the filter capsules, the contact tiles, the
+                    sent bubbles, the composer capsule) moves together.
+                -->
+                <LinearLayout
+                    android:id="@+id/settings_accent_hue_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="16dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="15dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        <TextView
+                            android:id="@+id/settings_accent_hue_label"
+                            style="@style/SettingsRowTitle"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:text="@string/settings_accent_hue" />
+                        <TextView
+                            android:id="@+id/settings_accent_hue_value"
+                            style="@style/SettingsRowValue" />
+                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/settings_accent_hue_sub"
+                        style="@style/SettingsRowSubtitle"
+                        android:text="@string/settings_accent_hue_sub" />
+                    <com.texto.sms.helpers.TextoHueStrip
+                        android:id="@+id/settings_accent_hue_strip"
+                        android:layout_width="match_parent"
+                        android:layout_height="30dp"
+                        android:layout_marginTop="10dp" />
+                </LinearLayout>
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
@@ -445,101 +485,6 @@
                             android:layout_height="match_parent"
                             android:background="@drawable/color_preview_bg" />
                     </FrameLayout>
-                </LinearLayout>
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginStart="46dp"
-                    android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
-                <LinearLayout
-                    android:id="@+id/settings_main_bg_holder"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="15dp"
-                    android:background="?selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <ImageView
-                            android:id="@+id/settings_main_bg_icon"
-                            android:src="@drawable/ic_ph_paint_brush"
-                            android:importantForAccessibility="no"
-                            android:layout_width="19dp"
-                            android:layout_height="19dp"
-                            android:layout_marginEnd="13dp" />
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView android:id="@+id/settings_main_bg_label"
-                            style="@style/SettingsRowTitle"
-                            android:text="@string/settings_main_background" />
-                        <TextView
-                            style="@style/SettingsRowSubtitle"
-                            android:text="@string/settings_main_background_sub" />
-                    </LinearLayout>
-                    <Spinner
-                        android:id="@+id/settings_main_bg_mode_spinner"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp" />
-                    <FrameLayout
-                        android:id="@+id/settings_main_bg_preview_container"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp">
-                        <View
-                            android:id="@+id/settings_main_background_color_preview"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="@drawable/color_preview_bg" />
-                    </FrameLayout>
-                </LinearLayout>
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginStart="46dp"
-                    android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
-                <LinearLayout
-                    android:id="@+id/settings_aurora_animate_holder"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="15dp"
-                    android:background="?selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <ImageView
-                            android:id="@+id/settings_aurora_animate_icon"
-                            android:src="@drawable/ic_ph_sparkle"
-                            android:importantForAccessibility="no"
-                            android:layout_width="19dp"
-                            android:layout_height="19dp"
-                            android:layout_marginEnd="13dp" />
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-                        <TextView android:id="@+id/settings_aurora_animate_label"
-                            style="@style/SettingsRowTitle"
-                            android:text="@string/settings_aurora_animate" />
-                        <TextView
-                            style="@style/SettingsRowSubtitle"
-                            android:text="@string/settings_aurora_animate_sub" />
-                    </LinearLayout>
-                    <org.fossify.commons.views.MyMaterialSwitch
-                        android:id="@+id/settings_aurora_animate_switch"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -1297,9 +1242,17 @@
         android:padding="6dp"
         android:gravity="center_vertical">
 
+        <!--
+            The same three tabs as the home screen, in the same order, because this capsule is
+            meant to be one control that follows you between screens. It used to swap the
+            compose tab for a "settings" one that marked the screen you were already looking
+            at, so the bar visibly rearranged itself on the way in : which is the one thing a
+            persistent bar must not do. Settings is reached from the header gear, not here, so
+            no tab is marked current on this screen.
+        -->
+        <LinearLayout android:id="@+id/nav_add_btn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:paddingHorizontal="4dp" android:paddingVertical="10dp"><ImageView android:id="@+id/nav_add_icon" android:layout_width="23dp" android:layout_height="23dp" android:src="@drawable/ic_ph_plus" app:tint="@android:color/white" /><TextView android:id="@+id/nav_add_label" style="@style/NavBarLabel" android:text="@string/nav_new_message" /></LinearLayout>
         <LinearLayout android:id="@+id/nav_home_btn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="center" android:paddingHorizontal="4dp" android:paddingVertical="10dp"><ImageView android:id="@+id/nav_home_icon" android:layout_width="23dp" android:layout_height="23dp" android:src="@drawable/ic_ph_chat_teardrop_text" app:tint="@android:color/white" /><TextView android:id="@+id/nav_home_label" style="@style/NavBarLabel" android:text="@string/nav_conversations" /></LinearLayout>
         <LinearLayout android:id="@+id/nav_search_btn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="3dp" android:orientation="vertical" android:gravity="center" android:paddingHorizontal="4dp" android:paddingVertical="10dp"><ImageView android:id="@+id/nav_search_icon" android:layout_width="23dp" android:layout_height="23dp" android:src="@drawable/ic_ph_magnifying_glass" app:tint="@android:color/white" /><TextView android:id="@+id/nav_search_label" style="@style/NavBarLabel" android:text="@string/search" /></LinearLayout>
-        <LinearLayout android:id="@+id/nav_settings_btn" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="3dp" android:orientation="vertical" android:gravity="center" android:paddingHorizontal="4dp" android:paddingVertical="10dp"><ImageView android:id="@+id/nav_settings_icon" android:layout_width="23dp" android:layout_height="23dp" android:src="@drawable/ic_ph_gear_six" app:tint="@android:color/white" /><TextView android:id="@+id/nav_settings_label" style="@style/NavBarLabel" android:text="@string/settings_title" /></LinearLayout>
 
     </LinearLayout>
 
