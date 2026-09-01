@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
+import android.os.Build
 import android.os.Parcelable
 import android.util.TypedValue
 import android.view.View
@@ -680,11 +681,31 @@ abstract class BaseConversationsAdapter(
                 }
             }
 
-            // A drop shadow would draw a second, darker edge just outside the hairline and
-            // undo the point of it. Only the opaque classic card still casts one.
-            val cardElevation = if (activity.config.glassTheme) 0f else 8f
+            // The glass card used to cast nothing at all, because a stock shadow at a small
+            // elevation is nearly opaque black and drew a second, darker edge just outside
+            // the divider hairline, undoing the point of it. That is an argument against
+            // *that* shadow, not against a shadow: given a tinted colour at a tenth of full
+            // strength and a radius wide enough to have no visible edge of its own, the card
+            // reads as softly lifted rather than as a rectangle sitting on the background.
+            //
+            // The shadow colour can only be set from API 28. Below that the platform gives
+            // its own hard black, so those devices keep the flat card.
+            val canTintShadow = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+            val isGlass = activity.config.glassTheme
+            val cardElevation = when {
+                !isGlass -> 8f
+                canTintShadow -> GLASS_CARD_ELEVATION_DP
+                else -> 0f
+            }
             recentFrame.elevation = cardElevation * resources.displayMetrics.density
-            recentFrame.translationZ = if (activity.config.glassTheme) 0f else 4f
+            recentFrame.translationZ = if (isGlass) 0f else 4f
+            if (canTintShadow && isGlass) {
+                // Cast in the theme's own darkest ground rather than black, so the shadow
+                // belongs to the background it falls on.
+                val shadowTint = activity.config.mainBackgroundColor
+                recentFrame.outlineAmbientShadowColor = shadowTint.withAlpha(GLASS_SHADOW_ALPHA)
+                recentFrame.outlineSpotShadowColor = shadowTint.withAlpha(GLASS_SHADOW_ALPHA)
+            }
             recentFrame.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
             recentFrame.clipToOutline = false
 
@@ -998,6 +1019,16 @@ abstract class BaseConversationsAdapter(
 
     companion object {
         private const val MAX_UNREAD_BADGE_COUNT = 99
+
+        /**
+         * How far the glass card is lifted. Android derives the shadow's blur from this, so
+         * it is deliberately large: a wide, faint shadow has no edge of its own, where a
+         * tight one draws a second line just outside the card's hairline.
+         */
+        private const val GLASS_CARD_ELEVATION_DP = 16f
+
+        /** A tenth of full strength. Any denser and the card stops floating and starts sitting. */
+        private const val GLASS_SHADOW_ALPHA = 0.10f
         
         const val VIEW_TYPE_DEFAULT = 0
         const val VIEW_TYPE_RECENT = 1
