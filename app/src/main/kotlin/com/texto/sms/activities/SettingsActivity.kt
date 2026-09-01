@@ -796,12 +796,6 @@ class SettingsActivity : SimpleActivity() {
                 settingsUiScaleValue.setTextColor(config.accentGradientStart)
                 settingsGlassOpacitySlider.applyTextoStyle()
                 settingsGlassOpacityValue.setTextColor(config.accentGradientStart)
-                // Only once the finger lifts. The launcher icon is swapped by enabling a
-                // different manifest component, which is far too heavy to do on every frame
-                // of a drag, and most launchers animate the change.
-                com.texto.sms.helpers.TextoLauncherIcon.apply(
-                    this@SettingsActivity, config.accentHueShift
-                )
             }
         }
     }

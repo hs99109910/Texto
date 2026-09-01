@@ -15,6 +15,7 @@ import com.texto.sms.extensions.rescheduleAllScheduledMessages
 import com.texto.sms.helpers.AppThemes
 import com.texto.sms.helpers.Config
 import com.texto.sms.helpers.MessagingCache
+import com.texto.sms.helpers.TextoLauncherIcon
 
 class App : FossifyApp() {
     override val isAppLockFeatureAvailable = true
@@ -27,8 +28,47 @@ class App : FossifyApp() {
         return super.getApplicationInfo()
     }
 
+    /**
+     * Swaps the launcher icon to the tonality's rotation, but only once the app has left the
+     * foreground.
+     *
+     * Doing it the moment the strip is released closed the app. The task is rooted at the
+     * activity-alias it was launched from, so disabling that alias to enable another one
+     * pulls the task's own root out from under it and Android finishes the task.
+     * DONT_KILL_APP keeps the process, which is a different thing entirely.
+     *
+     * Counting started activities rather than pulling in ProcessLifecycleOwner: this is the
+     * only place the app needs the signal, and the count is exact for what it is asked.
+     */
+    private var startedActivities = 0
+
+    private fun watchForBackground() {
+        registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+            override fun onActivityStarted(activity: android.app.Activity) {
+                startedActivities++
+            }
+
+            override fun onActivityStopped(activity: android.app.Activity) {
+                startedActivities--
+                if (startedActivities <= 0) {
+                    startedActivities = 0
+                    // Cheap and self-checking: apply() returns immediately when the alias
+                    // already matches, which is every time but the first after a change.
+                    TextoLauncherIcon.apply(this@App, config.accentHueShift)
+                }
+            }
+
+            override fun onActivityCreated(a: android.app.Activity, b: android.os.Bundle?) {}
+            override fun onActivityResumed(a: android.app.Activity) {}
+            override fun onActivityPaused(a: android.app.Activity) {}
+            override fun onActivitySaveInstanceState(a: android.app.Activity, b: android.os.Bundle) {}
+            override fun onActivityDestroyed(a: android.app.Activity) {}
+        })
+    }
+
     override fun onCreate() {
         super.onCreate()
+        watchForBackground()
         if (hasPermission(PERMISSION_READ_CONTACTS)) {
             listOf(
                 ContactsContract.Contacts.CONTENT_URI,
