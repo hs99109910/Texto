@@ -208,6 +208,14 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getFloat(UI_SCALE, 1.0f)
         set(uiScale) = prefs.edit().putFloat(UI_SCALE, uiScale).apply()
 
+    /**
+     * Which language the UI speaks: [TextoLocale.SYSTEM], [TextoLocale.PERSIAN] or
+     * [TextoLocale.ENGLISH]. Following the phone is the default.
+     */
+    var appLanguage: Int
+        get() = prefs.getInt(APP_LANGUAGE, TextoLocale.SYSTEM)
+        set(appLanguage) = prefs.edit().putInt(APP_LANGUAGE, appLanguage).apply()
+
     fun resetColors() {
         prefs.edit().remove(TOP_BAR_COLOR).remove(TOP_BAR_TEXT_COLOR).remove(MAIN_BACKGROUND_COLOR).remove(MAIN_TEXT_COLOR).remove(INPUT_BAR_BACKGROUND_COLOR).remove(INPUT_BAR_TEXT_COLOR).remove(SENT_BUBBLE_COLOR).remove(SENT_BUBBLE_TEXT_COLOR).remove(RECEIVED_BUBBLE_COLOR).remove(RECEIVED_BUBBLE_TEXT_COLOR).remove(RECENT_COLOR)
             .remove(TOP_BAR_IMAGE).remove(MAIN_BACKGROUND_IMAGE).remove(INPUT_BAR_IMAGE)
@@ -217,11 +225,59 @@ class Config(context: Context) : BaseConfig(context) {
             .remove(AURORA_ACCENT_COLOR).remove(AURORA_ANIMATE)
             .remove(AURORA_HALO_ONE).remove(AURORA_HALO_TWO).remove(AURORA_HALO_THREE)
             .remove(AURORA_HALO_OPACITY)
-            .remove(CARD_CORNER_RADIUS).apply()
+            .remove(CARD_CORNER_RADIUS)
+            // The tonality and the glass level are appearance too, and leaving them behind
+            // was why a reset did not land where a fresh install lands: the accent came back
+            // still rotated to whatever the strip had been dragged to.
+            .remove(ACCENT_HUE_SHIFT).remove(GLASS_OPACITY).apply()
+    }
+
+    /**
+     * Puts every setting back where a fresh install starts, not just the colours.
+     *
+     * [resetColors] names its keys one by one, which is why the reset row kept missing
+     * things: the font, the font family, the UI scale, the delivery reports, the recycle
+     * bin, the bubble outlines and everything added after it was written all survived it.
+     * This clears the store instead and lets each getter fall back to its own default, so a
+     * setting added later is covered without anyone remembering to add it here.
+     *
+     * Three things are deliberately kept:
+     *
+     *  - **The app lock.** Anything holding a password, a hash or a protection type stays.
+     *    A reset must not quietly take the lock off the app or off a locked conversation.
+     *  - **User content**, which is not a setting: pinned conversations, the filters the
+     *    user built, the archive and recycle:bin bookkeeping. (Drafts are in Room, not
+     *    here, so they are out of reach either way.)
+     *  - **The migration flags and the app's own bookkeeping**, so clearing them does not
+     *    re:run a one:time move on the next launch.
+     */
+    fun resetAllSettings() {
+        val keep = setOf(
+            PINNED_CONVERSATIONS, CUSTOM_FILTERS,
+            NOCTURNE_REFRESH_APPLIED, NEON_REFRESH_APPLIED, NEON_LIGHT_DEFAULT_APPLIED,
+            CLASSIC_DEFAULT_APPLIED, NEON_LIGHT_RESTORED, BUBBLE_SIDES_SWAPPED,
+            GLASS_RECALIBRATED,
+            LAST_RECYCLE_BIN_CHECK, IS_ARCHIVE_AVAILABLE,
+            // Language is not an appearance setting: a look reset should not silently put
+            // an English user back on Persian.
+            APP_LANGUAGE,
+        )
+        // Matched on the name rather than listed: the protection keys live in commons and
+        // are not visible from here, and a missed one would silently unlock the app.
+        val protectedWords = listOf("password", "protection", "hash", "pin_", "lock")
+        val editor = prefs.edit()
+        prefs.all.keys
+            .filter { key ->
+                key !in keep &&
+                    !key.startsWith("draft_") &&
+                    protectedWords.none { key.contains(it, ignoreCase = true) }
+            }
+            .forEach { editor.remove(it) }
+        editor.apply()
     }
 
     var appTheme: Int
-        get() = prefs.getInt(APP_THEME, AppThemes.NEON)
+        get() = prefs.getInt(APP_THEME, AppThemes.NEON_LIGHT)
         set(appTheme) = prefs.edit().putInt(APP_THEME, appTheme).apply()
 
     /** Set once the install has been moved onto the Nocturne design. See App.onCreate. */
@@ -248,6 +304,47 @@ class Config(context: Context) : BaseConfig(context) {
     var neonLightDefaultApplied: Boolean
         get() = prefs.getBoolean(NEON_LIGHT_DEFAULT_APPLIED, false)
         set(applied) = prefs.edit().putBoolean(NEON_LIGHT_DEFAULT_APPLIED, applied).apply()
+
+    /**
+     * Set once the install has been moved onto Classic, which carries the palette the app
+     * now ships with. A third flag rather than a reused one: the two before it are already
+     * true everywhere, so either would move nobody.
+     */
+    var classicDefaultApplied: Boolean
+        get() = prefs.getBoolean(CLASSIC_DEFAULT_APPLIED, false)
+        set(applied) = prefs.edit().putBoolean(CLASSIC_DEFAULT_APPLIED, applied).apply()
+
+    /**
+     * Set once the install has been moved back onto Neon's light variant, which is the
+     * default again. Classic keeps the palette it was given -- it is still there to pick --
+     * but it is no longer what a fresh install opens on. A fourth flag for the same reason
+     * as the third: the three before it are true on every install that has launched since,
+     * so reusing any of them would move nobody.
+     */
+    var neonLightRestored: Boolean
+        get() = prefs.getBoolean(NEON_LIGHT_RESTORED, false)
+        set(applied) = prefs.edit().putBoolean(NEON_LIGHT_RESTORED, applied).apply()
+
+    /**
+     * Set once an install wearing the retired Aurora skin has been moved onto Neon. Its own
+     * flag rather than a reuse of the others: those have all already run on existing
+     * installs, so nothing that keys off them would fire again for this.
+     */
+    var auroraRetired: Boolean
+        get() = prefs.getBoolean(AURORA_RETIRED, false)
+        set(applied) = prefs.edit().putBoolean(AURORA_RETIRED, applied).apply()
+
+    /**
+     * Set once the two bubble colours have been written the new way round.
+     *
+     * The swap lives in [AppThemes.apply], so an install whose colours were already stored
+     * would keep the old pair and draw the outgoing bubble in the accent's end stop as a
+     * flat slab -- the gradient gone from both sides. Its own flag, like the three before
+     * it, because those are already true everywhere.
+     */
+    var bubbleSidesSwapped: Boolean
+        get() = prefs.getBoolean(BUBBLE_SIDES_SWAPPED, false)
+        set(applied) = prefs.edit().putBoolean(BUBBLE_SIDES_SWAPPED, applied).apply()
 
     /**
      * False until a theme has actually been written, which is what separates a fresh install
@@ -455,6 +552,32 @@ class Config(context: Context) : BaseConfig(context) {
     var receivedBubbleColor: Int
         get() = prefs.getInt(RECEIVED_BUBBLE_COLOR, DEFAULT_RECEIVED_GREY)
         set(receivedBubbleColor) = prefs.edit().putInt(RECEIVED_BUBBLE_COLOR, receivedBubbleColor).apply()
+
+    /**
+     * True once the user has picked a colour for the received bubble themselves.
+     *
+     * The received side carries the accent gradient by default, which left its colour
+     * picker with nothing to do. This is what lets the picker win: set it, and the bubble
+     * drops the gradient for the flat colour chosen. Applying a theme or resetting clears
+     * it, so a skin change puts the gradient back.
+     */
+    var receivedBubbleColorSet: Boolean
+        get() = prefs.getBoolean(RECEIVED_BUBBLE_COLOR_SET, false)
+        set(isSet) = prefs.edit().putBoolean(RECEIVED_BUBBLE_COLOR_SET, isSet).apply()
+
+    /**
+     * Ink for anything painted on the accent gradient that is not a message bubble: the
+     * active filter chip, the send button, the unread badge, a picked date, a dialog's
+     * confirm row.
+     *
+     * These all read [sentBubbleTextColor] before, which was only ever right because the
+     * gradient happened to sit on the outgoing bubble. It sits on the incoming one now, and
+     * the two bubble inks belong to the settings screen's two pickers, so this is the app's
+     * own on-accent ink and moves with the theme rather than with either bubble.
+     */
+    var accentInkColor: Int
+        get() = prefs.getInt(ACCENT_INK_COLOR, Color.WHITE)
+        set(color) = prefs.edit().putInt(ACCENT_INK_COLOR, color).apply()
 
     var sentBubbleTextColor: Int
         get() = prefs.getInt(SENT_BUBBLE_TEXT_COLOR, Color.BLACK)

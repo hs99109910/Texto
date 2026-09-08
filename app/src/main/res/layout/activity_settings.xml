@@ -56,6 +56,53 @@
 
             <TextView
                 style="@style/SettingsSectionLabel"
+                android:text="@string/settings_group_general" />
+
+            <LinearLayout
+                android:id="@+id/settings_card_general"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/settings_language_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                            android:id="@+id/settings_language_icon"
+                            android:src="@drawable/ic_ph_translate"
+                            android:importantForAccessibility="no"
+                            android:layout_width="19dp"
+                            android:layout_height="19dp"
+                            android:layout_marginEnd="13dp" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView android:id="@+id/settings_language_label"
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/settings_language" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_language_sub" />
+                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/settings_language"
+                        style="@style/SettingsRowValue" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                style="@style/SettingsSectionLabel"
                 android:text="@string/settings_group_conversations" />
 
             <LinearLayout
@@ -102,7 +149,7 @@
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
                 <LinearLayout
                     android:id="@+id/settings_recycle_bin_holder"
                     android:layout_width="match_parent"
@@ -141,7 +188,7 @@
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
                 <LinearLayout
                     android:id="@+id/settings_blocked_numbers_holder"
                     android:layout_width="match_parent"
@@ -230,7 +277,7 @@
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
                 <LinearLayout
                     android:id="@+id/settings_ads_filter_holder"
                     android:layout_width="match_parent"
@@ -272,7 +319,7 @@
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
                 <LinearLayout
                     android:id="@+id/settings_default_filter_holder"
                     android:layout_width="match_parent"
@@ -361,7 +408,7 @@
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
 
                 <LinearLayout
                     android:id="@+id/settings_app_theme_holder"
@@ -432,18 +479,24 @@
                         android:id="@+id/settings_accent_hue_sub"
                         style="@style/SettingsRowSubtitle"
                         android:text="@string/settings_accent_hue_sub" />
-                    <com.texto.sms.helpers.TextoHueStrip
-                        android:id="@+id/settings_accent_hue_strip"
+                    <!--
+                        One row of tonalities, the middle one chosen. Filled by
+                        SettingsActivity.setupAccentHue. It replaced a four:row grid of equal
+                        dots, which spent a third of the screen saying nothing and left the
+                        selection to a ring too thin to find on the darker hues.
+                    -->
+                    <com.texto.sms.helpers.TextoColorWheel
+                        android:id="@+id/settings_accent_hue_wheel"
                         android:layout_width="match_parent"
-                        android:layout_height="30dp"
-                        android:layout_marginTop="10dp" />
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp" />
                 </LinearLayout>
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
                 <LinearLayout
                     android:id="@+id/settings_top_bar_preview_holder"
                     android:layout_width="match_parent"
@@ -538,7 +591,7 @@
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
                 <LinearLayout
                     android:id="@+id/settings_glass_opacity_holder"
                     android:layout_width="match_parent"
@@ -579,7 +632,7 @@
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
                 <LinearLayout
                     android:id="@+id/settings_font_size_holder"
                     android:layout_width="match_parent"
@@ -620,7 +673,7 @@
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
                 <LinearLayout
                     android:id="@+id/settings_font_holder"
                     android:layout_width="match_parent"
@@ -715,7 +768,7 @@
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
                 <LinearLayout
                     android:id="@+id/settings_main_text_color_holder"
                     android:layout_width="match_parent"
@@ -763,7 +816,7 @@
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
                 <LinearLayout
                     android:id="@+id/settings_input_bar_text_color_holder"
                     android:layout_width="match_parent"
@@ -865,7 +918,7 @@
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
                 <LinearLayout
                     android:id="@+id/settings_sim1_color_holder"
                     android:layout_width="match_parent"
@@ -913,7 +966,7 @@
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
                 <LinearLayout
                     android:id="@+id/settings_sim2_color_holder"
                     android:layout_width="match_parent"
@@ -1015,7 +1068,7 @@
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
                 <LinearLayout
                     android:id="@+id/settings_sent_bubble_text_color_holder"
                     android:layout_width="match_parent"
@@ -1063,7 +1116,7 @@
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
                 <LinearLayout
                     android:id="@+id/settings_received_bubble_color_holder"
                     android:layout_width="match_parent"
@@ -1111,7 +1164,7 @@
                     android:layout_height="1dp"
                     android:layout_marginStart="46dp"
                     android:layout_marginEnd="14dp"
-                    android:background="#1FFFFFFF" />
+                    android:tag="texto_divider" />
                 <LinearLayout
                     android:id="@+id/settings_received_bubble_text_color_holder"
                     android:layout_width="match_parent"

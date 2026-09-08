@@ -405,7 +405,7 @@ abstract class BaseConversationsAdapter(
             SimpleActivity.BubbleAction(
                 R.id.cab_mark,
                 simpleActivity.getString(R.string.mark_select),
-                R.drawable.ic_check_circle_filled
+                R.drawable.ic_ph_check
             ),
             if (isPinned) {
                 SimpleActivity.BubbleAction(
@@ -525,7 +525,7 @@ abstract class BaseConversationsAdapter(
                 com.texto.sms.helpers.refreshConversations()
                 try { finishActMode() } catch (_: Exception) {}
             }
-            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
+            .setNegativeButton(R.string.action_cancel, null)
             .show()
     }
 
@@ -534,7 +534,9 @@ abstract class BaseConversationsAdapter(
             val mainTextColor = activity.config.mainTextColor
             val isLead = position < 2
 
-            recentAddress.text = conversation.title
+            // An unsaved sender's row is titled with the bare number; isolated so its leading
+            // "+" is not laid out at the far end (see String.asLtrPhone).
+            recentAddress.text = conversation.title.asLtrPhone()
             recentAddress.setTextColor(mainTextColor)
             // The design's row type ramp, relative to the preview line: 15 / 13 / 11.
             recentAddress.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 1.15f)
@@ -564,11 +566,14 @@ abstract class BaseConversationsAdapter(
                 else -> conversation.snippet
             }
 
-            recentDate.text = (conversation.date * 1000L).formatJalaliDateOrTime()
+            recentDate.text = (conversation.date * 1000L).formatUiDateOrTime()
             // Secondary and tertiary text weights come straight from the design's tokens
             // (--txt2 58%, --txt3 36%) rather than from a blanket view alpha, so the
             // unread/read distinction below is free to use alpha for its own purpose.
-            recentDate.setTextColor(mainTextColor.withAlpha(0.36f))
+            // .36 measured 2.04:1 against the card on the light skins -- a timestamp is
+            // secondary, but not to the point of being unreadable. .52 measures 3.04:1,
+            // the large-text floor, and still sits well behind the name and the preview.
+            recentDate.setTextColor(mainTextColor.withAlpha(0.52f))
             recentDate.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.85f)
             recentDate.alpha = 1f
             recentBody.setTextColor(mainTextColor.withAlpha(0.58f))
@@ -595,10 +600,31 @@ abstract class BaseConversationsAdapter(
             setupBadgeCount(recentUnreadBadge, isUnread, conversation.unreadCount)
 
             recentImage.updateLayoutParams {
-                // The design's list avatar is 48dp, not the commons list-icon size.
-                val size = 48.getScaledPxIn(activity as SimpleActivity)
+                // The design's list avatar is 48dp; 46 is what the tightened row leaves it,
+                // and the two are indistinguishable beside each other.
+                val size = AVATAR_DP.getScaledPxIn(activity as SimpleActivity)
                 width = size
                 height = size
+            }
+
+            // Row density. The design's 15dp padding and 7dp gap put roughly 92dp between
+            // one row and the next, where Google Messages sits near 72dp: on this screen
+            // that is two whole conversations of difference. 9dp and 4dp brought the pitch
+            // to about 74dp; 6dp, 3dp and a 46dp avatar bring it to about 64, another 13%,
+            // and still costs no type size at all -- both text lines are untouched, and at
+            // 46dp the avatar is still taller than the two of them stacked.
+            //
+            // Set here rather than in the layout so they follow the UI-scale setting; the
+            // XML values did not, which is why the row never grew with the rest of the app.
+            run {
+                val a = activity as SimpleActivity
+                val padH = 16.getScaledPxIn(a)
+                val padV = ROW_PADDING_V_DP.getScaledPxIn(a)
+                recentFrame.setPadding(padH, padV, padH, padV)
+                recentFrame.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
+                    topMargin = ROW_GAP_DP.getScaledPxIn(a)
+                    bottomMargin = ROW_GAP_DP.getScaledPxIn(a)
+                }
             }
 
             recentFrame.setupViewBackground(activity)
@@ -890,7 +916,7 @@ abstract class BaseConversationsAdapter(
             }
 
             conversationDate.apply {
-                text = (conversation.date * 1000L).formatJalaliDateOrTime()
+                text = (conversation.date * 1000L).formatUiDateOrTime()
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.8f)
             }
 
@@ -950,7 +976,7 @@ abstract class BaseConversationsAdapter(
                     else -> count.toString()
                 }
                 val config = activity.config
-                setTextColor(config.sentBubbleTextColor)
+                setTextColor(config.accentInkColor)
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.85f)
                 // `background: var(--grad)` -- the accent gradient, the same surface the
                 // avatars and the active filter chip carry, not a flat stop off it. The
@@ -1018,6 +1044,15 @@ abstract class BaseConversationsAdapter(
         private const val MAX_UNREAD_BADGE_COUNT = 99
 
         /**
+         * The conversation row's geometry, in dp before the UI-scale setting is applied.
+         * Together these set the pitch from one row to the next: avatar + 2x padding +
+         * 2x gap, about 64dp, since the avatar is taller than the two text lines stacked.
+         */
+        private const val AVATAR_DP = 46
+        private const val ROW_PADDING_V_DP = 6
+        private const val ROW_GAP_DP = 3
+
+        /**
          * How far the glass card is lifted. Android derives the shadow's blur from this, so
          * it is deliberately large: a wide, faint shadow has no edge of its own, where a
          * tight one draws a second line just outside the card's hairline.
@@ -1033,10 +1068,3 @@ abstract class BaseConversationsAdapter(
     }
 }
 
-/**
- * [SimpleActivity.getScaledPx] reached from an adapter, which is not the activity itself.
- * Keeps the design's dp figures readable at the call site while still honouring the
- * UI-scale setting.
- */
-private fun Int.getScaledPxIn(activity: SimpleActivity): Int =
-    with(activity) { this@getScaledPxIn.getScaledPx() }

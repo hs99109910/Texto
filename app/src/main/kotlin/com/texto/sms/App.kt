@@ -15,10 +15,20 @@ import com.texto.sms.extensions.rescheduleAllScheduledMessages
 import com.texto.sms.helpers.AppThemes
 import com.texto.sms.helpers.Config
 import com.texto.sms.helpers.MessagingCache
-import com.texto.sms.helpers.TextoLauncherIcon
+import com.texto.sms.helpers.TextoLocale
 
 class App : FossifyApp() {
     override val isAppLockFeatureAvailable = true
+
+    /**
+     * Notifications, toasts posted from a receiver and anything else built off the
+     * application context resolve their strings here, not on an activity. Without this the
+     * app would speak the chosen language on screen and the phone's language in the
+     * notification shade.
+     */
+    override fun attachBaseContext(base: android.content.Context) {
+        super.attachBaseContext(TextoLocale.wrap(base))
+    }
 
     override fun getPackageName(): String {
         return super.getPackageName()
@@ -28,47 +38,8 @@ class App : FossifyApp() {
         return super.getApplicationInfo()
     }
 
-    /**
-     * Swaps the launcher icon to the tonality's rotation, but only once the app has left the
-     * foreground.
-     *
-     * Doing it the moment the strip is released closed the app. The task is rooted at the
-     * activity-alias it was launched from, so disabling that alias to enable another one
-     * pulls the task's own root out from under it and Android finishes the task.
-     * DONT_KILL_APP keeps the process, which is a different thing entirely.
-     *
-     * Counting started activities rather than pulling in ProcessLifecycleOwner: this is the
-     * only place the app needs the signal, and the count is exact for what it is asked.
-     */
-    private var startedActivities = 0
-
-    private fun watchForBackground() {
-        registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
-            override fun onActivityStarted(activity: android.app.Activity) {
-                startedActivities++
-            }
-
-            override fun onActivityStopped(activity: android.app.Activity) {
-                startedActivities--
-                if (startedActivities <= 0) {
-                    startedActivities = 0
-                    // Cheap and self-checking: apply() returns immediately when the alias
-                    // already matches, which is every time but the first after a change.
-                    TextoLauncherIcon.apply(this@App, config.accentHueShift)
-                }
-            }
-
-            override fun onActivityCreated(a: android.app.Activity, b: android.os.Bundle?) {}
-            override fun onActivityResumed(a: android.app.Activity) {}
-            override fun onActivityPaused(a: android.app.Activity) {}
-            override fun onActivitySaveInstanceState(a: android.app.Activity, b: android.os.Bundle) {}
-            override fun onActivityDestroyed(a: android.app.Activity) {}
-        })
-    }
-
     override fun onCreate() {
         super.onCreate()
-        watchForBackground()
         if (hasPermission(PERMISSION_READ_CONTACTS)) {
             listOf(
                 ContactsContract.Contacts.CONTENT_URI,
@@ -105,14 +76,23 @@ class App : FossifyApp() {
         // solid rather than frosted. Both are carried by neonLightDefaultApplied so installs
         // that already ran the earlier Neon migration -- which set neonRefreshApplied, and so
         // would never enter this block again -- are moved across exactly once too.
+        // Classic is the default now, carrying the palette in AppThemes: light bars, blue ink
+        // on all three text settings, and an accent turned onto the blue of Samsung's own
+        // messaging icon. Its own flag again, for the same reason as the two before it.
+        // Neon's light variant is the default again. Classic keeps the palette it was given
+        // and stays pickable; it is simply no longer what the app opens on.
         if (!config.hasStoredAppTheme || !config.neonRefreshApplied ||
-            !config.neonLightDefaultApplied
+            !config.neonLightDefaultApplied || !config.classicDefaultApplied ||
+            !config.neonLightRestored || !config.bubbleSidesSwapped
         ) {
             AppThemes.apply(config, AppThemes.byId(AppThemes.NEON_LIGHT))
             config.glassOpacity = Config.DEFAULT_GLASS_OPACITY
             config.neonRefreshApplied = true
             config.nocturneRefreshApplied = true
             config.neonLightDefaultApplied = true
+            config.classicDefaultApplied = true
+            config.neonLightRestored = true
+            config.bubbleSidesSwapped = true
         }
 
         // Filters used to carry a keyword list. The field is gone from the model and the
@@ -125,6 +105,25 @@ class App : FossifyApp() {
         if (!config.glassRecalibrated) {
             config.glassOpacity = Config.DEFAULT_GLASS_OPACITY
             config.glassRecalibrated = true
+        }
+
+        // Aurora was removed. An install still wearing it has an appTheme naming a skin that
+        // no longer exists, so the picker would show it the wrong name while its stored
+        // colours stayed Aurora's -- a theme nothing can select and nothing can leave.
+        // Moved onto Neon, matching the variant they were on, and marked once so a theme
+        // picked afterwards sticks.
+        if (!config.auroraRetired) {
+            val wasAurora = config.appTheme == AppThemes.RETIRED_AURORA ||
+                config.appTheme == AppThemes.RETIRED_AURORA_LIGHT
+            if (wasAurora) {
+                val replacement = if (config.appTheme == AppThemes.RETIRED_AURORA) {
+                    AppThemes.NEON
+                } else {
+                    AppThemes.NEON_LIGHT
+                }
+                AppThemes.apply(config, AppThemes.byId(replacement))
+            }
+            config.auroraRetired = true
         }
 
         if (config.customFilters.isNotEmpty()) {

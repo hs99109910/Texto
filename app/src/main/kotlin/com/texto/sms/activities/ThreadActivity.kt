@@ -36,10 +36,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.widget.addTextChangedListener
 import androidx.documentfile.provider.DocumentFile
+import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import org.fossify.commons.dialogs.ConfirmationDialog
-import org.fossify.commons.dialogs.PermissionRequiredDialog
 import org.fossify.commons.extensions.*
 import org.fossify.commons.helpers.*
 import com.texto.sms.BuildConfig
@@ -55,6 +54,7 @@ import com.texto.sms.dialogs.ScheduleMessageDialog
 import com.texto.sms.extensions.*
 import com.texto.sms.helpers.CapsuleChoice
 import com.texto.sms.helpers.textoCapsuleDialog
+import com.texto.sms.helpers.textoConfirmDialog
 import com.texto.sms.helpers.*
 import com.texto.sms.messaging.isLongMmsMessage
 import com.texto.sms.messaging.isShortCodeWithLetters
@@ -108,6 +108,28 @@ class ThreadActivity : SimpleActivity() {
     private var messageToResend: Long? = null
     private lateinit var scheduledDateTime: DateTime
     private var isRefreshing = false
+
+    /**
+     * A refresh that arrived while another was in flight, kept rather than dropped.
+     *
+     * [setupAdapter] used to return outright when [isRefreshing] was set, which threw the
+     * newer request away: a send posts its own refresh and the sent:status receiver posts a
+     * second one moments later, so the two overlap routinely and whichever lost carried the
+     * message. Nothing then redrew the list until the screen was rebuilt.
+     */
+    private var refreshQueued = false
+    private var queuedForceScroll = false
+
+    /**
+     * Set the instant send is tapped and consumed by the next list update.
+     *
+     * The scroll after a send cannot be decided by asking the list where it is: by the time
+     * the question is asked the new bubble is already in it, so there is always somewhere
+     * further to go and the answer is always "not at the end". The intent is recorded up
+     * front instead, on the thread the tap arrives on, and survives however many refreshes
+     * it takes for the message to actually appear.
+     */
+    private var scrollOnNextUpdate = false
     private var isSendingMessage = false
     private var wasImeVisible = false
 
@@ -151,7 +173,16 @@ class ThreadActivity : SimpleActivity() {
         bus = EventBus.getDefault()
         bus!!.register(this)
 
-        binding.threadMessagesList.itemAnimator = null
+        // A message that lands with no motion at all reads as nothing having happened, and
+        // this list had its animator switched off entirely. Change animations stay off: a
+        // reaction or a delivery tick redraws a bubble already on screen, and cross:fading
+        // it there is a flicker, not feedback.
+        binding.threadMessagesList.itemAnimator = DefaultItemAnimator().apply {
+            addDuration = 220
+            removeDuration = 160
+            moveDuration = 220
+            supportsChangeAnimations = false
+        }
         binding.threadMessagesList.setItemViewCacheSize(20)
         (binding.threadMessagesList.layoutManager as LinearLayoutManager).stackFromEnd = true
         loadConversation()
@@ -268,7 +299,6 @@ class ThreadActivity : SimpleActivity() {
             markThreadMessagesRead(threadId)
         }
 
-        updateTitleMargin()
         setupScaledToolbar(binding.threadToolbar)
 
         binding.scrollToBottomFab.updateLayoutParams<androidx.constraintlayout.widget.ConstraintLayout.LayoutParams> {
@@ -429,7 +459,11 @@ class ThreadActivity : SimpleActivity() {
     }
 
     private fun setupAdapter(forceScroll: Boolean = false) {
-        if (isRefreshing) return
+        if (isRefreshing) {
+            refreshQueued = true
+            queuedForceScroll = queuedForceScroll || forceScroll
+            return
+        }
         isRefreshing = true
         ensureBackgroundThread {
             val items = getThreadItems()
@@ -442,6 +476,12 @@ class ThreadActivity : SimpleActivity() {
                 refreshMenuItems()
                 val forceScrollOnOpen = isFromNotification
                 isFromNotification = false
+                // Sampled before the new items land, and that ordering is the whole point:
+                // once an appended message is in the list the view can always scroll further,
+                // so asking afterwards answers "not at the bottom" for every message that
+                // arrives -- and the list sits still while the new bubble waits out of sight
+                // below the fold.
+                val wasAtBottom = !binding.threadMessagesList.canScrollVertically(1)
                 getOrCreateThreadAdapter().apply {
                     updateMessages(visibleThreadItems()) {
                         isRefreshing = false
@@ -449,7 +489,17 @@ class ThreadActivity : SimpleActivity() {
                         // Not while searching: the results are a list you read from the top,
                         // and snapping to its end every time one arrives fights that.
                         if (threadSearchQuery.isEmpty()) {
-                            scrollToBottom(forceScroll || forceScrollOnOpen)
+                            val justSent = scrollOnNextUpdate
+                            if (justSent) scrollOnNextUpdate = false
+                            scrollToBottom(
+                                forceScroll || forceScrollOnOpen || wasAtBottom || justSent
+                            )
+                        }
+                        if (refreshQueued) {
+                            refreshQueued = false
+                            val queued = queuedForceScroll
+                            queuedForceScroll = false
+                            setupAdapter(queued)
                         }
                     }
                 }
@@ -522,6 +572,11 @@ class ThreadActivity : SimpleActivity() {
             is Message -> {
                 if (any.isScheduled) {
                     // Show scheduled info
+                } else if (any.hasFailedToSend()) {
+                    // The bubble itself, not only the caption underneath it: the caption is
+                    // a thin line of text and the message above it is what the eye and the
+                    // thumb both go to.
+                    askToResend(any.id, any.body, any.isMMS)
                 } else if (any.attachment?.attachments?.isNotEmpty() == true) {
                     val firstAttachment = any.attachment.attachments.first()
                     val mimetype = firstAttachment.mimetype
@@ -530,12 +585,7 @@ class ThreadActivity : SimpleActivity() {
                     }
                 }
             }
-            is ThreadError -> {
-                binding.messageHolder.threadTypeMessage.setText(any.messageText)
-                binding.messageHolder.threadTypeMessage.setSelection(any.messageText.length)
-                messageToResend = any.messageId
-                checkSendMessageAvailability()
-            }
+            is ThreadError -> askToResend(any.messageId, any.messageText, any.isMMS)
         }
     }
 
@@ -622,7 +672,7 @@ class ThreadActivity : SimpleActivity() {
                 marginEnd = 0
             }
             threadSendMessage.imageTintList =
-                android.content.res.ColorStateList.valueOf(config.sentBubbleTextColor)
+                android.content.res.ColorStateList.valueOf(config.accentInkColor)
             threadSendMessage.background = com.texto.sms.helpers.TextoGlass.accent(
                 start = config.accentGradientStart,
                 end = config.accentGradientEnd,
@@ -826,13 +876,17 @@ class ThreadActivity : SimpleActivity() {
             if (alarmManager.canScheduleExactAlarms()) {
                 callback()
             } else {
-                PermissionRequiredDialog(
-                    activity = this,
-                    textId = org.fossify.commons.R.string.allow_alarm_scheduled_messages,
-                    positiveActionCallback = {
-                        openRequestExactAlarmSettings(BuildConfig.APPLICATION_ID)
-                    },
-                )
+                // The app's own sheet. Commons' PermissionRequiredDialog builds itself from
+                // the base theme and its own strings, so on the way to scheduling a message
+                // the user met a white card of English text -- the one dialog in the whole
+                // flow that neither the skin nor the locale reached.
+                textoConfirmDialog(
+                    message = getString(R.string.allow_alarm_scheduled_messages),
+                    title = getString(R.string.permission_required),
+                    positiveLabel = getString(R.string.grant_permission)
+                ) {
+                    openRequestExactAlarmSettings(BuildConfig.APPLICATION_ID)
+                }
             }
         } else {
             callback()
@@ -877,8 +931,6 @@ class ThreadActivity : SimpleActivity() {
      * it just no longer draws anything.
      */
     private fun setupOptionsMenu() {
-        binding.threadCallBtn.beVisibleIf(canDialCurrentParticipant())
-        binding.threadCallBtn.setOnClickListener { dialNumber() }
         binding.threadMenuBtn.setOnClickListener { showThreadModernMenu(it) }
         binding.threadBackBtn.setOnClickListener { finish() }
         styleThreadHeader()
@@ -914,7 +966,6 @@ class ThreadActivity : SimpleActivity() {
 
         tile(binding.threadBackBtn, 40)
         tile(binding.threadSearchBtn, 38)
-        tile(binding.threadCallBtn, 38)
         tile(binding.threadMenuBtn, 38)
 
         // The design's header avatar is 42dp on a 16dp radius, and carries the accent
@@ -937,22 +988,47 @@ class ThreadActivity : SimpleActivity() {
         )
     }
 
+    /**
+     * The overflow, in the order the four most-used rows are reached for: call, copy the
+     * number, mark read, archive. Everything else follows in a second group, with delete
+     * last because it is the one row that cannot be undone.
+     *
+     * The list is built top-down on purpose -- an `add` further down is a row further down --
+     * so the order on screen is the order of this function.
+     */
     private fun showThreadModernMenu(anchor: android.view.View) {
         val items = mutableListOf<Pair<Int, String>>()
         val firstPhoneNumber = participants.firstOrNull()?.phoneNumbers?.firstOrNull()?.value
         val archiveAvailable = config.isArchiveAvailable
 
-        if (threadItems.isNotEmpty()) {
-            items.add(R.id.delete to getString(org.fossify.commons.R.string.delete))
-            items.add(R.id.mark_as_unread to getString(R.string.mark_as_unread))
+        // The call tile used to sit in the header, where it took 44dp from a name column
+        // that only had 127dp to begin with. The handler for it was always here.
+        if (canDialCurrentParticipant()) {
+            items.add(R.id.dial_number to getString(R.string.dial_number))
         }
 
-        if (threadItems.isNotEmpty() && archiveAvailable) {
-            if (conversation?.isArchived == false && !isRecycleBin) {
+        if (participants.size == 1 && !isRecycleBin && !firstPhoneNumber.isNullOrEmpty()) {
+            items.add(R.id.copy_number to getString(R.string.copy_number_to_clipboard))
+        }
+
+        if (threadItems.isNotEmpty() && !isRecycleBin) {
+            items.add(R.id.mark_as_read to getString(R.string.mark_as_read))
+        }
+
+        if (threadItems.isNotEmpty() && archiveAvailable && !isRecycleBin) {
+            if (conversation?.isArchived == false) {
                 items.add(R.id.archive to getString(R.string.archive))
-            } else if (conversation?.isArchived == true && !isRecycleBin) {
+            } else if (conversation?.isArchived == true) {
                 items.add(R.id.unarchive to getString(R.string.unarchive))
             }
+        }
+
+        // Saving to contacts is one row now, not two. "Save this number" and "save all the
+        // numbers" ran the same intent and differed only in how many numbers they handed
+        // over, so this hands over every number in the thread that has no card yet -- one in
+        // a private chat, all of them in a group -- and only while somebody is still unsaved.
+        if (canAddToContacts()) {
+            items.add(R.id.add_number_to_contact to getString(R.string.add_number_to_contact))
         }
 
         if (conversation != null && !isRecycleBin) {
@@ -962,41 +1038,67 @@ class ThreadActivity : SimpleActivity() {
 
         if (!isRecycleBin) {
             items.add(R.id.block_number to getString(org.fossify.commons.R.string.block_number))
-            if (!isSpecialNumber()) {
-                items.add(R.id.manage_people to getString(R.string.add_person))
-            }
         }
 
         if (isRecycleBin && threadItems.isNotEmpty()) {
             items.add(R.id.restore to getString(R.string.restore))
         }
 
-        if (participants.size == 1 && !isRecycleBin) {
-            if (participants.first().name == firstPhoneNumber) {
-                items.add(R.id.add_number_to_contact to getString(org.fossify.commons.R.string.add_number_to_contact))
-            }
-            if (!firstPhoneNumber.isNullOrEmpty()) {
-                items.add(R.id.copy_number to getString(R.string.copy_number_to_clipboard))
-            }
+        // Last, and painted in the destructive colour by showModernMenu. It was the first
+        // row: the one irreversible action in the list, sitting where the thumb lands.
+        if (threadItems.isNotEmpty()) {
+            items.add(R.id.delete to getString(org.fossify.commons.R.string.delete))
         }
 
-        showModernMenu(anchor, items) { itemId ->
+        // The same Phosphor set the settings rows are drawn from, so the two lists read as
+        // one family rather than two.
+        val icons = mapOf(
+            R.id.dial_number to R.drawable.ic_ph_phone,
+            R.id.copy_number to R.drawable.ic_copy_vector,
+            R.id.mark_as_read to R.drawable.ic_ph_checks,
+            R.id.archive to R.drawable.ic_ph_archive_box,
+            R.id.unarchive to R.drawable.ic_ph_arrow_u_up_left,
+            R.id.add_number_to_contact to R.drawable.ic_ph_user_plus,
+            R.id.conversation_details to R.drawable.ic_ph_info,
+            R.id.rename_conversation to R.drawable.ic_ph_text_aa,
+            R.id.block_number to R.drawable.ic_ph_prohibit,
+            R.id.restore to R.drawable.ic_ph_arrow_u_up_left,
+            R.id.delete to R.drawable.ic_ph_trash,
+        )
+
+        showModernMenu(anchor, items, icons) { itemId ->
             when (itemId) {
                 R.id.dial_number -> dialNumber()
                 R.id.archive -> archiveThread()
                 R.id.unarchive -> unarchiveThread()
-                R.id.manage_people -> managePeople()
                 R.id.add_number_to_contact -> addNumberToContact()
                 R.id.copy_number -> copyNumberToClipboard()
                 R.id.rename_conversation -> renameConversation()
                 R.id.conversation_details -> launchConversationDetails(threadId)
-                R.id.mark_as_unread -> markAsUnread()
+                R.id.mark_as_read -> markAsRead()
                 R.id.block_number -> tryBlocking()
                 R.id.delete -> askConfirmDelete()
                 R.id.restore -> restoreMessages()
             }
         }
     }
+
+    /**
+     * Numbers in this thread that have no contact card yet. A participant with no card keeps
+     * its number as its display name, which is how the list is read off without a second
+     * contacts query on every menu open.
+     */
+    private fun unsavedParticipantNumbers(): List<String> = participants
+        .filter { participant ->
+            val number = participant.phoneNumbers.firstOrNull()?.value
+            number != null && participant.name == number
+        }
+        .mapNotNull { it.phoneNumbers.firstOrNull()?.normalizedNumber?.ifBlank { null } }
+        .distinct()
+
+    /** Whether the "save to contacts" row has anything to save. */
+    private fun canAddToContacts(): Boolean =
+        !isRecycleBin && !isSpecialNumber() && unsavedParticipantNumbers().isNotEmpty()
 
     /**
      * The title view spans the whole toolbar, so it has to be inset by exactly as much room
@@ -1006,17 +1108,7 @@ class ThreadActivity : SimpleActivity() {
      * width the name needed. Measured from the icons that are really showing instead, so the
      * name starts right beside the call icon and runs as far left as it needs to.
      */
-    /**
-     * The call tile only earns its place when there is a number to dial; the title column
-     * takes the width back when there isn't. No margin to reserve any more -- the header is
-     * a row of siblings, so the tiles push the name over by existing.
-     */
-    private fun updateTitleMargin() {
-        binding.threadCallBtn.beVisibleIf(canDialCurrentParticipant())
-    }
-
     private fun refreshMenuItems() {
-        updateTitleMargin()
         val firstPhoneNumber = participants.firstOrNull()?.phoneNumbers?.firstOrNull()?.value
         val archiveAvailable = config.isArchiveAvailable
         binding.threadToolbar.menu.apply {
@@ -1030,11 +1122,9 @@ class ThreadActivity : SimpleActivity() {
             findItem(R.id.block_number)?.title = getString(org.fossify.commons.R.string.block_number)
             findItem(R.id.block_number)?.isVisible = !isRecycleBin
             findItem(R.id.dial_number)?.isVisible = canDialCurrentParticipant()
-            findItem(R.id.manage_people)?.isVisible = !isSpecialNumber() && !isRecycleBin
-            findItem(R.id.mark_as_unread)?.isVisible = threadItems.isNotEmpty() && !isRecycleBin
+            findItem(R.id.mark_as_read)?.isVisible = threadItems.isNotEmpty() && !isRecycleBin
 
-            findItem(R.id.add_number_to_contact)?.isVisible =
-                participants.size == 1 && participants.first().name == firstPhoneNumber && !isRecycleBin
+            findItem(R.id.add_number_to_contact)?.isVisible = canAddToContacts()
             findItem(R.id.copy_number)?.isVisible =
                 participants.size == 1 && !firstPhoneNumber.isNullOrEmpty() && !isRecycleBin
         }
@@ -1086,13 +1176,30 @@ class ThreadActivity : SimpleActivity() {
         binding.selectedContacts.removeAllViews()
         participants.forEach { contact ->
             val contactBinding = ItemSelectedContactBinding.inflate(layoutInflater, binding.selectedContacts, false)
-            contactBinding.selectedContactName.text = contact.name
+            // The row ships with a fixed near-white name, which is invisible on the light
+            // skins. Painted at inflation rather than left to the resume sweep, so a row
+            // added between two resumes is readable straight away.
+            contactBinding.selectedContactName.setTextColor(config.mainTextColor)
+            contactBinding.selectedContactRemove.applyColorFilter(
+                config.mainTextColor.withAlpha(0.6f)
+            )
+            contactBinding.selectedContactName.text = contact.name.asLtrPhone()
             contactBinding.selectedContactRemove.setOnClickListener {
                 participants.remove(contact)
                 updateParticipants()
             }
             binding.selectedContacts.addView(contactBinding.root)
         }
+
+        // The two hairlines around the recipient field carried commons' light-theme grey,
+        // which reads as a bright line on the dark skins and as nothing on the light ones.
+        val rim = TextoGlass.rimFor(config.recentColor, 0.30f)
+        binding.messageDividerOne.setBackgroundColor(rim)
+        binding.messageDividerTwo.setBackgroundColor(rim)
+        binding.addContactOrNumber.setTextColor(config.mainTextColor)
+        binding.addContactOrNumber.setHintTextColor(config.mainTextColor.withAlpha(0.5f))
+        binding.confirmManageContacts.applyColorFilter(config.mainTextColor)
+        binding.confirmInsertedNumber.applyColorFilter(config.mainTextColor)
 
         binding.threadAddContacts.beVisibleIf(participants.size > 1 || conversation == null)
     }
@@ -1102,7 +1209,9 @@ class ThreadActivity : SimpleActivity() {
         val finalTitle = if (!title.isNullOrEmpty()) title else participants.getThreadTitle()
 
         binding.threadToolbar.title = null
-        binding.threadToolbarTitle.text = finalTitle
+        // A thread with no contact behind it is titled with the number itself, which needs
+        // the same isolate the number rows get : see String.asLtrPhone.
+        binding.threadToolbarTitle.text = finalTitle.asLtrPhone()
 
         // Tapping the name reveals the numbers behind it, so a call or a copy is one
         // step away even when the thread is titled with a contact name.
@@ -1142,23 +1251,31 @@ class ThreadActivity : SimpleActivity() {
             return
         }
 
-        // Built directly: setupDialogStuff swaps in its own content view, which would
-        // take the item list and the buttons with it.
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle(binding.threadToolbarTitle.text)
-            .setItems(numbers.toTypedArray()) { _, which ->
-                val number = numbers[which]
-                if (isShortCodeWithLetters(number)) {
-                    copyToClipboard(number)
-                } else {
-                    dialNumber(number)
-                }
-            }
-            .setNeutralButton(org.fossify.commons.R.string.copy_to_clipboard) { _, _ ->
-                copyToClipboard(numbers.joinToString(", "))
-            }
-            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
-            .show()
+        // The app's own sheet, like every other list of choices here. This was a bare
+        // AlertDialog.Builder, which took its ground, its typeface and its buttons from the
+        // base theme and so arrived looking like a dialog from a different app : and its two
+        // buttons were commons' strings, which reach a Persian-only screen in English.
+        //
+        // No cancel row: the capsule sheets dismiss on a tap outside or Back, and adding one
+        // would be the only such button in the app.
+        val choices = numbers.map { number ->
+            val copies = isShortCodeWithLetters(number)
+            CapsuleChoice(
+                // Isolated so the leading "+" stays leading; see String.asLtrPhone.
+                label = number.asLtrPhone(),
+                subtitle = getString(
+                    if (copies) R.string.copy_number_to_clipboard else R.string.dial_number
+                ),
+                icon = if (copies) R.drawable.ic_copy_vector else R.drawable.ic_ph_phone,
+                onPick = { if (copies) copyToClipboard(number) else dialNumber(number) }
+            )
+        } + CapsuleChoice(
+            label = getString(R.string.copy_to_clipboard),
+            icon = R.drawable.ic_copy_vector,
+            onPick = { copyToClipboard(numbers.joinToString(", ")) }
+        )
+
+        textoCapsuleDialog(binding.threadToolbarTitle.text.toString(), choices)
     }
 
     private fun isSpecialNumber(): Boolean {
@@ -1353,24 +1470,126 @@ class ThreadActivity : SimpleActivity() {
         }
 
         clearCurrentMessage()
+        // Recorded here, not deduced later: see [scrollOnNextUpdate].
+        scrollOnNextUpdate = true
         ensureBackgroundThread {
             val subscriptionId = currentSIMCardIndex
 
             isSendingMessage = true
+            var handedOver = false
             try {
                 if (attachments.isNotEmpty()) {
                     sendMmsMessage(text, attachments, subscriptionId)
                 } else {
                     sendNormalMessage(text, subscriptionId)
                 }
-                
+
                 updateLastConversationMessage(threadId)
+                handedOver = true
                 refreshMessages()
                 refreshConversations()
             } finally {
-                runOnUiThread {
-                    if (isFinishing || isDestroyed) return@runOnUiThread
-                    isSendingMessage = false
+                // Only when the send never reached the refresh. Clearing the flag here
+                // unconditionally raced the refresh it had just posted: the refresh reads
+                // isSendingMessage from a background thread after querying the provider,
+                // this ran on the main thread within a millisecond, so the read almost
+                // always lost and the message arrived without the list following it. The
+                // refresh clears the flag itself on both of its paths.
+                if (!handedOver) {
+                    runOnUiThread {
+                        if (isFinishing || isDestroyed) return@runOnUiThread
+                        isSendingMessage = false
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Asked on a tap, in the app's own sheet rather than a system alert.
+     *
+     * A failed message used to drop its text straight into the composer with nothing said,
+     * which reads as the app having lost the message rather than offering to send it again.
+     */
+    private fun askToResend(messageId: Long, body: String, isMMS: Boolean) {
+        if (body.isEmpty()) {
+            toast(R.string.resend_failed_empty)
+            return
+        }
+
+        val choices = ArrayList<CapsuleChoice>()
+        // Only for SMS. An MMS carries attachments that would have to be rebuilt from the
+        // provider to be sent again, so offering a one:tap resend there would quietly send
+        // the text without them.
+        if (!isMMS) {
+            choices.add(
+                CapsuleChoice(
+                    label = getString(R.string.resend_failed_send),
+                    subtitle = getString(R.string.resend_failed_send_desc),
+                    icon = R.drawable.ic_ph_paper_plane_right,
+                ) { resendMessage(messageId, body) }
+            )
+        }
+        choices.add(
+            CapsuleChoice(
+                label = getString(R.string.resend_failed_edit),
+                subtitle = getString(
+                    if (isMMS) R.string.resend_failed_edit_mms_desc
+                    else R.string.resend_failed_edit_desc
+                ),
+                icon = R.drawable.ic_ph_text_t,
+            ) {
+                binding.messageHolder.threadTypeMessage.setText(body)
+                binding.messageHolder.threadTypeMessage.setSelection(body.length)
+                messageToResend = messageId
+                checkSendMessageAvailability()
+            }
+        )
+
+        // Last, and in the menus' red: a failed message often just wants to go away, and
+        // without this the only way to be rid of one was a long:press into selection mode.
+        choices.add(
+            CapsuleChoice(
+                label = getString(R.string.resend_failed_delete),
+                subtitle = getString(R.string.resend_failed_delete_desc),
+                icon = R.drawable.ic_ph_trash,
+                isDestructive = true,
+            ) {
+                ensureBackgroundThread {
+                    deleteMessage(messageId, isMMS)
+                    refreshMessages()
+                    refreshConversations()
+                }
+            }
+        )
+
+        textoCapsuleDialog(getString(R.string.resend_failed_title), choices)
+    }
+
+    private fun resendMessage(messageId: Long, body: String) {
+        // Same intent as a fresh send, recorded on the tap thread: see [scrollOnNextUpdate].
+        scrollOnNextUpdate = true
+        ensureBackgroundThread {
+            isSendingMessage = true
+            var handedOver = false
+            try {
+                // The failed row goes first so the thread does not end up holding the
+                // message twice. A send that fails again inserts its own row before it
+                // reaches the radio, so the failure stays visible either way.
+                deleteMessage(messageId, false)
+                sendNormalMessage(body, currentSIMCardIndex)
+                updateLastConversationMessage(threadId)
+                handedOver = true
+                refreshMessages()
+                refreshConversations()
+            } catch (e: Exception) {
+                runOnUiThread { showErrorToast(e) }
+            } finally {
+                if (!handedOver) {
+                    runOnUiThread {
+                        if (isFinishing || isDestroyed) return@runOnUiThread
+                        isSendingMessage = false
+                    }
                 }
             }
         }
@@ -1435,20 +1654,17 @@ class ThreadActivity : SimpleActivity() {
         }
     }
 
-    private fun managePeople() {
-        val numbers = participants.flatMap { it.phoneNumbers.map { pn -> pn.normalizedNumber } }.distinct()
+    /**
+     * Hands the contacts app every number here that has no card yet. This absorbed the
+     * separate "save all the numbers" row: that one ran exactly this intent with the whole
+     * participant list, so the only difference between the two was how many numbers went in.
+     */
+    private fun addNumberToContact() {
+        val numbers = unsavedParticipantNumbers()
+        if (numbers.isEmpty()) return
         Intent(Intent.ACTION_INSERT_OR_EDIT).apply {
             type = ContactsContract.Contacts.CONTENT_ITEM_TYPE
             putExtra(ContactsContract.Intents.Insert.PHONE, numbers.joinToString(";"))
-            startActivity(this)
-        }
-    }
-
-    private fun addNumberToContact() {
-        val number = participants.firstOrNull()?.phoneNumbers?.firstOrNull()?.value ?: return
-        Intent(Intent.ACTION_INSERT_OR_EDIT).apply {
-            type = ContactsContract.Contacts.CONTENT_ITEM_TYPE
-            putExtra(ContactsContract.Intents.Insert.PHONE, number)
             startActivity(this)
         }
     }
@@ -1471,13 +1687,16 @@ class ThreadActivity : SimpleActivity() {
             }
         }
     }
-    private fun markAsUnread() {
+    /**
+     * Opening a thread already marks it read, so this is normally a no-op: it is here for the
+     * cases the automatic pass cannot cover : a message that arrived while the thread was
+     * open, or a row the provider update missed. It stays on this screen rather than closing
+     * it, since there is nothing to go back and look at.
+     */
+    private fun markAsRead() {
         ensureBackgroundThread {
-            markThreadMessagesUnread(threadId)
-            runOnUiThread {
-                if (isFinishing || isDestroyed) return@runOnUiThread
-                finish()
-            }
+            markThreadMessagesRead(threadId)
+            refreshConversations()
         }
     }
     private fun tryBlocking() {
@@ -1485,7 +1704,7 @@ class ThreadActivity : SimpleActivity() {
         val numbersString = TextUtils.join(", ", numbers)
         val question = String.format(resources.getString(org.fossify.commons.R.string.block_confirmation), numbersString)
 
-        ConfirmationDialog(this, question) {
+        textoConfirmDialog(question, isDestructive = true) {
             ensureBackgroundThread {
                 numbers.forEach { blockNumber(it) }
                 refreshConversations()
@@ -1498,7 +1717,7 @@ class ThreadActivity : SimpleActivity() {
     }
     private fun askConfirmDelete() {
         val question = resources.getString(R.string.delete_whole_conversation_confirmation)
-        ConfirmationDialog(this, question) {
+        textoConfirmDialog(question, isDestructive = true) {
             ensureBackgroundThread {
                 deleteOrRecycleConversation(threadId)
                 refreshConversations()
@@ -1554,7 +1773,11 @@ class ThreadActivity : SimpleActivity() {
                 } else if (message.type == Telephony.Sms.MESSAGE_TYPE_OUTBOX || message.type == Telephony.Sms.MESSAGE_TYPE_QUEUED) {
                     items.add(ThreadSending(message.id))
                 } else if (message.type == Telephony.Sms.MESSAGE_TYPE_FAILED || message.status == Telephony.Sms.STATUS_FAILED) {
-                    items.add(ThreadError(message.id, getString(org.fossify.commons.R.string.unknown_error_occurred)))
+                    // The body, not an error string. The row draws its own fixed caption
+                    // from the layout, so this field was never read for display -- and the
+                    // English commons string it used to hold was what a tap put in the
+                    // composer instead of the message the user had tried to send.
+                    items.add(ThreadError(message.id, message.body, message.isMMS))
                 }
             }
         }
@@ -1952,7 +2175,7 @@ class ThreadActivity : SimpleActivity() {
             } else {
                 beVisible()
                 text = resources.getQuantityString(
-                    R.plurals.search_results_count, hits, hits.toString().toPersianDigits()
+                    R.plurals.search_results_count, hits, hits.toString().toUiDigits()
                 )
             }
         }
@@ -2031,10 +2254,13 @@ class ThreadActivity : SimpleActivity() {
      * rather than a button that does nothing.
      */
     private fun showEmojiPicker() {
+        // Faces first, and the ones people actually send: the previous set led with 😀 and
+        // spent a quarter of its slots on ☕, 📞, ❌ and 🤝, which almost never get picked.
         val emoji = listOf(
-            "🙂", "😀", "😂", "😍", "😉", "😊", "🤔", "😅",
-            "👍", "🙏", "❤️", "🌹", "🎉", "✅", "❌", "🔥",
-            "😢", "😭", "😡", "😴", "🤝", "💐", "☕", "📞"
+            "🙂", "😊", "😍", "🥰", "😘", "😂",
+            "😅", "😏", "😑", "🫠", "😔", "😭",
+            "😉", "🤔", "😴", "😡", "🙏", "👍",
+            "❤️", "🔥", "🎉", "🌹", "👌", "✅"
         )
 
         val popup = android.widget.PopupWindow(this)
@@ -2117,24 +2343,48 @@ class ThreadActivity : SimpleActivity() {
     }
 
     private fun setupMessagingEdgeToEdge() {
+        // The padding below is computed from the composer's height, so it has to be redone
+        // whenever the composer resizes: a draft wrapping to a second line, the attachments
+        // strip appearing, the scheduled banner opening. Asking for the insets again is
+        // enough, since that listener is where the padding is decided.
+        binding.messageHolder.root.addOnLayoutChangeListener { v, _, top, _, bottom, _, oldTop, _, oldBottom ->
+            if (bottom - top != oldBottom - oldTop) {
+                ViewCompat.requestApplyInsets(binding.threadMessagesList)
+                v.post { scrollToBottom() }
+            }
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.threadMessagesList) { view, insets ->
-            val imeType = WindowInsetsCompat.Type.ime()
-            val systemBarsType = WindowInsetsCompat.Type.systemBars()
             
+            // The composer's real height, not a constant. 86dp was less than the bar
+            // actually measures once its own padding and the gesture area are counted, so
+            // the newest bubble sat under it with its bottom edge clipped off. The bar also
+            // grows -- a multi-line draft, the attachments strip, the scheduled banner --
+            // and no fixed number can follow that.
+            //
+            // Its height alone is the whole answer: message_holder is anchored to the
+            // parent's bottom and runs to the very bottom of the screen, so the navigation
+            // inset is already inside that measurement. Adding systemBars on top would be
+            // the same space counted twice.
+            val imeType = WindowInsetsCompat.Type.ime()
             val isImeVisible = insets.isVisible(imeType)
             val imeHeight = insets.getInsets(imeType).bottom
-            val systemBarsHeight = insets.getInsets(systemBarsType).bottom
-            
-            // Modern Floating Sync: Messages must push up precisely with the keyboard
-            // 86dp is the standard floating bar bottom padding we established
-            val basePadding = 86.getScaledPx()
-            val finalBottomPadding = if (isImeVisible) {
-                // When keyboard is up, we need to add the keyboard height but subtract 
-                // the overlapping system bar height to get pure delta
-                imeHeight + basePadding - systemBarsHeight
-            } else {
-                basePadding
-            }
+            val systemBarsHeight = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+
+            // The composer's height and nothing else -- no keyboard term, no navigation
+            // term. message_holder is anchored to the parent's bottom and always runs to the
+            // very bottom of the screen: with the keyboard down it measures 262px, and with
+            // the keyboard up it measures 1195px because it now stretches from just above
+            // the keys all the way down behind them. Both readings already contain whatever
+            // is covering the list.
+            //
+            // Adding the IME inset on top of that counted the keyboard twice and was why a
+            // sent message could not be seen until the keyboard was dismissed: the padding
+            // came to roughly 2095px on a 2119px list, so nearly the whole viewport was dead
+            // space and every new bubble landed inside it. One press of back closed the
+            // keyboard, the composer shrank back to 262px, and the message appeared -- which
+            // is exactly the symptom, and it pointed at the padding rather than at the send.
+            val finalBottomPadding = maxOf(binding.messageHolder.root.height, 86.getScaledPx())
             
             // No top inset for the header. thread_holder carries
             // appbar_scrolling_view_behavior, so the CoordinatorLayout already offsets this

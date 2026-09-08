@@ -105,27 +105,32 @@ object TextoAvatars {
         midStop = midStopFor(context),
         // The design sets the monogram in `--primary-fg`, the same ink the sent bubble uses
         // on the same gradient, rather than always-white.
-        textColor = context.config.sentBubbleTextColor,
+        textColor = context.config.accentInkColor,
         density = context.resources.displayMetrics.density
     )
 
     /**
      * Up to two leading letters. Persian names split on whitespace the same way Latin ones
      * do, so "سارا محمدی" yields "سم" -- matching the design's two-letter monograms.
+     *
+     * The placeholder for a name with nothing usable in it follows the language: Persian
+     * writes its question mark the other way round.
      */
+    private fun unknownInitial() = if (TextoLocale.isPersian) "؟" else "?"
+
     fun initialsOf(name: String): String {
         val cleaned = name.trim()
-        if (cleaned.isEmpty()) return "؟"
+        if (cleaned.isEmpty()) return unknownInitial()
 
         // A phone number has no meaningful initials; its last two digits identify it better.
         if (cleaned.all { it.isDigit() || it in "+-() " }) {
             val digits = cleaned.filter { it.isDigit() }
-            return if (digits.length >= 2) digits.takeLast(2) else digits.ifEmpty { "؟" }
+            return if (digits.length >= 2) digits.takeLast(2) else digits.ifEmpty { unknownInitial() }
         }
 
         val words = cleaned.split(Regex("\\s+")).filter { it.isNotEmpty() }
         return when {
-            words.isEmpty() -> "؟"
+            words.isEmpty() -> unknownInitial()
             words.size == 1 -> words[0].take(1)
             else -> "${words[0].take(1)}${words[1].take(1)}"
         }

@@ -25,8 +25,6 @@ import androidx.core.view.doOnLayout
 import androidx.core.view.updateLayoutParams
 import android.widget.RelativeLayout
 import androidx.core.widget.addTextChangedListener
-import org.fossify.commons.dialogs.ConfirmationDialog
-import org.fossify.commons.dialogs.PermissionRequiredDialog
 import org.fossify.commons.extensions.*
 import org.fossify.commons.helpers.*
 import com.texto.sms.R
@@ -41,6 +39,7 @@ import com.texto.sms.helpers.NAV_TAB_RADIUS_DP
 import com.texto.sms.helpers.SEARCHED_MESSAGE_ID
 import com.texto.sms.helpers.THREAD_ID
 import com.texto.sms.helpers.THREAD_TITLE
+import com.texto.sms.helpers.textoConfirmDialog
 import com.texto.sms.models.Conversation
 import com.texto.sms.models.Events
 import com.texto.sms.models.Message
@@ -59,8 +58,8 @@ class MainActivity : SimpleActivity() {
          */
         const val CHIP_PILL_RADIUS_DP = 100
 
-        /** The design's wordmark, 20% up from the 34dp it shipped at. */
-        const val LOGO_HEIGHT_DP = 41
+        /** The design's wordmark: 20% up from the 34dp it shipped at, then 10% back down. */
+        const val LOGO_HEIGHT_DP = 37
 
         /** Matches the other panel transitions in the app. */
         const val SEARCH_ANIM_MILLIS = 260L
@@ -70,7 +69,9 @@ class MainActivity : SimpleActivity() {
     private var searchDateRange = com.texto.sms.helpers.SearchDateRange.ANY
 
     /** The conversation filter the search is narrowed to, independent of the home screen's. */
-    private var searchFilter: MessageFilter = MessageFilter.all("همه")
+    // Both start with an empty label and are rebuilt from resources in onCreate: a literal
+    // here would be a Persian word waiting to flash on an English screen.
+    private var searchFilter: MessageFilter = MessageFilter.all("")
     private var searchFilterChipsAdapter: com.texto.sms.adapters.FilterChipsAdapter? = null
 
     override var isSearchBarEnabled = false
@@ -105,7 +106,13 @@ class MainActivity : SimpleActivity() {
 
     /** Phone book snapshot kept for the "build a filter from contacts" picker. */
     private var cachedContactsForFilters: List<Pair<String, String>> = emptyList()
-    private var activeFilter: MessageFilter = MessageFilter.all("همه")
+    private var activeFilter: MessageFilter = MessageFilter.all("")
+    /** False until the bottom capsule's halo has been put somewhere; see styleNavTabs. */
+    private var navHaloPlaced = false
+
+    /** Paints the sliding halo behind the chosen filter chip; installed in buildFilterChips. */
+    private var filterHalo: FilterHaloDecoration? = null
+
     private var filterChipsAdapter: com.texto.sms.adapters.FilterChipsAdapter? = null
     private var filterChipDragHelper: androidx.recyclerview.widget.ItemTouchHelper? = null
 
@@ -363,15 +370,25 @@ class MainActivity : SimpleActivity() {
         val accent = config.accentGradientStart
         val muted = config.mainTextColor.withAlpha(0.68f)
 
-        val activeLozenge = android.graphics.drawable.GradientDrawable().apply {
+        // The halo is a view behind the tabs rather than a background on one of them, so
+        // moving the selection slides it across instead of erasing it here and drawing it
+        // there. See TextoHalo.
+        navHalo.background = android.graphics.drawable.GradientDrawable().apply {
             shape = android.graphics.drawable.GradientDrawable.RECTANGLE
             cornerRadius = NAV_TAB_RADIUS_DP * density
             // `background: var(--primary-soft)` over `border: 1px solid primary/0.25`.
             setColor(accent.withAlpha(0.16f))
             setStroke(density.toInt().coerceAtLeast(1), accent.withAlpha(0.25f))
         }
-        listOf(navHomeBtn, navAddBtn, navSearchContainer).forEach { tab ->
-            tab.background = if (tab === activeTab) activeLozenge else null
+        listOf(navHomeBtn, navAddBtn, navSearchContainer).forEach { tab -> tab.background = null }
+        // Only after the tabs have been measured: their padding is set further down this
+        // very method, so asking for their bounds now would place the halo on last frame's
+        // geometry. The first pass lands without animating -- nothing to travel from.
+        navHalo.post {
+            if (isFinishing || isDestroyed) return@post
+            val animate = navHaloPlaced
+            navHaloPlaced = true
+            com.texto.sms.helpers.TextoHalo.moveView(navHalo, activeTab, animate)
         }
 
         // The design carries the active/idle distinction in colour -- `--primary` against
@@ -557,6 +574,11 @@ class MainActivity : SimpleActivity() {
                 this, androidx.recyclerview.widget.LinearLayoutManager.HORIZONTAL, false
             )
             binding.searchFilterBar.adapter = searchFilterChipsAdapter
+            // The same selector the home row has. Without it the chosen filter on the search
+            // panel had nothing marking it at all.
+            binding.searchFilterBar.addItemDecoration(
+                FilterHaloDecoration { searchFilterChipsAdapter?.activePosition() ?: -1 }
+            )
         }
         searchFilterChipsAdapter?.submitFilters(filters, searchFilter.id, filterCounts(filters))
     }
@@ -626,12 +648,20 @@ class MainActivity : SimpleActivity() {
         // Where the row should sit once it has been measured. A HorizontalScrollView counts
         // scrollX from the visual left whichever way the layout runs, so leaving it at 0
         // under RTL showed the row's *end* : it opened on "select a range" with everything
-        // before it off screen. Anchored to the start, unless something further along is
+        // before it off screen. Anchored to the start -- which is the right edge under
+        // Persian and the left one under English -- unless something further along is
         // picked, in which case that is what needs to be on screen.
         val target = activeChip
         binding.searchDateBar.post {
             if (target == null) {
-                binding.searchDateBar.fullScroll(android.view.View.FOCUS_RIGHT)
+                val startEdge = if (resources.configuration.layoutDirection ==
+                    android.view.View.LAYOUT_DIRECTION_RTL
+                ) {
+                    android.view.View.FOCUS_RIGHT
+                } else {
+                    android.view.View.FOCUS_LEFT
+                }
+                binding.searchDateBar.fullScroll(startEdge)
             } else {
                 val centred = target.left - (binding.searchDateBar.width - target.width) / 2
                 binding.searchDateBar.scrollTo(centred.coerceAtLeast(0), 0)
@@ -672,12 +702,13 @@ class MainActivity : SimpleActivity() {
                     setColor(config.accentGradientStart.withAlpha(0.10f))
                     setStroke(1.getScaledPx(), config.accentGradientStart.withAlpha(0.55f))
                 }
+                // The header capsule's recipe, same as the filter chips beside it.
                 else -> com.texto.sms.helpers.TextoGlass.bar(
-                    tint = config.recentColor,
+                    tint = if (config.topBarColor != 0) config.topBarColor else Color.BLACK,
                     cornerRadius = chipRadius,
-                    opacity = 0.5f,
+                    opacity = config.glassOpacity / 100f,
                     strokeWidthPx = 1.getScaledPx(),
-                    rimAlpha = 0.18f
+                    rimAlpha = 0.20f
                 )
             }
             val padH = 14.getScaledPx()
@@ -688,7 +719,7 @@ class MainActivity : SimpleActivity() {
             setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
             setTextColor(
                 when {
-                    isActive -> config.sentBubbleTextColor
+                    isActive -> config.accentInkColor
                     opensPicker -> config.accentGradientStart
                     else -> config.mainTextColor.withAlpha(0.58f)
                 }
@@ -707,7 +738,7 @@ class MainActivity : SimpleActivity() {
                     .getDrawable(context, R.drawable.ic_ph_caret_left)?.mutate()?.apply {
                         val side = 14.getScaledPx()
                         setBounds(0, 0, side, side)
-                        setTint(if (isActive) config.sentBubbleTextColor else config.accentGradientStart)
+                        setTint(if (isActive) config.accentInkColor else config.accentGradientStart)
                     }
                 setCompoundDrawablesRelative(caret, null, null, null)
                 compoundDrawablePadding = 6.getScaledPx()
@@ -790,11 +821,15 @@ class MainActivity : SimpleActivity() {
                 handlePermission(PERMISSION_READ_CONTACTS) {
                     handleNotificationPermission { granted ->
                         if (!granted) {
-                            PermissionRequiredDialog(
-                                activity = this,
-                                textId = org.fossify.commons.R.string.allow_notifications_incoming_messages,
-                                positiveActionCallback = { openNotificationSettings() }
-                            )
+                            // The app's own sheet: commons' builds itself from the base theme
+                            // and its own English strings. See the same swap in ThreadActivity.
+                            textoConfirmDialog(
+                                message = getString(R.string.allow_notifications_incoming_messages),
+                                title = getString(R.string.permission_required),
+                                positiveLabel = getString(R.string.grant_permission)
+                            ) {
+                                openNotificationSettings()
+                            }
                         }
                     }
 
@@ -821,23 +856,35 @@ class MainActivity : SimpleActivity() {
     }
 
     /** "همه" always ships with the app; "مخاطبین" and "تبلیغات" only show when enabled in settings; everything after them the user defined. */
+    /**
+     * The chip row, in the order it is read.
+     *
+     * "بدون تبلیغات" leads when it is switched on, and "همه" drops to the end. Turning that
+     * filter on is a statement that the unfiltered list is not the one you want to land in,
+     * so it takes the first position under the thumb and "همه" becomes the thing you reach
+     * for deliberately. With the row laid out right-to-left, first in this list is the
+     * rightmost chip.
+     */
     private fun currentFilters(): List<MessageFilter> = buildList {
-        add(MessageFilter.all(getString(R.string.filter_all)))
-        if (config.showContactsOnlyFilter) {
-            add(MessageFilter.contactsOnly(getString(R.string.filter_contacts_only)))
-        }
-        if (config.showAdsFilter) {
+        val noAds = if (config.showAdsFilter) {
             // The chip is the inverse of the stored ads list: it starts holding every thread
             // and loses them one at a time as they are marked as advertising. The ads list
             // itself never gets a chip of its own.
-            add(
-                MessageFilter.noAds(
-                    label = getString(R.string.filter_no_ads),
-                    senders = config.adsFilter.senders
-                )
+            MessageFilter.noAds(
+                label = getString(R.string.filter_no_ads),
+                senders = config.adsFilter.senders
             )
+        } else {
+            null
         }
+
+        noAds?.let { add(it) }
+        if (config.showContactsOnlyFilter) {
+            add(MessageFilter.contactsOnly(getString(R.string.filter_contacts_only)))
+        }
+        if (noAds == null) add(MessageFilter.all(getString(R.string.filter_all)))
         addAll(config.customFilters)
+        if (noAds != null) add(MessageFilter.all(getString(R.string.filter_all)))
     }
 
     private fun buildFilterChips() {
@@ -859,6 +906,10 @@ class MainActivity : SimpleActivity() {
                     false
                 )
                 this.adapter = adapter
+                // Behind the chips, not on one of them: the row scrolls and its chips are
+                // recycled, so the selector cannot be a view that travels with them.
+                filterHalo = FilterHaloDecoration { filterChipsAdapter?.activePosition() ?: -1 }
+                    .also { addItemDecoration(it) }
             }
             // Custom chips can be dragged (once the finger moves past touch slop while held)
             // to reorder; "All"/"Contacts only"/"+" are excluded inside the callback so they
@@ -958,7 +1009,7 @@ class MainActivity : SimpleActivity() {
 
     private fun deleteFilter(filter: MessageFilter) {
         val question = getString(R.string.delete_filter_confirmation, filter.label)
-        ConfirmationDialog(this, question) {
+        textoConfirmDialog(question, isDestructive = true) {
             config.customFilters = config.customFilters.filter { it.id != filter.id }
             if (config.activeFilterId == filter.id) {
                 config.activeFilterId = MessageFilter.ID_ALL
@@ -969,59 +1020,45 @@ class MainActivity : SimpleActivity() {
     }
 
     /**
-     * How many conversations each chip currently holds. "All" is the whole list; every other
-     * filter reuses the same predicate the list itself is filtered with, so a chip's badge can
-     * never disagree with what tapping it shows.
-     */
-    /**
-     * The wordmark image carries its own neon cyan-to-magenta colouring baked into the PNG,
-     * so nothing here recolours it -- except on a light ground, where the import's own CSS
-     * (`saturate(1.1) brightness(0.72) contrast(1.12)`) darkens it a touch for legibility.
-     * That is reproduced as a [ColorMatrix] rather than a flat tint, which would just paint
-     * over the gradient the mark is drawn with.
+     * The wordmark is the brand's own artwork and is left at its own colours: the tonality
+     * strip deliberately does not reach it. Every other accent surface follows the strip,
+     * but the logo is the one mark that has to stay the same object whatever the rest of the
+     * app is wearing, so the hue rotation that used to be applied here is gone.
+     *
+     * What remains is a legibility correction, and only on a dark ground. The mark is deep
+     * blue on white; on the dark skins that navy sits within a few percent of the background
+     * and the word all but disappears while the badge still reads. Scaling RGB up lifts the
+     * lettering into a legible blue and leaves the white bubble at white, since the channels
+     * were already clamped there. It is a brightness change, not a hue change -- the mark
+     * stays on-brand, it is only exposed differently for the ground it sits on.
      */
     private fun styleAppTitle() = binding.textoTitle.apply {
         updateLayoutParams<LinearLayout.LayoutParams> {
             height = LOGO_HEIGHT_DP.getScaledPx()
         }
-        // The tonality strip has to reach the wordmark too, or the one mark the user looks at
-        // most stays on the skin's original hues while everything around it has moved. It is
-        // a bitmap, so the rotation is a matrix rather than a colour, and it goes FIRST: the
-        // light-ground darkening below is a correction for legibility on this background and
-        // has to act on whatever hue the mark ends up wearing, not the other way round.
-        val hueShift = config.accentHueShift
-        val hue = if (hueShift == 0) null else com.texto.sms.helpers.TextoTint.hueRotationMatrix(hueShift)
 
         colorFilter = if (com.texto.sms.helpers.TextoGlass.isDark(config.mainBackgroundColor)) {
-            hue?.let { android.graphics.ColorMatrixColorFilter(it) }
+            val lift = 2.05f
+            android.graphics.ColorMatrixColorFilter(
+                android.graphics.ColorMatrix(
+                    floatArrayOf(
+                        lift, 0f, 0f, 0f, 12f,
+                        0f, lift, 0f, 0f, 12f,
+                        0f, 0f, lift, 0f, 12f,
+                        0f, 0f, 0f, 1f, 0f
+                    )
+                )
+            )
         } else {
-            val saturation = android.graphics.ColorMatrix().apply { setSaturation(1.1f) }
-            val brightness = android.graphics.ColorMatrix(
-                floatArrayOf(
-                    0.72f, 0f, 0f, 0f, 0f,
-                    0f, 0.72f, 0f, 0f, 0f,
-                    0f, 0f, 0.72f, 0f, 0f,
-                    0f, 0f, 0f, 1f, 0f
-                )
-            )
-            val contrastScale = 1.12f
-            val contrastTranslate = (1 - contrastScale) * 127.5f
-            val contrast = android.graphics.ColorMatrix(
-                floatArrayOf(
-                    contrastScale, 0f, 0f, 0f, contrastTranslate,
-                    0f, contrastScale, 0f, 0f, contrastTranslate,
-                    0f, 0f, contrastScale, 0f, contrastTranslate,
-                    0f, 0f, 0f, 1f, 0f
-                )
-            )
-            val combined = hue ?: android.graphics.ColorMatrix()
-            combined.postConcat(saturation)
-            combined.postConcat(brightness)
-            combined.postConcat(contrast)
-            android.graphics.ColorMatrixColorFilter(combined)
+            null
         }
     }
 
+    /**
+     * How many conversations each chip currently holds. "All" is the whole list; every other
+     * filter reuses the same predicate the list itself is filtered with, so a chip's badge can
+     * never disagree with what tapping it shows.
+     */
     private fun filterCounts(filters: List<MessageFilter>): Map<String, Int> =
         filters.associate { filter ->
             filter.id to if (filter.id == MessageFilter.ID_ALL) {
@@ -1032,6 +1069,85 @@ class MainActivity : SimpleActivity() {
                 }
             }
         }
+
+    /**
+     * Draws the sliding halo under the chosen filter chip.
+     *
+     * An ItemDecoration rather than a view: the chips are a RecyclerView, so a selector view
+     * would be recycled along with them and would have to be torn down and rebuilt every
+     * time the row scrolled. Drawing underneath in the parent's own coordinates sidesteps
+     * that -- the halo follows the chip while the row scrolls, for free.
+     */
+    /**
+     * [activePosition] rather than a hardcoded reference to the home screen's adapter: the
+     * search panel shows the same chips from a second adapter, and with the halo bound to the
+     * first one that row drew no selection at all. The active chip deliberately carries no
+     * background of its own -- the halo *is* the selection -- so on the search panel the
+     * chosen filter was completely unmarked.
+     */
+    private inner class FilterHaloDecoration(
+        private val activePosition: () -> Int,
+    ) : androidx.recyclerview.widget.RecyclerView.ItemDecoration() {
+        private var halo: com.texto.sms.helpers.TextoHalo? = null
+        private val bounds = android.graphics.RectF()
+        private var lastPosition = -1
+
+        override fun onDraw(
+            canvas: android.graphics.Canvas,
+            parent: androidx.recyclerview.widget.RecyclerView,
+            state: androidx.recyclerview.widget.RecyclerView.State,
+        ) {
+            val position = activePosition()
+            val paint = halo ?: com.texto.sms.helpers.TextoHalo(parent).also { halo = it }
+
+            val accent = config.accentGradientStart
+            val density = resources.displayMetrics.density
+            paint.cornerRadius = CHIP_PILL_RADIUS_DP * density
+            paint.setColors(
+                fill = accent.withAlpha(0.16f),
+                stroke = accent.withAlpha(0.25f),
+                // Scaled, for the same reason the bars are: the halo outlines a chip whose
+                // own hairline follows the UI-scale slider, and a fixed density left the two
+                // drifting apart as the slider moved.
+                strokeWidthPx = 1.getScaledPx().toFloat().coerceAtLeast(1f)
+            )
+
+            val child = (0 until parent.childCount)
+                .map { parent.getChildAt(it) }
+                .firstOrNull { parent.getChildAdapterPosition(it) == position }
+
+            if (position < 0 || child == null) {
+                // Scrolled off rather than gone: keep the halo where it was so it is still
+                // there, in place, when the row scrolls back. Only a row with no selection
+                // at all clears it.
+                if (position < 0) {
+                    lastPosition = -1
+                    paint.hide()
+                }
+            } else {
+                bounds.set(
+                    child.left + child.translationX,
+                    child.top.toFloat(),
+                    child.right + child.translationX,
+                    child.bottom.toFloat()
+                )
+                when {
+                    // The selection moved: travel to it.
+                    position != lastPosition -> {
+                        lastPosition = position
+                        paint.moveRect(bounds)
+                    }
+                    // Mid-travel: leave it alone, or the next frame of a scrolling row
+                    // would snap it to the destination and the movement would be lost.
+                    paint.isTravelling -> Unit
+                    // Same chip, new place -- the row is scrolling. Follow it exactly,
+                    // with no animation and no redraw request of its own.
+                    else -> paint.snapTo(bounds)
+                }
+            }
+            paint.draw(canvas)
+        }
+    }
 
     private fun styleFilterChip(
         views: com.texto.sms.adapters.FilterChipViews,
@@ -1045,26 +1161,30 @@ class MainActivity : SimpleActivity() {
         // Straight from the design's chip rule: a full pill (`border-radius: 999px`), the
         // active one filled with the accent *gradient* -- `var(--grad)`, not a flat stop --
         // under a glow, the rest a glass wash behind the shared `--divider` hairline.
+        // The chosen chip is marked by the halo behind it now -- the same soft lozenge the
+        // bottom capsule uses -- so it carries the accent as ink rather than as a fill. Two
+        // selectors drawn the same way read as one idea, and the halo can then slide between
+        // chips instead of a solid fill blinking from one to the next.
         val textColor = if (isActive) {
-            config.sentBubbleTextColor
+            config.accentGradientStart
         } else {
             config.mainTextColor.withAlpha(0.58f)
         }
         val chipRadius = CHIP_PILL_RADIUS_DP * density
         chip.background = if (isActive) {
-            com.texto.sms.helpers.TextoGlass.accent(
-                start = config.accentGradientStart,
-                end = config.accentGradientEnd,
-                cornerRadius = chipRadius,
-                mid = config.accentGradientMid
-            )
+            null
         } else {
+            // Exactly the recipe setupOverlayBars() paints the header capsule with: the bar
+            // colour, the bar rim, and the user's glass setting rather than a fixed opacity.
+            // The chips sit directly under that capsule, so anything else read as a second,
+            // differently-frosted material -- and the settings slider moved one and not the
+            // other, which is the part that showed.
             com.texto.sms.helpers.TextoGlass.bar(
-                tint = config.recentColor,
+                tint = if (config.topBarColor != 0) config.topBarColor else Color.BLACK,
                 cornerRadius = chipRadius,
-                opacity = 0.5f,
+                opacity = config.glassOpacity / 100f,
                 strokeWidthPx = stroke,
-                rimAlpha = 0.22f
+                rimAlpha = 0.20f
             )
         }
         val horizontal = if (filterId == com.texto.sms.adapters.FilterChipsAdapter.ADD_CHIP_ID) {
@@ -1076,8 +1196,9 @@ class MainActivity : SimpleActivity() {
         chip.setPadding(horizontal, 8.getScaledPx(), horizontal, 8.getScaledPx())
         chip.alpha = 1f
         chip.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
-        // `box-shadow: var(--glow)` on the active chip only.
-        chip.elevation = if (isActive) 6 * density else 0f
+        // Flat. The lift belonged to the solid gradient chip; over a halo it would cast a
+        // shadow onto the very thing marking the selection.
+        chip.elevation = 0f
 
         views.label.apply {
             setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
@@ -1119,70 +1240,6 @@ class MainActivity : SimpleActivity() {
         binding.conversationsList.scrollToPosition(0)
     }
 
-    /** Moves to the next/previous filter chip, wrapping around at either end. */
-    private fun cycleFilter(forward: Boolean) {
-        val filters = currentFilters()
-        if (filters.size <= 1) return
-        val currentIndex = filters.indexOfFirst { it.id == activeFilter.id }.let { if (it == -1) 0 else it }
-        val nextIndex = if (forward) {
-            (currentIndex + 1) % filters.size
-        } else {
-            (currentIndex - 1 + filters.size) % filters.size
-        }
-        selectFilter(filters[nextIndex])
-    }
-
-    /**
-     * A left/right fling anywhere on the conversation list pages through the filter chips,
-     * like swiping between tabs. Registered as a passive observer (onInterceptTouchEvent
-     * always returns false) so normal row taps, vertical scrolling, and the conversation
-     * drag-reorder ItemTouchHelper all keep working exactly as before.
-     */
-    private fun setupFilterSwipeGesture() {
-        val gestureDetector = android.view.GestureDetector(
-            this,
-            object : android.view.GestureDetector.SimpleOnGestureListener() {
-                override fun onFling(
-                    e1: android.view.MotionEvent?,
-                    e2: android.view.MotionEvent,
-                    velocityX: Float,
-                    velocityY: Float,
-                ): Boolean {
-                    if (e1 == null) return false
-                    val deltaX = e2.x - e1.x
-                    val deltaY = e2.y - e1.y
-                    val isHorizontalFling = kotlin.math.abs(deltaX) > kotlin.math.abs(deltaY) * 2 &&
-                        kotlin.math.abs(deltaX) > 60 &&
-                        kotlin.math.abs(velocityX) > 300
-                    if (!isHorizontalFling) return false
-                    // Swipe left (negative dx) advances, matching the usual left-to-right
-                    // page order convention (e.g. ViewPager).
-                    cycleFilter(forward = deltaX < 0)
-                    return true
-                }
-            }
-        )
-
-        binding.conversationsList.addOnItemTouchListener(
-            object : androidx.recyclerview.widget.RecyclerView.OnItemTouchListener {
-                override fun onInterceptTouchEvent(
-                    rv: androidx.recyclerview.widget.RecyclerView,
-                    e: android.view.MotionEvent,
-                ): Boolean {
-                    gestureDetector.onTouchEvent(e)
-                    return false
-                }
-
-                override fun onTouchEvent(
-                    rv: androidx.recyclerview.widget.RecyclerView,
-                    e: android.view.MotionEvent,
-                ) = Unit
-
-                override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) = Unit
-            }
-        )
-    }
-
     private fun setupOneTimeViews() {
         binding.noConversationsPlaceholder2.setOnClickListener { launchNewConversation() }
         // The header's single control. The overflow menu it replaced offered archived
@@ -1192,7 +1249,6 @@ class MainActivity : SimpleActivity() {
             startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
         }
         buildFilterChips()
-        setupFilterSwipeGesture()
 
         // Once the user scrolls themselves, the remembered position is stale.
         binding.conversationsList.addOnScrollListener(
@@ -1548,7 +1604,11 @@ class MainActivity : SimpleActivity() {
 
         appbar.doOnLayout {
             if (isFinishing || isDestroyed) return@doOnLayout
-            val barsGap = 8.getScaledPx()
+            // The chips carry their own vertical padding, so this gap is only what separates
+            // one floating surface from the next. At 8dp on both sides of the row -- on top
+            // of that padding -- the strip between the header and the first card was mostly
+            // empty screen.
+            val barsGap = 5.getScaledPx()
             filterBar.updateLayoutParams<RelativeLayout.LayoutParams> {
                 topMargin = appbar.height + barsGap
             }
@@ -1591,7 +1651,7 @@ class MainActivity : SimpleActivity() {
     ) {
         val results = ArrayList<SearchResult>()
         conversations.forEach { conv ->
-            val date = (conv.date * 1000L).formatJalaliDateOrTime()
+            val date = (conv.date * 1000L).formatUiDateOrTime()
             results.add(SearchResult(messageId = -1, title = conv.title, snippet = conv.phoneNumber, date = date, threadId = conv.threadId, photoUri = conv.photoUri))
         }
         messages.sortedByDescending { it.id }.forEach { msg ->
@@ -1599,7 +1659,7 @@ class MainActivity : SimpleActivity() {
             if (recipient.isEmpty() && msg.participants.isNotEmpty()) {
                 recipient = TextUtils.join(", ", msg.participants.map { it.name })
             }
-            val date = (msg.date * 1000L).formatJalaliDateOrTime()
+            val date = (msg.date * 1000L).formatUiDateOrTime()
             results.add(SearchResult(messageId = msg.id, title = recipient, snippet = msg.body, date = date, threadId = msg.threadId, photoUri = msg.senderPhotoUri))
         }
         runOnUiThread {
@@ -1618,7 +1678,7 @@ class MainActivity : SimpleActivity() {
                 resources.getQuantityString(
                     R.plurals.search_results_count,
                     results.size,
-                    results.size.toString().toPersianDigits()
+                    results.size.toString().toUiDigits()
                 )
             }
 

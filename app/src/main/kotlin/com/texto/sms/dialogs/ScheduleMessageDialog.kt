@@ -17,9 +17,17 @@ import org.fossify.commons.extensions.isDynamicTheme
 import org.fossify.commons.extensions.setupDialogStuff
 import org.fossify.commons.extensions.toast
 import com.texto.sms.R
+import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.databinding.ScheduleMessageDialogBinding
+import com.texto.sms.helpers.applyTextoDialogSkin
 import com.texto.sms.extensions.roundToClosestMultipleOf
-import com.texto.sms.extensions.toJalaliDateText
+import com.texto.sms.extensions.toUiDateText
+import com.texto.sms.extensions.toUiDigits
+import com.texto.sms.extensions.withAlpha
+import com.texto.sms.helpers.TextoGlass
+import android.graphics.Typeface
+import android.util.TypedValue
+import android.view.ViewOutlineProvider
 import org.joda.time.DateTime
 import java.util.Calendar
 
@@ -38,16 +46,10 @@ class ScheduleMessageDialog(
     private val calendar = Calendar.getInstance()
 
     init {
-        arrayOf(binding.subtitle, binding.editTime, binding.editDate).forEach {
-            it.setTextColor(textColor)
-        }
+        styleSheet()
 
-        arrayOf(binding.dateImage, binding.timeImage).forEach {
-            it.applyColorFilter(textColor)
-        }
-
-        binding.editDate.setOnClickListener { showDatePicker() }
-        binding.editTime.setOnClickListener { showTimePicker() }
+        binding.editDateRow.setOnClickListener { showDatePicker() }
+        binding.editTimeRow.setOnClickListener { showTimePicker() }
 
         val targetDateTime = dateTime ?: DateTime.now().plusHours(1)
         updateTexts(targetDateTime)
@@ -59,10 +61,49 @@ class ScheduleMessageDialog(
         }
     }
 
+    /**
+     * The two rows are the same capsules the chooser sheets are built from, rather than plain
+     * text with a stock ripple on it. Sizes come from the UI:scale setting for the same reason
+     * every other surface reads them from there.
+     */
+    private fun styleSheet() {
+        val texto = activity as? SimpleActivity ?: return
+        val density = activity.resources.displayMetrics.density
+
+        binding.subtitle.apply {
+            setTextColor(textColor.withAlpha(0.62f))
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, texto.getScaledTextSize(0.78f))
+            typeface = texto.typefaceFor(Typeface.NORMAL)
+        }
+
+        arrayOf(binding.editDate, binding.editTime).forEach {
+            it.setTextColor(textColor)
+            it.setTextSize(TypedValue.COMPLEX_UNIT_PX, texto.getScaledTextSize())
+            it.typeface = texto.typefaceFor(Typeface.NORMAL)
+        }
+
+        arrayOf(binding.dateImage, binding.timeImage).forEach {
+            it.applyColorFilter(activity.config.accentGradientStart)
+        }
+
+        arrayOf(binding.editDateRow, binding.editTimeRow).forEach { row ->
+            row.background = TextoGlass.bar(
+                tint = activity.config.mainBackgroundColor,
+                cornerRadius = 100f * density,
+                opacity = 0.5f,
+                strokeWidthPx = 1,
+                rimAlpha = 0.18f
+            )
+            row.outlineProvider = ViewOutlineProvider.BACKGROUND
+        }
+    }
+
     private fun updateTexts(dateTime: DateTime) {
         val timeFormat = activity.getTimeFormat()
-        binding.editDate.text = dateTime.toJalaliDateText()
-        binding.editTime.text = dateTime.toString(timeFormat)
+        binding.editDate.text = dateTime.toUiDateText()
+        // Shaped to the app's language, like every other time in the app: Persian digits
+        // under fa, ASCII under en. See toUiDigits.
+        binding.editTime.text = dateTime.toString(timeFormat).toUiDigits()
     }
 
     private fun showPreview() {
@@ -71,12 +112,13 @@ class ScheduleMessageDialog(
         }
 
         activity.getAlertDialogBuilder()
-            .setPositiveButton(org.fossify.commons.R.string.ok, null)
-            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
+            .setPositiveButton(R.string.action_confirm, null)
+            .setNegativeButton(R.string.action_cancel, null)
             .apply {
                 previewShown = true
                 activity.setupDialogStuff(binding.root, this, R.string.schedule_message) { dialog ->
                     previewDialog = dialog
+                    (activity as? SimpleActivity)?.applyTextoDialogSkin(dialog)
                     dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                         if (validateDateTime()) {
                             callback(dateTime)
@@ -124,9 +166,17 @@ class ScheduleMessageDialog(
             timePicker.show(activity.supportFragmentManager, "")
         } else {
             val timeSetListener = OnTimeSetListener { _, hours, minutes -> timeSet(hours, minutes) }
+            // The platform clock, at the polarity of whatever the skin actually paints behind
+            // it. Commons resolves this from the *base* theme, so on a dark skin the picker
+            // arrived as a white panel over a near-black screen.
+            val pickerTheme = if (TextoGlass.isDark(activity.config.mainBackgroundColor)) {
+                android.R.style.Theme_DeviceDefault_Dialog_Alert
+            } else {
+                android.R.style.Theme_DeviceDefault_Light_Dialog_Alert
+            }
             TimePickerDialog(
                 activity,
-                activity.getDatePickerDialogTheme(),
+                pickerTheme,
                 timeSetListener,
                 hourOfDay,
                 minute,
@@ -134,11 +184,14 @@ class ScheduleMessageDialog(
             ).apply {
                 show()
                 getButton(AlertDialog.BUTTON_NEGATIVE).apply {
-                    text = activity.getString(org.fossify.commons.R.string.cancel)
+                    // Commons' string reaches this Persian-only screen in English.
+                    text = activity.getString(R.string.action_cancel)
                     setOnClickListener {
                         dismiss()
                     }
                 }
+                getButton(AlertDialog.BUTTON_POSITIVE)?.text =
+                    activity.getString(R.string.action_confirm)
             }
         }
     }

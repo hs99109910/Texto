@@ -55,21 +55,22 @@
             android:theme="@style/SplashTheme">
         </activity>
         <!--
-            The launcher draws an app's icon from static resources in its own process, so
-            nothing the app runs can recolour it. Twelve pre rendered rotations of the mark are
-            declared as aliases instead, and the tonality strip enables whichever one is
-            nearest the angle the user picked : see TextoLauncherIcon.
+            The brand mark is fixed artwork: the tonality strip recolours the rest of the app
+            but never the icon, so every alias below now serves the same @mipmap/ic_launcher.
 
-            Only one is ever enabled. The launcher entry lives here rather than on
-            SplashActivity, which the aliases target, so exactly one icon shows.
+            They are kept, rather than collapsed back into one entry, because a launcher
+            shortcut is rooted at the alias it was created from. An install still sitting on
+            .IconH07 from when these carried twelve different rotations would lose its home
+            screen entry the moment that name stopped resolving. They can go once no install
+            is on one.
         -->
         <activity-alias
             android:name=".IconH00"
             android:targetActivity=".activities.SplashActivity"
             android:exported="true"
             android:enabled="true"
-            android:icon="@mipmap/ic_launcher_h00"
-            android:roundIcon="@mipmap/ic_launcher_h00"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/app_launcher_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -81,8 +82,8 @@
             android:targetActivity=".activities.SplashActivity"
             android:exported="true"
             android:enabled="false"
-            android:icon="@mipmap/ic_launcher_h01"
-            android:roundIcon="@mipmap/ic_launcher_h01"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/app_launcher_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -94,8 +95,8 @@
             android:targetActivity=".activities.SplashActivity"
             android:exported="true"
             android:enabled="false"
-            android:icon="@mipmap/ic_launcher_h02"
-            android:roundIcon="@mipmap/ic_launcher_h02"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/app_launcher_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -107,8 +108,8 @@
             android:targetActivity=".activities.SplashActivity"
             android:exported="true"
             android:enabled="false"
-            android:icon="@mipmap/ic_launcher_h03"
-            android:roundIcon="@mipmap/ic_launcher_h03"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/app_launcher_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -120,8 +121,8 @@
             android:targetActivity=".activities.SplashActivity"
             android:exported="true"
             android:enabled="false"
-            android:icon="@mipmap/ic_launcher_h04"
-            android:roundIcon="@mipmap/ic_launcher_h04"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/app_launcher_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -133,8 +134,8 @@
             android:targetActivity=".activities.SplashActivity"
             android:exported="true"
             android:enabled="false"
-            android:icon="@mipmap/ic_launcher_h05"
-            android:roundIcon="@mipmap/ic_launcher_h05"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/app_launcher_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -146,8 +147,8 @@
             android:targetActivity=".activities.SplashActivity"
             android:exported="true"
             android:enabled="false"
-            android:icon="@mipmap/ic_launcher_h06"
-            android:roundIcon="@mipmap/ic_launcher_h06"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/app_launcher_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -159,8 +160,8 @@
             android:targetActivity=".activities.SplashActivity"
             android:exported="true"
             android:enabled="false"
-            android:icon="@mipmap/ic_launcher_h07"
-            android:roundIcon="@mipmap/ic_launcher_h07"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/app_launcher_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -172,8 +173,8 @@
             android:targetActivity=".activities.SplashActivity"
             android:exported="true"
             android:enabled="false"
-            android:icon="@mipmap/ic_launcher_h08"
-            android:roundIcon="@mipmap/ic_launcher_h08"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/app_launcher_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -185,8 +186,8 @@
             android:targetActivity=".activities.SplashActivity"
             android:exported="true"
             android:enabled="false"
-            android:icon="@mipmap/ic_launcher_h09"
-            android:roundIcon="@mipmap/ic_launcher_h09"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/app_launcher_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -198,8 +199,8 @@
             android:targetActivity=".activities.SplashActivity"
             android:exported="true"
             android:enabled="false"
-            android:icon="@mipmap/ic_launcher_h10"
-            android:roundIcon="@mipmap/ic_launcher_h10"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/app_launcher_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -211,8 +212,8 @@
             android:targetActivity=".activities.SplashActivity"
             android:exported="true"
             android:enabled="false"
-            android:icon="@mipmap/ic_launcher_h11"
-            android:roundIcon="@mipmap/ic_launcher_h11"
+            android:icon="@mipmap/ic_launcher"
+            android:roundIcon="@mipmap/ic_launcher_round"
             android:label="@string/app_launcher_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

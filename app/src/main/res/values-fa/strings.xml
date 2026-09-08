@@ -1,119 +1,431 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="unarchive">درآوردن از بایگانی</string>
-    <string name="enable_custom_notifications">تنظیم اعلان شخصی‌شده</string>
-    <string name="archive">بایگانی کردن</string>
-    <string name="show_archived_conversations">نمایش بایگانی‌ها</string>
-    <string name="empty_archive">حذف همه‌ی بایگانی‌ها</string>
-    <string name="no_archived_conversations">هیچ پیامی در بایگانی نیست</string>
-    <string name="archive_emptied_successfully">بایگانی با موفقیت خالی شد</string>
-    <string name="restore">بازیابی</string>
-    <string name="restore_all_messages">بازیابی همه‌ی پیام‌ها</string>
-    <string name="skip_the_recycle_bin_messages">بی‌خیال سطل شو، پیام‌ها را درجا حذف کن</string>
-    <string name="delete_whole_conversation_confirmation">همه‌ی پیام‌های این گفت‌وگو حذف شود؟</string>
-    <string name="restore_confirmation">‏%s بازیابی شود؟</string>
-    <plurals name="delete_conversations">
-        <item quantity="one">‏%d گفت‌وگو</item>
-        <item quantity="other">‏%d گفت‌وگو</item>
-    </plurals>
-    <string name="keyword">کلیدواژه</string>
-    <string name="blocked_keywords">کلیدواژه‌های مسدودشده</string>
-    <string name="not_blocking_keywords">کلیدواژه‌ای برای مسدودسازی ندارید. می‌توانید کلیدواژه‌ای اضافه کنید تا پیام‌های حاوی آن مسدود شوند.</string>
-    <string name="lock_screen_visibility">نمایش اعلان در صفحه‌ی قفل</string>
-    <string name="sender_and_message">فرستنده و پیام</string>
-    <string name="mms_file_size_limit">تغییر اندازه‌ی تصاویر ارسالی در فراپیام</string>
-    <string name="outgoing_messages">پیام‌های ارسالی</string>
-    <string name="group_message_mms">ارسال پیام گروهی در قالب فراپیام</string>
-    <string name="send_long_message_mms">ارسال پیام‌های طولانی در قالب فراپیام</string>
-    <string name="export_messages">برون‌برد پیام‌ها</string>
-    <string name="export_mms">برون‌برد فراپیام‌ها</string>
-    <string name="import_messages">درون‌برد پیام‌ها</string>
-    <string name="import_sms">درون‌برد پیامک‌ها</string>
-    <string name="import_mms">درون‌برد فراپیام‌ها</string>
-    <string name="no_option_selected">حداقل یک مورد را انتخاب کنید</string>
-    <string name="empty_destination_address">ارسال پیام به شماره‌ی خالی امکان‌پذیر نیست</string>
-    <string name="unable_to_save_message">ذخیره‌سازی پیام در دادگان تلفن امکان‌پذیر نیست</string>
-    <string name="invalid_short_code">پاسخ به کدهای کوتاه مثل این امکان‌پذیر نیست</string>
-    <string name="error_service_is_unavailable">پیام ارسال نشد، خارج از دسترس</string>
-    <string name="error_radio_turned_off">پیام ارسال نشد، فرستنده خاموش است</string>
-    <string name="carrier_send_error">پیام ارسال نشد، خطای اپراتور</string>
-    <string name="attachment_sized_exceeds_max_limit">اندازه‌ی پیوست بیشتر از حد مجاز فراپیام است</string>
-    <string name="sim_card_not_available">سیم‌کارت نیست</string>
-    <string name="faq_1_title">این برنامه چه نیازی به دسترسی به اینترنت دارد؟</string>
-    <string name="faq_2_title">طرف مقابل فراپیام مرا نمی‌گیرد، چه کار می‌توانم بکنم؟</string>
-    <string name="faq_2_text">اندازه‌ی فراپیام از سوی اپراتور محدود شده است؛ می‌توانید در تنظیمات برنامه، حد کمتری را امتحان کنید.</string>
-    <string name="faq_3_title">آیا این برنامه از پیام‌های زمان‌بندی‌شده پشتیبانی می‌کند؟</string>
-    <string name="type_a_message">متن پیام…‏</string>
-    <string name="message_not_sent_touch_retry">ارسال نشد. برای تلاش دوباره، لمس کنید.</string>
-    <string name="message_sending_error">پیام شما به %s ارسال نشده</string>
-    <string name="unknown_error_occurred_sending_message">پیام ارسال نشد، خطای کد %d‏</string>
-    <string name="duplicate_item_warning">مورد تکراری درج نشد</string>
-    <plurals name="and_other_contacts">
-        <item quantity="one">و %d نفر دیگر</item>
-        <item quantity="other">و %d نفر دیگر</item>
-    </plurals>
-    <string name="add_contact_or_number">افزودن مخاطب یا شماره…</string>
-    <string name="members">عضوها</string>
-    <string name="conversation_name">عنوان گفت‌وگو</string>
-    <string name="conversation_details">جزئیات گفت‌وگو</string>
-    <string name="rename_conversation_warning">تنها شما می‌توانید این عنوان گفت‌وگو را ببینید</string>
-    <string name="schedule_send_warning">گوشی را روشن نگه دارید و مطمئن شوید که هیچ‌چیز فعالیت برنامه در پس‌زمینه را متوقف نکند.</string>
-    <string name="archived_conversations">بایگانی</string>
-    <string name="empty_archive_confirmation">بایگانی، خالی شود؟ همه‌ی پیام‌های بایگانی برای همیشه حذف می‌شوند.</string>
-    <string name="empty_recycle_bin_messages_confirmation">سطل زباله، خالی شود؟ پیام‌ها برای همیشه حذف می‌شوند.</string>
-    <string name="archive_confirmation">‏%s بایگانی شود؟</string>
-    <string name="restore_whole_conversation_confirmation">همه‌ی پیام‌های این گفت‌وگو بازیابی شود؟</string>
-    <plurals name="delete_messages">
-        <item quantity="one">‏%d پیام</item>
-        <item quantity="other">‏%d پیام</item>
-    </plurals>
-    <string name="manage_blocked_keywords">مدیریت کلیدواژه‌های مسدودشده</string>
-    <string name="enable_delivery_reports">گزارش تحویل پیام</string>
-    <string name="use_simple_characters">حذف نشانه‌های حروف لاتین هنگام ارسال پیام</string>
-    <string name="mms_file_size_limit_none">بدون محدودیت</string>
-    <string name="messages">پیام‌ها</string>
-    <string name="export_sms">برون‌برد پیامک‌ها</string>
-    <string name="invalid_short_code_desc">فقط می‌توانید به سرشماره‌های عددی مثل 7575 پیام بفرستید؛ نه به سرشماره‌های الفبایی مثل IRANCELL.‏</string>
-    <string name="couldnt_download_mms">فراپیام بارگیری نشد</string>
-    <string name="faq_1_text">متأسفانه برای ارسال فراپیام لازم است. عدم امکان ارسال فراپیام، در مقایسه با دیگر برنامه‌ها، کمبود بزرگی به حساب می‌آید؛ بنابراین تصمیم گرفتیم بی‌خیالش نشویم. با این حال، طبق معمول، هیچ تبلیغات، ردیابی یا تحلیل داده‌ای به هیچ وجه در کار نیست؛ اینترنت فقط برای ارسال فراپیام استفاده می‌شود.</string>
-    <string name="add_person">افزودن گیرنده</string>
-    <string name="add_a_blocked_keyword">افزودن کلیدواژه‌ی مسدودشده</string>
-    <string name="faq_3_text">بله، می‌توانید با نگه‌داشتن دکمه‌ی ارسال و انتخاب تاریخ و ساعت دلخواه، پیام‌ها را برای ارسال در آینده زمان‌بندی کنید.</string>
-    <string name="app_launcher_name">پیام‌ها</string>
+    <string name="app_launcher_name">Texto</string>
+    <string name="type_a_message">پیام بنویسید…</string>
     <string name="message_not_sent_short">پیام ارسال نشد</string>
+    <string name="message_not_sent_touch_retry">ارسال نشد. برای تلاش دوباره لمس کنید.</string>
+    <string name="resend_failed_title">این پیام ارسال نشد</string>
+    <string name="resend_failed_send">ارسال مجدد</string>
+    <string name="resend_failed_send_desc">همین متن دوباره فرستاده می‌شود</string>
+    <string name="resend_failed_edit">ویرایش متن</string>
+    <string name="resend_failed_edit_desc">متن به نوار تایپ برمی‌گردد</string>
+    <string name="resend_failed_edit_mms_desc">پیوست باید دوباره افزوده شود</string>
+    <string name="resend_failed_delete">حذف پیام</string>
+    <string name="resend_failed_delete_desc">از گفتگو برداشته می‌شود</string>
+    <string name="resend_failed_empty">متنی برای ارسال دوباره نمانده است</string>
+    <string name="message_sending_error">پیام شما به «%s» ارسال نشد</string>
+    <string name="add_person">ذخیرهٔ همهٔ شماره‌ها در مخاطبین</string>
     <string name="attachment">پیوست</string>
-    <string name="start_conversation">گفت‌وگویی را آغاز کنید</string>
+    <string name="picker_title">انتخاب پیوست</string>
+    <string name="picker_image">تصویر</string>
+    <string name="picker_video">ویدیو</string>
+    <string name="picker_camera">دوربین</string>
+    <string name="picker_camera_video">فیلم‌برداری</string>
+    <string name="picker_audio">صدا</string>
+    <string name="picker_file">فایل</string>
+    <string name="picker_contact">مخاطب</string>
+    <string name="picker_schedule">زمان‌بندی</string>
+    <string name="no_conversations_found">هیچ گفتگویی یافت نشد</string>
+    <string name="start_conversation">شروع گفتگو</string>
     <string name="reply">پاسخ</string>
-    <string name="loading_messages">در حال بارگیری پیام‌ها…</string>
-    <string name="no_reply_support">فرستنده، امکان دریافت پاسخ ندارد</string>
+    <string name="show_character_counter">نمایش شمارنده نویسه هنگام نوشتن پیام</string>
+    <string name="loading_messages">در حال بارگذاری پیام‌ها…</string>
+    <string name="no_reply_support">فرستنده از پاسخ پشتیبانی نمی‌کند</string>
     <string name="draft">پیش‌نویس</string>
     <string name="sending">در حال ارسال…</string>
     <string name="pin_conversation">سنجاق به بالا</string>
     <string name="unpin_conversation">برداشتن سنجاق</string>
-    <string name="forward_message">ارسال به دیگری</string>
-    <string name="compress_error">امکان فشرده‌سازی تصویر به اندازه‌ی انتخاب‌شده وجود ندارد</string>
-    <string name="new_conversation">گفت‌وگوی تازه</string>
+    <string name="forward_message">هدایت</string>
+    <string name="compress_error">فشرده‌سازی تصویر به اندازه انتخابی ممکن نشد</string>
+    <!-- Attachments -->
+    <string name="duplicate_item_warning">مورد تکراری اضافه نشد</string>
+    <!-- vCard -->
+    <plurals name="and_other_contacts">
+        <item quantity="one">و %d نفر دیگر</item>
+        <item quantity="other">و %d نفر دیگر</item>
+    </plurals>
+    <!-- New conversation -->
+    <string name="new_conversation">گفتگوی جدید</string>
+    <!-- The compose tab caption in the bottom capsule; kept short so it fits a quarter of it. -->
+    <string name="nav_new_message">پیام جدید</string>
+    <string name="add_contact_or_number">افزودن مخاطب یا شماره…</string>
     <string name="suggestions">پیشنهادها</string>
-    <string name="no_conversations_found">هیچ گفت‌وگویی نداشته اید</string>
-    <string name="show_character_counter">نمایش شمارشگر نویسه‌ها هنگام نوشتن پیام</string>
-    <string name="rename_conversation">تغییر عنوان گفت‌وگو</string>
+    <!-- Group conversation -->
+    <string name="members">اعضا</string>
+    <string name="conversation_name">نام گفتگو</string>
+    <string name="notifications_title">اعلان‌ها</string>
+    <string name="customize_notifications_title">شخصی‌سازی اعلان‌ها</string>
+    <string name="conversation_details">جزئیات گفتگو</string>
+    <string name="rename_conversation">تغییر نام گفتگو</string>
+    <string name="rename_conversation_warning">این نام را فقط شما می‌بینید</string>
+    <!-- Schedule send -->
     <string name="scheduled_message">پیام زمان‌بندی‌شده</string>
     <string name="schedule_message">زمان‌بندی پیام</string>
-    <string name="schedule_send">ارسال زمان‌دار</string>
-    <string name="cancel_schedule_send">لغو ارسال زمان‌دار</string>
+    <string name="schedule_send">ارسال زمان‌بندی‌شده</string>
+    <string name="cancel_schedule_send">لغو ارسال زمان‌بندی‌شده</string>
     <string name="must_pick_time_in_the_future">باید زمانی در آینده انتخاب کنید</string>
+    <string name="schedule_send_warning">گوشی را روشن نگه دارید و مطمئن شوید چیزی برنامه را در پس‌زمینه نمی‌بندد.</string>
     <string name="update_message">به‌روزرسانی پیام</string>
-    <string name="send_now">همین الآن بفرست</string>
-    <string name="message_details">اطلاعات پیام</string>
+    <string name="send_now">ارسال فوری</string>
+    <string name="select_date">انتخاب تاریخ</string>
+    <string name="day_after_tomorrow">پس‌فردا</string>
+    <string name="or_pick_a_custom_date">یا یک تاریخ دیگر انتخاب کنید</string>
+    <!-- Message details -->
+    <string name="message_details">جزئیات پیام</string>
     <string name="message_details_sender">فرستنده</string>
     <string name="message_details_receiver">گیرنده</string>
-    <string name="message_details_received_at">دریافتی در</string>
-    <string name="message_details_sent_at">ارسالی در</string>
+    <string name="message_details_sent_at">زمان ارسال</string>
+    <string name="message_details_received_at">زمان دریافت</string>
+    <!-- Notifications -->
     <string name="channel_received_sms">پیامک دریافتی</string>
-    <string name="new_message">پیام تازه</string>
-    <string name="mark_as_read">خوانده شده</string>
-    <string name="mark_as_unread">خوانده نشده</string>
+    <string name="new_message">پیام جدید</string>
+    <string name="mark_as_read">علامت‌گذاری به‌عنوان خوانده‌شده</string>
+    <string name="mark_as_unread">علامت‌گذاری به‌عنوان خوانده‌نشده</string>
     <string name="me">من</string>
+    <string name="enable_custom_notifications">فعال‌سازی اعلان‌های اختصاصی</string>
+    <!-- Archive -->
+    <string name="unarchive">خروج از بایگانی</string>
+    <string name="empty_archive">حذف همه گفتگوهای بایگانی‌شده</string>
+    <string name="archived_conversations">بایگانی</string>
+    <string name="show_archived_conversations">نمایش گفتگوهای بایگانی‌شده</string>
+    <string name="archive">بایگانی</string>
+    <string name="no_archived_conversations">هیچ گفتگوی بایگانی‌شده‌ای یافت نشد</string>
+    <string name="archive_emptied_successfully">بایگانی با موفقیت خالی شد</string>
+    <string name="empty_archive_confirmation">آیا از خالی کردن بایگانی مطمئن هستید؟ همه گفتگوهای بایگانی‌شده برای همیشه پاک می‌شوند.</string>
+    <string name="keep_conversations_archived">گفتگوها در بایگانی بمانند</string>
+    <!-- Recycle bin -->
+    <string name="restore">بازگردانی</string>
+    <string name="restore_all_messages">بازگردانی همه پیام‌ها</string>
+    <string name="empty_recycle_bin_messages_confirmation">آیا از خالی کردن سطل آشغال مطمئن هستید؟ پیام‌ها برای همیشه پاک می‌شوند.</string>
+    <string name="skip_the_recycle_bin_messages">بدون سطل آشغال، پیام‌ها مستقیم حذف شوند</string>
+    <!-- Confirmation dialog -->
+    <string name="delete_whole_conversation_confirmation">آیا از حذف همه پیام‌های این گفتگو مطمئن هستید؟</string>
+    <string name="archive_confirmation">آیا از بایگانی کردن %s مطمئن هستید؟</string>
+    <string name="restore_whole_conversation_confirmation">آیا از بازگردانی همه پیام‌های این گفتگو مطمئن هستید؟</string>
+    <string name="restore_confirmation">آیا از بازگردانی %s مطمئن هستید؟</string>
+    <!-- Are you sure you want to delete 5 conversations? -->
+    <!-- The thread header status line for a group: "4 members". -->
+    <plurals name="thread_members">
+        <item quantity="one">%d عضو</item>
+        <item quantity="other">%d عضو</item>
+    </plurals>
+    <plurals name="delete_conversations">
+        <item quantity="one">%d گفتگو</item>
+        <item quantity="other">%d گفتگو</item>
+    </plurals>
+    <!-- Are you sure you want to delete 5 messages? -->
+    <plurals name="delete_messages">
+        <item quantity="one">%d پیام</item>
+        <item quantity="other">%d پیام</item>
+    </plurals>
+    <!-- Settings -->
+    <string name="lock_screen_visibility">نمایش اعلان در صفحه قفل</string>
+    <string name="sender_and_message">فرستنده و پیام</string>
     <string name="sender_only">فقط فرستنده</string>
-    <string name="send_on_enter">ارسال پیام با کلید اینتر</string>
+    <string name="enable_delivery_reports">فعال‌سازی گزارش تحویل</string>
+    <string name="use_simple_characters">حذف اعراب و نویسه‌های ویژه هنگام ارسال</string>
+    <string name="send_on_enter">ارسال پیام با زدن Enter</string>
+    <string name="mms_file_size_limit">تغییر اندازه تصاویر MMS ارسالی</string>
+    <string name="mms_file_size_limit_none">بدون محدودیت</string>
+    <string name="mms_file_size_limit_50mb">۵۰ مگابایت</string>
+    <string name="mms_file_size_limit_100mb">۱۰۰ مگابایت</string>
+    <string name="outgoing_messages">پیام‌های خروجی</string>
+    <string name="group_message_mms">ارسال پیام‌های گروهی به‌صورت MMS</string>
+    <string name="send_long_message_mms">ارسال پیام‌های بلند به‌صورت MMS</string>
+    <!-- Export / Import -->
+    <string name="messages">پیام‌ها</string>
+    <string name="export_messages">برون‌بری پیام‌ها</string>
+    <string name="export_sms">برون‌بری پیامک</string>
+    <string name="export_mms">برون‌بری MMS</string>
+    <string name="import_messages">درون‌ریزی پیام‌ها</string>
+    <string name="import_sms">درون‌ریزی پیامک</string>
+    <string name="import_mms">درون‌ریزی MMS</string>
+    <string name="no_option_selected">باید حداقل یک مورد انتخاب کنید</string>
+    <!-- Errors -->
+    <string name="empty_destination_address">ارسال پیام به شماره خالی ممکن نیست</string>
+    <string name="unable_to_save_message">ذخیره پیام در پایگاه داده مخابراتی ممکن نشد</string>
+    <string name="error_service_is_unavailable">ارسال پیام ممکن نشد، سرویس در دسترس نیست</string>
+    <string name="error_radio_turned_off">ارسال پیام ممکن نشد، آنتن خاموش است</string>
+    <string name="carrier_send_error">ارسال پیام ممکن نشد، خطای اپراتور</string>
+    <string name="unknown_error_occurred_sending_message">ارسال پیام ممکن نشد، کد خطا: %d</string>
+    <string name="invalid_short_code">به این نوع کد کوتاه نمی‌توان پاسخ داد</string>
+    <string name="invalid_short_code_desc">فقط می‌توانید به کدهای کوتاه عددی مانند «۵۰۳۵۰۱» پاسخ دهید، نه کدهایی که حروف و عدد دارند مانند «AB-CD0».</string>
+    <string name="attachment_sized_exceeds_max_limit">حجم پیوست از حد مجاز MMS بیشتر است</string>
+    <string name="sim_card_not_available">سیم‌کارت در دسترس نیست</string>
+    <string name="select_sim_card">انتخاب سیم‌کارت</string>
+    <string name="no_browser_found">مرورگری برای باز کردن این لینک پیدا نشد</string>
+    <string name="insert_emoji">درج شکلک</string>
+    <!-- %1$s is the carrier name, %2$s the colour assigned to that SIM slot. -->
+    <string name="sim_card_with_color">%1$s (%2$s)</string>
+    <string name="color_red">قرمز</string>
+    <string name="color_orange">نارنجی</string>
+    <string name="color_yellow">زرد</string>
+    <string name="color_green">سبز</string>
+    <string name="color_teal">فیروزه‌ای</string>
+    <string name="color_blue">آبی</string>
+    <string name="color_purple">بنفش</string>
+    <string name="color_pink">صورتی</string>
+    <string name="color_black">مشکی</string>
+    <string name="color_grey">خاکستری</string>
+    <string name="color_white">سفید</string>
+    <string name="search_hint">نام، شماره یا متن پیام…</string>
+    <string name="clear_search">پاک کردن جستجو</string>
+    <string name="search_date_any">هر زمان</string>
+    <string name="search_date_title">بازهٔ زمانی</string>
+    <string name="search_date_today">امروز</string>
+    <string name="search_date_yesterday">دیروز</string>
+    <string name="search_date_week">۷ روز اخیر</string>
+    <string name="search_date_month">۳۰ روز اخیر</string>
+    <string name="search_date_quarter">۳ ماه اخیر</string>
+    <string name="search_date_custom">انتخاب بازه…</string>
+    <!-- %1$s is the start of the range, %2$s the end, both Jalali. -->
+    <string name="search_date_range">%1$s تا %2$s</string>
+    <string name="search_date_pick_hint">روز شروع را انتخاب کنید</string>
+    <string name="search_date_pick_end">از %1$s : روز پایان را انتخاب کنید</string>
+    <string name="search_in_conversation">جستجو در این گفتگو</string>
+    <plurals name="search_results_count">
+        <item quantity="one">%s نتیجه</item>
+        <item quantity="other">%s نتیجه</item>
+    </plurals>
+    <string name="search_no_results">نتیجه‌ای یافت نشد</string>
+    <string name="search_type_more">برای شروع جستجو دست‌کم دو حرف بنویسید</string>
+    <string name="action_confirm">تأیید</string>
+    <string name="action_cancel">انصراف</string>
+    <string name="search_date_picked">تاریخ انتخابی</string>
+    <string name="search_in_thread">جستجو در این گفتگو</string>
+    <string name="couldnt_download_mms">دریافت MMS ممکن نشد</string>
+    <!-- FAQ -->
+    <string name="faq_1_title">چرا برنامه به اینترنت نیاز دارد؟</string>
+    <string name="faq_1_text">متأسفانه برای ارسال پیوست‌های MMS لازم است. نبود امکان ارسال MMS نسبت به برنامه‌های دیگر ضعف بزرگی بود، برای همین این راه انتخاب شد.
+    با این حال طبق معمول هیچ تبلیغ، ردیابی یا آماربرداری وجود ندارد و اینترنت فقط برای ارسال MMS استفاده می‌شود.</string>
+    <string name="faq_2_title">طرف مقابل MMS من را دریافت نمی‌کند، چه کاری می‌توانم بکنم؟</string>
+    <string name="faq_2_text">حجم MMS را اپراتورها محدود می‌کنند؛ می‌توانید در تنظیمات برنامه حد کمتری تعیین کنید.</string>
+    <string name="faq_3_title">آیا برنامه از پیام زمان‌بندی‌شده پشتیبانی می‌کند؟</string>
+    <string name="faq_3_text">بله، با نگه داشتن دکمه ارسال و انتخاب تاریخ و ساعت دلخواه می‌توانید پیام را برای آینده زمان‌بندی کنید.</string>
+    <string name="faq_4_title">چرا پاسخ‌های گروهی من برای گیرنده‌ها جداگانه نمایش داده می‌شود؟</string>
+    <string name="faq_4_text">باید گزینه «ارسال پیام‌های گروهی به‌صورت MMS» را در تنظیمات فعال کنید. این کار باعث می‌شود پیام‌های گروهی به‌صورت MMS واقعی ارسال شوند و همه شرکت‌کنندگان پاسخ یکدیگر را ببینند.</string>
+    <!--
+        Haven't found some strings? There's more at
+        https://github.com/TextoOrg/Commons/tree/master/commons/src/main/res
+    -->
+    <string name="restart_app_for_changes_to_take_effect">برای اعمال تغییرات باید برنامه را دوباره اجرا کنید</string>
+    <string name="sideloading_unmodded"></string>
+    <string name="sideloading_unmodded_title"></string>
+    <!-- Texto additions -->
+    <string name="more_options">گزینه‌های بیشتر</string>
+    <string name="back">بازگشت</string>
+    <string name="manage_blocked_numbers">شماره‌های مسدود شده</string>
+    <string name="blocked_numbers_unavailable">این دستگاه صفحه شماره‌های مسدود شده ندارد</string>
+    <string name="no_conversations_in_filter">گفتگویی در این دسته نیست</string>
+    <string name="permission_required">نیاز به اجازه</string>
+    <string name="grant_permission">دادن اجازه</string>
+    <string name="allow_alarm_scheduled_messages">برای ارسال پیام زمان‌بندی‌شده، باید به برنامه اجازهٔ دسترسی به زنگ‌های داخلی داده شود.</string>
+    <string name="allow_notifications_incoming_messages">برای اطلاع از پیام‌های دریافتی، باید به برنامه اجازهٔ نمایش اعلان داده شود.</string>
+    <string name="filter_no_ads_explainer">از این پس «بدون تبلیغات» فیلتر پیش‌فرض هنگام باز شدن برنامه است.\n\nهر گفتگویی را که تبلیغاتی است چند ثانیه لمس کنید و به فیلتر تبلیغات بیفزایید؛ از آن پس در «بدون تبلیغات» نمایش داده نمی‌شود.</string>
+    <string name="custom_colour">رنگ دلخواه…</string>
+    <string name="type_a_number">شماره را وارد کنید</string>
+    <string name="switch_to_keypad">صفحه‌کلید عددی</string>
+    <string name="switch_to_search">جستجوی نام</string>
+    <string name="font_system_default">پیش‌فرض سیستم</string>
+    <string name="font_not_installed">فایل فونت موجود نیست</string>
+    <string name="update_available_description">نسخه جدیدی در GitHub موجود است. اکنون به‌روزرسانی می‌کنید؟</string>
+    <!-- Filters -->
+    <string name="filter_all">همه</string>
+    <string name="filter_contacts_only">مخاطبین</string>
+    <string name="add_filter">فیلتر جدید</string>
+    <string name="edit_filter">ویرایش فیلتر</string>
+    <string name="filter_name">نام فیلتر</string>
+    <string name="filter_name_required">نام فیلتر را وارد کنید</string>
+    <string name="pick_senders">انتخاب از چت‌ها</string>
+    <string name="no_senders_picked">هیچ فرستنده‌ای انتخاب نشده</string>
+    <string name="no_conversations_to_pick">چتی برای انتخاب وجود ندارد</string>
+    <string name="filter_group_first_member_only">(فقط نفر اول گروه)</string>
+    <string name="search_senders_hint">جستجو</string>
+    <string name="delete_filter_confirmation">فیلتر «%s» حذف شود؟</string>
+    <string name="mark_select">انتخاب</string>
+    <string name="delivered">تحویل شد</string>
+    <string name="add_to_filter">افزودن به فیلتر</string>
+    <string name="today">امروز</string>
+    <string name="tomorrow">فردا</string>
+    <string name="will_send_at">ارسال %1$s ساعت %2$s — برای تغییر بزنید</string>
+    <string name="message_scheduled">پیام زمان‌بندی شد</string>
+    <string name="added_to_filter">به فیلتر اضافه شد</string>
+    <string name="already_in_filter">از قبل در این فیلتر هست</string>
+    <string name="copy_code">کپی کد</string>
+    <string name="code_copied">کد کپی شد</string>
+    <string name="blocked_numbers">شماره‌های بلاک‌شده</string>
+    <string name="no_blocked_numbers">هیچ شماره‌ای بلاک نشده</string>
+    <string name="unblock">رفع بلاک</string>
+    <string name="copy_number_value">کپی عدد</string>
+    <string name="forward_number_value">فوروارد عدد</string>
+    <string name="app_theme">پوستهٔ برنامه</string>
+    <string name="settings_dark_mode">تم تاریک</string>
+    <string name="settings_dark_mode_sub">تغییر بین حالت تاریک و روشن</string>
+    <string name="theme_applied">پوسته اعمال شد</string>
+    <string name="glass_theme">پوسته شیشه‌ای</string>
+    <string name="selected">انتخاب‌شده</string>
+    <string name="settings_group_conversations">گفتگوها</string>
+    <string name="settings_group_filters">فیلترها</string>
+    <string name="settings_group_appearance">ظاهر و رنگ‌ها</string>
+    <string name="settings_title">تنظیمات</string>
+    <string name="settings_backgrounds_and_font">پس‌زمینه و فونت</string>
+    <string name="settings_top_bar_background">بالا و پایین</string>
+    <string name="settings_main_background">پس‌زمینه اصلی</string>
+    <string name="settings_input_bar_background">نوار جستجو و نوشتن</string>
+    <string name="settings_ui_scale">مقیاس رابط</string>
+    <string name="settings_glass_opacity">شفافیت نوارهای شیشه‌ای</string>
+    <string name="settings_accent_hue">تنالیتهٔ رنگ تم</string>
+    <string name="settings_sim1_color">رنگ سیم‌کارت ۱</string>
+    <string name="settings_sim2_color">رنگ سیم‌کارت ۲</string>
+    <string name="search">جستجو</string>
+    <string name="pick_from_chats">از فهرست گفتگوها</string>
+    <string name="pick_from_contacts">از مخاطبین</string>
+    <string name="no_contacts_to_pick">مخاطبی برای انتخاب نیست</string>
+    <string name="filter_needs_senders">حداقل یک فرستنده انتخاب کنید</string>
+    <string name="x_selected">%1$d مورد انتخاب شد</string>
+    <string name="bg_mode_color">رنگ معمولی</string>
+    <string name="bg_mode_image">تصویر</string>
+    <string name="bg_mode_gradient">رنگ سایه‌دار</string>
+    <string name="bg_mode_linear">گرادیان دو رنگ</string>
+    <string name="nav_contacts">مخاطبین</string>
+    <string name="settings_aurora_animate">حرکت آهسته هاله‌های پس‌زمینه</string>
+    <string name="settings_font_size">اندازه فونت</string>
+    <string name="font_size_small">کوچک</string>
+    <string name="font_size_medium">متوسط</string>
+    <string name="font_size_large">بزرگ</string>
+    <string name="font_size_extra_large">خیلی بزرگ</string>
+    <string name="settings_font">فونت</string>
+    <string name="settings_colors">رنگ‌ها</string>
+    <string name="settings_top_bar_text">متن نوار بالا</string>
+    <string name="settings_main_text">متن اصلی</string>
+    <string name="settings_input_bar_text">متن نوار جستجو و نوشتن</string>
+    <string name="settings_conversation_card_color">رنگ کارت گفتگو</string>
+    <string name="settings_message_bubbles">حباب‌های پیام</string>
+    <string name="settings_sent_bubble_color">رنگ حباب ارسالی</string>
+    <string name="settings_sent_bubble_text">متن حباب ارسالی</string>
+    <string name="settings_received_bubble_color">رنگ حباب دریافتی</string>
+    <string name="settings_received_bubble_text">متن حباب دریافتی</string>
+    <string name="settings_reset_customization">بازنشانی تنظیمات ظاهری</string>
+    <string name="filter_ads">تبلیغات</string>
+    <string name="settings_archived_messages">پیام‌های آرشیو شده</string>
+    <string name="deleted_messages">پیام‌های حذف شده</string>
+    <string name="filter_no_ads">بدون تبلیغات</string>
+    <string name="show_ads_filter">نمایش فیلتر بدون تبلیغات</string>
+    <string name="default_filter">فیلتر پیش‌فرض هنگام باز شدن</string>
+    <string name="add_to_ads_filter">افزودن به تبلیغات</string>
+    <string name="show_contacts_only_filter">نمایش فیلتر فقط مخاطبین</string>
+    <!-- Long-press menus (overrides Fossify Commons' English defaults) -->
+    <string name="copy_to_clipboard">کپی در کلیپ‌بورد</string>
+    <string name="share">اشتراک‌گذاری</string>
+    <string name="save_as">ذخیره به‌عنوان</string>
+    <string name="delete">حذف</string>
+    <string name="select_text">انتخاب متن</string>
+    <string name="select_all">انتخاب همه</string>
+    <string name="properties">جزئیات</string>
+    <string name="dial_number">شماره‌گیری</string>
+    <string name="add_number_to_contact">ذخیرهٔ این شماره در مخاطبین</string>
+    <string name="copy_number_to_clipboard">کپی شمارهٔ تلفن</string>
+    <string name="block_number">مسدود کردن شماره</string>
+    <!-- Settings: section labels and per-row subtitles (the redesigned grouped layout) -->
+    <string name="settings_group_size_font">اندازه و فونت</string>
+    <string name="settings_group_text_colors">رنگ متن‌ها</string>
+    <string name="settings_group_conversation_colors">رنگ گفتگوها</string>
+    <string name="settings_archived_messages_sub">گفتگوهایی که بایگانی کرده‌اید</string>
+    <string name="deleted_messages_sub">پیام‌های حذف‌شده تا ۳۰ روز اینجا می‌مانند</string>
+    <string name="blocked_numbers_sub">شماره‌هایی که پیامشان دریافت نمی‌شود</string>
+    <string name="show_contacts_only_filter_sub">نمایش فیلتر «مخاطبین» در نوار بالا</string>
+    <string name="show_ads_filter_sub">نمایش فیلتر «بدون تبلیغات» در نوار بالا</string>
+    <string name="default_filter_sub">فیلتری که هنگام باز شدن برنامه فعال است</string>
+    <string name="app_theme_sub">مجموعه رنگ و شکل کلی برنامه</string>
+    <string name="settings_top_bar_background_sub">رنگ نوار بالا و نوار پایین</string>
+    <string name="settings_main_background_sub">رنگ زمینه پشت گفتگوها</string>
+    <string name="settings_aurora_animate_sub">هاله‌های رنگی به‌آرامی جابه‌جا می‌شوند</string>
+    <string name="settings_ui_scale_sub">اندازه کلی دکمه‌ها و فاصله‌ها</string>
+    <string name="settings_glass_opacity_sub">هرچه کمتر، نوارها شفاف‌تر</string>
+    <string name="settings_accent_hue_sub">رنگ‌های تم را روی چرخه می‌چرخاند. اولی رنگ خودِ تم است.</string>
+    <string name="settings_accent_hue_original">رنگ تم</string>
+    <string name="settings_font_size_sub">اندازه متن پیام‌ها و فهرست‌ها</string>
+    <string name="settings_font_sub">قلم مورد استفاده در کل برنامه</string>
+    <string name="settings_top_bar_text_sub">رنگ عنوان و آیکون‌های نوار بالا</string>
+    <string name="settings_main_text_sub">رنگ نام‌ها و متن‌های اصلی</string>
+    <string name="settings_input_bar_text_sub">رنگ متن کادر نوشتن و جستجو</string>
+    <string name="settings_conversation_card_color_sub">رنگ کارت هر گفتگو در فهرست</string>
+    <string name="settings_sim1_color_sub">رنگ نشانگر سیم‌کارت یک</string>
+    <string name="settings_sim2_color_sub">رنگ نشانگر سیم‌کارت دو</string>
+    <string name="settings_sent_bubble_color_sub">رنگ حباب پیام‌هایی که می‌فرستید</string>
+    <string name="settings_sent_bubble_text_sub">رنگ متن داخل حباب ارسالی</string>
+    <string name="settings_received_bubble_color_sub">رنگ حباب پیام‌های دریافتی</string>
+    <string name="settings_received_bubble_text_sub">رنگ متن داخل حباب دریافتی</string>
+    <string name="nav_conversations">گفتگوها</string>
+    <string name="home_screen_title">پیام‌ها</string>
+    <string name="settings_about">درباره برنامه</string>
+
+    <!--
+        Overrides for strings this app never defined, so they fell through to Fossify
+        Commons and reached a Persian-only screen in English : sixty call sites' worth of
+        toasts, confirmations and placeholders. An app resource wins over a library one of
+        the same name, so redefining them here fixes every reference without touching any
+        Kotlin, exactly as "delete" and "block_number" above already did.
+
+        The %s placeholders match the ones commons declares : do not drop them.
+    -->
+    <string name="unknown_error_occurred">خطای ناشناخته‌ای رخ داد</string>
+    <string name="no_app_found">برنامه‌ای برای انجام این کار پیدا نشد</string>
+    <string name="block_confirmation">مطمئنید می‌خواهید «%s» را مسدود کنید؟</string>
+    <string name="deletion_confirmation">مطمئنید می‌خواهید %s را حذف کنید؟</string>
+    <string name="files_restored_successfully">بازیابی با موفقیت انجام شد</string>
+    <string name="empty_name">یک نام وارد کنید</string>
+    <string name="invalid_name">نام شامل نویسه‌های نامعتبر است</string>
+    <string name="no_entries_for_exporting">موردی برای برون‌بری پیدا نشد</string>
+    <string name="exporting_successful">برون‌بری با موفقیت انجام شد</string>
+    <string name="importing">در حال درون‌ریزی…</string>
+    <string name="importing_successful">درون‌ریزی با موفقیت انجام شد</string>
+    <string name="importing_some_entries_failed">درون‌ریزی بعضی موارد ناموفق بود</string>
+    <string name="importing_failed">درون‌ریزی ناموفق بود</string>
+    <string name="no_entries_for_importing">موردی برای درون‌ریزی پیدا نشد</string>
+    <string name="invalid_file_format">قالب فایل نامعتبر است</string>
+    <string name="no_items_found">موردی پیدا نشد</string>
+    <string name="unknown">نامشخص</string>
+    <string name="mobile">همراه</string>
+    <string name="home">خانه</string>
+    <string name="work">محل کار</string>
+    <string name="birthday">تاریخ تولد</string>
+    <string name="anniversary">سالگرد</string>
+    <string name="notes">یادداشت‌ها</string>
+    <string name="no_contacts_found">مخاطبی پیدا نشد</string>
+    <string name="no_access_to_contacts">برنامه به مخاطبین دسترسی ندارد</string>
+
+    <!-- The same, for the ones referenced straight from a layout or a menu. -->
+    <string name="about">درباره</string>
+    <string name="add_contact">افزودن مخاطب</string>
+    <string name="confirm_selection">تأیید انتخاب</string>
+    <string name="contact_details">مشخصات مخاطب</string>
+    <string name="empty_recycle_bin">خالی کردن سطل بازیافت</string>
+    <string name="filename_without_json">نام فایل (بدون ‎.json)</string>
+    <string name="more_info">اطلاعات بیشتر</string>
+    <string name="ok">باشه</string>
+    <string name="recycle_bin">سطل بازیافت</string>
+    <string name="request_the_required_permissions">درخواست مجوزهای لازم</string>
+    <string name="settings">تنظیمات</string>
+    <string name="type_2_characters">برای شروع جستجو دست‌کم دو نویسه بنویسید.</string>
+    <string name="view_contact_details">نمایش مشخصات مخاطب</string>
+
+    <!-- Language -->
+    <string name="settings_group_general">عمومی</string>
+    <string name="settings_language">زبان برنامه</string>
+    <string name="settings_language_sub">متن‌ها، تاریخ‌ها و اعداد</string>
+    <string name="language_system">زبان گوشی</string>
+    <string name="language_system_sub">هر زبانی که اندروید روی آن تنظیم است</string>
+    <string name="language_persian">فارسی</string>
+    <string name="language_english">English</string>
+    <string name="language_changed">زبان تغییر کرد</string>
+
+    <!-- Theme names: shown in the skin picker. -->
+    <string name="theme_classic">کلاسیک</string>
+    <string name="theme_nocturne">نوکترن</string>
+    <string name="theme_neon">نئون</string>
+
+    <!-- Day labels and list punctuation, which are not the same character in the two languages. -->
+    <string name="yesterday">دیروز</string>
+    <string name="list_separator">"، "</string>
 </resources>

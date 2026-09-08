@@ -89,6 +89,9 @@ open class SimpleActivity : BaseSimpleActivity() {
 
     /** Height of the status-bar strip the top bar keeps clear of, 0 before the first layout. */
     private companion object {
+        /** Menu rows that cannot be undone, so they are marked rather than left to blend in. */
+        val DESTRUCTIVE_MENU_IDS = setOf(R.id.delete, R.id.cab_delete)
+
         /** Every screen's app bar. Order only decides which wins if two are ever inflated. */
         val APP_BAR_IDS = listOf(
             R.id.settings_appbar,
@@ -150,6 +153,12 @@ open class SimpleActivity : BaseSimpleActivity() {
 
     fun updateAppFonts(view: View?) {
         if (view == null) return
+        // List rows are bound with their own face *and* their own ink -- the conversation
+        // preview at 58%, the date at 36%, a draft marker in the accent. Walking into them
+        // here flattened every one of those to full-strength mainTextColor on each resume,
+        // and they only came back when the row happened to rebind. An adapter already does
+        // this job for its own rows, so the sweep stops at the list.
+        if (view is androidx.recyclerview.widget.RecyclerView) return
         if (view is TextView) {
             val style = view.typeface?.style ?: android.graphics.Typeface.NORMAL
             view.typeface = typefaceFor(style)
@@ -177,7 +186,22 @@ open class SimpleActivity : BaseSimpleActivity() {
                 R.id.settings_ui_scale_value,
                 R.id.settings_glass_opacity_value,
                 R.id.settings_accent_hue_value,
-                R.id.thread_search_count
+                R.id.thread_search_count,
+                // The field beside thread_search_count, which was already excluded: without
+                // this its ink flipped to the main text colour while the bar around it kept
+                // the input-bar colour.
+                R.id.thread_search_input,
+                // The one destructive row in settings, and the only red on that screen.
+                R.id.settings_reset_defaults,
+                // The nav pill's labels. Their icons were already excluded; the labels are
+                // painted in the same pass and were being reset a line later.
+                R.id.nav_home_label,
+                R.id.nav_search_label,
+                R.id.nav_add_label,
+                // The remaining two toolbar-style titles, for the same reason as the four
+                // already listed above.
+                R.id.conversation_details_toolbar_title,
+                R.id.members_heading_label,
             )
                              
             if (!excludedIds.contains(id)) {
@@ -291,7 +315,11 @@ open class SimpleActivity : BaseSimpleActivity() {
                     tint = barColor,
                     cornerRadii = allCorners,
                     opacity = glassOpacity,
-                    strokeWidthPx = density.toInt().coerceAtLeast(1)
+                    // Through getScaledPx, like the nav pill and the filter chips. Raw
+                    // `density.toInt()` ignored the UI-scale setting and truncated besides,
+                    // so past a scale of about 1.2 the header kept a 2px hairline while the
+                    // two capsules it is meant to match had grown to 3.
+                    strokeWidthPx = 1.getScaledPx().coerceAtLeast(1)
                 )
             } else {
                 GradientDrawable().apply {
@@ -448,12 +476,20 @@ open class SimpleActivity : BaseSimpleActivity() {
                         // Typing fields are deliberately not glass. A frosted panel put a
                         // sheen and a bright rim on a surface that needs neither, and read
                         // as a second, brighter material sitting on the field. A flat wash
-                        // of the same colour at the design weight is what the theme uses for
-                        // a filled field, and it keeps typed text crisp.
+                        // of the same colour is what the theme uses for a filled field, and
+                        // it keeps typed text crisp.
+                        //
+                        // Nearly opaque, not the .60 it carried: this bar floats over the
+                        // contact list, so at .60 the rows behind it showed through the
+                        // number being typed and neither was readable.
                         inputBar.background = GradientDrawable().apply {
                             shape = GradientDrawable.RECTANGLE
                             cornerRadius = inputRadius
-                            setColor(inputBgColor.withAlpha(0.60f))
+                            setColor(inputBgColor.withAlpha(0.96f))
+                            setStroke(
+                                1.getScaledPx(),
+                                TextoGlass.rimFor(inputBgColor, 0.20f)
+                            )
                         }
                     }
                 } else {
@@ -513,7 +549,9 @@ open class SimpleActivity : BaseSimpleActivity() {
             R.id.settings_ui_scale_label,
             R.id.settings_font_size_label,
             R.id.settings_font_label,
-            R.id.settings_reset_defaults,
+            // settings_reset_defaults deliberately absent: it is the one destructive row on
+            // that screen and carries the warning red styleSettingsRows() gives it. This list
+            // runs after that, so including it here quietly repainted it as ordinary text.
             R.id.settings_font_size,
             R.id.settings_font,
             R.id.settings_top_bar_text_color_label,
@@ -567,8 +605,7 @@ open class SimpleActivity : BaseSimpleActivity() {
             id == R.id.thread_coordinator ||
             id == R.id.main_nested_scrollview || 
             id == R.id.main_coordinator_wrapper ||
-            id == R.id.message_holder ||
-            id == R.id.attachment_picker_holder) {
+            id == R.id.message_holder) {
             view.setBackgroundColor(Color.TRANSPARENT)
         }
         
@@ -590,25 +627,12 @@ open class SimpleActivity : BaseSimpleActivity() {
     }
 
     /**
-     * The UI is Persian, so it lays out right-to-left. That cannot come from the device
-     * locale here: build.gradle pins `resConfigs("en")`, which leaves the app resolving to an
-     * LTR configuration no matter what the phone is set to -- which is why the older screens
-     * had to fake RTL with absolute `right` gravity and `alignParentStart` controls.
-     *
-     * Overriding the configuration's locale to Persian makes `start`/`end` resolve the way
-     * the layouts actually mean them, and every framework surface we don't own -- dialogs,
-     * menus, the commons library's views -- flips with it. String lookup is unaffected: with
-     * no values-fa folder shipped, Persian falls back to `values/`, which is where the app's
-     * Persian strings already live.
+     * The locale used to be pinned to fa:IR here. It is a setting now, so the decision has
+     * moved to [TextoLocale]; the Application wraps its own context the same way, which is
+     * what keeps notifications speaking the language the screens do.
      */
     override fun attachBaseContext(newBase: Context) {
-        val locale = java.util.Locale("fa", "IR")
-        java.util.Locale.setDefault(locale)
-        val config = android.content.res.Configuration(newBase.resources.configuration).apply {
-            setLocale(locale)
-            setLayoutDirection(locale)
-        }
-        super.attachBaseContext(newBase.createConfigurationContext(config))
+        super.attachBaseContext(TextoLocale.wrap(newBase))
     }
 
     private var selectionCancelCallback: (() -> Unit)? = null
@@ -742,6 +766,10 @@ open class SimpleActivity : BaseSimpleActivity() {
         if (show) {
             val countText = findViewById<TextView>(R.id.selection_count)
             countText?.text = getString(R.string.x_selected, count)
+            // The app's own scaled size rather than a fixed 18sp: the fixed one ignored the
+            // UI:scale setting and was wide enough that "۱ مورد انتخاب شد" never fitted beside
+            // the action icons, so it always arrived truncated.
+            countText?.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.95f))
             countText?.setTextColor(config.topBarTextColor)
             
             val tint = ColorStateList.valueOf(config.topBarTextColor)
@@ -845,13 +873,30 @@ open class SimpleActivity : BaseSimpleActivity() {
     /** One row of [showBubbleMenu]. */
     data class BubbleAction(val id: Int, val label: String, val iconRes: Int)
 
+    /** The bubble menu currently on screen, so a second one replaces it instead of stacking. */
+    private var bubblePopup: android.widget.PopupWindow? = null
+
     /**
      * Compact icon menu for a single message. It is placed *beside* the bubble rather than
      * over it and deliberately leaves the background unblurred, so the message being acted
      * on stays readable and identifiable.
      */
-    fun showBubbleMenu(anchor: View, items: List<BubbleAction>, callback: (Int) -> Unit) {
-        if (items.isEmpty()) return
+    fun showBubbleMenu(
+        anchor: View,
+        items: List<BubbleAction>,
+        reactions: List<String> = emptyList(),
+        activeReaction: String? = null,
+        onReaction: (String) -> Unit = {},
+        callback: (Int) -> Unit,
+    ) {
+        // A reactions-only sheet is legitimate: that is what a double-tap on a bubble opens.
+        if (items.isEmpty() && reactions.isEmpty()) return
+
+        // Only one of these at a time. A double-tap on a bubble whose text carries a detected
+        // number opens that number's own menu on the first tap and the reaction strip on the
+        // second, and the two used to stack: the strip drew over a menu that stayed behind it
+        // and outlived it. Replacing rather than stacking is what a second menu means anyway.
+        bubblePopup?.takeIf { it.isShowing }?.dismiss()
 
         val barColor = if (config.topBarColor == 0) Color.BLACK else config.topBarColor
         val textColor = config.topBarTextColor.let {
@@ -896,10 +941,54 @@ open class SimpleActivity : BaseSimpleActivity() {
         ).apply {
             setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
             elevation = 16 * resources.displayMetrics.density
+            setOnDismissListener { if (bubblePopup === this) bubblePopup = null }
         }
+        bubblePopup = popup
 
         val rippleValue = android.util.TypedValue()
         theme.resolveAttribute(android.R.attr.selectableItemBackground, rippleValue, true)
+
+        // The reaction strip, above the actions. One tap sends and closes, which is the
+        // whole interaction -- there is no second confirmation in either app this follows.
+        if (reactions.isNotEmpty()) {
+            val strip = android.widget.LinearLayout(this).apply {
+                orientation = android.widget.LinearLayout.HORIZONTAL
+                gravity = android.view.Gravity.CENTER_VERTICAL
+                setPadding(8.getScaledPx(), 4.getScaledPx(), 8.getScaledPx(), 8.getScaledPx())
+            }
+            reactions.forEach { emoji ->
+                strip.addView(
+                    TextView(this).apply {
+                        text = emoji
+                        gravity = android.view.Gravity.CENTER
+                        includeFontPadding = false
+                        setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.25f))
+                        val pad = 7.getScaledPx()
+                        setPadding(pad, pad, pad, pad)
+                        isClickable = true
+                        // The one already on the message is ringed rather than merely
+                        // bigger, so it reads as chosen at a glance and tapping it again
+                        // is understood to be a change rather than a repeat.
+                        if (emoji == activeReaction) {
+                            background = TextoGlass.bar(
+                                tint = config.accentGradientStart,
+                                cornerRadius = 100f * resources.displayMetrics.density,
+                                opacity = 0.28f,
+                                strokeWidthPx = 1.getScaledPx(),
+                                rimAlpha = 0.5f
+                            )
+                        } else if (rippleValue.resourceId != 0) {
+                            setBackgroundResource(rippleValue.resourceId)
+                        }
+                        setOnClickListener {
+                            popup.dismiss()
+                            onReaction(emoji)
+                        }
+                    }
+                )
+            }
+            container.addView(strip)
+        }
 
         items.forEachIndexed { index, action ->
             val row = android.widget.LinearLayout(this).apply {
@@ -1005,7 +1094,20 @@ open class SimpleActivity : BaseSimpleActivity() {
      * the last item off the bottom of the sheet. These menus are short enough that a column
      * of views needs no recycling, and this way the sheet is exactly as tall as its content.
      */
-    fun showModernMenu(anchor: View, items: List<Pair<Int, String>>, callback: (Int) -> Unit) {
+    /**
+     * A menu row's icon, drawn at the row's start edge : the right, under this app's layout.
+     *
+     * Menus carried labels alone while the settings list, the selection bar and the chooser
+     * sheets all carried icons, so the one longest list in the app was also the only one you
+     * had to read word by word. [icons] maps an item id to a drawable; anything unmapped
+     * simply gets no icon, so a caller that has nothing suitable is not forced to invent one.
+     */
+    fun showModernMenu(
+        anchor: View,
+        items: List<Pair<Int, String>>,
+        icons: Map<Int, Int> = emptyMap(),
+        callback: (Int) -> Unit,
+    ) {
         val density = resources.displayMetrics.density
         val popup = android.widget.PopupWindow(this)
 
@@ -1042,7 +1144,25 @@ open class SimpleActivity : BaseSimpleActivity() {
             column.addView(
                 TextView(this).apply {
                     text = label
-                    setTextColor(labelColor)
+                    // The one irreversible row in a menu is marked, in the same red the
+                    // settings screen already uses for "reset". Everything else takes the
+                    // sheet's own ink.
+                    val rowInk =
+                        if (id in DESTRUCTIVE_MENU_IDS) DESTRUCTIVE_INK else labelColor
+                    setTextColor(rowInk)
+                    // Drawn as a compound drawable at the start edge rather than as a
+                    // separate view, so the row stays one TextView and the icon follows the
+                    // layout direction on its own.
+                    icons[id]?.let { iconRes ->
+                        androidx.appcompat.content.res.AppCompatResources
+                            .getDrawable(this@SimpleActivity, iconRes)?.let { d ->
+                                val side = 19.getScaledPx()
+                                d.setBounds(0, 0, side, side)
+                                d.mutate().setTint(rowInk)
+                                setCompoundDrawablesRelative(d, null, null, null)
+                                compoundDrawablePadding = 14.getScaledPx()
+                            }
+                    }
                     val padH = 20.getScaledPx()
                     val padV = 13.getScaledPx()
                     setPadding(padH, padV, padH, padV)

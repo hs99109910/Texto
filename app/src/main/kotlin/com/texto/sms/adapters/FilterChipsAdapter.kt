@@ -14,7 +14,8 @@ import org.fossify.commons.extensions.beGone
 import org.fossify.commons.extensions.beVisible
 import com.texto.sms.databinding.ItemFilterChipBinding
 import com.texto.sms.extensions.getScaledPx
-import com.texto.sms.extensions.toPersianDigits
+import com.texto.sms.extensions.getScaledPxIn
+import com.texto.sms.extensions.toUiDigits
 import com.texto.sms.helpers.MessageFilter
 import kotlin.math.hypot
 
@@ -85,6 +86,9 @@ class FilterChipsAdapter(
         notifyDataSetChanged()
     }
 
+    /** Where the selected chip sits, or -1 while nothing in the row is selected. */
+    fun activePosition(): Int = items.indexOfFirst { it.id == activeFilterId }
+
     /** The custom filters in their current on-screen order, for persisting after a drag. */
     fun currentCustomFilterOrder(): List<MessageFilter> = items.filter { it.isCustom }
 
@@ -97,7 +101,13 @@ class FilterChipsAdapter(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = ItemFilterChipBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        (binding.root.layoutParams as? ViewGroup.MarginLayoutParams)?.marginEnd = 8.getScaledPx()
+        // Through the activity, so the gap follows the UI-scale setting like every other
+        // measurement. The receiver-less helper this used hardcoded a density of 2.5, so the
+        // spacing was wrong on any device that is not xhdpi and never moved with the slider.
+        val gap = (parent.context as? com.texto.sms.activities.SimpleActivity)
+            ?.let { 8.getScaledPxIn(it) }
+            ?: 8.getScaledPx(parent.context)
+        (binding.root.layoutParams as? ViewGroup.MarginLayoutParams)?.marginEnd = gap
         return ViewHolder(
             FilterChipViews(
                 root = binding.root,
@@ -118,7 +128,7 @@ class FilterChipsAdapter(
             if (count == null) {
                 beGone()
             } else {
-                text = count.toPersianDigits()
+                text = count.toUiDigits()
                 beVisible()
             }
         }

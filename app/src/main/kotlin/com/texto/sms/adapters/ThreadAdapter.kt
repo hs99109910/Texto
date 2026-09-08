@@ -31,7 +31,6 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import org.fossify.commons.adapters.MyRecyclerViewListAdapter
-import org.fossify.commons.dialogs.ConfirmationDialog
 import org.fossify.commons.extensions.*
 import org.fossify.commons.views.MyRecyclerView
 import com.texto.sms.R
@@ -58,6 +57,12 @@ class ThreadAdapter(
     private val deleteMessages: (messages: List<Message>, toRecycleBin: Boolean, fromRecycleBin: Boolean) -> Unit
 ) : MyRecyclerViewListAdapter<ThreadItem>(activity, recyclerView, ThreadItemDiffCallback(), itemClick) {
 
+    /**
+     * The activity's tap handler, kept as a property because [itemClick] is a plain
+     * constructor parameter and member functions cannot reach one.
+     */
+    private val onItemTap: (Any) -> Unit = itemClick
+
     private val hasMultipleSIMCards = try {
         activity.subscriptionManagerCompat().activeSubscriptionInfoList?.size ?: 0 > 1
     } catch (_: SecurityException) {
@@ -75,6 +80,10 @@ class ThreadAdapter(
      */
     private var searchTerm = ""
 
+    /** The last bubble tapped and when, so the next tap can tell a double-tap from a single. */
+    private var lastTapMessageId = -1L
+    private var lastTapAt = 0L
+
     fun setSearchTerm(term: String) {
         if (term == searchTerm) return
         searchTerm = term
@@ -87,6 +96,18 @@ class ThreadAdapter(
     }
 
     companion object {
+        /**
+         * The six Messages and iMessage both offer, in their order. Sending one puts
+         * "<emoji> to '<the first words>'" on the wire, which is the wording both apps
+         * parse back into a reaction -- there is no capability bit in plain SMS to ask
+         * with, so this text *is* the interoperability. A recipient whose app does not
+         * know the form sees that short line instead of a silent no-op.
+         */
+        // 👎 gave up its slot to 😘: the thumbs-down is the one of the six almost nobody
+        // sends, and 😘 is. The trade is that a 😘 reaching Messages or iMessage arrives as
+        // the plain line "😘 to '…'" rather than as a tapback -- the other five still map.
+        val REACTION_EMOJI = listOf("❤️", "👍", "😘", "😂", "😮", "😢")
+
         private const val MAX_MEDIA_HEIGHT_RATIO = 2
         private const val SIM_BITS = 10
         private const val SIM_MASK = (1L shl SIM_BITS) - 1
@@ -261,7 +282,7 @@ class ThreadAdapter(
             SimpleActivity.BubbleAction(
                 R.id.cab_mark,
                 simpleActivity.getString(R.string.mark_select),
-                R.drawable.ic_check_circle_filled
+                R.drawable.ic_ph_check
             )
         )
         if (!message.isMMS) {
@@ -300,10 +321,45 @@ class ThreadAdapter(
         anchor.post {
             if (simpleActivity.isFinishing || simpleActivity.isDestroyed) return@post
             if (!isSelectionModeActive()) return@post
-            simpleActivity.showBubbleMenu(anchor, items) { actionId ->
+            // A reaction is not a recycle-bin action, and a scheduled message has not been
+            // sent yet, so neither offers the strip.
+            val canReact = !isRecycleBin && !message.isScheduled &&
+                activity is ThreadActivity
+            simpleActivity.showBubbleMenu(
+                anchor = anchor,
+                items = items,
+                reactions = if (canReact) REACTION_EMOJI else emptyList(),
+                activeReaction = message.reaction,
+                onReaction = { emoji ->
+                    finishActMode()
+                    (activity as ThreadActivity).onReactionPicked(message, emoji)
+                },
+            ) { actionId ->
                 actionItemPressed(actionId)
             }
         }
+    }
+
+    /**
+     * The double-tap reaction picker: all six of [REACTION_EMOJI] beside the bubble, one tap
+     * to send. The same strip the long-press menu carries, on its own without the action
+     * rows -- a reaction goes out as a real SMS, so picking which one is worth the extra tap
+     * rather than committing to a heart the moment two taps land.
+     *
+     * Silently does nothing where the long-press strip would not have offered reactions
+     * either: the recycle bin, or a message not yet sent.
+     */
+    private fun quickReact(anchor: View, message: Message) {
+        if (isSelectionModeActive() || isRecycleBin || message.isScheduled) return
+        val thread = activity as? ThreadActivity ?: return
+        val simpleActivity = activity as? SimpleActivity ?: return
+        simpleActivity.showBubbleMenu(
+            anchor = anchor,
+            items = emptyList(),
+            reactions = REACTION_EMOJI,
+            activeReaction = message.reaction,
+            onReaction = { emoji -> thread.onReactionPicked(message, emoji) }
+        ) { }
     }
 
     override fun actionItemPressed(id: Int) {
@@ -380,7 +436,7 @@ class ThreadAdapter(
                 }
             }
             is ThreadDateTime -> setupDateTime(binding.root, item)
-            is ThreadError -> setupThreadError(binding.root)
+            is ThreadError -> setupThreadError(binding.root, item)
             is ThreadSending -> setupThreadSending(binding.root)
             is ThreadSent -> setupThreadSuccess(binding.root, item.delivered)
         }
@@ -425,12 +481,19 @@ class ThreadAdapter(
         finishActMode()
     }
 
+    /**
+     * The body on its own sheet, selectable. It used to inflate `dialog_select_text` and then
+     * throw it away: the dialog it handed to commons was built from the body as a *title*,
+     * so the inflated view never reached the screen. The app's own sheet already renders its
+     * message selectable, which is the whole feature.
+     */
     private fun selectText() {
         val message = getSelectedItems().first() as Message
-        val binding = DialogSelectTextBinding.inflate(layoutInflater)
-        binding.dialogSelectTextValue.text = message.body
-        (activity as SimpleActivity).updateAppFonts(binding.root)
-        ConfirmationDialog(activity, "", 0, org.fossify.commons.R.string.ok, 0, false, message.body) {
+        (activity as SimpleActivity).textoConfirmDialog(
+            message = message.body,
+            negativeLabel = null,
+            cancelOnTouchOutside = false
+        ) {
             // Nothing to do
         }
     }
@@ -445,7 +508,7 @@ class ThreadAdapter(
         val items = getSelectedItems().filterIsInstance<Message>()
         val baseString = org.fossify.commons.R.string.deletion_confirmation
         val message = String.format(activity.getString(baseString), items.size)
-        ConfirmationDialog(activity, message) {
+        (activity as SimpleActivity).textoConfirmDialog(message, isDestructive = true) {
             deleteMessages(items, false, false)
             finishActMode()
         }
@@ -459,7 +522,7 @@ class ThreadAdapter(
             activity.getString(org.fossify.commons.R.string.files_restored_successfully, items.size)
         }
 
-        ConfirmationDialog(activity, message) {
+        (activity as SimpleActivity).textoConfirmDialog(message) {
             deleteMessages(items, false, true)
             finishActMode()
         }
@@ -540,6 +603,15 @@ class ThreadAdapter(
         val isSelected = selectedKeys.contains(message.getSelectionKey())
         val isReceived = message.isReceivedMessage()
         
+        // Which side wears the theme's accent gradient. It was the outgoing side; it is
+        // the incoming one now, so an arriving message is what the eye lands on and the
+        // thread reads the way Messages and iMessage do.
+        //
+        // The picker wins over it: choose a colour for the received bubble in settings and
+        // that side goes flat, which is what makes both bubble colours editable rather
+        // than one of them being quietly ignored by the gradient.
+        val hasAccent = isReceived && !activity.config.receivedBubbleColorSet
+
         val wrapper = if (binding is ItemMessageReceivedBinding) binding.threadMessageWrapper else (binding as ItemMessageSentBinding).threadMessageWrapper
         val holderView = if (binding is ItemMessageReceivedBinding) binding.threadMessageHolder else (binding as ItemMessageSentBinding).threadMessageHolder
         val bodyView = if (binding is ItemMessageReceivedBinding) binding.threadMessageBody else (binding as ItemMessageSentBinding).threadMessageBody
@@ -562,7 +634,7 @@ class ThreadAdapter(
             (binding as ItemMessageSentBinding).threadMessageTime
         }
         timeView.apply {
-            text = (message.date * 1000L).formatJalaliTimeOnly()
+            text = (message.date * 1000L).formatUiTimeOnly()
             setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.68f)
             // `--meta-on-primary` over the sent gradient, `--muted` on a received bubble.
             val ink = if (isReceived) {
@@ -600,9 +672,31 @@ class ThreadAdapter(
             }
         }
 
-        // Reactions are removed from the UI. The column stays in the database so no
-        // migration is needed, but nothing reads or writes it any more.
-        reactionView.beGone()
+        // The reaction badge, tucked under the bubble's inner corner. Both Messages and
+        // iMessage carry the emoji on the message it belongs to rather than as a line of
+        // its own, and processReactions already folds an incoming "<emoji> to '...'" text
+        // onto its target and hides the carrier message, so the two sides agree.
+        val reaction = message.reaction
+        if (reaction.isNullOrEmpty()) {
+            reactionView.beGone()
+        } else {
+            reactionView.beVisible()
+            reactionView.text = reaction
+            reactionView.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.85f)
+            // The badge sits half off the bubble, so it needs a ground of its own to stay
+            // readable over both the bubble above it and the thread behind it.
+            reactionView.background = com.texto.sms.helpers.TextoGlass.bar(
+                tint = activity.config.mainBackgroundColor,
+                cornerRadius = 100f * resources.displayMetrics.density,
+                opacity = 1f,
+                strokeWidthPx = 1.getScaledPxIn(activity as SimpleActivity),
+                rimAlpha = 0.35f
+            )
+            val padH = 6.getScaledPxIn(activity as SimpleActivity)
+            val padV = 2.getScaledPxIn(activity as SimpleActivity)
+            reactionView.setPadding(padH, padV, padH, padV)
+            reactionView.elevation = 4 * resources.displayMetrics.density
+        }
 
         // Selection Overlay Logic (Theme Perfect)
         overlay.beVisibleIf(isSelected)
@@ -643,10 +737,16 @@ class ThreadAdapter(
                 // one facing the middle of the thread, not the screen edge:
                 //   mine:   border-radius: 1.25rem 1.25rem 0.35rem 1.25rem  (short bottom-right)
                 //   theirs: border-radius: 1.25rem 1.25rem 1.25rem 0.35rem  (short bottom-left)
-                // Under RTL the sent column sits on the left, so its short corner points
-                // right, back towards the received column. cornerRadii is in physical corners
-                // (TL, TR, BR, BL) and is not flipped for us, hence the explicit sides.
-                val baseRadii = if (isReceived) {
+                // cornerRadii is in physical corners (TL, TR, BR, BL) and is not flipped for
+                // us, so which corner is the inner one depends on which way the layout
+                // runs. Under RTL the sent column sits on the left and its short corner
+                // points right; under LTR -- the English UI -- the two columns swap and so
+                // do the corners. Reading it off the configuration rather than assuming
+                // Persian is what keeps the tails pointing inwards in both languages.
+                val isRtl = resources.configuration.layoutDirection ==
+                    View.LAYOUT_DIRECTION_RTL
+                val shortIsBottomLeft = isReceived == isRtl
+                val baseRadii = if (shortIsBottomLeft) {
                     floatArrayOf(r20, r20, r20, r20, r20, r20, r6, r6)
                 } else {
                     floatArrayOf(r20, r20, r20, r20, r6, r6, r20, r20)
@@ -672,10 +772,10 @@ class ThreadAdapter(
                     (thickness * density).toInt()
                 }
 
-                // Sent bubbles carry the skin's accent gradient; received ones stay a single
-                // tint so the two sides never compete for attention.
-                val tintEnd = if (isReceived) null else config.accentGradientEnd
-                val tintMid = if (isReceived || config.accentGradientMid == 0) {
+                // The accent side carries the skin's gradient; the other stays a single tint
+                // so the two sides never compete for attention.
+                val tintEnd = if (hasAccent) config.accentGradientEnd else null
+                val tintMid = if (!hasAccent || config.accentGradientMid == 0) {
                     null
                 } else {
                     config.accentGradientMid
@@ -686,7 +786,7 @@ class ThreadAdapter(
                 // received one at 70% let the background halos through it, so its colour
                 // drifted with whatever was behind it instead of staying --bubble-in.
                 background = com.texto.sms.helpers.TextoGlass.panel(
-                    tint = if (isReceived) bgColor else config.accentGradientStart,
+                    tint = if (hasAccent) config.accentGradientStart else bgColor,
                     tintEnd = tintEnd,
                     tintMid = tintMid,
                     cornerRadii = baseRadii,
@@ -743,12 +843,32 @@ class ThreadAdapter(
             }
 
             setOnClickListener {
+                // Two taps on the same bubble inside the platform's double-tap window open
+                // the reaction strip. Counted here rather than through a GestureDetector on
+                // a touch listener: the detector never saw the events on this view, while
+                // this listener demonstrably fires, and it needs no second gesture pipeline.
+                val now = System.currentTimeMillis()
+                val isDoubleTap = lastTapMessageId == message.id &&
+                    now - lastTapAt <= android.view.ViewConfiguration.getDoubleTapTimeout()
+                lastTapMessageId = if (isDoubleTap) -1L else message.id
+                lastTapAt = now
+                if (isDoubleTap) {
+                    quickReact(it, message)
+                    return@setOnClickListener
+                }
+
                 if (isSelectionModeActive()) {
                     // viewClicked toggles this one bubble; viewLongClicked would select
                     // everything between here and the last long-pressed message.
                     holder.viewClicked(message)
                     notifyItemChanged(holder.bindingAdapterPosition)
                     updateCustomSelectionBar()
+                } else {
+                    // Outside selection this listener used to do nothing at all, so the
+                    // activity's tap handler was never reached and a bubble was inert. The
+                    // one tap that has somewhere to go is a failed message asking to be
+                    // sent again; everything else still ignores a plain tap.
+                    onItemTap(message)
                 }
             }
         }
@@ -770,7 +890,9 @@ class ThreadAdapter(
             
             setTextColor(finalTextColor)
             alpha = 1.0f
-            setLinkTextColor(if (isReceived) activity.config.accentGradientStart else finalTextColor)
+            // A link on the accent bubble cannot be the accent colour -- it would vanish
+            // into its own ground -- so only a flat bubble gets the accent link ink.
+            setLinkTextColor(if (hasAccent) finalTextColor else activity.config.accentGradientStart)
 
             // Figures in the body become tappable so a single account number, code or
             // amount can be copied or forwarded without hand-selecting text; web addresses
@@ -964,7 +1086,7 @@ class ThreadAdapter(
                 visibility = View.VISIBLE
                 // A day label, not a full timestamp: the clock time now lives inside each
                 // bubble, so repeating it here said the same thing twice.
-                text = (dateTime.date * 1000L).formatJalaliDayLabel()
+                text = (dateTime.date * 1000L).formatUiDayLabel(activity)
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.68f)
                 typeface = Typeface.create(simpleActivity.getCustomTypeface(), Typeface.NORMAL)
 
@@ -1020,9 +1142,17 @@ class ThreadAdapter(
         }
     }
 
-    private fun setupThreadError(view: View) {
+    private fun setupThreadError(view: View, item: ThreadError) {
         val binding = ItemThreadErrorBinding.bind(view)
-        binding.threadError.setTextColor(activity.config.mainTextColor)
+        // A failed send in the app's own warning red, the same one the menus give delete.
+        // It shipped in commons' dark-theme red from the layout and was then repainted as
+        // ordinary body text here, which left the one line that reports a failure looking
+        // exactly like the messages that went through.
+        binding.threadError.setTextColor(DESTRUCTIVE_INK)
+        binding.threadError.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.8f)
+        // The caption says "touch to retry" and had no listener behind it, in this adapter
+        // or anywhere else, for as long as it has been on screen.
+        binding.threadError.setOnClickListener { onItemTap(item) }
     }
 
     private fun setupThreadSending(view: View) {

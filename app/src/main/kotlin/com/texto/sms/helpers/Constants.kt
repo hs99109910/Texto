@@ -68,6 +68,8 @@ const val CONVERSATION_ORDER = "conversation_order"
 const val CONTACT_SORTING_MODE = "contact_sorting_mode"
 const val RECENT_COLOR = "recent_color"
 const val UI_SCALE = "ui_scale"
+/** Language: 0 follows the phone, 1 Persian, 2 English. See TextoLocale. */
+const val APP_LANGUAGE = "app_language"
 /** Legacy storage key; renaming it would drop the font the user already picked. */
 const val FONT_FAMILY = "font_family_nova"
 const val FONT_TYPE = "font_type"
@@ -80,6 +82,10 @@ const val NOCTURNE_REFRESH_APPLIED = "nocturne_refresh_applied"
 const val NEON_REFRESH_APPLIED = "neon_refresh_applied"
 const val GLASS_RECALIBRATED = "glass_recalibrated"
 const val NEON_LIGHT_DEFAULT_APPLIED = "neon_light_default_applied"
+const val CLASSIC_DEFAULT_APPLIED = "classic_default_applied"
+const val NEON_LIGHT_RESTORED = "neon_light_restored"
+const val BUBBLE_SIDES_SWAPPED = "bubble_sides_swapped"
+const val AURORA_RETIRED = "aurora_retired"
 
 /**
  * Floor of the glass slider. Below this the bars stop reading as surfaces at all, so the
@@ -125,6 +131,8 @@ const val INPUT_BAR_BACKGROUND_COLOR = "input_bar_background_color"
 const val INPUT_BAR_TEXT_COLOR = "input_bar_text_color"
 const val SENT_BUBBLE_COLOR = "sent_bubble_color"
 const val RECEIVED_BUBBLE_COLOR = "received_bubble_color"
+const val RECEIVED_BUBBLE_COLOR_SET = "received_bubble_color_set"
+const val ACCENT_INK_COLOR = "accent_ink_color"
 const val SENT_BUBBLE_TEXT_COLOR = "sent_bubble_text_color"
 const val RECEIVED_BUBBLE_TEXT_COLOR = "received_bubble_text_color"
 
@@ -269,6 +277,12 @@ const val PICK_TOP_BAR_IMAGE_INTENT = 2001
 const val PICK_MAIN_BG_IMAGE_INTENT = 2002
 const val PICK_INPUT_BAR_IMAGE_INTENT = 2003
 const val CROP_RESULT_INTENT = 2004
+
+/**
+ * The red every irreversible row wears: the settings reset, delete in the overflow menus,
+ * delete in a capsule sheet. One value so the three cannot drift apart.
+ */
+val DESTRUCTIVE_INK: Int = android.graphics.Color.parseColor("#F54651")
 
 
 fun refreshMessages() {

@@ -1,6 +1,7 @@
 package com.texto.sms.helpers
 
 import android.graphics.Color
+import com.texto.sms.R
 
 /**
  * A theme is a named bundle of the colour settings the app already exposes, plus the shape
@@ -57,12 +58,19 @@ data class AppTheme(
 object AppThemes {
 
     const val CLASSIC = 0
-    const val AURORA = 1
-    const val AURORA_LIGHT = 2
     const val NOCTURNE = 3
     const val NOCTURNE_LIGHT = 4
     const val NEON = 5
     const val NEON_LIGHT = 6
+
+    /**
+     * Aurora's two ids. The skin is gone, but the numbers were written into
+     * `appTheme` on every install that ever wore it, so they still have to be recognised --
+     * see the retirement migration in `App`, which moves those installs onto Neon. Nothing
+     * else may reuse 1 or 2.
+     */
+    const val RETIRED_AURORA = 1
+    const val RETIRED_AURORA_LIGHT = 2
 
     /**
      * The skin's signature hues, shared by every theme so the accent gradient stays
@@ -73,70 +81,56 @@ object AppThemes {
     private val MAGENTA = Config.AURORA_MAGENTA
 
     /**
-     * Dark navy ground with drifting cyan/blue/magenta halos -- the design the skin is
-     * drawn from. `--background oklch(.16 .035 275)`, `--card oklch(.22 .04 275)`.
+     * Classic's single ink, carrying a navy cast so the skin still reads blue while the
+     * accent gradient does the actual colouring. Shared by the top bar, the body text and
+     * the compose field: one ink is the point.
      */
-    private val aurora = AppTheme(
-        id = AURORA,
-        label = "آورورا",
-        topBarColor = Color.parseColor("#13162B"),
-        topBarTextColor = Color.parseColor("#F2F5FC"),
-        mainTextColor = Color.parseColor("#F2F5FC"),
-        mainBackgroundColor = Color.parseColor("#090C1C"),
-        backgroundGradient = Color.parseColor("#090C1C") to Color.parseColor("#15192D"),
-        cardColor = Color.parseColor("#15192D"),
-        inputBarTextColor = Color.parseColor("#F2F5FC"),
-        accentGradient = CYAN to BLUE,
-        auroraAccent = MAGENTA,
-        sentBubbleTextColor = Color.parseColor("#090C1C"),
-        receivedBubbleColor = Color.parseColor("#1B2038"),
-        receivedBubbleTextColor = Color.parseColor("#F2F5FC"),
-        cardCornerRadiusDp = 32,
-        glass = true
-    )
+    private val CLASSIC_INK = Color.parseColor("#16213A")
 
     /**
-     * Aurora's shape and accent on a light ground: the same halos, 32dp corners and
-     * cyan-to-blue gradient, but a pale blue-lavender field with dark text instead of navy.
-     */
-    private val auroraLight = AppTheme(
-        id = AURORA_LIGHT,
-        label = "آورورا روشن",
-        topBarColor = Color.parseColor("#F4F6FC"),
-        topBarTextColor = Color.parseColor("#10162B"),
-        mainTextColor = Color.parseColor("#10162B"),
-        mainBackgroundColor = Color.parseColor("#EEF1F8"),
-        backgroundGradient = Color.parseColor("#F5F7FD") to Color.parseColor("#DDE4F6"),
-        cardColor = Color.parseColor("#FFFFFF"),
-        inputBarTextColor = Color.parseColor("#10162B"),
-        accentGradient = CYAN to BLUE,
-        auroraAccent = MAGENTA,
-        sentBubbleTextColor = Color.parseColor("#062033"),
-        receivedBubbleColor = Color.parseColor("#E3E9F7"),
-        receivedBubbleTextColor = Color.parseColor("#10162B"),
-        cardCornerRadiusDp = 32,
-        glass = true
-    )
-
-    /**
-     * The neutral option: no halos and a plain white ground, but the same corner radius and
-     * accent gradient as the rest so it reads as the same app rather than a different one.
+     * Classic, carrying the palette the app now opens on. The values below were read off a
+     * device the skin had been tuned on rather than invented here: light bars instead of the
+     * near-black they used to be, and the accent turned 11 degrees so its blue end sits on
+     * the blue of Samsung's own messaging icon (hue 211, measured off that icon) instead of
+     * the cyan the skin started from.
+     *
+     * The rotation is baked into the stops rather than shipped as a default `accentHueShift`.
+     * The tonality strip calls its centre "the theme's colour", and that has to stay true: a
+     * non-zero default would put the theme's own palette somewhere off-centre and leave the
+     * strip unable to return to it.
+     *
+     * The three text settings used to be saturated blues -- #324C9B, #294D7B, #375390 -- and
+     * that was the theme's one real weakness. Two things were wrong with it. Body text in a
+     * link blue reads as if every name and preview were tappable, and the accent is already
+     * blue, so nothing was left to mark what actually *is* selected. And the list draws its
+     * preview line by fading `mainTextColor` to 58%: #324C9B faded to #8897C5, which measures
+     * **2.88:1 on white** -- under every accessibility floor there is, on the single line of
+     * text this app exists to show.
+     *
+     * They are one ink now, #16213A, which keeps a navy cast so the skin still reads as blue
+     * while the accent gradient does the colouring. The faded preview goes to 4.06:1 and the
+     * three settings land between 11:1 and 16:1, up from 5.3-7.9.
      */
     private val classic = AppTheme(
         id = CLASSIC,
         label = "کلاسیک",
-        topBarColor = Color.parseColor("#101216"),
-        topBarTextColor = Color.WHITE,
-        mainTextColor = Color.parseColor("#101216"),
+        topBarColor = Color.parseColor("#DAD9D9"),
+        topBarTextColor = CLASSIC_INK,
+        mainTextColor = CLASSIC_INK,
         mainBackgroundColor = Color.WHITE,
         backgroundGradient = null,
         cardColor = Config.DEFAULT_CARD_GREY,
-        inputBarTextColor = Color.WHITE,
-        accentGradient = CYAN to BLUE,
+        inputBarTextColor = CLASSIC_INK,
+        accentGradient = Color.parseColor("#00B9D8") to Color.parseColor("#1C78FF"),
         auroraAccent = MAGENTA,
-        sentBubbleTextColor = Color.parseColor("#062033"),
+        // Deepened from #062033. The gradient's blue end is the darkest ground any bubble
+        // text sits on, and there the old value measured 4.1:1; this clears AA at 4.66 and
+        // lifts the cyan end from 7.1 to 8.0.
+        sentBubbleTextColor = Color.parseColor("#04121F"),
         receivedBubbleColor = Color.parseColor("#ECEFF4"),
-        receivedBubbleTextColor = Color.parseColor("#101216"),
+        // The same ink as the list, so one message does not change colour between the
+        // preview line and the bubble it opens into.
+        receivedBubbleTextColor = CLASSIC_INK,
         cardCornerRadiusDp = 32,
         glass = true
     )
@@ -145,7 +139,7 @@ object AppThemes {
      * The Claude Design "Texto RTL" mockup, taken at its own values rather than reshaded into
      * the cyan skin: a navy ground fading to deep purple, slate cards, a saturated blue sent
      * bubble and a blurple accent. Its background is the literal gradient the mockup draws,
-     * so it opts out of the halo field the two Aurora themes use.
+     * so it opts out of the drifting halo field the other skins use.
      */
     private val nocturne = AppTheme(
         id = NOCTURNE,
@@ -268,33 +262,41 @@ object AppThemes {
         glass = true
     )
 
-    val all = listOf(classic, aurora, auroraLight, nocturne, nocturneLight, neon, neonLight)
+    val all = listOf(classic, nocturne, nocturneLight, neon, neonLight)
 
     /**
      * A theme picked from the settings swatch row is really a choice of two things at once --
      * a skin, and whether it is running by day or by night. The picker only needs to ask the
      * first question; a [family]'s [dark]/[light] pair answers the second one from the
-     * separate "تم تاریک" switch above it. [classic] has no counterpart, so both slots point
+     * separate dark:mode switch above it. [classic] has no counterpart, so both slots point
      * at the same instance and the switch is a no-op while it is active, with no special case
      * needed anywhere that reads a family.
      */
-    data class ThemeFamily(val label: String, val dark: AppTheme, val light: AppTheme) {
+    /**
+     * [labelRes] rather than a literal: the picker names the skins on screen, so they have
+     * to arrive in the language the app is running in.
+     */
+    data class ThemeFamily(val labelRes: Int, val dark: AppTheme, val light: AppTheme) {
         fun forDark(isDark: Boolean) = if (isDark) dark else light
         fun has(id: Int) = dark.id == id || light.id == id
     }
 
     val families = listOf(
-        ThemeFamily("کلاسیک", classic, classic),
-        ThemeFamily("آورورا", aurora, auroraLight),
-        ThemeFamily("نوکترن", nocturne, nocturneLight),
-        ThemeFamily("نئون", neon, neonLight),
+        ThemeFamily(R.string.theme_classic, classic, classic),
+        ThemeFamily(R.string.theme_nocturne, nocturne, nocturneLight),
+        ThemeFamily(R.string.theme_neon, neon, neonLight),
     )
 
-    fun familyOf(themeId: Int): ThemeFamily = families.firstOrNull { it.has(themeId) } ?: families[1]
+    /**
+     * Falls back to Neon, which is what the app opens on. A retired Aurora id lands here
+     * only in the window before the retirement migration has run.
+     */
+    fun familyOf(themeId: Int): ThemeFamily =
+        families.firstOrNull { it.has(themeId) } ?: families.last()
 
     fun isDarkVariant(themeId: Int): Boolean = familyOf(themeId).dark.id == themeId
 
-    fun byId(id: Int) = all.firstOrNull { it.id == id } ?: aurora
+    fun byId(id: Int) = all.firstOrNull { it.id == id } ?: neonLight
 
     /** Overwrites the colour settings with [theme]'s values. */
     fun apply(config: Config, theme: AppTheme) {
@@ -317,12 +319,16 @@ object AppThemes {
         config.auroraHaloThree = theme.haloColors?.third ?: 0
         config.auroraHaloOpacity = theme.haloOpacity
 
-        // The sent bubble is painted with the accent gradient, so its own colour only needs
-        // to be a sane flat fallback for the non-glass path.
-        config.sentBubbleColor = theme.accentGradient.second
-        config.sentBubbleTextColor = theme.sentBubbleTextColor
-        config.receivedBubbleColor = theme.receivedBubbleColor
-        config.receivedBubbleTextColor = theme.receivedBubbleTextColor
+        // The two bubbles trade places: the accent gradient belongs to the incoming side
+        // now and the outgoing one takes the flat tint. Only the stored values move -- every
+        // getter still means "that side's bubble", so side:based code stays right, and both
+        // colour pickers in settings now act on a bubble that is actually drawn.
+        config.sentBubbleColor = theme.receivedBubbleColor
+        config.sentBubbleTextColor = theme.receivedBubbleTextColor
+        config.receivedBubbleColor = theme.accentGradient.second
+        config.receivedBubbleTextColor = theme.sentBubbleTextColor
+        config.accentInkColor = theme.sentBubbleTextColor
+        config.receivedBubbleColorSet = false
         config.cardCornerRadiusDp = theme.cardCornerRadiusDp
         config.glassTheme = theme.glass
 

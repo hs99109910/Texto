@@ -13,11 +13,13 @@ import org.fossify.commons.extensions.setupDialogStuff
 import org.fossify.commons.extensions.showKeyboard
 import org.fossify.commons.extensions.toast
 import com.texto.sms.R
+import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.databinding.DialogEditFilterBinding
 import com.texto.sms.databinding.DialogPickSendersBinding
 import com.texto.sms.helpers.FilterStore
 import com.texto.sms.helpers.MessageFilter
 import com.texto.sms.helpers.SystemBlockedNumbers
+import com.texto.sms.helpers.applyTextoDialogSkin
 
 /**
  * Creates or edits a user-defined filter chip. Passing an [existing] filter switches the
@@ -60,16 +62,17 @@ class EditFilterDialog(
         val titleId = if (existing == null) R.string.add_filter else R.string.edit_filter
 
         activity.getAlertDialogBuilder()
-            .setPositiveButton(org.fossify.commons.R.string.ok, null)
-            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
+            .setPositiveButton(R.string.action_confirm, null)
+            .setNegativeButton(R.string.action_cancel, null)
             .apply {
                 if (existing != null && onDelete != null) {
-                    setNeutralButton(org.fossify.commons.R.string.delete, null)
+                    setNeutralButton(R.string.delete, null)
                 }
             }
             .apply {
                 activity.setupDialogStuff(binding.root, this, titleId) { alertDialog ->
                     dialog = alertDialog
+                    (activity as? SimpleActivity)?.applyTextoDialogSkin(alertDialog)
                     alertDialog.showKeyboard(binding.filterNameEditText)
 
                     alertDialog.getButton(BUTTON_POSITIVE).setOnClickListener {
@@ -113,7 +116,9 @@ class EditFilterDialog(
         binding.filterSendersSummary.text = if (chosenNumbers.isEmpty()) {
             activity.getString(R.string.no_senders_picked)
         } else {
-            chosenLabels.joinToString("، ")
+            // The Persian comma is a different character from the Latin one, and mixing them
+            // reads as badly as an English list joined with "،".
+            chosenLabels.joinToString(activity.getString(R.string.list_separator))
         }
     }
 
@@ -189,7 +194,7 @@ class EditFilterDialog(
         AlertDialog.Builder(activity)
             .setTitle(R.string.pick_senders)
             .setView(pickerBinding.root)
-            .setPositiveButton(org.fossify.commons.R.string.ok) { _, _ ->
+            .setPositiveButton(R.string.action_confirm) { _, _ ->
                 // Only this source's entries are rewritten; anything picked from the other
                 // source stays, so a filter can mix chats and contacts.
                 numbers.forEachIndexed { index, number ->
@@ -207,7 +212,7 @@ class EditFilterDialog(
                 }
                 updateSenderSummary(binding)
             }
-            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
+            .setNegativeButton(R.string.action_cancel, null)
             .show()
     }
 }

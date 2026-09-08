@@ -16,18 +16,16 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
-import com.texto.sms.extensions.JALALI_MONTH_NAMES
+import com.texto.sms.extensions.TextoCalendar
 import com.texto.sms.extensions.config
-import com.texto.sms.extensions.daysInJalaliMonth
-import com.texto.sms.extensions.gregorianToJalali
-import com.texto.sms.extensions.jalaliToGregorian
-import com.texto.sms.extensions.toPersianDigits
+import com.texto.sms.extensions.toUiDigits
 import org.fossify.commons.extensions.applyColorFilter
 import com.texto.sms.extensions.withAlpha
 import java.util.Calendar
 
 /**
- * A Jalali month grid for picking a date range.
+ * A month grid for picking a date range, on whichever calendar the app is speaking:
+ * Jalali under Persian, Gregorian under English.
  *
  * Android ships no Persian calendar and the platform `DatePickerDialog` is Gregorian: the
  * search filter used to open two of those back to back and only *label* the result in Jalali,
@@ -48,7 +46,16 @@ class JalaliRangePicker(private val activity: SimpleActivity) {
     private var from: Ymd? = null
     private var to: Ymd? = null
 
+    /**
+     * True while the sheet is showing the twelve months of [viewYear] instead of the days of
+     * [viewMonth]. One grid serves both, so this is what every renderer and the two header
+     * arrows branch on.
+     */
+    private var pickingMonth = false
+
     private lateinit var grid: GridLayout
+    private lateinit var weekdays: LinearLayout
+    private lateinit var monthCaret: ImageView
     private lateinit var monthLabel: TextView
     private lateinit var rangeLabel: TextView
     private lateinit var confirm: TextView
@@ -56,7 +63,7 @@ class JalaliRangePicker(private val activity: SimpleActivity) {
     fun show(onPicked: (startMillis: Long, endMillis: Long) -> Unit) = with(activity) {
         val density = resources.displayMetrics.density
         val today = Calendar.getInstance()
-        val nowJalali = gregorianToJalali(
+        val nowJalali = TextoCalendar.fromCivil(
             today.get(Calendar.YEAR),
             today.get(Calendar.MONTH) + 1,
             today.get(Calendar.DAY_OF_MONTH)
@@ -88,29 +95,63 @@ class JalaliRangePicker(private val activity: SimpleActivity) {
             }
         )
 
-        // Month bar. Under RTL the first child lands on the right, so "previous month" is
-        // added first and the arrows point the way the calendar actually moves.
+        // Month bar. "Previous month" is added first, so it lands on the row's start --
+        // the right under Persian, the left under English -- and each caret is turned to
+        // point the way that button actually moves the calendar.
+        // Layout direction, taken here rather than in monthArrow: an arrow is only ever
+        // built as part of this row.
+        val isRtl = resources.configuration.layoutDirection == View.LAYOUT_DIRECTION_RTL
         val header = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
         }
-        header.addView(monthArrow(-1))
+        header.addView(monthArrow(-1, isRtl))
+
+        // The label is a button, not a caption. Stepping one month at a time was the only
+        // way to move: reaching a date a year back took twelve taps of the same arrow, and
+        // there was no way at all to change the year directly. Tapping it swaps the day grid
+        // for the twelve months, and the arrows then step years.
         monthLabel = TextView(this).apply {
             gravity = Gravity.CENTER
             setTextColor(config.mainTextColor)
             setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.95f))
             typeface = typefaceFor(Typeface.BOLD)
-            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
         }
-        header.addView(monthLabel)
-        header.addView(monthArrow(+1))
+        monthCaret = ImageView(this).apply {
+            val side = 14.getScaledPx()
+            layoutParams = LinearLayout.LayoutParams(side, side).apply {
+                marginStart = 5.getScaledPx()
+            }
+            setImageResource(R.drawable.ic_ph_caret_left)
+            // Only a left caret is in the drawables. Turned a quarter anticlockwise it points
+            // down, which is what marks the label as opening something; in month mode it is
+            // turned again to point up, for the way back.
+            rotation = -90f
+            applyColorFilter(config.mainTextColor.withAlpha(0.75f))
+        }
+        val labelBox = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER
+            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
+            isClickable = true
+            val padV = 6.getScaledPx()
+            setPadding(0, padV, 0, padV)
+            addView(monthLabel)
+            addView(monthCaret)
+            setOnClickListener {
+                pickingMonth = !pickingMonth
+                renderMonth()
+            }
+        }
+        header.addView(labelBox)
+        header.addView(monthArrow(+1, isRtl))
         sheet.addView(header)
 
-        val weekdays = LinearLayout(this).apply {
+        weekdays = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             setPadding(0, 10.getScaledPx(), 0, 4.getScaledPx())
         }
-        listOf("ش", "ی", "د", "س", "چ", "پ", "ج").forEach { name ->
+        TextoCalendar.weekdayInitials.forEach { name ->
             weekdays.addView(
                 TextView(this).apply {
                     text = name
@@ -173,15 +214,9 @@ class JalaliRangePicker(private val activity: SimpleActivity) {
         Unit
     }
 
-    private fun Ymd.toMillis(): Long {
-        val gregorian = jalaliToGregorian(y, m, d)
-        return Calendar.getInstance().apply {
-            clear()
-            set(gregorian.year, gregorian.month - 1, gregorian.day)
-        }.timeInMillis
-    }
+    private fun Ymd.toMillis(): Long = TextoCalendar.millisOf(y, m, d)
 
-    private fun monthArrow(delta: Int): View = with(activity) {
+    private fun monthArrow(delta: Int, isRtl: Boolean): View = with(activity) {
         val side = 34.getScaledPx()
         ImageView(this).apply {
             layoutParams = LinearLayout.LayoutParams(side, side)
@@ -190,18 +225,29 @@ class JalaliRangePicker(private val activity: SimpleActivity) {
             scaleType = ImageView.ScaleType.FIT_CENTER
             setImageResource(R.drawable.ic_ph_caret_left)
             // Only one caret is in the drawables, so the other direction is the same glyph
-            // turned around rather than a second near-identical asset.
-            rotation = if (delta < 0) 180f else 0f
+            // turned around rather than a second near-identical asset. Which of the two
+            // gets turned depends on the layout direction: the button that steps back sits
+            // on the right under RTL and on the left under LTR, and has to point the way it
+            // sits. Hard-coded to the RTL case, the English picker's carets both pointed
+            // outwards from the month name, away from the months they move to.
+            rotation = if ((delta < 0) == isRtl) 180f else 0f
             applyColorFilter(config.mainTextColor.withAlpha(0.75f))
             isClickable = true
             setOnClickListener {
-                viewMonth += delta
-                if (viewMonth < 1) {
-                    viewMonth = 12
-                    viewYear--
-                } else if (viewMonth > 12) {
-                    viewMonth = 1
-                    viewYear++
+                // Same two buttons, two strides: a month while the days are up, a year while
+                // the months are. Reading the mode here rather than rebuilding the arrows
+                // keeps the header from being torn down on every toggle.
+                if (pickingMonth) {
+                    viewYear += delta
+                } else {
+                    viewMonth += delta
+                    if (viewMonth < 1) {
+                        viewMonth = 12
+                        viewYear--
+                    } else if (viewMonth > 12) {
+                        viewMonth = 1
+                        viewYear++
+                    }
                 }
                 renderMonth()
             }
@@ -216,7 +262,7 @@ class JalaliRangePicker(private val activity: SimpleActivity) {
                 gravity = Gravity.CENTER
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.88f))
                 typeface = typefaceFor(if (filled) Typeface.BOLD else Typeface.NORMAL)
-                setTextColor(if (filled) config.sentBubbleTextColor else config.mainTextColor)
+                setTextColor(if (filled) config.accentInkColor else config.mainTextColor)
                 val padV = 12.getScaledPx()
                 setPadding(0, padV, 0, padV)
                 background = if (filled) {
@@ -244,21 +290,26 @@ class JalaliRangePicker(private val activity: SimpleActivity) {
             }
         }
 
-    /** Which column a Jalali day lands in, with the week starting on Saturday. */
-    private fun columnOf(y: Int, m: Int, d: Int): Int {
-        val gregorian = jalaliToGregorian(y, m, d)
-        val cal = Calendar.getInstance().apply {
-            clear()
-            set(gregorian.year, gregorian.month - 1, gregorian.day)
+    /** Which column a day lands in; the week starts on Saturday in Persian, Sunday in English. */
+    private fun columnOf(y: Int, m: Int, d: Int): Int = TextoCalendar.firstColumnOf(y, m, d)
+
+    private fun renderMonth(): Unit = with(activity) {
+        monthCaret.rotation = if (pickingMonth) 90f else -90f
+        weekdays.visibility = if (pickingMonth) View.GONE else View.VISIBLE
+
+        if (pickingMonth) {
+            monthLabel.text = viewYear.toUiDigits()
+            renderMonthChooser()
+            return@with
         }
-        // SATURDAY is 7 and SUNDAY is 1, so the modulo lands Saturday on column 0.
-        return cal.get(Calendar.DAY_OF_WEEK) % COLUMNS
-    }
 
-    private fun renderMonth() = with(activity) {
-        monthLabel.text = "${JALALI_MONTH_NAMES[viewMonth - 1]} ${viewYear.toPersianDigits()}"
+        monthLabel.text = "${TextoCalendar.monthNames[viewMonth - 1]} ${viewYear.toUiDigits()}"
 
+        // Emptied before the count changes, not after: GridLayout validates a new columnCount
+        // against the children already in it, so setting 7 while the twelve month cells are
+        // still attached throws.
         grid.removeAllViews()
+        grid.columnCount = COLUMNS
         val cellSide = 38.getScaledPx()
 
         repeat(columnOf(viewYear, viewMonth, 1)) {
@@ -273,7 +324,7 @@ class JalaliRangePicker(private val activity: SimpleActivity) {
             )
         }
 
-        for (day in 1..daysInJalaliMonth(viewYear, viewMonth)) {
+        for (day in 1..TextoCalendar.daysInMonth(viewYear, viewMonth)) {
             val ymd = Ymd(viewYear, viewMonth, day)
             val start = from
             val end = to
@@ -282,13 +333,13 @@ class JalaliRangePicker(private val activity: SimpleActivity) {
 
             grid.addView(
                 TextView(this).apply {
-                    text = day.toPersianDigits()
+                    text = day.toUiDigits()
                     gravity = Gravity.CENTER
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.82f))
                     typeface = typefaceFor(if (isEdge) Typeface.BOLD else Typeface.NORMAL)
                     setTextColor(
                         when {
-                            isEdge -> config.sentBubbleTextColor
+                            isEdge -> config.accentInkColor
                             isInside -> config.accentGradientStart
                             else -> config.mainTextColor
                         }
@@ -325,6 +376,75 @@ class JalaliRangePicker(private val activity: SimpleActivity) {
         renderRangeLabel()
     }
 
+    /**
+     * The twelve months of [viewYear], three to a row, in the same grid the days use. Picking
+     * one drops straight back to that month's days: the year is already set by the header
+     * arrows, so any month of any year is three taps from any other.
+     *
+     * The months of a year that is already part of the picked range are marked, so the range
+     * stays visible while navigating away from it.
+     */
+    private fun renderMonthChooser(): Unit = with(activity) {
+        // Emptied first, for the reason given in renderMonth.
+        grid.removeAllViews()
+        grid.columnCount = MONTH_COLUMNS
+
+        val start = from
+        val end = to
+        TextoCalendar.monthNames.forEachIndexed { index, name ->
+            val month = index + 1
+            val touched = listOfNotNull(start, end).any { it.y == viewYear && it.m == month }
+            val isCurrent = month == viewMonth
+
+            grid.addView(
+                TextView(this).apply {
+                    text = name
+                    gravity = Gravity.CENTER
+                    setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.82f))
+                    typeface = typefaceFor(if (touched || isCurrent) Typeface.BOLD else Typeface.NORMAL)
+                    setTextColor(
+                        when {
+                            touched -> config.accentInkColor
+                            isCurrent -> config.accentGradientStart
+                            else -> config.mainTextColor
+                        }
+                    )
+                    background = when {
+                        touched -> TextoGlass.accent(
+                            start = config.accentGradientStart,
+                            end = config.accentGradientEnd,
+                            cornerRadius = 100f * resources.displayMetrics.density,
+                            mid = config.accentGradientMid
+                        )
+                        isCurrent -> GradientDrawable().apply {
+                            shape = GradientDrawable.RECTANGLE
+                            cornerRadius = 100f * resources.displayMetrics.density
+                            setColor(config.accentGradientStart.withAlpha(0.16f))
+                        }
+                        else -> null
+                    }
+                    isClickable = true
+                    val padV = 12.getScaledPx()
+                    setPadding(0, padV, 0, padV)
+                    layoutParams = GridLayout.LayoutParams().apply {
+                        width = 0
+                        height = ViewGroup.LayoutParams.WRAP_CONTENT
+                        columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+                        val gap = 4.getScaledPx()
+                        setMargins(gap, gap, gap, gap)
+                    }
+                    setOnClickListener {
+                        viewMonth = month
+                        pickingMonth = false
+                        renderMonth()
+                    }
+                }
+            )
+        }
+
+        renderRangeLabel()
+    }
+
     private fun onDayTapped(ymd: Ymd) {
         val start = from
         when {
@@ -342,7 +462,7 @@ class JalaliRangePicker(private val activity: SimpleActivity) {
         renderMonth()
     }
 
-    private fun renderRangeLabel() = with(activity) {
+    private fun renderRangeLabel(): Unit = with(activity) {
         val start = from
         confirm.alpha = if (start == null) 0.4f else 1f
         confirm.isClickable = start != null
@@ -354,9 +474,12 @@ class JalaliRangePicker(private val activity: SimpleActivity) {
     }
 
     private fun Ymd.text() =
-        "${d.toPersianDigits()} ${JALALI_MONTH_NAMES[m - 1]} ${y.toPersianDigits()}"
+        TextoCalendar.dateText(y, m, d)
 
     private companion object {
         const val COLUMNS = 7
+
+        /** Three months to a row: twelve names fit without any of them wrapping. */
+        const val MONTH_COLUMNS = 3
     }
 }

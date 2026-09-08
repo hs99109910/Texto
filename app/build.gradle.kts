@@ -40,7 +40,10 @@ android {
         targetSdk = project.libs.versions.app.build.targetSDK.get().toInt()
         versionName = project.property("VERSION_NAME").toString()
         versionCode = project.property("VERSION_CODE").toString().toInt()
-        resConfigs("en")
+        // The two languages the app ships. Everything else Fossify Commons carries is
+        // stripped, so a phone set to German gets the English UI rather than a half:
+        // translated one built out of commons' own strings.
+        resConfigs("en", "fa")
         ksp {
             arg("room.schemaLocation", "$projectDir/schemas")
         }

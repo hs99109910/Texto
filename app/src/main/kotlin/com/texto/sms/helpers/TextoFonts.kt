@@ -37,13 +37,29 @@ object TextoFonts {
         FONT_VAZIRMATN to listOf("Vazirmatn-Bold.ttf", "vazirmatn-bold.ttf")
     )
 
-    val displayNames = mapOf(
+    private val persianNames = mapOf(
         FONT_VAZIRMATN to "وزیرمتن",
         FONT_B_KOODAK to "ب کودک",
         FONT_B_NAZANIN to "ب نازنین",
         FONT_B_KAMRAN to "ب کامران",
         FONT_IRAN_NASTALIQ to "ایران نستعلیق"
     )
+
+    /** The same families spelled the way an English UI names a typeface. */
+    private val latinNames = mapOf(
+        FONT_VAZIRMATN to "Vazirmatn",
+        FONT_B_KOODAK to "B Koodak",
+        FONT_B_NAZANIN to "B Nazanin",
+        FONT_B_KAMRAN to "B Kamran",
+        FONT_IRAN_NASTALIQ to "Iran Nastaliq"
+    )
+
+    /**
+     * A typeface name is not a resource: the map is keyed by the font id the setting stores,
+     * so the two spellings live here and the language picks between them.
+     */
+    val displayNames: Map<Int, String>
+        get() = if (TextoLocale.isPersian) persianNames else latinNames
 
     private val cache = HashMap<String, Typeface?>()
 

@@ -2,6 +2,10 @@ package com.texto.sms.activities
 
 import android.app.Activity
 import android.graphics.Color
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.InsetDrawable
+import android.graphics.drawable.LayerDrawable
 import android.content.Intent
 import android.os.Bundle
 import android.util.TypedValue
@@ -16,11 +20,13 @@ import org.fossify.commons.helpers.NavigationIcon
 import org.fossify.commons.helpers.PERMISSION_WRITE_STORAGE
 import org.fossify.commons.views.MyAppBarLayout
 import com.texto.sms.helpers.textoCapsuleDialog
+import com.texto.sms.helpers.textoSwatchDialog
 import com.texto.sms.BuildConfig
 import com.texto.sms.R
 import com.texto.sms.databinding.ActivitySettingsBinding
 import com.texto.sms.extensions.config
-import com.texto.sms.extensions.toPersianDigits
+import com.texto.sms.extensions.toUiDigits
+import com.texto.sms.extensions.uiPercentSign
 import com.texto.sms.helpers.*
 
 class SettingsActivity : SimpleActivity() {
@@ -53,6 +59,7 @@ class SettingsActivity : SimpleActivity() {
         setupDefaultFilter()
         setupFontSize()
         setupFontFamily()
+        setupLanguage()
         setupBarBgMode()
         updateAppFonts(binding.root)
     }
@@ -323,102 +330,86 @@ class SettingsActivity : SimpleActivity() {
         updatePreview(settingsColorRecentPreview, config.recentColor)
 
         settingsTopBarTextColorHolder.setOnClickListener {
-            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.topBarTextColor) { wasPositive, color ->
-                if (wasPositive) {
-                    config.topBarTextColor = color
-                    updatePreview(settingsTopBarTextColorPreview, color)
-                    applyCustomColors()
-                }
+            pickColour(R.string.settings_top_bar_text, config.topBarTextColor) { color ->
+                config.topBarTextColor = color
+                updatePreview(settingsTopBarTextColorPreview, color)
+                applyCustomColors()
             }
         }
 
         settingsMainTextColorHolder.setOnClickListener {
-            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.mainTextColor) { wasPositive, color ->
-                if (wasPositive) {
-                    config.mainTextColor = color
-                    updatePreview(settingsMainTextColorPreview, color)
-                    applyCustomColors()
-                    updateAppFonts(binding.root)
-                }
+            pickColour(R.string.settings_main_text, config.mainTextColor) { color ->
+                config.mainTextColor = color
+                updatePreview(settingsMainTextColorPreview, color)
+                applyCustomColors()
+                updateAppFonts(binding.root)
             }
         }
 
         // SIM badges are identified by colour rather than a slot digit, so each slot needs
         // a colour the user can choose.
         listOf(
-            0 to (settingsSim1ColorHolder to settingsSim1ColorPreview),
-            1 to (settingsSim2ColorHolder to settingsSim2ColorPreview)
+            0 to Triple(settingsSim1ColorHolder, settingsSim1ColorPreview, R.string.settings_sim1_color),
+            1 to Triple(settingsSim2ColorHolder, settingsSim2ColorPreview, R.string.settings_sim2_color)
         ).forEach { (slot, views) ->
-            val (holder, preview) = views
+            val (holder, preview, labelRes) = views
             updatePreview(preview, config.getSimColor(slot))
             holder.setOnClickListener {
-                org.fossify.commons.dialogs.ColorPickerDialog(
-                    this@SettingsActivity, config.getSimColor(slot)
-                ) { wasPositive, color ->
-                    if (wasPositive) {
-                        config.setSimColor(slot, color)
-                        updatePreview(preview, color)
-                    }
+                pickColour(labelRes, config.getSimColor(slot)) { color ->
+                    config.setSimColor(slot, color)
+                    updatePreview(preview, color)
                 }
             }
         }
 
         settingsInputBarTextColorHolder.setOnClickListener {
-            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.inputBarTextColor) { wasPositive, color ->
-                if (wasPositive) {
-                    config.inputBarTextColor = color
-                    updatePreview(settingsInputBarTextColorPreview, color)
-                    applyCustomColors()
-                }
+            pickColour(R.string.settings_input_bar_text, config.inputBarTextColor) { color ->
+                config.inputBarTextColor = color
+                updatePreview(settingsInputBarTextColorPreview, color)
+                applyCustomColors()
             }
         }
 
         settingsSentBubbleColorHolder.setOnClickListener {
-            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.sentBubbleColor) { wasPositive, color ->
-                if (wasPositive) {
-                    config.sentBubbleColor = color
-                    updatePreview(settingsSentBubbleColorPreview, color)
-                }
+            pickColour(R.string.settings_sent_bubble_color, config.sentBubbleColor) { color ->
+                config.sentBubbleColor = color
+                updatePreview(settingsSentBubbleColorPreview, color)
             }
         }
 
         settingsSentBubbleTextColorHolder.setOnClickListener {
-            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.sentBubbleTextColor) { wasPositive, color ->
-                if (wasPositive) {
-                    config.sentBubbleTextColor = color
-                    updatePreview(settingsSentBubbleTextColorPreview, color)
-                }
+            pickColour(R.string.settings_sent_bubble_text, config.sentBubbleTextColor) { color ->
+                config.sentBubbleTextColor = color
+                updatePreview(settingsSentBubbleTextColorPreview, color)
             }
         }
 
         settingsReceivedBubbleColorHolder.setOnClickListener {
-            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.receivedBubbleColor) { wasPositive, color ->
-                if (wasPositive) {
-                    config.receivedBubbleColor = color
-                    updatePreview(settingsReceivedBubbleColorPreview, color)
-                }
+            pickColour(R.string.settings_received_bubble_color, config.receivedBubbleColor) { color ->
+                config.receivedBubbleColor = color
+                // Marks the gradient as overridden on that side; see Config.
+                config.receivedBubbleColorSet = true
+                updatePreview(settingsReceivedBubbleColorPreview, color)
             }
         }
 
         settingsReceivedBubbleTextColorHolder.setOnClickListener {
-            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.receivedBubbleTextColor) { wasPositive, color ->
-                if (wasPositive) {
-                    config.receivedBubbleTextColor = color
-                    updatePreview(settingsReceivedBubbleTextColorPreview, color)
-                }
+            pickColour(R.string.settings_received_bubble_text, config.receivedBubbleTextColor) { color ->
+                config.receivedBubbleTextColor = color
+                updatePreview(settingsReceivedBubbleTextColorPreview, color)
             }
         }
 
         settingsColorRecentHolder.setOnClickListener {
-            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, config.recentColor) { wasPositive, color ->
-                if (wasPositive) {
-                    config.recentColor = color
-                    updatePreview(settingsColorRecentPreview, color)
-                }
+            pickColour(R.string.settings_conversation_card_color, config.recentColor) { color ->
+                config.recentColor = color
+                updatePreview(settingsColorRecentPreview, color)
             }
         }
 
-        settingsAboutVersion.text = BuildConfig.VERSION_NAME
+        // Shaped, like every other number the app shows. The version was the one figure on
+        // the settings screen still reading in Latin digits.
+        settingsAboutVersion.text = BuildConfig.VERSION_NAME.toUiDigits()
         settingsAboutHolder.setOnClickListener {
             startAboutActivity(
                 R.string.app_launcher_name,
@@ -430,12 +421,27 @@ class SettingsActivity : SimpleActivity() {
         }
 
         settingsResetDefaults.setOnClickListener {
-            config.resetColors()
+            // Everything, not only the colours: the font, its size, the UI scale, the
+            // bubble outlines, the delivery reports, the recycle bin -- every setting the
+            // app stores. resetColors() named its keys one at a time and so kept missing
+            // whatever had been added since.
+            config.resetAllSettings()
             // resetColors() clears APP_THEME along with every colour, so without re-applying
             // here the screen would come back on the bare code defaults and only settle on
             // the real default theme at the next cold start, when App.onCreate notices that
             // nothing is stored. Reset now lands where a fresh install lands.
-            AppThemes.apply(config, AppThemes.byId(AppThemes.NEON))
+            // NEON_LIGHT, not NEON: the light variant is what a fresh install opens on, and
+            // this was left pointing at the dark one when that default changed, so a reset
+            // came back on a theme the app never starts with.
+            AppThemes.apply(config, AppThemes.byId(AppThemes.NEON_LIGHT))
+            config.glassOpacity = Config.DEFAULT_GLASS_OPACITY
+            // App.onCreate writes these on every launch to keep the upstream first-run
+            // popups away, but the reset does not restart the process -- only the activity --
+            // so they are put back here rather than left at zero until the next cold start.
+            config.appId = packageName
+            config.appSideloadingStatus = 0
+            config.hadThankYouInstalled = true
+            config.appRunCount = 100
             finish()
             startActivity(intent)
         }
@@ -466,22 +472,56 @@ class SettingsActivity : SimpleActivity() {
      * The halos are always painted; this only decides whether they drift. Applying it needs a
      * fresh drawable, which is what applyCustomColors() builds.
      */
+    /**
+     * Shows or hides the built-in "مخاطبین" chip.
+     *
+     * Switching it off has to release the two ids that can still be pointing at it, exactly
+     * as [setupAdsFilter] does for its own chip. Without that the *active* filter self-heals
+     * -- buildFilterChips falls back to the first chip when the stored id is not on the row
+     * -- but the *default* one does not: it stays "contacts_only" in prefs while the row here
+     * reads "همه", and re-enabling the chip months later silently reopens the app filtered by
+     * something the user never chose.
+     */
     private fun setupContactsOnlyFilter() = binding.apply {
         settingsContactsOnlyFilterSwitch.isChecked = config.showContactsOnlyFilter
         settingsContactsOnlyFilterSwitch.setOnCheckedChangeListener { _, isChecked ->
             config.showContactsOnlyFilter = isChecked
+            if (!isChecked && config.activeFilterId == MessageFilter.ID_CONTACTS_ONLY) {
+                config.activeFilterId = MessageFilter.ID_ALL
+            }
+            if (!isChecked && config.defaultFilterId == MessageFilter.ID_CONTACTS_ONLY) {
+                config.defaultFilterId = MessageFilter.ID_ALL
+            }
+            settingsDefaultFilter.text = defaultFilterLabel()
         }
         settingsContactsOnlyFilterHolder.setOnClickListener {
             settingsContactsOnlyFilterSwitch.toggle()
         }
     }
 
-    /** Shows or hides the built-in "بدون تبلیغات" chip. Switching it off keeps the marked
-     *  senders, so turning it back on restores the same exclusions. */
+    /**
+     * Shows or hides the built-in "بدون تبلیغات" chip. Switching it off keeps the marked
+     * senders, so turning it back on restores the same exclusions.
+     *
+     * Switching it *on* also makes it the filter the app opens in. Turning it on is a
+     * statement about which list you want to see, and leaving the default pointing at "همه"
+     * meant the setting only took effect after a tap on every launch.
+     */
     private fun setupAdsFilter() = binding.apply {
         settingsAdsFilterSwitch.isChecked = config.showAdsFilter
         settingsAdsFilterSwitch.setOnCheckedChangeListener { _, isChecked ->
             config.showAdsFilter = isChecked
+            if (isChecked) {
+                config.defaultFilterId = MessageFilter.ID_NO_ADS
+                config.activeFilterId = MessageFilter.ID_NO_ADS
+                // The filter is empty of exclusions until senders are marked, so on its own
+                // it changes nothing visible. Said once, here, rather than left to be found.
+                textoConfirmDialog(
+                    message = getString(R.string.filter_no_ads_explainer),
+                    title = getString(R.string.filter_no_ads),
+                    negativeLabel = null
+                ) {}
+            }
             // A chip that has just disappeared must not stay selected, or the list would
             // open filtered by something with no way back to it.
             if (!isChecked && config.activeFilterId == MessageFilter.ID_NO_ADS) {
@@ -521,16 +561,17 @@ class SettingsActivity : SimpleActivity() {
         settingsDefaultFilter.text = defaultFilterLabel()
         settingsDefaultFilterHolder.setOnClickListener {
             val filters = selectableFilters()
-            val items = filters.mapIndexed { index, (_, label) ->
-                org.fossify.commons.models.RadioItem(index, label)
-            } as ArrayList<org.fossify.commons.models.RadioItem>
-            val current = filters.indexOfFirst { it.first == config.defaultFilterId }
-                .coerceAtLeast(0)
-
-            org.fossify.commons.dialogs.RadioGroupDialog(this@SettingsActivity, items, current) {
-                config.defaultFilterId = filters[it as Int].first
-                settingsDefaultFilter.text = defaultFilterLabel()
+            val choices = filters.map { (id, label) ->
+                com.texto.sms.helpers.CapsuleChoice(
+                    label = label,
+                    isActive = config.defaultFilterId == id,
+                    onPick = {
+                        config.defaultFilterId = id
+                        settingsDefaultFilter.text = defaultFilterLabel()
+                    }
+                )
             }
+            textoCapsuleDialog(getString(R.string.default_filter), choices)
         }
     }
 
@@ -547,7 +588,7 @@ class SettingsActivity : SimpleActivity() {
      */
     private fun setupAppTheme() = binding.apply {
         settingsAppTheme.text =
-            com.texto.sms.helpers.AppThemes.familyOf(config.appTheme).label
+            getString(com.texto.sms.helpers.AppThemes.familyOf(config.appTheme).labelRes)
 
         settingsAppThemeHolder.setOnClickListener {
             val isDark = com.texto.sms.helpers.AppThemes.isDarkVariant(config.appTheme)
@@ -557,13 +598,13 @@ class SettingsActivity : SimpleActivity() {
             val choices = com.texto.sms.helpers.AppThemes.families.map { family ->
                 val preview = family.forDark(isDark)
                 com.texto.sms.helpers.CapsuleChoice(
-                    label = family.label,
+                    label = getString(family.labelRes),
                     swatch = preview.accentGradient.first,
                     swatchEnd = preview.accentGradient.second,
                     isActive = family.has(config.appTheme),
                     onPick = {
                         com.texto.sms.helpers.AppThemes.apply(config, preview)
-                        settingsAppTheme.text = family.label
+                        settingsAppTheme.text = getString(family.labelRes)
                         setupAccentHue()
                         updateCustomizationUI()
                         updateAppFonts(binding.root)
@@ -640,7 +681,7 @@ class SettingsActivity : SimpleActivity() {
             }
             runOnUiThread {
                 if (isFinishing || isDestroyed) return@runOnUiThread
-                settingsBlockedNumbersCount.text = count.toString()
+                settingsBlockedNumbersCount.text = count.toUiDigits()
                 settingsBlockedNumbersCount.setTextColor(config.mainTextColor)
             }
         }
@@ -732,7 +773,7 @@ class SettingsActivity : SimpleActivity() {
 
     /** Shown beside the slider as a percentage, so the raw 0.5-1.5 factor never surfaces. */
     private fun uiScaleLabel(value: Float) =
-        "${Math.round(value * 100)}٪".toPersianDigits()
+        "${Math.round(value * 100)}$uiPercentSign".toUiDigits()
 
     private fun setupGlassOpacity() = binding.apply {
         settingsGlassOpacitySlider.applyTextoStyle()
@@ -750,7 +791,7 @@ class SettingsActivity : SimpleActivity() {
     }
 
     /** The stored value is opacity; the design's label reads as transparency, so invert it. */
-    private fun glassOpacityLabel(opacity: Int) = "${100 - opacity}٪".toPersianDigits()
+    private fun glassOpacityLabel(opacity: Int) = "${100 - opacity}$uiPercentSign".toUiDigits()
 
     /**
      * The tonality strip. Dragging it rewrites one number, and every accent surface in the
@@ -764,72 +805,175 @@ class SettingsActivity : SimpleActivity() {
      */
     private fun setupAccentHue() = binding.apply {
         val stored = config.accentHueShift
-        val signed = if (stored > 180) stored - 360 else stored
-        settingsAccentHueStrip.baseColor =
-            com.texto.sms.helpers.TextoTint.rotateHue(config.accentGradientMid.takeIf { it != 0 }
-                ?: config.accentGradientEnd, -signed)
-        settingsAccentHueStrip.inkColor = config.mainTextColor
-        settingsAccentHueStrip.shift = signed
-        settingsAccentHueValue.text = accentHueLabel(signed)
+        settingsAccentHueValue.text = accentHueLabel(stored)
         settingsAccentHueValue.setTextColor(config.accentGradientStart)
 
-        settingsAccentHueStrip.onShiftChanged = { degrees, committed ->
-            config.accentHueShift = degrees
-            settingsAccentHueValue.text = accentHueLabel(degrees)
-            settingsAccentHueValue.setTextColor(config.accentGradientStart)
-            // Repaint on every move so the whole settings screen previews the new tonality
-            // live; the heavier font pass can wait for the finger to lift.
-            applyCustomColors()
-            if (committed) {
-                updateCustomizationUI()
-                updateAppFonts(binding.root)
-                // The nav capsule and the switches are painted from their own setup passes
-                // rather than by applyCustomColors, so without these two they keep the old
-                // tonality until the screen is next resumed : the one corner of the screen
-                // that visibly disagreed with the strip being dragged.
-                styleNavTabs()
-                styleAllSwitches(binding.root)
-                // The two sliders carry the accent on their track and read-out. Restyled
-                // directly rather than by re-running their setup functions, which would
-                // stack a second change listener on each one every time the strip is let go.
-                settingsUiScaleSlider.applyTextoStyle()
-                settingsUiScaleValue.setTextColor(config.accentGradientStart)
-                settingsGlassOpacitySlider.applyTextoStyle()
-                settingsGlassOpacityValue.setTextColor(config.accentGradientStart)
-            }
+        // The skin's own accent with the current rotation taken back out, so each dot below
+        // can be painted as "this skin, rotated by N" rather than as a raw hue.
+        val base = com.texto.sms.helpers.TextoTint.rotateHue(
+            config.accentGradientMid.takeIf { it != 0 } ?: config.accentGradientEnd, -stored
+        )
+
+        val degrees = (0 until 360 step ACCENT_HUE_STEP).toList()
+        settingsAccentHueWheel.apply {
+            itemSize = ACCENT_DOT_DP.getScaledPx()
+            onPicked = { index -> applyAccentHue(degrees[index]) }
+            submit(
+                colours = degrees.map { com.texto.sms.helpers.TextoTint.rotateHue(base, it) },
+                selectedIndex = degrees.indexOf(stored).coerceAtLeast(0)
+            )
         }
+    }
+
+    /**
+     * Commits a tonality and repaints everything that carries the accent.
+     *
+     * The nav capsule, the switches and the two sliders are painted by their own setup passes
+     * rather than by [applyCustomColors], so without the last four calls they keep the old
+     * tonality until the screen is next resumed : the corner of the screen that visibly
+     * disagreed with the choice just made.
+     */
+    private fun applyAccentHue(degrees: Int) {
+        config.accentHueShift = degrees
+
+        // Deliberately NOT setupAccentHue(): that rebuilds the very row being swiped and
+        // re-centres it, which killed the fling halfway and made the gesture feel like it
+        // was fighting back. The row already knows where it is; this only has to repaint
+        // everything that reads the accent.
+        binding.settingsAccentHueValue.text = accentHueLabel(degrees)
+        binding.settingsAccentHueValue.setTextColor(config.accentGradientStart)
+
+        applyCustomColors()
+        updateCustomizationUI()
+        updateAppFonts(binding.root)
+        styleNavTabs()
+        styleAllSwitches(binding.root)
+        binding.settingsUiScaleSlider.applyTextoStyle()
+        binding.settingsUiScaleValue.setTextColor(config.accentGradientStart)
+        binding.settingsGlassOpacitySlider.applyTextoStyle()
+        binding.settingsGlassOpacityValue.setTextColor(config.accentGradientStart)
+    }
+
+    /**
+     * Every colour row on this screen goes through here: the app's short swatch sheet, with
+     * the full wheel still one tap away behind "رنگ دلخواه".
+     *
+     * These rows used to open commons' picker directly. That is sixteen million answers to a
+     * question with about a dozen good ones -- and it is built from the base theme, so on any
+     * of this app's skins it also arrived as a white panel in a foreign typeface.
+     */
+    private fun pickColour(titleRes: Int, current: Int, onChosen: (Int) -> Unit) {
+        textoSwatchDialog(
+            title = getString(titleRes),
+            current = current,
+            onCustom = {
+                org.fossify.commons.dialogs.ColorPickerDialog(
+                    this@SettingsActivity, current
+                ) { wasPositive, color ->
+                    if (wasPositive) onChosen(color)
+                }
+            },
+            onPick = onChosen
+        )
     }
 
     /** Centre reads as the theme's own colour rather than as a meaningless zero. */
     private fun accentHueLabel(degrees: Int) =
         if (degrees == 0) getString(R.string.settings_accent_hue_original)
-        else "${degrees}°".toPersianDigits()
+        else "${degrees}°".toUiDigits()
 
+    /**
+     * The four sizes, and their labels. Commons has its own set of these, but its
+     * strings arrive in English under this app's locked locale, so the row read "Medium".
+     */
+    private val fontSizes = listOf(
+        org.fossify.commons.helpers.FONT_SIZE_SMALL to R.string.font_size_small,
+        org.fossify.commons.helpers.FONT_SIZE_MEDIUM to R.string.font_size_medium,
+        org.fossify.commons.helpers.FONT_SIZE_LARGE to R.string.font_size_large,
+        org.fossify.commons.helpers.FONT_SIZE_EXTRA_LARGE to R.string.font_size_extra_large,
+    )
+
+
+    /** The three states of the language setting, in the order the sheet lists them. */
+    private val languages = listOf(
+        com.texto.sms.helpers.TextoLocale.SYSTEM to R.string.language_system,
+        com.texto.sms.helpers.TextoLocale.PERSIAN to R.string.language_persian,
+        com.texto.sms.helpers.TextoLocale.ENGLISH to R.string.language_english,
+    )
+
+    /**
+     * Language, on the same capsule sheet every other chooser here uses.
+     *
+     * Picking one has to restart the activity stack rather than repaint it: the locale is
+     * fixed when a Context is created, in `attachBaseContext`, so every string, every
+     * layout direction and every already-inflated view on screen belongs to the old
+     * language until the activity is built again. Settings is recreated so the change is
+     * visible immediately, and MainActivity behind it is cleared so it rebuilds on the way
+     * back instead of coming forward still speaking the previous language.
+     */
+    private fun setupLanguage() = binding.apply {
+        settingsLanguage.text = getString(languageLabelRes())
+        settingsLanguageHolder.setOnClickListener {
+            val choices = languages.map { (id, labelRes) ->
+                com.texto.sms.helpers.CapsuleChoice(
+                    label = getString(labelRes),
+                    subtitle = if (id == com.texto.sms.helpers.TextoLocale.SYSTEM) {
+                        getString(R.string.language_system_sub)
+                    } else {
+                        null
+                    },
+                    isActive = config.appLanguage == id,
+                    onPick = {
+                        if (config.appLanguage != id) {
+                            config.appLanguage = id
+                            applyLanguageChange()
+                        }
+                    }
+                )
+            }
+            textoCapsuleDialog(getString(R.string.settings_language), choices)
+        }
+    }
+
+    private fun languageLabelRes(): Int =
+        languages.firstOrNull { it.first == config.appLanguage }?.second
+            ?: R.string.language_system
+
+    private fun applyLanguageChange() {
+        // The task is restarted from the launcher activity: recreating only this screen
+        // would leave every activity under it -- and the conversation list is always under
+        // it -- holding the old locale's resources.
+        val intent = Intent(this@SettingsActivity, MainActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        startActivity(intent)
+        startActivity(Intent(this@SettingsActivity, SettingsActivity::class.java))
+        overridePendingTransition(0, 0)
+        finish()
+    }
     private fun setupFontSize() = binding.apply {
         settingsFontSize.text = getFontSizeText()
         settingsFontSizeHolder.setOnClickListener {
-            val items = arrayListOf(
-                org.fossify.commons.models.RadioItem(org.fossify.commons.helpers.FONT_SIZE_SMALL, getString(org.fossify.commons.R.string.small)),
-                org.fossify.commons.models.RadioItem(org.fossify.commons.helpers.FONT_SIZE_MEDIUM, getString(org.fossify.commons.R.string.medium)),
-                org.fossify.commons.models.RadioItem(org.fossify.commons.helpers.FONT_SIZE_LARGE, getString(org.fossify.commons.R.string.large)),
-                org.fossify.commons.models.RadioItem(org.fossify.commons.helpers.FONT_SIZE_EXTRA_LARGE, getString(org.fossify.commons.R.string.extra_large))
-            )
-
-            org.fossify.commons.dialogs.RadioGroupDialog(this@SettingsActivity, items, config.fontSize) {
-                config.fontSize = it as Int
-                settingsFontSize.text = getFontSizeText()
-                updateAppFonts(binding.root)
+            // The app's own capsule sheet, like every other chooser here. A commons radio
+            // list came up on the base theme's light ground in a face nothing else uses.
+            val choices = fontSizes.map { (size, labelRes) ->
+                com.texto.sms.helpers.CapsuleChoice(
+                    label = getString(labelRes),
+                    isActive = config.fontSize == size,
+                    onPick = {
+                        config.fontSize = size
+                        settingsFontSize.text = getFontSizeText()
+                        updateAppFonts(binding.root)
+                    }
+                )
             }
+            textoCapsuleDialog(getString(R.string.settings_font_size), choices)
         }
     }
 
     private fun getFontSizeText() = getString(
-        when (config.fontSize) {
-            org.fossify.commons.helpers.FONT_SIZE_SMALL -> org.fossify.commons.R.string.small
-            org.fossify.commons.helpers.FONT_SIZE_MEDIUM -> org.fossify.commons.R.string.medium
-            org.fossify.commons.helpers.FONT_SIZE_LARGE -> org.fossify.commons.R.string.large
-            else -> org.fossify.commons.R.string.extra_large
-        }
+        fontSizes.firstOrNull { it.first == config.fontSize }?.second
+            ?: R.string.font_size_extra_large
     )
 
     private fun setupFontFamily() = binding.apply {
@@ -837,29 +981,32 @@ class SettingsActivity : SimpleActivity() {
         settingsFontHolder.setOnClickListener {
             // Only the system font and the bundled Persian faces are offered; the Latin
             // families that used to be here were never a sensible choice for a Persian UI.
-            val items = arrayListOf(
-                org.fossify.commons.models.RadioItem(0, getString(R.string.font_system_default))
-            )
+            //
+            // A face is picked from the app's own capsule sheet rather than a commons radio
+            // list: choosing a typeface on a dialog drawn in a *different* typeface was the
+            // one place where that mismatch was impossible to miss.
+            val faces = listOf(0 to getString(R.string.font_system_default)) +
+                com.texto.sms.helpers.TextoFonts.displayNames.map { (id, name) -> id to name }
 
-            // Persian typefaces, greyed out with a hint until their file is dropped in assets/fonts.
-            com.texto.sms.helpers.TextoFonts.displayNames.forEach { (id, name) ->
-                val installed = com.texto.sms.helpers.TextoFonts.isInstalled(this@SettingsActivity, id)
-                val label = if (installed) name else "$name — ${getString(R.string.font_not_installed)}"
-                items.add(org.fossify.commons.models.RadioItem(id, label))
+            val choices = faces.map { (id, name) ->
+                // Persian typefaces read as unavailable until their file is dropped into
+                // assets/fonts; the row still picks, and says so with a toast.
+                val installed = id == 0 ||
+                    com.texto.sms.helpers.TextoFonts.isInstalled(this@SettingsActivity, id)
+                com.texto.sms.helpers.CapsuleChoice(
+                    label = name,
+                    subtitle = if (installed) null else getString(R.string.font_not_installed),
+                    isActive = config.fontFamilyTexto == id,
+                    onPick = {
+                        if (!installed) toast(R.string.font_not_installed)
+                        config.fontFamilyTexto = id
+                        settingsFont.text = getFontText()
+                        updateAppFonts(binding.root)
+                        applyCustomColors()
+                    }
+                )
             }
-
-            org.fossify.commons.dialogs.RadioGroupDialog(this@SettingsActivity, items, config.fontFamilyTexto) {
-                val selected = it as Int
-                if (com.texto.sms.helpers.TextoFonts.isPersianFont(selected) &&
-                    !com.texto.sms.helpers.TextoFonts.isInstalled(this@SettingsActivity, selected)
-                ) {
-                    toast(R.string.font_not_installed)
-                }
-                config.fontFamilyTexto = selected
-                settingsFont.text = getFontText()
-                updateAppFonts(binding.root)
-                applyCustomColors()
-            }
+            textoCapsuleDialog(getString(R.string.settings_font), choices)
         }
     }
 
@@ -872,6 +1019,7 @@ class SettingsActivity : SimpleActivity() {
     /** Every grouped card on the screen, in display order. */
     private fun settingsCards() = binding.run {
         listOf(
+            settingsCardGeneral,
             settingsCardConversations, settingsCardFilters, settingsCardAppearance,
             settingsCardSizeFont, settingsCardTextColors, settingsCardConversationColors,
             settingsCardBubbles, settingsCardAbout
@@ -886,6 +1034,12 @@ class SettingsActivity : SimpleActivity() {
     private fun styleSettingsRows() {
         val mainTextColor = config.mainTextColor
         val cardRadius = config.cardCornerRadiusDp * resources.displayMetrics.density
+
+        // The hairlines between rows inside a card. They were a fixed white at 12%, which is
+        // the right weight on the dark skins and completely invisible on the light ones --
+        // the settings cards lost every separator the moment the theme went light. Drawn
+        // from the same rimFor() the glass surfaces use, so they flip with the ground.
+        tintDividers(binding.root)
 
         settingsCards().forEach { card ->
             // The design's settings card is the same glass wash as a thread row, behind the
@@ -924,6 +1078,20 @@ class SettingsActivity : SimpleActivity() {
             setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize())
             val padV = 16.getScaledPx()
             setPadding(0, padV, 0, padV)
+        }
+    }
+
+    /**
+     * Paints every row separator in the tree from the live theme. Tagged rather than given
+     * sixteen ids: they carry no other behaviour and nothing else needs to address them.
+     */
+    private fun tintDividers(view: View) {
+        if (view.tag == DIVIDER_TAG) {
+            view.setBackgroundColor(TextoGlass.rimFor(config.recentColor, 0.30f))
+            return
+        }
+        (view as? ViewGroup)?.let {
+            for (i in 0 until it.childCount) tintDividers(it.getChildAt(i))
         }
     }
 
@@ -1009,6 +1177,22 @@ class SettingsActivity : SimpleActivity() {
     private companion object {
         /** The design's `--destructive`, oklch(0.65 0.21 22). */
         val DESTRUCTIVE_COLOR = Color.parseColor("#F54651")
+
+        /** Marks a row separator in activity_settings.xml so [tintDividers] can find it. */
+        const val DIVIDER_TAG = "texto_divider"
+
+        /**
+         * The tonality row: twenty-four rotations, 15° apart, in four lines of six.
+         *
+         * Twelve read as too few once the colours were evened out in OKLCh -- neighbouring
+         * stops stopped shouting at each other and started looking like one another. The
+         * launcher icon still ships only twelve pre-rendered rotations and lands on the
+         * nearest, so every second stop here matches it exactly and the ones between it are
+         * off by at most 7.5°, half of what the old continuous strip could be.
+         */
+        const val ACCENT_HUE_STEP = 15
+        const val ACCENT_HUE_COLUMNS = 6
+        const val ACCENT_DOT_DP = 44
 
         /** The design draws a settings row glyph at 18px, seated in its own tile. */
         const val SETTINGS_GLYPH_DP = 18
