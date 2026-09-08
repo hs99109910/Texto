@@ -1,13 +1,18 @@
 package com.texto.sms.adapters
 
 import android.graphics.Color
+import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
+import android.util.TypedValue
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import org.fossify.commons.adapters.MyRecyclerViewListAdapter
+import org.fossify.commons.extensions.beGone
+import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.helpers.SimpleContactsHelper
 import org.fossify.commons.models.SimpleContact
 import org.fossify.commons.views.MyRecyclerView
@@ -45,6 +50,9 @@ class ContactsAdapter(
         const val VIEW_TYPE_SUGGESTION = 1
         const val VIEW_TYPE_CONTACT = 2
         const val VIEW_TYPE_MODERN_PILL = 3
+
+        /** The list avatar, in dp before the UI:scale setting. Matches the conversations list. */
+        private const val AVATAR_DP = 46
     }
 
     init {
@@ -119,31 +127,91 @@ class ContactsAdapter(
 
     private fun setupContactView(view: View, item: Any, holder: MyRecyclerViewListAdapter<Any>.ViewHolder) {
         ItemConversationBinding.bind(view).apply {
+            val texto = activity as SimpleActivity
             val mainTextColor = activity.config.mainTextColor
+            // Both the name and the number line can *be* a phone number, so both are isolated
+            // before they are shown: see String.asLtrPhone for why the "+" moved without it.
+            //
+            // Someone with no contact card is named by their own number, and the second line
+            // then repeated it verbatim -- the row said the same thing twice. The number line
+            // is dropped whenever it would only echo the name above it.
+            val name: String
+            val number: String
             if (item is SimpleContact) {
-                conversationAddress.text = item.name
-                conversationBodyShort.text = item.phoneNumbers.firstOrNull()?.normalizedNumber ?: ""
+                name = item.name
+                number = item.phoneNumbers.firstOrNull()?.normalizedNumber.orEmpty()
             } else if (item is ConversationListItem) {
-                conversationAddress.text = item.conversation.title
-                conversationBodyShort.text = item.conversation.phoneNumber
+                name = item.conversation.title
+                number = item.conversation.phoneNumber
+            } else {
+                name = ""
+                number = ""
             }
-            
-            conversationAddress.setTextColor(mainTextColor)
-            conversationBodyShort.setTextColor(mainTextColor)
-            conversationBodyShort.alpha = 0.7f
-            // The marker carried commons' own colour straight from the layout, which belonged to
-            // neither this skin nor the tonality. The conversations list already paints it as body
-            // ink, and the new row layout folds the draft into the body line outright, so body ink
-            // is what the app means by it.
-            draftIndicator.setTextColor(mainTextColor)
-            
-            val baseColor = activity.config.mainBackgroundColor.adjustColor(1.1f)
-            val gd = GradientDrawable().apply {
-                shape = GradientDrawable.RECTANGLE
-                cornerRadius = 24f * resources.displayMetrics.density
-                setColor(baseColor)
+
+            conversationAddress.text = name.asLtrPhone()
+            val subtitle = if (number.isBlank() || number == name) "" else number.asLtrPhone()
+            conversationBodyShort.text = subtitle
+            conversationBodyShort.beVisibleIf(subtitle.isNotEmpty())
+
+            // This list has no drafts, dates, pins or unread counts in it. All four default
+            // to visible in the shared row layout and only the conversations adapter ever
+            // hid them, so every contact row carried a "draft" label from a different screen
+            // and reserved width for a date that is never set.
+            draftIndicator.beGone()
+            conversationDate.beGone()
+            pinIndicator.beGone()
+            unreadCountBadge.beGone()
+
+            // The face beside the name. Nothing ever loaded it, so every row on the
+            // new-conversation screen reserved a square of empty space and the list read as
+            // a column of labels rather than of people.
+            val photoUri = (item as? SimpleContact)?.photoUri
+                ?: (item as? ConversationListItem)?.conversation?.photoUri
+                ?: ""
+            val avatarSize = AVATAR_DP.getScaledPxIn(texto)
+            conversationImage.updateLayoutParams {
+                width = avatarSize
+                height = avatarSize
             }
-            conversationFrame.background = gd
+            TextoAvatars.clipToSquircle(conversationImage)
+            SimpleContactsHelper(activity).loadContactImage(
+                path = photoUri,
+                imageView = conversationImage,
+                placeholderName = name,
+                placeholderImage = TextoAvatars.letterAvatar(texto, name)
+            )
+
+            val fontSize = texto.getScaledTextSize()
+            conversationAddress.apply {
+                setTextColor(mainTextColor)
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 1.05f)
+                typeface = texto.typefaceFor(Typeface.BOLD)
+            }
+            conversationBodyShort.apply {
+                setTextColor(mainTextColor.withAlpha(0.58f))
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.85f)
+                typeface = texto.typefaceFor(Typeface.NORMAL)
+                alpha = 1f
+            }
+
+            // The same card the conversations list is drawn on, from the same theme slot.
+            // This was a flat wash of the *background* colour lightened by a tenth, which on
+            // a pale skin left the rows all but invisible against the screen behind them.
+            val density = resources.displayMetrics.density
+            val padH = 16.getScaledPxIn(texto)
+            val padV = 10.getScaledPxIn(texto)
+            conversationFrame.setPadding(padH, padV, padH, padV)
+            conversationFrame.minimumHeight = 0
+            TextoGlass.applyPanel(
+                view = conversationFrame,
+                tint = activity.config.recentColor,
+                cornerRadius = activity.config.cardCornerRadiusDp * density,
+                opacity = 0.68f,
+                strokeWidthPx = density.toInt().coerceAtLeast(1),
+                rimAlpha = 0.10f,
+                sheenAlpha = 0f
+            )
+            conversationFrame.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
             conversationFrame.setOnClickListener { holder.viewClicked(item) }
         }
     }

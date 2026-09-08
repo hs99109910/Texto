@@ -15,6 +15,7 @@ import org.fossify.commons.helpers.NavigationIcon
 import org.fossify.commons.helpers.ensureBackgroundThread
 import com.texto.sms.R
 import com.texto.sms.databinding.ActivityBlockedNumbersBinding
+import com.texto.sms.extensions.asLtrPhone
 import com.texto.sms.extensions.config
 import com.texto.sms.helpers.TextoGlass
 import com.texto.sms.helpers.allBlockedNumbers
@@ -85,10 +86,13 @@ class BlockedNumbersActivity : SimpleActivity() {
 
         row.addView(
             TextView(this).apply {
-                text = number
+                // The number, isolated so a leading "+" stays leading, and at the app's own
+                // scaled size : a fixed 16sp here ignored the UI-scale setting while the
+                // padding around it, two lines up, honoured it.
+                text = number.asLtrPhone()
                 setTextColor(config.topBarTextColor)
-                textSize = 16f
-                typeface = getCustomTypeface()
+                setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize())
+                typeface = typefaceFor(android.graphics.Typeface.NORMAL)
             },
             LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
         )

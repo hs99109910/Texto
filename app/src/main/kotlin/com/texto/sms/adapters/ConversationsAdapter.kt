@@ -5,7 +5,6 @@ import android.text.TextUtils
 import android.view.Menu
 import android.view.View
 import android.view.animation.AnimationUtils
-import org.fossify.commons.dialogs.ConfirmationDialog
 import org.fossify.commons.extensions.copyToClipboard
 import org.fossify.commons.extensions.launchActivityIntent
 import org.fossify.commons.extensions.notificationManager
@@ -25,6 +24,7 @@ import com.texto.sms.extensions.renameConversation
 import com.texto.sms.extensions.updateConversationArchivedStatus
 import com.texto.sms.helpers.blockNumber
 import com.texto.sms.helpers.refreshConversations
+import com.texto.sms.helpers.textoConfirmDialog
 import com.texto.sms.messaging.isShortCodeWithLetters
 import com.texto.sms.models.Conversation
 
@@ -77,13 +77,22 @@ class ConversationsAdapter(
         }
     }
 
+    /**
+     * Pin and unpin are alternatives, not a pair. Advertising both put two icons in the
+     * selection bar for one decision, one of which could never do anything, and the sixth
+     * control squeezed the count label until it read "۱ مورد انت." instead of the whole
+     * sentence. The same test the classic action mode uses decides which one belongs here.
+     */
     override fun getCustomActions(): List<Int> {
-        return listOf(
+        val pinned = activity.config.pinnedConversations
+        val selected = getSelectedItems()
+        val anyUnpinned = selected.any { !pinned.contains(it.threadId.toString()) }
+
+        return listOfNotNull(
             R.id.cab_select_all,
             R.id.cab_delete,
             R.id.cab_archive,
-            R.id.cab_pin_conversation,
-            R.id.cab_unpin_conversation
+            if (anyUnpinned) R.id.cab_pin_conversation else R.id.cab_unpin_conversation
         )
     }
 
@@ -123,7 +132,7 @@ class ConversationsAdapter(
             numbersString
         )
 
-        ConfirmationDialog(activity, question) {
+        (activity as SimpleActivity).textoConfirmDialog(question, isDestructive = true) {
             blockNumbers()
         }
     }
@@ -169,7 +178,7 @@ class ConversationsAdapter(
         val baseString = org.fossify.commons.R.string.deletion_confirmation
         val question = String.format(resources.getString(baseString), items)
 
-        ConfirmationDialog(activity, question) {
+        (activity as SimpleActivity).textoConfirmDialog(question, isDestructive = true) {
             ensureBackgroundThread {
                 deleteConversations()
             }
@@ -183,7 +192,7 @@ class ConversationsAdapter(
         val baseString = R.string.archive_confirmation
         val question = String.format(resources.getString(baseString), items)
 
-        ConfirmationDialog(activity, question) {
+        (activity as SimpleActivity).textoConfirmDialog(question) {
             ensureBackgroundThread {
                 archiveConversations()
             }

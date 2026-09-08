@@ -21,6 +21,7 @@ import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.databinding.DialogExportMessagesBinding
 import com.texto.sms.extensions.config
 import com.texto.sms.helpers.MessagesReader
+import com.texto.sms.helpers.applyTextoDialogSkin
 
 class ExportMessagesDialog(
     private val activity: SimpleActivity,
@@ -40,8 +41,8 @@ class ExportMessagesDialog(
 
     init {
         activity.getAlertDialogBuilder()
-            .setPositiveButton(org.fossify.commons.R.string.ok, null)
-            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
+            .setPositiveButton(R.string.action_confirm, null)
+            .setNegativeButton(R.string.action_cancel, null)
             .apply {
                 activity.setupDialogStuff(
                     view = binding.root,
@@ -49,6 +50,7 @@ class ExportMessagesDialog(
                     titleId = R.string.export_messages
                 ) { alertDialog ->
                     dialog = alertDialog
+                    activity.applyTextoDialogSkin(alertDialog)
                     alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                         config.exportSms = binding.exportSmsCheckbox.isChecked
                         config.exportMms = binding.exportMmsCheckbox.isChecked

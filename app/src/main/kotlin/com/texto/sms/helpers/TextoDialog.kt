@@ -31,9 +31,227 @@ data class CapsuleChoice(
     val subtitle: String? = null,
     val swatch: Int? = null,
     val swatchEnd: Int? = null,
+    /** Drawable shown ahead of the label, in the row's own ink. Takes the swatch's slot. */
+    val icon: Int? = null,
     val isActive: Boolean = false,
+    /** Paints the row in the same red the overflow menus give delete, label and icon alike. */
+    val isDestructive: Boolean = false,
     val onPick: () -> Unit,
 )
+
+/**
+ * The card every sheet in the app is drawn on: the theme's card colour under a hairline rim,
+ * rounded to the same 26dp. Shared so the sheets this file builds and the ones commons builds
+ * for us end up on literally the same ground.
+ */
+private fun SimpleActivity.sheetCard(): GradientDrawable {
+    val density = resources.displayMetrics.density
+    return GradientDrawable().apply {
+        shape = GradientDrawable.RECTANGLE
+        cornerRadius = 26 * density
+        setColor(config.recentColor)
+        setStroke(1.getScaledPx(), TextoGlass.rimFor(config.recentColor, 0.18f))
+    }
+}
+
+/**
+ * One action capsule at the foot of a sheet: the accent gradient for the affirmative, a glass
+ * pill for everything else. Shared by [textoInputDialog] and [textoConfirmDialog] so the two
+ * offer visibly the same pair of buttons.
+ */
+private fun SimpleActivity.sheetButton(
+    label: String,
+    filled: Boolean,
+    ink: Int? = null,
+    onTap: () -> Unit,
+): TextView {
+    val density = resources.displayMetrics.density
+    return TextView(this).apply {
+        text = label
+        gravity = Gravity.CENTER
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.88f))
+        typeface = typefaceFor(if (filled) Typeface.BOLD else Typeface.NORMAL)
+        setTextColor(ink ?: if (filled) config.accentInkColor else config.mainTextColor)
+        val padV = 12.getScaledPx()
+        setPadding(0, padV, 0, padV)
+        background = if (filled) {
+            TextoGlass.accent(
+                start = config.accentGradientStart,
+                end = config.accentGradientEnd,
+                cornerRadius = 100f * density,
+                mid = config.accentGradientMid
+            )
+        } else {
+            TextoGlass.bar(
+                tint = config.mainBackgroundColor,
+                cornerRadius = 100f * density,
+                opacity = 0.5f,
+                strokeWidthPx = 1.getScaledPx(),
+                rimAlpha = 0.18f
+            )
+        }
+        outlineProvider = ViewOutlineProvider.BACKGROUND
+        isClickable = true
+        layoutParams = LinearLayout.LayoutParams(
+            0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f
+        ).apply { marginStart = 8.getScaledPx() }
+        setOnClickListener { onTap() }
+    }
+}
+
+/**
+ * The app's own confirmation sheet, in place of commons' `ConfirmationDialog`.
+ *
+ * That one is built by `setupDialogStuff`, which resolves its ground, its ink and its
+ * typeface from the *base* theme -- the light one -- so on any of this app's skins it arrived
+ * as a white card carrying a face nothing else on screen uses. This is the same card, ink and
+ * capsules as every other sheet here.
+ *
+ * [negativeLabel] of null makes it a one-button acknowledgement rather than a question.
+ */
+fun SimpleActivity.textoConfirmDialog(
+    message: String,
+    title: String = "",
+    positiveLabel: String = getString(com.texto.sms.R.string.action_confirm),
+    negativeLabel: String? = getString(com.texto.sms.R.string.action_cancel),
+    isDestructive: Boolean = false,
+    cancelOnTouchOutside: Boolean = true,
+    onConfirm: () -> Unit,
+): AlertDialog {
+    var dialog: AlertDialog? = null
+
+    val sheet = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        val pad = 18.getScaledPx()
+        setPadding(pad, pad, pad, pad)
+        background = sheetCard()
+        outlineProvider = ViewOutlineProvider.BACKGROUND
+        clipToOutline = true
+    }
+
+    if (title.isNotEmpty()) {
+        sheet.addView(
+            TextView(this).apply {
+                text = title
+                setTextColor(config.mainTextColor)
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.05f))
+                typeface = typefaceFor(Typeface.BOLD)
+                textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                setPadding(8.getScaledPx(), 0, 8.getScaledPx(), 10.getScaledPx())
+            }
+        )
+    }
+
+    // Scrolled, because this doubles as the "show the whole message" sheet and an SMS can
+    // easily be taller than the screen.
+    sheet.addView(
+        ScrollView(this).apply {
+            isFillViewport = false
+            overScrollMode = View.OVER_SCROLL_NEVER
+            addView(
+                TextView(this@textoConfirmDialog).apply {
+                    text = message
+                    setTextColor(config.mainTextColor.withAlpha(0.82f))
+                    setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize())
+                    typeface = typefaceFor(Typeface.NORMAL)
+                    textAlignment = View.TEXT_ALIGNMENT_VIEW_START
+                    setTextIsSelectable(true)
+                    setPadding(8.getScaledPx(), 0, 8.getScaledPx(), 0)
+                }
+            )
+        },
+        LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+    )
+
+    val buttons = LinearLayout(this).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+        setPadding(0, 14.getScaledPx(), 0, 0)
+    }
+    buttons.addView(
+        sheetButton(
+            label = positiveLabel,
+            // An irreversible action is marked the same way it is in the menus: red ink on
+            // the plain pill, never a red fill. Keeping the accent gradient under it would
+            // have put red type on cyan, and a red *fill* reads as the thing to press.
+            filled = !isDestructive,
+            ink = if (isDestructive) DESTRUCTIVE_INK else null
+        ) {
+            dialog?.dismiss()
+            onConfirm()
+        }
+    )
+    negativeLabel?.let { label ->
+        buttons.addView(sheetButton(label, filled = false) { dialog?.dismiss() })
+    }
+    sheet.addView(buttons)
+
+    dialog = AlertDialog.Builder(this)
+        .setView(sheet)
+        .create()
+        .apply {
+            setCanceledOnTouchOutside(cancelOnTouchOutside)
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            show()
+        }
+
+    return dialog
+}
+
+/**
+ * Repaints a dialog commons built for us.
+ *
+ * `setupDialogStuff` takes its window ground, its ink and its typeface from the *base* theme,
+ * which on this app is the light one, so on any skin those dialogs arrive as a white card
+ * with a foreign face on it. The sheets in this file avoid it by building themselves; the
+ * ones that inflate a real layout cannot, so this undoes it afterwards instead.
+ *
+ * Call it from `setupDialogStuff`'s own callback: that runs after the dialog is shown and
+ * after commons has finished colouring it, which is the only point where this wins.
+ */
+fun SimpleActivity.applyTextoDialogSkin(dialog: AlertDialog) {
+    val density = resources.displayMetrics.density
+    val window = dialog.window ?: return
+
+    // Painted on the window itself: commons' content sits straight on it, so there is no
+    // intermediate view left to carry a rounded ground.
+    val sideInset = (16 * density).toInt()
+    window.setBackgroundDrawable(
+        android.graphics.drawable.InsetDrawable(sheetCard(), sideInset, 0, sideInset, 0)
+    )
+
+    val decor = window.decorView
+    // Face and ink for everything at once, before the few that want something else. This is
+    // the same pass onResume runs over an activity, so a dialog and the screen behind it end
+    // up on identical type.
+    updateAppFonts(decor)
+
+    decor.findViewById<TextView>(org.fossify.commons.R.id.dialog_title_textview)?.apply {
+        setTextColor(config.mainTextColor)
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.05f))
+        typeface = typefaceFor(Typeface.BOLD)
+        background = null
+    }
+
+    // The affirmative carries the accent, as it does on every sheet the app draws itself.
+    listOf(
+        AlertDialog.BUTTON_POSITIVE to true,
+        AlertDialog.BUTTON_NEGATIVE to false,
+        AlertDialog.BUTTON_NEUTRAL to false,
+    ).forEach { (which, isPrimary) ->
+        val button = runCatching { dialog.getButton(which) }.getOrNull() ?: return@forEach
+        button.setTextColor(
+            if (isPrimary) config.accentGradientStart else config.mainTextColor.withAlpha(0.75f)
+        )
+        button.typeface = typefaceFor(if (isPrimary) Typeface.BOLD else Typeface.NORMAL)
+        button.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.88f))
+        // The base theme puts an all-caps transform on dialog buttons. Persian has no case,
+        // so it does nothing here except drop the label out of the app's own type.
+        button.transformationMethod = null
+    }
+}
 
 /**
  * A one-field sheet, drawn to the same recipe as [textoCapsuleDialog].
@@ -55,12 +273,7 @@ fun SimpleActivity.textoInputDialog(
         orientation = LinearLayout.VERTICAL
         val pad = 18.getScaledPx()
         setPadding(pad, pad, pad, pad)
-        background = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = 26 * density
-            setColor(config.recentColor)
-            setStroke(1.getScaledPx(), TextoGlass.rimFor(config.recentColor, 0.18f))
-        }
+        background = sheetCard()
         outlineProvider = ViewOutlineProvider.BACKGROUND
         clipToOutline = true
     }
@@ -109,46 +322,14 @@ fun SimpleActivity.textoInputDialog(
         setPadding(0, 14.getScaledPx(), 0, 0)
     }
 
-    fun button(label: String, filled: Boolean, onTap: () -> Unit) = TextView(this).apply {
-        text = label
-        gravity = Gravity.CENTER
-        setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.88f))
-        typeface = typefaceFor(if (filled) Typeface.BOLD else Typeface.NORMAL)
-        setTextColor(if (filled) config.sentBubbleTextColor else config.mainTextColor)
-        val padV = 12.getScaledPx()
-        setPadding(0, padV, 0, padV)
-        background = if (filled) {
-            TextoGlass.accent(
-                start = config.accentGradientStart,
-                end = config.accentGradientEnd,
-                cornerRadius = 100f * density,
-                mid = config.accentGradientMid
-            )
-        } else {
-            TextoGlass.bar(
-                tint = config.mainBackgroundColor,
-                cornerRadius = 100f * density,
-                opacity = 0.5f,
-                strokeWidthPx = 1.getScaledPx(),
-                rimAlpha = 0.18f
-            )
-        }
-        outlineProvider = ViewOutlineProvider.BACKGROUND
-        isClickable = true
-        layoutParams = LinearLayout.LayoutParams(
-            0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f
-        ).apply { marginStart = 8.getScaledPx() }
-        setOnClickListener { onTap() }
-    }
-
     buttons.addView(
-        button(getString(com.texto.sms.R.string.action_confirm), filled = true) {
+        sheetButton(getString(com.texto.sms.R.string.action_confirm), filled = true) {
             onConfirm(field.text.toString())
             dialog?.dismiss()
         }
     )
     buttons.addView(
-        button(getString(com.texto.sms.R.string.action_cancel), filled = false) {
+        sheetButton(getString(com.texto.sms.R.string.action_cancel), filled = false) {
             dialog?.dismiss()
         }
     )
@@ -163,6 +344,124 @@ fun SimpleActivity.textoInputDialog(
         }
 
     field.requestFocus()
+    return dialog
+}
+
+/**
+ * The palette every colour row offers.
+ *
+ * Eight neutrals then ten hues, in the order a row is usually scanned: ink and paper first,
+ * because most of these rows are choosing text or a card, then the colour family the design
+ * itself is built from. Deliberately short. The row behind it used to open a full HSV wheel,
+ * which is sixteen million answers to a question that has about a dozen good ones, and left
+ * anybody who nudged it no way back to where they started.
+ */
+private val TEXTO_SWATCHES = intArrayOf(
+    // Row one: paper to ink, so the rows choosing a text or a card colour are answered
+    // without leaving the first line.
+    0xFFFFFFFF.toInt(), 0xFFE6E8EE.toInt(), 0xFFC9CDD6.toInt(),
+    0xFF8A90A0.toInt(), 0xFF232833.toInt(), 0xFF000000.toInt(),
+    // Row two: the design's own family, cyan through violet.
+    0xFF3BCFD0.toInt(), 0xFF1F8F86.toInt(), 0xFF55ADFF.toInt(),
+    0xFF2368C9.toInt(), 0xFFA67DF2.toInt(), 0xFF7A5AF8.toInt(),
+    // Row three: the warm half of the wheel, for anyone who wants off the house palette.
+    0xFF4FC97A.toInt(), 0xFFF5C542.toInt(), 0xFFFF8A3D.toInt(),
+    0xFFF54651.toInt(), 0xFFF26FB0.toInt(), 0xFF8B47C7.toInt(),
+)
+
+/** How many swatches fit across the sheet. */
+private const val SWATCH_COLUMNS = 6
+
+/**
+ * A colour row's picker: a short grid of swatches, one tap to choose.
+ *
+ * [current] is ringed so the sheet always says where you are, which is what makes stepping
+ * back from a change possible at all. [onCustom], when given, adds a last row that opens the
+ * full picker, so the shorter list costs nothing to anyone who wants an exact colour.
+ */
+fun SimpleActivity.textoSwatchDialog(
+    title: String,
+    current: Int,
+    onCustom: (() -> Unit)? = null,
+    onPick: (Int) -> Unit,
+): AlertDialog {
+    val density = resources.displayMetrics.density
+    var dialog: AlertDialog? = null
+
+    val sheet = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        val pad = 18.getScaledPx()
+        setPadding(pad, pad, pad, pad)
+        background = sheetCard()
+        outlineProvider = ViewOutlineProvider.BACKGROUND
+        clipToOutline = true
+    }
+
+    sheet.addView(
+        TextView(this).apply {
+            text = title
+            setTextColor(config.mainTextColor)
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.05f))
+            typeface = typefaceFor(Typeface.BOLD)
+            gravity = Gravity.START
+            setPadding(8.getScaledPx(), 0, 8.getScaledPx(), 14.getScaledPx())
+        }
+    )
+
+    // Compared on the visible colour only: a stored value can carry an alpha the swatch does
+    // not, and the selection would then never land on the colour actually in use.
+    val currentRgb = current and 0x00FFFFFF
+    val swatches = TEXTO_SWATCHES.toList()
+    // A colour not in the palette still deserves a place, so the sheet can say where you are
+    // rather than opening on somebody else's choice.
+    val palette = if (swatches.any { (it and 0x00FFFFFF) == currentRgb }) {
+        swatches
+    } else {
+        listOf(current) + swatches
+    }
+
+    // One row, the middle swatch chosen. A grid gave every colour the same weight and needed
+    // three lines to do it; this reads at a glance and scrolls to as many colours as we like.
+    val wheel = TextoColorWheel(this).apply {
+        itemSize = 56.getScaledPx()
+        layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, 72.getScaledPx()
+        )
+        submit(palette, palette.indexOfFirst { (it and 0x00FFFFFF) == currentRgb })
+        onPicked = { index -> onPick(palette[index]) }
+    }
+    sheet.addView(wheel)
+
+    // Picking is continuous now -- the colour applies as the row settles, so the screen
+    // behind previews it -- which means the sheet needs a way to say "that one, stop".
+    val footer = LinearLayout(this).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+        setPadding(0, 12.getScaledPx(), 0, 0)
+    }
+    footer.addView(
+        sheetButton(getString(com.texto.sms.R.string.action_confirm), filled = true) {
+            dialog?.dismiss()
+        }
+    )
+    onCustom?.let { custom ->
+        footer.addView(
+            sheetButton(getString(com.texto.sms.R.string.custom_colour), filled = false) {
+                dialog?.dismiss()
+                custom()
+            }
+        )
+    }
+    sheet.addView(footer)
+
+    dialog = AlertDialog.Builder(this)
+        .setView(sheet)
+        .create()
+        .apply {
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            show()
+        }
+
     return dialog
 }
 
@@ -187,12 +486,7 @@ fun SimpleActivity.textoCapsuleDialog(
         orientation = LinearLayout.VERTICAL
         val pad = 18.getScaledPx()
         setPadding(pad, pad, pad, pad)
-        background = GradientDrawable().apply {
-            shape = GradientDrawable.RECTANGLE
-            cornerRadius = 26 * density
-            setColor(config.recentColor)
-            setStroke(1.getScaledPx(), TextoGlass.rimFor(config.recentColor, 0.18f))
-        }
+        background = sheetCard()
         outlineProvider = ViewOutlineProvider.BACKGROUND
         clipToOutline = true
     }
@@ -243,9 +537,17 @@ fun SimpleActivity.textoCapsuleDialog(
             }
         }
 
-        val ink = if (choice.isActive) config.sentBubbleTextColor else config.mainTextColor
+        val ink = when {
+            choice.isActive -> config.accentInkColor
+            choice.isDestructive -> DESTRUCTIVE_INK
+            else -> config.mainTextColor
+        }
 
-        choice.swatch?.takeIf { !choice.isActive }?.let { swatch ->
+        // Drawn on every row that has one, the picked row included. Skipping it there was
+        // what made the text jump: the label started 30dp further in on rows that kept their
+        // dot, so choosing a different SIM shifted the whole column sideways. The rim below
+        // is already mixed from the row's own ink, so the dot reads on the accent fill too.
+        choice.swatch?.let { swatch ->
             val side = 18.getScaledPx()
             row.addView(
                 ImageView(this).apply {
@@ -268,6 +570,21 @@ fun SimpleActivity.textoCapsuleDialog(
             )
         }
 
+        // Same leading slot as the swatch, so a sheet of icon rows and a sheet of colour
+        // rows line their labels up at the same place.
+        choice.icon?.let { iconRes ->
+            val side = 20.getScaledPx()
+            row.addView(
+                ImageView(this).apply {
+                    layoutParams = LinearLayout.LayoutParams(side, side).apply {
+                        marginEnd = 12.getScaledPx()
+                    }
+                    setImageResource(iconRes)
+                    imageTintList = android.content.res.ColorStateList.valueOf(ink)
+                }
+            )
+        }
+
         val text = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             layoutParams = LinearLayout.LayoutParams(
@@ -281,6 +598,11 @@ fun SimpleActivity.textoCapsuleDialog(
                     typeface = typefaceFor(
                         if (choice.isActive) Typeface.BOLD else Typeface.NORMAL
                     )
+                    // Pinned to the row's start rather than left to the text's own
+                    // direction. A Latin carrier name ("Irancell") resolves LTR and a
+                    // Persian one RTL, so without this the two rows of the SIM chooser
+                    // hung off opposite edges and the label appeared to jump between them.
+                    textAlignment = View.TEXT_ALIGNMENT_VIEW_START
                 }
             )
             choice.subtitle?.let { sub ->
@@ -290,6 +612,7 @@ fun SimpleActivity.textoCapsuleDialog(
                         setTextColor(ink.withAlpha(0.68f))
                         setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.76f))
                         typeface = typefaceFor(Typeface.NORMAL)
+                        textAlignment = View.TEXT_ALIGNMENT_VIEW_START
                     }
                 )
             }

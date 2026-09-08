@@ -12,6 +12,7 @@ import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.databinding.DialogImportMessagesBinding
 import com.texto.sms.extensions.config
 import com.texto.sms.helpers.MessagesImporter
+import com.texto.sms.helpers.applyTextoDialogSkin
 import com.texto.sms.models.ImportResult
 import com.texto.sms.models.MessagesBackup
 
@@ -32,14 +33,15 @@ class ImportMessagesDialog(
         binding.importProgress.setIndicatorColor(activity.config.accentGradientStart)
 
         activity.getAlertDialogBuilder()
-            .setPositiveButton(org.fossify.commons.R.string.ok, null)
-            .setNegativeButton(org.fossify.commons.R.string.cancel, null)
+            .setPositiveButton(R.string.action_confirm, null)
+            .setNegativeButton(R.string.action_cancel, null)
             .apply {
                 activity.setupDialogStuff(
                     view = binding.root,
                     dialog = this,
                     titleId = R.string.import_messages
                 ) { alertDialog ->
+                    activity.applyTextoDialogSkin(alertDialog)
                     val positiveButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
                     val negativeButton = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
                     positiveButton.setOnClickListener {

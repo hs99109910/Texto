@@ -37,6 +37,13 @@ data class Message(
         return type == Telephony.Sms.MESSAGE_TYPE_INBOX || type == 1
     }
 
+    /**
+     * The same test [ThreadActivity.getThreadItems] uses to put the "not sent" caption under
+     * a bubble, so the bubble and its caption always agree about whether the send failed.
+     */
+    fun hasFailedToSend(): Boolean = !isReceivedMessage() && !isScheduled &&
+        (type == Telephony.Sms.MESSAGE_TYPE_FAILED || status == Telephony.Sms.STATUS_FAILED)
+
     fun millis() = date * 1000L
 
     fun getSender(): SimpleContact? =

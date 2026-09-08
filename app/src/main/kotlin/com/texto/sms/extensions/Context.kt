@@ -946,56 +946,104 @@ fun Context.getContactRecency(limit: Int = 500): Map<String, Long> {
     return recency
 }
 
+/**
+ * The people most recently in touch, newest first.
+ *
+ * Both sources are read, because "recent" on the new-conversation screen means either one:
+ * the last [limit] messages and, where the optional permission was granted, the last [limit]
+ * calls. [getContactRecency] already ranks by both, but ranking only reorders rows that are
+ * in the list to begin with, and the list itself is the phone book.
+ *
+ * A sender with no contact card is kept, named by its own number. It used to be dropped
+ * outright, which is backwards: somebody texted but never saved is among the likeliest people
+ * to want to text again, and this screen offered no other way to reach them.
+ */
 fun Context.getSuggestedContacts(
     privateContacts: ArrayList<SimpleContact>,
+    limit: Int = 50,
 ): ArrayList<SimpleContact> {
-    val contacts = ArrayList<SimpleContact>()
-    val uri = Sms.CONTENT_URI
-    val projection = arrayOf(
-        Sms.ADDRESS
-    )
-
-    val sortOrder = "${Sms.DATE} DESC LIMIT 50"
     val blockedNumbers = blockedNumbersSnapshot()
+    // Newest first, de-duplicated by the same comparable form the recency map is keyed on --
+    // one person reached by call and by SMS is one row.
+    val newest = LinkedHashMap<String, Pair<String, Long>>()
 
-    queryCursor(uri, projection, null, null, sortOrder, showErrors = true) { cursor ->
-        val senderNumber = cursor.getStringValue(Sms.ADDRESS) ?: return@queryCursor
-        val namePhoto = getNameAndPhotoFromPhoneNumber(senderNumber)
-        var senderName = namePhoto.name
-        var photoUri = namePhoto.photoUri ?: ""
-        if (isNumberBlockedIn(senderNumber, blockedNumbers)) {
-            return@queryCursor
-        } else if (namePhoto.name == senderNumber) {
-            if (privateContacts.isNotEmpty()) {
-                val privateContact = privateContacts.firstOrNull {
-                    it.phoneNumbers.first().normalizedNumber == senderNumber
-                }
-                if (privateContact != null) {
-                    senderName = privateContact.name
-                    photoUri = privateContact.photoUri
-                } else {
-                    return@queryCursor
-                }
-            } else {
-                return@queryCursor
-            }
+    fun record(number: String?, date: Long) {
+        if (number.isNullOrBlank()) return
+        val key = SystemBlockedNumbers.comparable(number).ifEmpty { number.lowercase() }
+        val existing = newest[key]
+        if (existing == null || existing.second < date) newest[key] = number to date
+    }
+
+    try {
+        queryCursor(
+            Sms.CONTENT_URI,
+            arrayOf(Sms.ADDRESS, Sms.DATE),
+            null,
+            null,
+            "${Sms.DATE} DESC LIMIT $limit",
+            showErrors = true
+        ) { cursor ->
+            record(cursor.getStringValue(Sms.ADDRESS), cursor.getLongValue(Sms.DATE))
         }
+    } catch (_: Exception) {
+    }
 
-        val phoneNumber = PhoneNumber(senderNumber, 0, "", senderNumber)
-        val contact = SimpleContact(
-            rawId = 0,
-            contactId = 0,
-            name = senderName,
-            photoUri = photoUri,
-            phoneNumbers = arrayListOf(phoneNumber),
-            birthdays = ArrayList(),
-            anniversaries = ArrayList()
-        )
-        if (!contacts.map { it.phoneNumbers.first().normalizedNumber.trimToComparableNumber() }
-                .contains(senderNumber.trimToComparableNumber())) {
-            contacts.add(contact)
+    if (hasPermission(PERMISSION_READ_CALL_LOG)) {
+        try {
+            queryCursor(
+                android.provider.CallLog.Calls.CONTENT_URI,
+                arrayOf(
+                    android.provider.CallLog.Calls.NUMBER,
+                    android.provider.CallLog.Calls.DATE
+                ),
+                null,
+                null,
+                "${android.provider.CallLog.Calls.DATE} DESC LIMIT $limit"
+            ) { cursor ->
+                record(
+                    cursor.getStringValue(android.provider.CallLog.Calls.NUMBER),
+                    cursor.getLongValue(android.provider.CallLog.Calls.DATE)
+                )
+            }
+        } catch (_: Exception) {
         }
     }
+
+    val contacts = ArrayList<SimpleContact>()
+    newest.values
+        .sortedByDescending { it.second }
+        .take(limit)
+        .forEach { (senderNumber, _) ->
+            if (isNumberBlockedIn(senderNumber, blockedNumbers)) return@forEach
+
+            val namePhoto = getNameAndPhotoFromPhoneNumber(senderNumber)
+            var senderName = namePhoto.name
+            var photoUri = namePhoto.photoUri ?: ""
+
+            // No contact card: the phone book gives the number back as the name. Check the
+            // private contacts for a better one, and otherwise keep the number as the label.
+            if (namePhoto.name == senderNumber) {
+                privateContacts.firstOrNull {
+                    it.phoneNumbers.firstOrNull()?.normalizedNumber == senderNumber
+                }?.let {
+                    senderName = it.name
+                    photoUri = it.photoUri
+                }
+            }
+
+            val phoneNumber = PhoneNumber(senderNumber, 0, "", senderNumber)
+            contacts.add(
+                SimpleContact(
+                    rawId = 0,
+                    contactId = 0,
+                    name = senderName,
+                    photoUri = photoUri,
+                    phoneNumbers = arrayListOf(phoneNumber),
+                    birthdays = ArrayList(),
+                    anniversaries = ArrayList()
+                )
+            )
+        }
 
     return contacts
 }

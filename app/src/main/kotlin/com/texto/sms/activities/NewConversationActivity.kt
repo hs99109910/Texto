@@ -43,8 +43,19 @@ class NewConversationActivity : SimpleActivity() {
     private var privateContacts = ArrayList<SimpleContact>()
     private var wasImeVisible = false
 
-    /** Comparable phone number -> timestamp of the newest message exchanged with it. */
+    /** Whether the address field is asking the IME for a keypad rather than a text keyboard. */
+    private var isKeypadMode = false
+
+    /** Comparable phone number -> timestamp of the newest message or call with it. */
     private var contactRecency: Map<String, Long> = emptyMap()
+
+    /**
+     * The one form a number is compared in on this screen, matching how [getContactRecency]
+     * and [getSuggestedContacts] key theirs. Alphanumeric sender ids have no digits, so their
+     * comparable form is empty and they fall back to the lowercased id itself.
+     */
+    private fun recencyKey(number: String): String =
+        SystemBlockedNumbers.comparable(number).ifEmpty { number.lowercase() }
 
     private val binding by viewBinding(ActivityNewConversationBinding::inflate)
 
@@ -178,6 +189,7 @@ class NewConversationActivity : SimpleActivity() {
         binding.newConversationAddress.setTextColor(config.inputBarTextColor)
         binding.newConversationAddress.setHintTextColor(config.inputBarTextColor.withAlpha(0.5f))
         binding.newConversationConfirm.applyColorFilter(config.inputBarTextColor)
+        binding.newConversationKeypadToggle.applyColorFilter(config.inputBarTextColor)
 
         // Fast Scroller Sync
         val properPrimaryColor = config.accentGradientStart
@@ -194,40 +206,92 @@ class NewConversationActivity : SimpleActivity() {
         }
 
         fetchContacts()
+        setupKeypadToggle()
         binding.newConversationAddress.onTextChangeListener { searchString ->
-            val filteredContacts = ArrayList<SimpleContact>()
-            allContacts.forEach { contact ->
-                if (contact.phoneNumbers.any { it.normalizedNumber.contains(searchString, true) } ||
-                    contact.name.contains(searchString, true) ||
-                    contact.name.contains(searchString.normalizeString(), true) ||
-                    contact.name.normalizeString().contains(searchString, true)) {
-                    filteredContacts.add(contact)
-                }
-            }
-
-            sortByRecency(filteredContacts, searchString)
-
+            // Suggestions land in allContacts, so the filter has to run *after* they arrive,
+            // not before: filtering first and refreshing afterwards showed the list as it was
+            // without them, which is what kept recent senders off the empty screen.
             if (config.useNewUi && searchString.isEmpty()) {
-                fillSuggestedContacts {
-                    setupAdapter(filteredContacts)
-                }
+                fillSuggestedContacts { showFilteredContacts(searchString) }
             } else {
-                setupAdapter(filteredContacts)
+                showFilteredContacts(searchString)
             }
 
             val shortCodeWithLetters = isShortCodeWithLetters(searchString)
             binding.newConversationConfirm.beVisibleIf(searchString.isNotEmpty() && !shortCodeWithLetters)
             binding.newConversationConfirm.applyColorFilter(config.inputBarTextColor)
             binding.newConversationConfirm.setOnClickListener {
-                if (searchString.isPhoneNumber()) {
-                    launchThreadActivity(searchString, searchString)
-                } else if (shortCodeWithLetters) {
+                if (shortCodeWithLetters) {
                     toast(R.string.invalid_short_code, length = Toast.LENGTH_LONG)
                 } else {
                     launchThreadActivity(searchString, searchString)
                 }
             }
         }
+    }
+
+    /**
+     * Everyone whose name or number matches [searchString], most recently in touch first.
+     * A number is matched on its comparable form so spacing and a country prefix do not
+     * decide whether it is found.
+     */
+    private fun showFilteredContacts(searchString: String) {
+        val needle = recencyKey(searchString)
+        val filteredContacts = allContacts.filterTo(ArrayList()) { contact ->
+            contact.name.contains(searchString, true) ||
+                contact.name.contains(searchString.normalizeString(), true) ||
+                contact.name.normalizeString().contains(searchString, true) ||
+                contact.phoneNumbers.any {
+                    it.normalizedNumber.contains(searchString, true) ||
+                        (needle.isNotEmpty() && recencyKey(it.normalizedNumber).contains(needle))
+                }
+        }
+
+        sortByRecency(filteredContacts, searchString)
+        setupAdapter(filteredContacts)
+    }
+
+    /**
+     * Flips the field between searching the phone book by name and dialling a number.
+     *
+     * The field is declared `textCapWords`, so reaching someone not in contacts meant typing
+     * their number on an alphabetic keyboard. This asks the IME for a keypad instead, and
+     * carries the caret over so a half-typed number is not lost in the switch.
+     */
+    private fun setupKeypadToggle() = binding.apply {
+        newConversationKeypadToggle.setOnClickListener {
+            isKeypadMode = !isKeypadMode
+            applyKeypadMode()
+            newConversationAddress.requestFocus()
+            showKeyboard(newConversationAddress)
+        }
+        applyKeypadMode()
+    }
+
+    private fun applyKeypadMode() = binding.apply {
+        newConversationAddress.inputType = if (isKeypadMode) {
+            android.text.InputType.TYPE_CLASS_PHONE
+        } else {
+            android.text.InputType.TYPE_CLASS_TEXT or
+                android.text.InputType.TYPE_TEXT_FLAG_CAP_WORDS
+        }
+        // Setting inputType moves the caret to the start, which would silently reverse what
+        // has been typed so far the first time the mode is flipped.
+        newConversationAddress.setSelection(newConversationAddress.text?.length ?: 0)
+        newConversationAddress.setHint(
+            if (isKeypadMode) R.string.type_a_number else R.string.add_contact_or_number
+        )
+
+        newConversationKeypadToggle.setImageResource(
+            if (isKeypadMode) R.drawable.ic_ph_text_aa else R.drawable.ic_ph_numpad
+        )
+        newConversationKeypadToggle.contentDescription = getString(
+            if (isKeypadMode) R.string.switch_to_search else R.string.switch_to_keypad
+        )
+        // The active mode is marked by weight rather than by a second colour, so the row
+        // still reads as one control.
+        newConversationKeypadToggle.applyColorFilter(config.inputBarTextColor)
+        newConversationKeypadToggle.alpha = if (isKeypadMode) 1f else 0.6f
     }
 
     private fun isThirdPartyIntent(): Boolean {
@@ -334,9 +398,7 @@ class NewConversationActivity : SimpleActivity() {
     private fun sortByRecency(contacts: ArrayList<SimpleContact>, searchString: String) {
         fun lastUsed(contact: SimpleContact): Long {
             return contact.phoneNumbers.maxOfOrNull { number ->
-                val key = SystemBlockedNumbers.comparable(number.normalizedNumber)
-                    .ifEmpty { number.normalizedNumber.lowercase() }
-                contactRecency[key] ?: 0L
+                contactRecency[recencyKey(number.normalizedNumber)] ?: 0L
             } ?: 0L
         }
 
@@ -353,14 +415,22 @@ class NewConversationActivity : SimpleActivity() {
             val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
             
             val suggestions = getSuggestedContacts(privateContacts)
-            
-            // Add suggested contacts to the list if they're not already there
+
+            // Merged on the number, not on contactId. Every suggestion is built with
+            // contactId 0, so an id comparison matched the first one already added and threw
+            // away every suggestion after it -- the screen offered exactly one recent person
+            // and then only ever the phone book.
+            val known = allContacts
+                .mapNotNullTo(HashSet()) { contact ->
+                    contact.phoneNumbers.firstOrNull()?.normalizedNumber?.let(::recencyKey)
+                }
             suggestions.forEach { contact ->
-                if (!allContacts.any { it.contactId == contact.contactId }) {
+                val key = contact.phoneNumbers.firstOrNull()?.normalizedNumber?.let(::recencyKey)
+                if (key != null && known.add(key)) {
                     allContacts.add(contact)
                 }
             }
-            
+
             runOnUiThread {
                 if (isFinishing || isDestroyed) return@runOnUiThread
                 callback()

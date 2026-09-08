@@ -84,3 +84,42 @@ fun String.foldPersian(): String {
 /** True when [needle] appears in this text once both sides are folded. */
 fun String.containsPersian(needle: String): Boolean =
     foldPersian().contains(needle.foldPersian(), ignoreCase = true)
+
+/** Unicode LEFT-TO-RIGHT ISOLATE and POP DIRECTIONAL ISOLATE. */
+private const val LRI = '⁦'
+private const val PDI = '⁩'
+
+/**
+ * Wraps a phone number so it reads left-to-right inside this app's right-to-left screens.
+ *
+ * The leading "+" of an international number is bidi class ET, which only joins the run to
+ * its right when that run is *European* digits. Persian and Arabic-Indic digits are class AN
+ * instead, so the "+" stayed neutral, took the paragraph's own right-to-left direction, and
+ * was laid out at the far end: "+98912..." arrived on screen as "98912...+".
+ *
+ * An explicit isolate settles it whatever the digits are -- inside it the run is left-to-right
+ * and the "+" resolves to the left of the number, while the isolate keeps the surrounding
+ * Persian text unaffected, which a bare LRM or a view-wide textDirection would not.
+ *
+ * Only a string that is *entirely* dialable is wrapped. Names and alphanumeric sender ids
+ * ("BANKMELLI") are returned untouched: this is applied to fields that sometimes hold a
+ * number and sometimes hold a name, and forcing a Persian name left-to-right would be the
+ * same bug in the other direction.
+ *
+ * Display only. Never store, compare or dial the result: the marks are real characters.
+ */
+fun String.asLtrPhone(): String {
+    if (isEmpty()) return this
+    var digits = 0
+    for (c in this) {
+        when {
+            c.isDigit() -> digits++
+            c in DIALABLE_PUNCTUATION -> Unit
+            else -> return this
+        }
+    }
+    return if (digits == 0) this else "$LRI$this$PDI"
+}
+
+/** What may sit between the digits of a number without making it a name. */
+private const val DIALABLE_PUNCTUATION = "+-()./  *#"

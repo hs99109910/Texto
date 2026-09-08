@@ -12,7 +12,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
-        android:alpha="0.92"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
@@ -45,7 +44,7 @@
                 <ImageView
                     android:id="@+id/texto_title"
                     android:layout_width="0dp"
-                    android:layout_height="41dp"
+                    android:layout_height="37dp"
                     android:layout_weight="1"
                     android:layoutDirection="ltr"
                     android:adjustViewBounds="true"
@@ -115,18 +114,18 @@
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/filter_bar"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
                     android:layout_marginHorizontal="12dp"
-                    android:alpha="0.92"
                     android:elevation="10dp"
                     android:clipChildren="false"
                     android:clipToPadding="false"
                     android:overScrollMode="never"
                     android:paddingHorizontal="12dp"
-                    android:paddingTop="10dp"
-                    android:paddingBottom="4dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="3dp"
                     android:scrollbars="none" />
 
                 <org.fossify.commons.views.MyTextView
@@ -340,7 +339,7 @@
         locale order, with the compose action kept out of it as its own disc. 5dp of padding
         and 3dp between tabs, matching the mockup.
     -->
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/texto_nav_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -349,9 +348,25 @@
         android:layout_marginBottom="22dp"
         android:background="@drawable/texto_searchbar_bg"
         android:elevation="10dp"
-        android:orientation="horizontal"
-        android:padding="6dp"
-        android:gravity="center_vertical">
+        android:padding="6dp">
+
+        <!--
+            The halo behind the current tab. A view of its own rather than a background on
+            the tab, so it can slide from one to the next instead of blinking across: its
+            width and height are set from the tab it is on and only translationX animates.
+        -->
+        <View
+            android:id="@+id/nav_halo"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_gravity="top" />
+
+        <LinearLayout
+            android:id="@+id/texto_nav_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
         <!--
             COMPOSE. First child, so under the app's right-to-left layout it lands against
@@ -437,6 +452,8 @@
             </LinearLayout>
         </LinearLayout>
 
-    </LinearLayout>
+        </LinearLayout>
+
+    </FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

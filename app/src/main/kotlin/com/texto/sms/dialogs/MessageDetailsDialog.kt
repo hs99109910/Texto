@@ -9,7 +9,9 @@ import org.fossify.commons.extensions.getTimeFormat
 import org.fossify.commons.extensions.getTimeFormatWithSeconds
 import org.fossify.commons.extensions.setupDialogStuff
 import com.texto.sms.R
+import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.extensions.config
+import com.texto.sms.helpers.applyTextoDialogSkin
 import com.texto.sms.extensions.subscriptionManagerCompat
 import com.texto.sms.models.Message
 import org.joda.time.DateTime
@@ -26,9 +28,13 @@ class MessageDetailsDialog(val activity: BaseSimpleActivity, val message: Messag
         addProperty(message.getSentOrReceivedAtLabel(), message.getSentOrReceivedAt())
 
         activity.getAlertDialogBuilder()
-            .setPositiveButton(org.fossify.commons.R.string.ok) { _, _ -> }
+            .setPositiveButton(R.string.action_confirm) { _, _ -> }
             .apply {
-                activity.setupDialogStuff(mDialogView.root, this, R.string.message_details)
+                activity.setupDialogStuff(
+                    mDialogView.root, this, R.string.message_details
+                ) { alertDialog ->
+                    (activity as? SimpleActivity)?.applyTextoDialogSkin(alertDialog)
+                }
             }
     }
 

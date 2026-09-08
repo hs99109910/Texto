@@ -116,20 +116,6 @@
                     app:tint="#FFFFFF" />
 
                 <ImageView
-                    android:id="@+id/thread_call_btn"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
-                    android:layout_marginStart="6dp"
-                    android:clickable="true"
-                    android:contentDescription="@string/dial_number"
-                    android:focusable="true"
-                    android:padding="9dp"
-                    android:src="@drawable/ic_ph_phone"
-                    android:visibility="gone"
-                    app:tint="#FFFFFF"
-                    tools:visibility="visible" />
-
-                <ImageView
                     android:id="@+id/thread_menu_btn"
                     android:layout_width="38dp"
                     android:layout_height="38dp"

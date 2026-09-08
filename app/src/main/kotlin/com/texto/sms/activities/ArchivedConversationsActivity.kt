@@ -3,7 +3,6 @@ package com.texto.sms.activities
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import org.fossify.commons.dialogs.ConfirmationDialog
 import org.fossify.commons.extensions.areSystemAnimationsEnabled
 import org.fossify.commons.extensions.beGoneIf
 import org.fossify.commons.extensions.beVisibleIf
@@ -21,6 +20,7 @@ import com.texto.sms.extensions.conversationsDB
 import com.texto.sms.extensions.removeAllArchivedConversations
 import com.texto.sms.helpers.THREAD_ID
 import com.texto.sms.helpers.THREAD_TITLE
+import com.texto.sms.helpers.textoConfirmDialog
 import com.texto.sms.models.Conversation
 import com.texto.sms.models.Events
 import org.greenrobot.eventbus.EventBus
@@ -93,12 +93,9 @@ class ArchivedConversationsActivity : SimpleActivity() {
     }
 
     private fun removeAll() {
-        ConfirmationDialog(
-            activity = this,
-            message = "",
-            messageId = R.string.empty_archive_confirmation,
-            positive = org.fossify.commons.R.string.yes,
-            negative = org.fossify.commons.R.string.no
+        textoConfirmDialog(
+            message = getString(R.string.empty_archive_confirmation),
+            isDestructive = true
         ) {
             removeAllArchivedConversations {
                 loadArchivedConversations()

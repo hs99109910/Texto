@@ -22,7 +22,12 @@ class ReactionPickerDialog(
     private val onReactionSelected: (String) -> Unit
 ) {
     private val dialog: BottomSheetDialog
-    private val emojis = listOf("👍", "❤️", "😂", "😮", "😢", "😡", "👎", "⁉️", "❓", "🔥", "💯", "👏", "✅", "🎉")
+    // Faces weighted ahead of the symbols. 👍❤️😂😮😢👎 stay because incoming reactions from
+    // other messaging apps arrive as exactly those, so the row has to be able to echo one.
+    private val emojis = listOf(
+        "❤️", "👍", "😂", "😍", "🥰", "😊", "😘",
+        "😅", "😭", "😢", "😔", "😮", "🙏", "🔥", "👏", "👎"
+    )
 
     init {
         val density = context.resources.displayMetrics.density
@@ -36,7 +41,7 @@ class ReactionPickerDialog(
         
         val root = FrameLayout(context).apply {
             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-            setPadding(0, 0, 0, (24 * density).toInt())
+            setPadding(0, 0, 0, (24 * density * config.uiScale).toInt())
         }
 
         val pill = LinearLayout(context).apply {
@@ -81,7 +86,7 @@ class ReactionPickerDialog(
 
         val container = LinearLayout(context).apply {
             orientation = LinearLayout.HORIZONTAL
-            val px = (12 * density).toInt()
+            val px = (12 * density * config.uiScale).toInt()
             setPadding(px, 0, px, 0)
             gravity = Gravity.CENTER
             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (60 * density * config.uiScale).toInt())
@@ -99,7 +104,7 @@ class ReactionPickerDialog(
             val textView = TextView(context).apply {
                 text = emoji
                 textSize = 32f * config.uiScale
-                val p = (8 * density).toInt()
+                val p = (8 * density * config.uiScale).toInt()
                 setPadding(p, 0, p, 0)
                 gravity = Gravity.CENTER
                 isClickable = true

@@ -2,7 +2,7 @@ package com.texto.sms.helpers
 
 import android.content.Context
 import com.texto.sms.R
-import com.texto.sms.extensions.toJalaliDateText
+import com.texto.sms.extensions.toUiDateText
 import org.joda.time.DateTime
 import java.util.Calendar
 import java.util.TimeZone
@@ -99,9 +99,9 @@ data class SearchDateRange(
             ID_QUARTER -> context.getString(R.string.search_date_quarter)
             else -> context.getString(
                 R.string.search_date_range,
-                DateTime(range.startSec * 1000L).toJalaliDateText(),
+                DateTime(range.startSec * 1000L).toUiDateText(),
                 // The stored end is exclusive, so step back inside the last day before naming it.
-                DateTime((range.endSec - 1) * 1000L).toJalaliDateText()
+                DateTime((range.endSec - 1) * 1000L).toUiDateText()
             )
         }
     }

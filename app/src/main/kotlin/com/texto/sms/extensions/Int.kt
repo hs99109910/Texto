@@ -20,13 +20,27 @@ fun Int.adjustColor(factor: Float): Int {
     return Color.HSVToColor(hsv)
 }
 
+/**
+ * Last resort for a call site that has a Context but no [com.texto.sms.activities.SimpleActivity]:
+ * device density only, no UI-scale. Prefer [getScaledPxIn].
+ *
+ * There used to be a receiver-less `Int.getScaledPx()` beside this that returned `this * 2.5`
+ * -- a hardcoded density and no UI-scale at all. It shared its name with
+ * [com.texto.sms.activities.SimpleActivity.getScaledPx], so it silently took over wherever a
+ * call site happened not to have the activity as its receiver, and the sizes there were wrong
+ * on every device that is not xhdpi. It is gone; nothing should reintroduce it.
+ */
 fun Int.getScaledPx(context: Context): Int {
     return (this * context.resources.displayMetrics.density).toInt()
 }
 
-fun Int.getScaledPx(): Int {
-    return (this * 2.5).toInt() 
-}
+/**
+ * [com.texto.sms.activities.SimpleActivity.getScaledPx] reached from an adapter, which is not
+ * the activity itself. Keeps the design's dp figures readable at the call site while still
+ * honouring the UI-scale setting.
+ */
+fun Int.getScaledPxIn(activity: com.texto.sms.activities.SimpleActivity): Int =
+    with(activity) { this@getScaledPxIn.getScaledPx() }
 
 fun Float.getScaledTextSize(context: Context): Float {
     return this * context.config.uiScale

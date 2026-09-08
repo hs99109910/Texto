@@ -231,23 +231,4 @@
 
     </LinearLayout>
 
-    <ScrollView
-        android:id="@+id/attachment_picker_holder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/small_margin"
-        android:background="@android:color/transparent"
-        android:overScrollMode="always"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:visibility="visible">
-
-        <include
-            android:id="@+id/attachment_picker"
-            layout="@layout/layout_attachment_picker"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

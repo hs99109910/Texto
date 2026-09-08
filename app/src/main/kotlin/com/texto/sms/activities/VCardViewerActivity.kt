@@ -10,6 +10,7 @@ import org.fossify.commons.extensions.normalizePhoneNumber
 import org.fossify.commons.extensions.sendEmailIntent
 import org.fossify.commons.extensions.viewBinding
 import org.fossify.commons.helpers.NavigationIcon
+import org.fossify.commons.helpers.ensureBackgroundThread
 import com.texto.sms.R
 import com.texto.sms.adapters.VCardViewerAdapter
 import com.texto.sms.databinding.ActivityVcardViewerBinding
@@ -52,12 +53,21 @@ class VCardViewerActivity : SimpleActivity() {
         binding.vcardToolbar.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.add_contact -> {
-                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                    // getType() is a binder round trip into another app's provider, and it
+                    // was being made straight from the click. Resolved off the main thread,
+                    // with the launch handed back to it.
+                    ensureBackgroundThread {
                         val mimetype = contentResolver.getType(vCardUri)
-                        setDataAndType(vCardUri, mimetype?.lowercase())
-                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        runOnUiThread {
+                            if (isFinishing || isDestroyed) return@runOnUiThread
+                            startActivity(
+                                Intent(Intent.ACTION_VIEW).apply {
+                                    setDataAndType(vCardUri, mimetype?.lowercase())
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                            )
+                        }
                     }
-                    startActivity(intent)
                 }
 
                 else -> return@setOnMenuItemClickListener false

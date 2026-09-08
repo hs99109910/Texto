@@ -24,10 +24,10 @@
 
         <ImageView
             android:id="@+id/selection_cancel"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
             android:background="?selectableItemBackgroundBorderless"
-            android:padding="12dp"
+            android:padding="11dp"
             android:src="@drawable/ic_cross_vector"
             app:tint="@android:color/white" />
 
@@ -39,7 +39,7 @@
             android:layout_marginStart="8dp"
             android:text="0 selected"
             android:textColor="@android:color/white"
-            android:textSize="18sp"
+            
             android:textStyle="bold"
             android:maxLines="1"
             android:ellipsize="end" />
@@ -59,68 +59,68 @@
 
                 <ImageView
                     android:id="@+id/action_select_all"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
                     android:background="?selectableItemBackgroundBorderless"
-                    android:padding="12dp"
+                    android:padding="11dp"
                     android:src="@drawable/ic_check_double_vector"
                     app:tint="@android:color/white" />
 
                 <ImageView
                     android:id="@+id/action_pin"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
                     android:background="?selectableItemBackgroundBorderless"
-                    android:padding="12dp"
+                    android:padding="11dp"
                     android:src="@drawable/ic_pin_vector"
                     app:tint="@android:color/white"
                     android:visibility="gone" />
 
                 <ImageView
                     android:id="@+id/action_unpin"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
                     android:background="?selectableItemBackgroundBorderless"
-                    android:padding="12dp"
+                    android:padding="11dp"
                     android:src="@drawable/ic_unpin_vector"
                     app:tint="@android:color/white"
                     android:visibility="gone" />
 
                 <ImageView
                     android:id="@+id/action_archive"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
                     android:background="?selectableItemBackgroundBorderless"
-                    android:padding="12dp"
+                    android:padding="11dp"
                     android:src="@drawable/ic_archive_vector"
                     app:tint="@android:color/white"
                     android:visibility="gone" />
 
                 <ImageView
                     android:id="@+id/action_copy"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
                     android:background="?selectableItemBackgroundBorderless"
-                    android:padding="12dp"
+                    android:padding="11dp"
                     android:src="@drawable/ic_copy_vector"
                     app:tint="@android:color/white" />
 
                 <ImageView
                     android:id="@+id/action_download"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
                     android:background="?selectableItemBackgroundBorderless"
-                    android:padding="12dp"
+                    android:padding="11dp"
                     android:src="@drawable/ic_download_vector"
                     app:tint="@android:color/white"
                     android:visibility="gone" />
 
                 <ImageView
                     android:id="@+id/action_delete"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
                     android:background="?selectableItemBackgroundBorderless"
-                    android:padding="12dp"
+                    android:padding="11dp"
                     android:src="@drawable/ic_delete_vector"
                     app:tint="@android:color/white" />
 

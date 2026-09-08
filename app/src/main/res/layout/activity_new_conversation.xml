@@ -142,6 +142,20 @@
             android:textColor="@android:color/white"
             android:textColorHint="#888888" />
 
+        <!--
+            Switches the field between searching by name and dialling a number outright. The
+            field is a name search by default, so a number had to be typed on the alphabetic
+            keyboard : there was no way to ask for a keypad.
+        -->
+        <ImageView
+            android:id="@+id/new_conversation_keypad_toggle"
+            android:layout_width="42dp"
+            android:layout_height="match_parent"
+            android:background="?selectableItemBackgroundBorderless"
+            android:contentDescription="@string/switch_to_keypad"
+            android:padding="10dp"
+            android:src="@drawable/ic_ph_numpad" />
+
         <ImageView
             android:id="@+id/new_conversation_confirm"
             android:layout_width="48dp"

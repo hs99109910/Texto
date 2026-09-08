@@ -1,7 +1,6 @@
 package com.texto.sms.adapters
 
 import android.view.Menu
-import org.fossify.commons.dialogs.ConfirmationDialog
 import org.fossify.commons.extensions.notificationManager
 import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.commons.views.MyRecyclerView
@@ -10,6 +9,7 @@ import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.extensions.deleteOrRecycleConversation
 import com.texto.sms.extensions.updateConversationArchivedStatus
 import com.texto.sms.helpers.refreshConversations
+import com.texto.sms.helpers.textoConfirmDialog
 import com.texto.sms.models.Conversation
 
 class ArchivedConversationsAdapter(
@@ -50,7 +50,7 @@ class ArchivedConversationsAdapter(
         val baseString = org.fossify.commons.R.string.deletion_confirmation
         val question = String.format(resources.getString(baseString), items)
 
-        ConfirmationDialog(activity, question) {
+        (activity as SimpleActivity).textoConfirmDialog(question, isDestructive = true) {
             ensureBackgroundThread {
                 deleteConversations()
             }
