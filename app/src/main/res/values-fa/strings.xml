@@ -93,6 +93,8 @@
     <string name="archive_emptied_successfully">بایگانی با موفقیت خالی شد</string>
     <string name="empty_archive_confirmation">آیا از خالی کردن بایگانی مطمئن هستید؟ همه گفتگوهای بایگانی‌شده برای همیشه پاک می‌شوند.</string>
     <string name="keep_conversations_archived">گفتگوها در بایگانی بمانند</string>
+    <!-- Image cropper -->
+    <string name="set_image">ثبت تصویر</string>
     <!-- Recycle bin -->
     <string name="restore">بازگردانی</string>
     <string name="restore_all_messages">بازگردانی همه پیام‌ها</string>

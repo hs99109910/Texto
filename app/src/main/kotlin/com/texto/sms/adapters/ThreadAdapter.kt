@@ -504,11 +504,20 @@ class ThreadAdapter(
         finishActMode()
     }
 
+    /**
+     * The count alone is not the noun. Both confirmations name what is being acted on
+     * through [R.plurals.delete_messages] first, the way every other adapter here does:
+     * dropped, `deletion_confirmation`'s `%s` took the bare number and the dialog read
+     * "Are you sure you want to delete 1?" -- measured on device, in both languages.
+     */
+    private fun messageCountPhrase(count: Int): String =
+        resources.getQuantityString(R.plurals.delete_messages, count, count)
+
     private fun askConfirmDelete() {
         val items = getSelectedItems().filterIsInstance<Message>()
         val baseString = org.fossify.commons.R.string.deletion_confirmation
-        val message = String.format(activity.getString(baseString), items.size)
-        (activity as SimpleActivity).textoConfirmDialog(message, isDestructive = true) {
+        val question = String.format(resources.getString(baseString), messageCountPhrase(items.size))
+        (activity as SimpleActivity).textoConfirmDialog(question, isDestructive = true) {
             deleteMessages(items, false, false)
             finishActMode()
         }
@@ -516,13 +525,13 @@ class ThreadAdapter(
 
     private fun askConfirmRestore() {
         val items = getSelectedItems().filterIsInstance<Message>()
-        val message = if (items.size == 1) {
-            activity.getString(R.string.restore_confirmation, items.first().senderName)
-        } else {
-            activity.getString(org.fossify.commons.R.string.files_restored_successfully, items.size)
-        }
+        // `files_restored_successfully` is the message shown *after* a restore, and it
+        // carries no placeholder at all, so asking with it announced a success that had
+        // not happened yet and silently swallowed the count.
+        val baseString = R.string.restore_confirmation
+        val question = String.format(resources.getString(baseString), messageCountPhrase(items.size))
 
-        (activity as SimpleActivity).textoConfirmDialog(message) {
+        (activity as SimpleActivity).textoConfirmDialog(question) {
             deleteMessages(items, false, true)
             finishActMode()
         }

@@ -9,7 +9,6 @@
     <uses-permission android:name="android.permission.SEND_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.RECEIVE_MMS" />
-    <uses-permission android:name="android.provider.Telephony.SMS_RECEIVED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -22,8 +21,22 @@
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <!-- Optional: lets recently called people rank higher when picking a recipient. -->
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <!--
+        Both come in from androidx.biometric, behind commons' app lock. That feature is not
+        reachable here: FossifyApp's isAppLockFeatureAvailable is read by nothing in commons
+        6.1.5 (checked against the library's own bytecode), and this app draws its own
+        settings screen, which offers no lock. Left in, they would be listed on the store page
+        as permissions the app asks for and never uses.
+
+        `android.provider.Telephony.SMS_RECEIVED` was declared alongside these and has been
+        dropped: it is a broadcast action, not a permission, so no such permission exists to
+        grant. RECEIVE_SMS is the real one and is requested above.
+    -->
     <uses-permission
         android:name="android.permission.USE_BIOMETRIC"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.USE_FINGERPRINT"
         tools:node="remove" />
 
     <queries>

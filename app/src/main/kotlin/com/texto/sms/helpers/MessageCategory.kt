@@ -117,11 +117,16 @@ object MessageClassifier {
     )
 
     // Zero-width and bidi control characters that show up in Persian SMS payloads.
-    private const val ZWNJ = '‌'
-    private const val ZWJ = '‍'
-    private const val LRM = '‎'
-    private const val RLM = '‏'
-    private const val BOM = '﻿'
+    private const val ZWNJ = '\u200C'
+    private const val ZWJ = '\u200D'
+    private const val LRM = '\u200E'
+    private const val RLM = '\u200F'
+
+    // Escaped rather than written literally: as a raw character this is a byte-order mark
+    // sitting in the middle of a source file, which is what tools read it as -- lint failed
+    // the build on it -- and it is invisible to anyone editing the line. The four above are
+    // escaped alongside it so the whole set reads the same way.
+    private const val BOM = '\uFEFF'
 
     // Letter variants that need folding to a single canonical form.
     private const val ARABIC_YEH = 'ي'
