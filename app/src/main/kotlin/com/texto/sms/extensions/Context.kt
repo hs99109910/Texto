@@ -1686,6 +1686,34 @@ fun Context.updateLastConversationMessage(threadIds: Iterable<Long>) {
  * keeps the cached date. That guards the periodic sync against a partially-populated read,
  * but it has to be off for updates that follow a deletion, where going backwards is correct.
  */
+/**
+ * Drops cached conversations the telephony provider no longer has.
+ *
+ * [insertOrUpdateConversations] only ever inserts and updates, and `getConversations()` asks
+ * the provider for `MESSAGE_COUNT > 0`, so a thread whose every message has been deleted
+ * simply stops being returned -- and the Room row it left behind was never removed by
+ * anything. `getNonArchivedWithLatestSnippet` then keeps showing it, because its first branch
+ * (`COUNT(*) = 0`) exists to show threads whose messages are not cached yet and cannot tell
+ * that case from this one. The row was immortal: emptying a chat left its name on the list
+ * for good.
+ *
+ * A conversation is only dropped when it also holds nothing locally. That is the line between
+ * a thread that has vanished and one that never came from the provider in the first place: a
+ * scheduled send lives in `messages` under its own thread id and would otherwise be deleted
+ * out from under the alarm that is waiting to send it. Archived threads are not candidates at
+ * all, since [ConversationsDao.getNonArchived] never returns them.
+ */
+fun Context.pruneVanishedConversations(liveThreadIds: Set<Long>) {
+    try {
+        conversationsDB.getNonArchived()
+            .filter { it.threadId !in liveThreadIds }
+            .filter { messagesDB.countThreadMessages(it.threadId) == 0 }
+            .forEach { conversationsDB.deleteThreadId(it.threadId) }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
 fun Context.insertOrUpdateConversations(
     conversations: List<Conversation>,
     keepNewestDate: Boolean = true,

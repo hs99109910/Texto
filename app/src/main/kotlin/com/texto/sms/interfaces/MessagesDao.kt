@@ -38,6 +38,14 @@ interface MessagesDao {
     @Query("SELECT * FROM messages WHERE thread_id = :threadId")
     fun getThreadMessages(threadId: Long): List<Message>
 
+    /**
+     * Everything held locally for a thread, recycle bin and scheduled included. Zero here is
+     * what tells a vanished conversation apart from one that only lives in this database: a
+     * scheduled send has a row, an emptied thread has none.
+     */
+    @Query("SELECT COUNT(*) FROM messages WHERE thread_id = :threadId")
+    fun countThreadMessages(threadId: Long): Int
+
     @Query("SELECT messages.* FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NULL AND thread_id = :threadId")
     fun getNonRecycledThreadMessages(threadId: Long): List<Message>
 

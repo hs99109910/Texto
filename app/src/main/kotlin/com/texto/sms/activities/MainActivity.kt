@@ -1367,6 +1367,10 @@ class MainActivity : SimpleActivity() {
             val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
             val conversations = getConversations(privateContacts = privateContacts)
             insertOrUpdateConversations(conversations)
+            // The provider is the authority on which threads still exist, and this is the one
+            // pass that has just asked it, so it is also the only place that can tell a
+            // deleted thread from one that simply has not been cached yet.
+            pruneVanishedConversations(conversations.mapTo(HashSet()) { it.threadId })
             val all = conversationsDB.getNonArchived() as ArrayList<Conversation>
             // One query for every thread's newest message, on the same background pass
             // that loads the list. Rows then bind without touching the database.

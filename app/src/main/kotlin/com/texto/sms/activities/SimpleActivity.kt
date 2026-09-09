@@ -321,8 +321,19 @@ open class SimpleActivity : BaseSimpleActivity() {
             // not the same height, and a shared radius made them read as different shapes:
             // at 26dp the 58dp header was 89% of the way to a capsule and the 76dp pill only
             // 68%. This rule holds whatever either of them grows to.
+            //
+            // The band is the *toolbar's*, not the whole app bar's. The contextual selection
+            // bar is a second child of the same MyAppBarLayout, so while it is up the app bar
+            // is 408px tall against the toolbar's 250 : measured. Taking the height from the
+            // app bar turned the header's radius from 76px into 155 and drew one stadium
+            // around both rows, which is what long-pressing a conversation looked like.
+            fun headerBottom(view: View): Int {
+                val band = toolbar?.takeIf { it.parent === view }?.bottom ?: view.height
+                return band.coerceIn(0, view.height)
+            }
+
             fun capsuleRadius(view: View): Float =
-                (view.height - statusBarInsetOf(view)).coerceAtLeast(0) / 2f
+                (headerBottom(view) - statusBarInsetOf(view)).coerceAtLeast(0) / 2f
 
             fun barShapeOf(radius: Float): Drawable {
                 val corners = FloatArray(8) { radius }
@@ -359,8 +370,15 @@ open class SimpleActivity : BaseSimpleActivity() {
                 fun paintBar(view: View) {
                     val radius = capsuleRadius(view)
                     if (radius <= 0f) return
+                    // Bottom-inset by whatever the app bar holds below the toolbar, so the
+                    // header's glass stops where the header does instead of running on under
+                    // the selection bar.
                     view.background = android.graphics.drawable.InsetDrawable(
-                        barShapeOf(radius), barSideInset, statusBarInsetOf(view), barSideInset, 0
+                        barShapeOf(radius),
+                        barSideInset,
+                        statusBarInsetOf(view),
+                        barSideInset,
+                        (view.height - headerBottom(view)).coerceAtLeast(0)
                     )
                 }
                 paintBar(appBar)
@@ -375,6 +393,11 @@ open class SimpleActivity : BaseSimpleActivity() {
             
             // Shadow and clip follow the painted shape, so they start below the status bar
             // too. Recomputed on every layout pass, which is where the insets are reliable.
+            //
+            // This one keeps the app bar's *full* height while the radius comes from the
+            // header band: it is what clips the children, so ending it at the toolbar would
+            // hide the selection bar rather than shape it. The radius is the header's either
+            // way, which is the half of this that was wrong.
             appBar.outlineProvider = object : android.view.ViewOutlineProvider() {
                 override fun getOutline(view: View, outline: android.graphics.Outline) {
                     outline.setRoundRect(
@@ -784,6 +807,20 @@ open class SimpleActivity : BaseSimpleActivity() {
                                android.util.Log.e("SelectionBar", "Bar container NOT FOUND")
                                return
                            }
+
+        // The include drops the root's own layout_margin -- an <include> only keeps the
+        // layout_* attributes it restates -- so the bar arrived full bleed, 0..1080, while
+        // every other floating surface is inset 16dp. Set here rather than in the two
+        // layouts that include it, so it cannot drift from the header it sits under.
+        (barContainer.layoutParams as? ViewGroup.MarginLayoutParams)?.let { params ->
+            val side = (TextoGlass.FLOATING_BAR_INSET_DP * resources.displayMetrics.density).toInt()
+            if (params.marginStart != side || params.topMargin != 8.getScaledPx()) {
+                params.marginStart = side
+                params.marginEnd = side
+                params.topMargin = 8.getScaledPx()
+                barContainer.layoutParams = params
+            }
+        }
 
         val newVisibility = if (show) View.VISIBLE else View.GONE
         if (barContainer.visibility != newVisibility) {
