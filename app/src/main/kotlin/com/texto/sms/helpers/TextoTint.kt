@@ -45,6 +45,26 @@ object TextoTint {
         return oklchToSrgb(lightness, chroma, hue, Color.alpha(color))
     }
 
+    /**
+     * [color] moved to [lightness] (0..1 in OKLCh) with its hue and colourfulness kept.
+     *
+     * This is what builds a family's ladder in the picker. Doing it in OKLCh rather than by
+     * scaling RGB matters for the same reason [rotateHue] does: an RGB scale darkens a yellow
+     * into olive and lightens a blue into grey, so a ladder built that way is five different
+     * hues pretending to be one colour. Here every rung is the same hue, and the chroma is
+     * refitted to the gamut at each new lightness, because a colour that fits at mid
+     * lightness does not necessarily fit near the ends.
+     */
+    fun withLightness(color: Int, lightness: Double): Int {
+        val (_, a, b) = srgbToOklab(color)
+        val chroma = Math.hypot(a, b)
+        val hue = Math.atan2(b, a)
+        return oklchToSrgb(lightness.coerceIn(0.0, 1.0), chroma, hue, Color.alpha(color))
+    }
+
+    /** Where [color] sits on the 0..1 lightness axis, for locating it in a ladder. */
+    fun lightnessOf(color: Int): Double = srgbToOklab(color).first
+
     /** L, a, b in OKLab for an sRGB colour. */
     private fun srgbToOklab(color: Int): Triple<Double, Double, Double> {
         val r = toLinear(Color.red(color) / 255.0)

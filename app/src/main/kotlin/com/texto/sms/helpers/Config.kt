@@ -456,6 +456,27 @@ class Config(context: Context) : BaseConfig(context) {
         get() = prefs.getInt(CARD_CORNER_RADIUS, 500)
         set(radius) = prefs.edit().putInt(CARD_CORNER_RADIUS, radius).apply()
 
+    /**
+     * Colours chosen recently, newest first, across every colour row in settings.
+     *
+     * Shared rather than per row on purpose: someone building a skin picks the same few
+     * colours for the bar, the bubble and the card, and a per-row history would make them
+     * find each one again from scratch every time.
+     */
+    var recentColours: List<Int>
+        get() = prefs.getString(RECENT_COLOURS, "")!!
+            .split(',')
+            .mapNotNull { it.trim().toIntOrNull() }
+        set(colours) = prefs.edit()
+            .putString(RECENT_COLOURS, colours.take(RECENT_COLOURS_KEPT).joinToString(","))
+            .apply()
+
+    /** Records [colour] as the newest choice, without letting it appear twice. */
+    fun rememberColour(colour: Int) {
+        val opaque = colour or 0xFF000000.toInt()
+        recentColours = listOf(opaque) + recentColours.filter { it != opaque }
+    }
+
     /** User-defined filter chips, serialized as JSON. */
     var customFilters: List<MessageFilter>
         get() = FilterStore.decode(prefs.getString(CUSTOM_FILTERS, "")!!)

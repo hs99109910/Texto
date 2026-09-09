@@ -114,6 +114,31 @@ on a cold start. The counts were computed once against an empty list and never r
 leaving the screen and coming back, because that ran `onResume` a second time.
 `refreshFilterChipCounts()` now runs where `allConversations` is assigned.
 
+**The header capsule is the toolbar's shape, not the app bar's.** The contextual selection
+bar is a second child of the same `MyAppBarLayout`, so while it is up the app bar is 408px
+tall against the toolbar's 250 : measured. `capsuleRadius` took its height from the app bar,
+so long-pressing a conversation turned the header's radius from 76px into 155 and drew one
+stadium around both rows. It reads `headerBottom()` now -- the toolbar's own bottom -- and
+the painted background is bottom-inset by the rest, so the glass stops where the header does.
+The *outline* still spans the full height on purpose: it is what clips the children, so
+ending it at the toolbar would hide the selection bar rather than shape it.
+
+The selection bar also arrived full bleed, 0..1080, against every other floating surface's
+16dp. An `<include>` keeps only the `layout_*` attributes it restates, so the root's own
+`layout_margin` was dropped. It is set from `toggleCustomSelectionBar` instead of in the two
+layouts that include it, so it cannot drift from the header above it.
+
+**Nothing pruned the conversation cache, so an emptied chat was immortal.**
+`getConversations()` asks the provider for `MESSAGE_COUNT > 0` and
+`insertOrUpdateConversations` only ever inserts and updates, so deleting every message in a
+thread left a Room row that no code path could remove -- and
+`getNonArchivedWithLatestSnippet`'s first branch (`COUNT(*) = 0`) exists to show threads whose
+messages are not cached yet and cannot tell that case from this one. The name stayed on the
+list for good. `pruneVanishedConversations` runs on the one pass that has just asked the
+provider, and drops a cached thread only when it *also* holds nothing locally: a scheduled
+send lives in `messages` under its own thread id and would otherwise be deleted out from
+under the alarm waiting to send it.
+
 **Room refuses the main thread.** Several menu actions wrote to the SMS provider and then to
 Room straight from a click handler and killed the process. Anything touching
 `conversationsDB` or a `ContentResolver` goes in `ensureBackgroundThread { }`, with the UI
@@ -369,6 +394,34 @@ Its header label is a button. One grid serves two modes: days, or the twelve mon
 year, with `pickingMonth` deciding which and the two arrows stepping a month or a year to
 match. Before that the arrows were the only way to move, so a date a year back was twelve
 taps of the same one and the year could not be changed at all.
+
+**Colour is picked as a family times a weight, and one widget draws both.** `TextoPalette`
+holds eleven families -- neutrals first, because the rows choosing a text or a card colour
+want them -- each a five rung ladder generated in OKLCh by `TextoTint.withLightness`. Doing
+the ladder in RGB instead darkens a yellow into olive and lightens a blue into grey, so it
+would be five hues pretending to be one colour. `locate()` matches an arbitrary stored colour
+to the nearest cell, because a picker that cannot say where it is has to open somewhere
+arbitrary, which is how you lose a setting by glancing at it.
+
+`TextoHueStrip` draws both bands and the settings screen's tonality row, so a colour is
+chosen the same way everywhere. It is one view painting its own segments rather than a
+`LinearLayout` of coloured children: the ends have to be clipped by the capsule, and children
+cannot be rounded at only the two outer corners. Three things it needs that are easy to miss
+-- half a pixel of overlap between segments or antialiasing leaves a hairline of background
+at every seam; a marker of two concentric rings, light inside dark, because any single colour
+disappears against some part of a band running white to black; and the marker clamped inside
+the band, since with 24 tonalities a segment is far narrower than the marker and at index 0
+it was drawn from -5px and half clipped away.
+
+The sheet leads with a preview rather than ending with one: the sample is set in the very ink
+that will sit on the colour, so it *is* the contrast test rather than an illustration of one.
+Picking writes straight to `config` so the screen behind updates live, which means dismissing
+without Save has to put the original back -- otherwise a cancelled look-around silently
+becomes the setting.
+
+**`textoSwatchDialog` and `TextoColorWheel` are now unreachable** and kept only because
+nothing has been decided about deleting them. The notes below describe a widget no screen
+inflates any more; do not read them as live guidance.
 
 **`TextoColorWheel` centres by padding, and two APIs quietly disagree with that.** The row
 pads each end by half its width so the first and last swatch can reach the middle, and three

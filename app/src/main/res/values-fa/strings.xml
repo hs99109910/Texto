@@ -93,6 +93,17 @@
     <string name="archive_emptied_successfully">بایگانی با موفقیت خالی شد</string>
     <string name="empty_archive_confirmation">آیا از خالی کردن بایگانی مطمئن هستید؟ همه گفتگوهای بایگانی‌شده برای همیشه پاک می‌شوند.</string>
     <string name="keep_conversations_archived">گفتگوها در بایگانی بمانند</string>
+    <!-- Colour picker -->
+    <string name="colour_family">خانوادهٔ رنگ</string>
+    <string name="colour_lightness">درجهٔ روشنایی</string>
+    <string name="colour_dark_to_light">تیره تا روشن</string>
+    <string name="colour_recent">اخیر</string>
+    <string name="colour_contrast_ok">کنتراست متن روی این رنگ مناسب است.</string>
+    <string name="colour_contrast_low">خواندن متن روی این رنگ سخت است.</string>
+    <string name="colour_contrast_ratio">%s:1</string>
+    <string name="colour_default">پیش‌فرض</string>
+    <string name="colour_save">ذخیره</string>
+    <string name="colour_preview_sample">نمونهٔ متن</string>
     <!-- Image cropper -->
     <string name="set_image">ثبت تصویر</string>
     <!-- Recycle bin -->

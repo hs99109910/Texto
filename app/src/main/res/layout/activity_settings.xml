@@ -485,11 +485,11 @@
                         dots, which spent a third of the screen saying nothing and left the
                         selection to a ring too thin to find on the darker hues.
                     -->
-                    <com.texto.sms.helpers.TextoColorWheel
+                    <com.texto.sms.helpers.TextoHueStrip
                         android:id="@+id/settings_accent_hue_wheel"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp" />
+                        android:layout_height="44dp"
+                        android:layout_marginTop="10dp" />
                 </LinearLayout>
                 <View
                     android:layout_width="match_parent"

@@ -100,6 +100,11 @@ const val MAIN_BG_GRADIENT_START = "main_bg_gradient_start"
 const val MAIN_BG_GRADIENT_END = "main_bg_gradient_end"
 const val CARD_CORNER_RADIUS = "card_corner_radius"
 const val CUSTOM_FILTERS = "custom_filters"
+
+const val RECENT_COLOURS = "recent_colours"
+
+/** How many recent colours the picker keeps. Five is the row it draws. */
+const val RECENT_COLOURS_KEPT = 5
 const val ACTIVE_FILTER_ID = "active_filter_id"
 const val SHOW_CONTACTS_ONLY_FILTER = "show_contacts_only_filter"
 const val SHOW_ADS_FILTER = "show_ads_filter"

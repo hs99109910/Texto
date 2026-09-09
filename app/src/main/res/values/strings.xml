@@ -104,6 +104,17 @@
     <string name="archive_emptied_successfully">The archive was emptied</string>
     <string name="empty_archive_confirmation">Are you sure you want to empty the archive? Every archived conversation is deleted for good.</string>
     <string name="keep_conversations_archived">Keep conversations archived</string>
+    <!-- Colour picker -->
+    <string name="colour_family">Colour family</string>
+    <string name="colour_lightness">Lightness</string>
+    <string name="colour_dark_to_light">dark to light</string>
+    <string name="colour_recent">Recent</string>
+    <string name="colour_contrast_ok">Text reads well on this colour.</string>
+    <string name="colour_contrast_low">Text will be hard to read on this colour.</string>
+    <string name="colour_contrast_ratio">%s:1</string>
+    <string name="colour_default">Default</string>
+    <string name="colour_save">Save</string>
+    <string name="colour_preview_sample">Sample text</string>
     <!-- Image cropper -->
     <string name="set_image">Set Image</string>
     <!-- Recycle bin -->

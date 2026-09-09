@@ -20,7 +20,6 @@ import org.fossify.commons.helpers.NavigationIcon
 import org.fossify.commons.helpers.PERMISSION_WRITE_STORAGE
 import org.fossify.commons.views.MyAppBarLayout
 import com.texto.sms.helpers.textoCapsuleDialog
-import com.texto.sms.helpers.textoSwatchDialog
 import com.texto.sms.BuildConfig
 import com.texto.sms.R
 import com.texto.sms.databinding.ActivitySettingsBinding
@@ -330,7 +329,7 @@ class SettingsActivity : SimpleActivity() {
         updatePreview(settingsColorRecentPreview, config.recentColor)
 
         settingsTopBarTextColorHolder.setOnClickListener {
-            pickColour(R.string.settings_top_bar_text, config.topBarTextColor) { color ->
+            pickColour(R.string.settings_top_bar_text, config.topBarTextColor, contrastAgainst = config.topBarColor, defaultColour = skin.topBarTextColor) { color ->
                 config.topBarTextColor = color
                 updatePreview(settingsTopBarTextColorPreview, color)
                 applyCustomColors()
@@ -338,7 +337,7 @@ class SettingsActivity : SimpleActivity() {
         }
 
         settingsMainTextColorHolder.setOnClickListener {
-            pickColour(R.string.settings_main_text, config.mainTextColor) { color ->
+            pickColour(R.string.settings_main_text, config.mainTextColor, contrastAgainst = config.mainBackgroundColor, defaultColour = skin.mainTextColor) { color ->
                 config.mainTextColor = color
                 updatePreview(settingsMainTextColorPreview, color)
                 applyCustomColors()
@@ -363,7 +362,7 @@ class SettingsActivity : SimpleActivity() {
         }
 
         settingsInputBarTextColorHolder.setOnClickListener {
-            pickColour(R.string.settings_input_bar_text, config.inputBarTextColor) { color ->
+            pickColour(R.string.settings_input_bar_text, config.inputBarTextColor, contrastAgainst = config.inputBarBackgroundColor, defaultColour = skin.inputBarTextColor) { color ->
                 config.inputBarTextColor = color
                 updatePreview(settingsInputBarTextColorPreview, color)
                 applyCustomColors()
@@ -371,21 +370,21 @@ class SettingsActivity : SimpleActivity() {
         }
 
         settingsSentBubbleColorHolder.setOnClickListener {
-            pickColour(R.string.settings_sent_bubble_color, config.sentBubbleColor) { color ->
+            pickColour(R.string.settings_sent_bubble_color, config.sentBubbleColor, contrastAgainst = config.sentBubbleTextColor) { color ->
                 config.sentBubbleColor = color
                 updatePreview(settingsSentBubbleColorPreview, color)
             }
         }
 
         settingsSentBubbleTextColorHolder.setOnClickListener {
-            pickColour(R.string.settings_sent_bubble_text, config.sentBubbleTextColor) { color ->
+            pickColour(R.string.settings_sent_bubble_text, config.sentBubbleTextColor, contrastAgainst = config.sentBubbleColor, defaultColour = skin.sentBubbleTextColor) { color ->
                 config.sentBubbleTextColor = color
                 updatePreview(settingsSentBubbleTextColorPreview, color)
             }
         }
 
         settingsReceivedBubbleColorHolder.setOnClickListener {
-            pickColour(R.string.settings_received_bubble_color, config.receivedBubbleColor) { color ->
+            pickColour(R.string.settings_received_bubble_color, config.receivedBubbleColor, contrastAgainst = config.receivedBubbleTextColor, defaultColour = skin.receivedBubbleColor) { color ->
                 config.receivedBubbleColor = color
                 // Marks the gradient as overridden on that side; see Config.
                 config.receivedBubbleColorSet = true
@@ -394,14 +393,14 @@ class SettingsActivity : SimpleActivity() {
         }
 
         settingsReceivedBubbleTextColorHolder.setOnClickListener {
-            pickColour(R.string.settings_received_bubble_text, config.receivedBubbleTextColor) { color ->
+            pickColour(R.string.settings_received_bubble_text, config.receivedBubbleTextColor, contrastAgainst = config.receivedBubbleColor, defaultColour = skin.receivedBubbleTextColor) { color ->
                 config.receivedBubbleTextColor = color
                 updatePreview(settingsReceivedBubbleTextColorPreview, color)
             }
         }
 
         settingsColorRecentHolder.setOnClickListener {
-            pickColour(R.string.settings_conversation_card_color, config.recentColor) { color ->
+            pickColour(R.string.settings_conversation_card_color, config.recentColor, contrastAgainst = config.mainTextColor, defaultColour = skin.cardColor) { color ->
                 config.recentColor = color
                 updatePreview(settingsColorRecentPreview, color)
             }
@@ -410,15 +409,12 @@ class SettingsActivity : SimpleActivity() {
         // Shaped, like every other number the app shows. The version was the one figure on
         // the settings screen still reading in Latin digits.
         settingsAboutVersion.text = BuildConfig.VERSION_NAME.toUiDigits()
-        settingsAboutHolder.setOnClickListener {
-            startAboutActivity(
-                R.string.app_launcher_name,
-                0L,
-                BuildConfig.VERSION_NAME,
-                ArrayList<org.fossify.commons.models.FAQItem>(),
-                false
-            )
-        }
+        // Commons' about screen is gone from here. It was opened with licenseMask 0 and an
+        // empty FAQ list, so it carried nothing this app had put in it, and it is one of the
+        // screens `setupDialogStuff` builds from the base theme : a white page in a foreign
+        // face at the end of a skinned settings list. For now the row shows the maker's mark
+        // and nothing else.
+        settingsAboutHolder.setOnClickListener { showAboutSheet() }
 
         settingsResetDefaults.setOnClickListener {
             // Everything, not only the colours: the font, its size, the UI scale, the
@@ -446,14 +442,21 @@ class SettingsActivity : SimpleActivity() {
             startActivity(intent)
         }
 
+        // The last row that still opened commons' picker. It is the bar the header, the nav
+        // pill and the chips are all painted from, so of every colour here it is the one most
+        // worth seeing previewed live rather than behind a white modal.
         settingsTopBarPreviewContainer.setOnClickListener {
-            val color = if (config.topBarColor == 0) Color.BLACK else config.topBarColor
-            org.fossify.commons.dialogs.ColorPickerDialog(this@SettingsActivity, color) { wasPositive, color ->
-                if (wasPositive) {
-                    config.topBarColor = if (color == Color.BLACK) 0 else color
-                    updatePreview(settingsTopBarColorPreview, color)
-                    applyCustomColors()
-                }
+            val current = if (config.topBarColor == 0) Color.BLACK else config.topBarColor
+            pickColour(
+                titleRes = R.string.settings_top_bar_background,
+                current = current,
+                contrastAgainst = config.topBarTextColor,
+                defaultColour = skin.topBarColor
+            ) { color ->
+                // Zero is the "follow the skin" marker rather than a colour; see Config.
+                config.topBarColor = if (color == Color.BLACK) 0 else color
+                updatePreview(settingsTopBarColorPreview, color)
+                applyCustomColors()
             }
         }
 
@@ -814,9 +817,11 @@ class SettingsActivity : SimpleActivity() {
             config.accentGradientMid.takeIf { it != 0 } ?: config.accentGradientEnd, -stored
         )
 
+        // The same band the colour picker's two rows are, so a tonality is chosen the way
+        // every other colour in the app is. It used to be a scrolling row of dots that had to
+        // be centred to be read, which is a second idea for the same job.
         val degrees = (0 until 360 step ACCENT_HUE_STEP).toList()
         settingsAccentHueWheel.apply {
-            itemSize = ACCENT_DOT_DP.getScaledPx()
             onPicked = { index -> applyAccentHue(degrees[index]) }
             submit(
                 colours = degrees.map { com.texto.sms.helpers.TextoTint.rotateHue(base, it) },
@@ -855,26 +860,96 @@ class SettingsActivity : SimpleActivity() {
     }
 
     /**
-     * Every colour row on this screen goes through here: the app's short swatch sheet, with
-     * the full wheel still one tap away behind "رنگ دلخواه".
+     * Every colour row on this screen goes through here, including the two that used to slip
+     * past it into commons' `ColorPickerDialog` : a white card in a foreign typeface, and the
+     * one surface left in the app that ignored the skin completely.
      *
-     * These rows used to open commons' picker directly. That is sixteen million answers to a
-     * question with about a dozen good ones -- and it is built from the base theme, so on any
-     * of this app's skins it also arrived as a white panel in a foreign typeface.
+     * [contrastAgainst] is what will be written on this colour, or the ground it will be
+     * written on, so the sheet can say whether the pair is readable before it is committed.
+     * Null for a row that carries no text, like a SIM slot's dot.
      */
-    private fun pickColour(titleRes: Int, current: Int, onChosen: (Int) -> Unit) {
-        textoSwatchDialog(
+    private fun pickColour(
+        titleRes: Int,
+        current: Int,
+        contrastAgainst: Int? = null,
+        defaultColour: Int? = null,
+        onChosen: (Int) -> Unit,
+    ) {
+        textoColorPicker(
             title = getString(titleRes),
             current = current,
-            onCustom = {
-                org.fossify.commons.dialogs.ColorPickerDialog(
-                    this@SettingsActivity, current
-                ) { wasPositive, color ->
-                    if (wasPositive) onChosen(color)
-                }
-            },
+            defaultColour = defaultColour,
+            contrastAgainst = contrastAgainst,
             onPick = onChosen
         )
+    }
+
+    /** The active skin's own value for a slot, which is what "Default" puts back. */
+    private val skin get() = com.texto.sms.helpers.AppThemes.byId(config.appTheme)
+
+    /**
+     * The about sheet: the maker's mark on the app's own card, and the version.
+     *
+     * Deliberately just the image for now. The artwork is wider than it is tall, so it is
+     * given the card's own corner and left to size itself by its aspect ratio rather than
+     * cropped to a box that would cut the wordmark off.
+     */
+    private fun showAboutSheet() {
+        val density = resources.displayMetrics.density
+        val pad = 20.getScaledPx()
+        val sheet = android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(pad, pad, pad, pad)
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 26 * density
+                setColor(config.recentColor)
+                setStroke(
+                    1.getScaledPx(),
+                    com.texto.sms.helpers.TextoGlass.rimFor(config.recentColor, 0.18f)
+                )
+            }
+            outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+            clipToOutline = true
+        }
+
+        sheet.addView(
+            android.widget.ImageView(this).apply {
+                setImageResource(R.drawable.img_about_hjt)
+                adjustViewBounds = true
+                scaleType = android.widget.ImageView.ScaleType.FIT_CENTER
+                contentDescription = getString(R.string.about)
+                background = GradientDrawable().apply {
+                    shape = GradientDrawable.RECTANGLE
+                    cornerRadius = 18 * density
+                }
+                outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+                clipToOutline = true
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+            }
+        )
+
+        sheet.addView(
+            TextView(this).apply {
+                text = BuildConfig.VERSION_NAME.toUiDigits()
+                gravity = android.view.Gravity.CENTER
+                setTextColor(config.mainTextColor.withAlpha(0.58f))
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.8f))
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = 14.getScaledPx() }
+            }
+        )
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setView(sheet)
+            .create()
+            .apply {
+                window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(Color.TRANSPARENT))
+                show()
+            }
     }
 
     /** Centre reads as the theme's own colour rather than as a meaningless zero. */
