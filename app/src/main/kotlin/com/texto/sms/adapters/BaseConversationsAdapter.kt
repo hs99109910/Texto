@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -600,8 +601,10 @@ abstract class BaseConversationsAdapter(
             setupBadgeCount(recentUnreadBadge, isUnread, conversation.unreadCount)
 
             recentImage.updateLayoutParams {
-                // The design's list avatar is 48dp; 46 is what the tightened row leaves it,
-                // and the two are indistinguishable beside each other.
+                // The design's own list avatar, and 6 x 8dp on the grid. Every avatar in the
+                // list gets exactly this box whatever is drawn in it: a generated monogram,
+                // a contact's photo or a company's logo all sit in the same square, at the
+                // same corner radius, the same distance from the card's leading edge.
                 val size = AVATAR_DP.getScaledPxIn(activity as SimpleActivity)
                 width = size
                 height = size
@@ -618,12 +621,35 @@ abstract class BaseConversationsAdapter(
             // XML values did not, which is why the row never grew with the rest of the app.
             run {
                 val a = activity as SimpleActivity
-                val padH = 16.getScaledPxIn(a)
+                val padH = ROW_PADDING_H_DP.getScaledPxIn(a)
                 val padV = ROW_PADDING_V_DP.getScaledPxIn(a)
                 recentFrame.setPadding(padH, padV, padH, padV)
                 recentFrame.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
                     topMargin = ROW_GAP_DP.getScaledPxIn(a)
                     bottomMargin = ROW_GAP_DP.getScaledPxIn(a)
+                }
+
+                val avatarGap = AVATAR_TEXT_GAP_DP.getScaledPxIn(a)
+                val endGap = TEXT_END_GAP_DP.getScaledPxIn(a)
+                recentAddress.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
+                    marginStart = avatarGap
+                    // The date is always there, so the name always clears it.
+                    marginEnd = endGap
+                }
+                recentBody.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
+                    marginStart = avatarGap
+                    topMargin = TEXT_LINE_GAP_DP.getScaledPxIn(a)
+                    // Only when there is something at the end of this line to clear. See
+                    // TEXT_END_GAP_DP: left on unconditionally, it holds a gap against a
+                    // GONE badge and leaves the preview short of the date's right edge.
+                    marginEnd = if (recentUnreadBadge.isVisible || recentPinIndicator.isVisible) {
+                        endGap
+                    } else {
+                        0
+                    }
+                }
+                recentPinIndicator.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
+                    marginEnd = if (recentUnreadBadge.isVisible) endGap else 0
                 }
             }
 
@@ -802,13 +828,7 @@ abstract class BaseConversationsAdapter(
 
             val placeholder = TextoAvatars.letterAvatar(activity, conversation.title)
             TextoAvatars.clipToSquircle(recentImage)
-
-            SimpleContactsHelper(activity).loadContactImage(
-                path = conversation.photoUri,
-                imageView = recentImage,
-                placeholderName = conversation.title,
-                placeholderImage = placeholder
-            )
+            TextoAvatars.loadInto(activity, recentImage, conversation.photoUri, placeholder)
         }
     }
 
@@ -981,8 +1001,12 @@ abstract class BaseConversationsAdapter(
                 // `background: var(--grad)` -- the accent gradient, the same surface the
                 // avatars and the active filter chip carry, not a flat stop off it. The
                 // badge is a 20dp pill that grows wider for a two-digit count.
-                val size = 20.getScaledPxIn(activity as SimpleActivity)
-                val pad = 5.getScaledPxIn(activity as SimpleActivity)
+                //
+                // Height, ink padding and corner are fixed, so every badge in the list is
+                // the same object at the same place: the only thing a row decides is how
+                // many digits go in it, and the pill is a circle until there are two.
+                val size = BADGE_SIZE_DP.getScaledPxIn(activity as SimpleActivity)
+                val pad = BADGE_PADDING_H_DP.getScaledPxIn(activity as SimpleActivity)
                 updateLayoutParams {
                     width = ViewGroup.LayoutParams.WRAP_CONTENT
                     height = size
@@ -1045,12 +1069,49 @@ abstract class BaseConversationsAdapter(
 
         /**
          * The conversation row's geometry, in dp before the UI-scale setting is applied.
-         * Together these set the pitch from one row to the next: avatar + 2x padding +
-         * 2x gap, about 64dp, since the avatar is taller than the two text lines stacked.
+         *
+         * One 8dp grid, with 4dp allowed as its half step where a full one would cost
+         * height. Everything a row measures comes from here rather than from the layout,
+         * because a dp in XML is fixed and these follow the UI-scale setting; the margins
+         * used to sit in the XML at 13/8/3 and so were the one part of the row that never
+         * grew with the rest of the app.
+         *
+         * The row is taller than its avatar: the two text lines stack to about 60dp against
+         * the avatar's 48, so the pitch is 2x padding + text + 2x gap and the avatar rides
+         * centred inside it. That is why the vertical values are the half step -- at a full
+         * 8dp of padding and 8dp of gap every row grows by 8dp, which is more screen than
+         * the shorter header gives back.
          */
-        private const val AVATAR_DP = 46
-        private const val ROW_PADDING_V_DP = 6
-        private const val ROW_GAP_DP = 3
+        private const val AVATAR_DP = 48
+        private const val ROW_PADDING_H_DP = 16
+        private const val ROW_PADDING_V_DP = 4
+        private const val ROW_GAP_DP = 4
+
+        /** Avatar to the name and the preview, and the name to the preview below it. */
+        private const val AVATAR_TEXT_GAP_DP = 12
+        private const val TEXT_LINE_GAP_DP = 4
+
+        /**
+         * What the name and the preview keep clear of whatever sits at the end of their
+         * line -- the date above, the badge below.
+         *
+         * The preview's is applied per row rather than in the layout because the badge and
+         * the pin it is constrained to are usually GONE, and a gone widget keeps the margin
+         * of the view pointing at it. Every unbadged row therefore held an 8dp gap against
+         * nothing, and its preview stopped 8dp short of the right edge the date above it
+         * ended on: measured 964px against the date's 985px at 420dpi. Applied only when
+         * there is something there to clear, the two edges line up on every row.
+         */
+        private const val TEXT_END_GAP_DP = 8
+
+        /**
+         * The unread badge's slot: a fixed 20dp tall pill with 6dp of ink padding, anchored
+         * to the card's own end padding. Size and position come from the count alone -- a
+         * long preview cannot push it, because the preview is constrained to it rather than
+         * the other way round.
+         */
+        private const val BADGE_SIZE_DP = 20
+        private const val BADGE_PADDING_H_DP = 6
 
         /**
          * How far the glass card is lifted. Android derives the shadow's blur from this, so

@@ -95,6 +95,42 @@ object TextoAvatars {
     }
 
     /**
+     * A contact's own picture in the same tile the generated avatars get.
+     *
+     * Commons' `SimpleContactsHelper.loadContactImage()` finishes its request with
+     * `circleCropTransform()`, so a real photo -- a face, or a company's logo -- came back
+     * as a circle and was then drawn inside a view clipped to the squircle. Beside a
+     * monogram tile the two were plainly different shapes, which is the whole of why the
+     * list's avatars did not read as one set. Loading it here instead leaves the bitmap
+     * square and lets [clipToSquircle]'s outline give it the identical silhouette.
+     *
+     * `centerCrop` is kept: it is right for the portraits most contact photos are, and a
+     * logo keeps its own colours rather than being forced onto the accent gradient, which
+     * is only ever painted behind generated initials.
+     */
+    fun loadInto(
+        context: Context,
+        view: android.widget.ImageView,
+        photoUri: String,
+        placeholder: Drawable,
+    ) {
+        view.scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
+        com.bumptech.glide.Glide.with(context)
+            .load(photoUri.ifEmpty { null })
+            .apply(
+                com.bumptech.glide.request.RequestOptions()
+                    .diskCacheStrategy(com.bumptech.glide.load.engine.DiskCacheStrategy.RESOURCE)
+                    .centerCrop()
+                    .placeholder(placeholder)
+                    // A contact with no picture, and one whose picture will not load, both
+                    // land on the monogram rather than on an empty tile.
+                    .fallback(placeholder)
+                    .error(placeholder)
+            )
+            .into(view)
+    }
+
+    /**
      * Full avatar for [name]: gradient squircle plus initials. Suitable as a Glide
      * placeholder, so a contact with a real photo still gets this while the photo loads and
      * keeps it permanently if there is none.

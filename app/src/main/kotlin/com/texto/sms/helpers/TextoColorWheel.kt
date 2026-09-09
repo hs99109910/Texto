@@ -5,6 +5,7 @@ import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.LinearSnapHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -33,6 +34,13 @@ class TextoColorWheel @JvmOverloads constructor(
     var itemSize: Int = 0
         set(value) {
             field = value
+            // The end padding is derived from this, and it is usually assigned after the
+            // first measure -- without recomputing it here the row keeps the padding it
+            // worked out while the size was still 0.
+            if (width > 0) {
+                val side = sidePadding(width)
+                setPadding(side, paddingTop, side, paddingBottom)
+            }
             adapter?.notifyDataSetChanged()
             requestLayout()
         }
@@ -83,15 +91,50 @@ class TextoColorWheel @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Puts [position] in the middle of the row.
+     *
+     * Neither half of this is what it looks like. `scrollToPositionWithOffset`'s offset is
+     * measured from the *padded* start edge -- `LinearLayoutManager` lays the anchor out at
+     * `getStartAfterPadding() + offset` -- and [sidePadding] has already moved that edge to
+     * where a centred swatch begins, so the offset that centres is 0. Passing the padding a
+     * second time laid the chosen colour out a full half-row right of the middle.
+     *
+     * And `smoothScrollToPosition` scrolls *minimally*: it brings the item just inside the
+     * nearest edge and stops. For a swatch near either end that leaves it at the edge, the
+     * snap helper then settles on whichever swatch really is nearest the middle, and the
+     * listener below reports that one instead -- so tapping one of the last colours applied
+     * a different colour. The scroller here centres what it is given.
+     */
     private fun centreOn(position: Int, animate: Boolean) {
-        val offset = (width - itemSize) / 2
         if (animate) {
-            smoothScrollToPosition(position)
+            manager.startSmoothScroll(
+                object : androidx.recyclerview.widget.LinearSmoothScroller(context) {
+                    override fun calculateDtToFit(
+                        viewStart: Int,
+                        viewEnd: Int,
+                        boxStart: Int,
+                        boxEnd: Int,
+                        snapPreference: Int,
+                    ) = (boxStart + (boxEnd - boxStart) / 2) - (viewStart + (viewEnd - viewStart) / 2)
+                }.apply { targetPosition = position }
+            )
         } else {
-            manager.scrollToPositionWithOffset(position, offset)
+            manager.scrollToPositionWithOffset(position, 0)
             post { shapeChildren() }
         }
     }
+
+    /**
+     * Half a row of padding at each end, so the first and last colour can still reach the
+     * middle. Without it neither end is selectable at all.
+     *
+     * The swatches carry a [GAP_RATIO] margin on each side, and that margin is part of the
+     * box the layout manager scrolls: leaving it out of this stopped the row half a gap
+     * short at each end, so the first and last colour never quite reached the centre and so
+     * never grew to full size -- the two that looked broken.
+     */
+    private fun sidePadding(width: Int) = ((width - itemSize) / 2 - GAP_RATIO).coerceAtLeast(0)
 
     private fun centredPosition(): Int? {
         val view = snap.findSnapView(manager) ?: return null
@@ -118,9 +161,7 @@ class TextoColorWheel @JvmOverloads constructor(
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
-        // Half a row of padding at each end, so the first and last colour can still reach
-        // the middle. Without it neither end is selectable at all.
-        val side = ((w - itemSize) / 2).coerceAtLeast(0)
+        val side = sidePadding(w)
         setPadding(side, paddingTop, side, paddingBottom)
         if (colours.isNotEmpty()) {
             settling = true
@@ -149,6 +190,9 @@ class TextoColorWheel @JvmOverloads constructor(
 
         override fun onBindViewHolder(holder: Holder, position: Int) {
             val colour = colours[position]
+            // A recycled holder keeps the params it was created with, so a swatch bound
+            // after itemSize changed would otherwise stay at the old diameter.
+            holder.swatch.updateLayoutParams { width = itemSize; height = itemSize }
             holder.swatch.background = swatchDrawable(colour)
             holder.swatch.setOnClickListener {
                 val target = holder.bindingAdapterPosition

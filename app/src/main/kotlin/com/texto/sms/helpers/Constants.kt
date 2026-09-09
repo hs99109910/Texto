@@ -94,9 +94,6 @@ const val AURORA_RETIRED = "aurora_retired"
  */
 const val GLASS_OPACITY_MIN = 40
 
-/** The lozenge behind the current nav tab, scaled up with the capsule. */
-const val NAV_TAB_RADIUS_DP = 27
-
 /** Nav tab glyph size. The mockup draws 18; the capsule here is about a third bigger. */
 const val NAV_ICON_DP = 23
 const val MAIN_BG_GRADIENT_START = "main_bg_gradient_start"

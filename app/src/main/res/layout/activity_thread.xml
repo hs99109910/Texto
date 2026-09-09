@@ -31,6 +31,15 @@
                 the right and the actions fall to the left, which is how the mockup draws it.
                 The tiles' fills and radii are repainted from the live theme in
                 ThreadActivity.styleThreadHeader.
+
+                The 22dp is `TextoGlass.FLOATING_BAR_INSET_DP` plus room to clear the corner,
+                and it must match the home header's `texto_header_row`. This row is the full
+                screen width while the capsule painted behind it is inset 16dp, so padding
+                below that inset puts the end tiles *outside* the bar. At 12dp they did:
+                measured on a 1080px screen, the capsule ran 42..1038 while the back tile
+                started at 32 and the overflow tile ended at 1048 : 10px over the edge at
+                each end. Turning the bars into true capsules is what exposed it, since the
+                corner radius went from 26dp to half the bar's height.
             -->
             <LinearLayout
                 android:id="@+id/thread_header_row"
@@ -38,8 +47,8 @@
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp">
+                android:paddingStart="22dp"
+                android:paddingEnd="22dp">
 
                 <ImageView
                     android:id="@+id/thread_back_btn"

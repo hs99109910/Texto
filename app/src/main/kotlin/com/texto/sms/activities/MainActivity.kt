@@ -35,7 +35,6 @@ import com.texto.sms.extensions.*
 import com.texto.sms.dialogs.EditFilterDialog
 import com.texto.sms.helpers.MessageFilter
 import com.texto.sms.helpers.NAV_ICON_DP
-import com.texto.sms.helpers.NAV_TAB_RADIUS_DP
 import com.texto.sms.helpers.SEARCHED_MESSAGE_ID
 import com.texto.sms.helpers.THREAD_ID
 import com.texto.sms.helpers.THREAD_TITLE
@@ -60,6 +59,24 @@ class MainActivity : SimpleActivity() {
 
         /** The design's wordmark: 20% up from the 34dp it shipped at, then 10% back down. */
         const val LOGO_HEIGHT_DP = 37
+
+        /**
+         * The home header, 12dp shorter than the 70dp every other bar uses.
+         *
+         * Measured at 420dpi, the 70dp bar left 16.4dp of empty space above and below a 37dp
+         * wordmark: the bar was tall because of its padding, not because of what it holds.
+         * At 58dp the same wordmark keeps 10.5dp on each side and the gear disc 9dp, so
+         * nothing inside it shrank -- only the air around them. Twelve dp is most of a
+         * conversation row's worth of screen, and the list starts that much higher.
+         */
+        const val HEADER_HEIGHT_DP = 58
+
+        /**
+         * The gear's own disc stays at the design's 40dp; this is the touch target laid over
+         * it. The platform's floor is 48dp and a 40dp disc is under it, so the header row
+         * carries a TouchDelegate that pads the hit rect out to this on every side.
+         */
+        const val MIN_TOUCH_TARGET_DP = 48
 
         /** Matches the other panel transitions in the app. */
         const val SEARCH_ANIM_MILLIS = 260L
@@ -187,7 +204,7 @@ class MainActivity : SimpleActivity() {
         }
 
         styleAppTitle()
-        setupScaledToolbar(binding.mainToolbar)
+        setupScaledToolbar(binding.mainToolbar, HEADER_HEIGHT_DP)
 
         styleHeaderGear()
 
@@ -289,6 +306,22 @@ class MainActivity : SimpleActivity() {
             config.topBarTextColor.withAlpha(0.68f)
         )
         alpha = 1f
+
+        // The disc is 40dp because the design draws it at 40dp, and the header is now 58dp
+        // rather than 70dp, so neither can be leaned on to reach the platform's 48dp touch
+        // floor. The hit rect is padded out to it instead: the gear looks the same and the
+        // area you can actually hit grows. Posted because getHitRect() is only meaningful
+        // once the row has been laid out.
+        post {
+            val target = MIN_TOUCH_TARGET_DP.getScaledPx()
+            val grow = ((target - height) / 2).coerceAtLeast(0)
+            if (grow == 0) return@post
+            val parentRow = parent as? View ?: return@post
+            val rect = android.graphics.Rect()
+            getHitRect(rect)
+            rect.inset(-grow, -grow)
+            parentRow.touchDelegate = android.view.TouchDelegate(rect, this)
+        }
     }
 
     private fun setupTextoNavBar() = binding.apply {
@@ -368,17 +401,28 @@ class MainActivity : SimpleActivity() {
         // `--primary`, the accent the design tints the active tab with -- not `--primary-alt`
         // (auroraAccentColor), which is only the third halo hue behind the app.
         val accent = config.accentGradientStart
-        val muted = config.mainTextColor.withAlpha(0.68f)
+        // `--txt2`, the design's one secondary ink: the same 58% the filter chips' idle
+        // labels and the conversation preview line carry. It sat at 68% here, which is not
+        // a value the design has -- the two selectors sit at opposite ends of the same
+        // screen and their idle labels were visibly different weights.
+        val muted = config.mainTextColor.withAlpha(0.58f)
 
         // The halo is a view behind the tabs rather than a background on one of them, so
         // moving the selection slides it across instead of erasing it here and drawing it
         // there. See TextoHalo.
         navHalo.background = android.graphics.drawable.GradientDrawable().apply {
             shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-            cornerRadius = NAV_TAB_RADIUS_DP * density
+            // A pill, like the filter chips' halo and the two bars: any radius past half the
+            // height rounds the ends completely, and the draw clamps it. It was a fixed 27dp
+            // against a halo about 64dp tall, so the app's two selection markers -- meant to
+            // read as one idea -- were a rounded rectangle at the bottom and a pill at the top.
+            cornerRadius = CHIP_PILL_RADIUS_DP * density
             // `background: var(--primary-soft)` over `border: 1px solid primary/0.25`.
             setColor(accent.withAlpha(0.16f))
-            setStroke(density.toInt().coerceAtLeast(1), accent.withAlpha(0.25f))
+            // Through getScaledPx, like the chip halo it matches and the bars' own rims: a
+            // raw density ignores the UI-scale slider, so past about 1.2 this stayed a 2px
+            // hairline while the halo at the top of the screen had grown to 3.
+            setStroke(1.getScaledPx().coerceAtLeast(1), accent.withAlpha(0.25f))
         }
         listOf(navHomeBtn, navAddBtn, navSearchContainer).forEach { tab -> tab.background = null }
         // Only after the tabs have been measured: their padding is set further down this
@@ -1081,9 +1125,12 @@ class MainActivity : SimpleActivity() {
     /**
      * [activePosition] rather than a hardcoded reference to the home screen's adapter: the
      * search panel shows the same chips from a second adapter, and with the halo bound to the
-     * first one that row drew no selection at all. The active chip deliberately carries no
-     * background of its own -- the halo *is* the selection -- so on the search panel the
-     * chosen filter was completely unmarked.
+     * first one that row drew no selection at all.
+     *
+     * Drawn in onDrawOver, so it lands on top of the chips rather than behind them. Every
+     * chip carries the header capsule's glass now, the chosen one included, and a halo drawn
+     * underneath that would simply be covered up. Its fill is the accent at .16, which over
+     * a label already painted in the accent changes nothing that can be measured.
      */
     private inner class FilterHaloDecoration(
         private val activePosition: () -> Int,
@@ -1092,7 +1139,7 @@ class MainActivity : SimpleActivity() {
         private val bounds = android.graphics.RectF()
         private var lastPosition = -1
 
-        override fun onDraw(
+        override fun onDrawOver(
             canvas: android.graphics.Canvas,
             parent: androidx.recyclerview.widget.RecyclerView,
             state: androidx.recyclerview.widget.RecyclerView.State,
@@ -1171,22 +1218,24 @@ class MainActivity : SimpleActivity() {
             config.mainTextColor.withAlpha(0.58f)
         }
         val chipRadius = CHIP_PILL_RADIUS_DP * density
-        chip.background = if (isActive) {
-            null
-        } else {
-            // Exactly the recipe setupOverlayBars() paints the header capsule with: the bar
-            // colour, the bar rim, and the user's glass setting rather than a fixed opacity.
-            // The chips sit directly under that capsule, so anything else read as a second,
-            // differently-frosted material -- and the settings slider moved one and not the
-            // other, which is the part that showed.
-            com.texto.sms.helpers.TextoGlass.bar(
-                tint = if (config.topBarColor != 0) config.topBarColor else Color.BLACK,
-                cornerRadius = chipRadius,
-                opacity = config.glassOpacity / 100f,
-                strokeWidthPx = stroke,
-                rimAlpha = 0.20f
-            )
-        }
+        // Exactly the recipe setupOverlayBars() paints the header capsule with: the bar
+        // colour, the bar rim, and the user's glass setting rather than a fixed opacity.
+        // The chips sit directly under that capsule, so anything else read as a second,
+        // differently-frosted material -- and the settings slider moved one and not the
+        // other, which is the part that showed.
+        //
+        // The chosen chip carries it too. It used to be given no background at all, so the
+        // one chip you were most likely to look at was the only surface on the row that was
+        // not glass and the only one the transparency slider did nothing to: measured, its
+        // neighbours were the header's own #171B22 while it was bare accent wash over the
+        // page. The halo marks it instead, drawn over the glass rather than under it.
+        chip.background = com.texto.sms.helpers.TextoGlass.bar(
+            tint = if (config.topBarColor != 0) config.topBarColor else Color.BLACK,
+            cornerRadius = chipRadius,
+            opacity = config.glassOpacity / 100f,
+            strokeWidthPx = stroke,
+            rimAlpha = 0.20f
+        )
         val horizontal = if (filterId == com.texto.sms.adapters.FilterChipsAdapter.ADD_CHIP_ID) {
             18.getScaledPx()
         } else {
@@ -1437,7 +1486,23 @@ class MainActivity : SimpleActivity() {
         }
 
         allConversations = sorted
+        refreshFilterChipCounts()
         submitFilteredConversations(cached, isManualReorder)
+    }
+
+    /**
+     * Re-labels the chips once the conversations behind them are known.
+     *
+     * [filterCounts] reads `allConversations`, and the chips are built in `onResume` -- which
+     * on a cold start runs long before the list has loaded. The counts were computed once
+     * against an empty list and never again, so every chip opened on 0: measured on device,
+     * "All" read 0 with 393 conversations on screen, and only corrected itself after leaving
+     * the screen and coming back, because that ran `setupFilterChips` a second time.
+     */
+    private fun refreshFilterChipCounts() {
+        val filters = currentFilters()
+        filterChipsAdapter?.submitFilters(filters, activeFilter.id, filterCounts(filters))
+        searchFilterChipsAdapter?.submitFilters(filters, searchFilter.id, filterCounts(filters))
     }
 
     /**
@@ -1720,7 +1785,10 @@ class MainActivity : SimpleActivity() {
         val isNewUi = config.useNewUi
         
         if (config.topBarOutline && isNewUi) {
-            val r26 = 26f * density
+            // The bar it traces is a capsule, so this is half the painted height too, not a
+            // fixed corner. The nav pill's own outline below already used a pill radius.
+            val r26 = (binding.mainAppbar.height - statusBarInsetOf(binding.mainAppbar))
+                .coerceAtLeast(0) / 2f
             val thickness = config.topBarOutlineThickness
             val thickStroke = (thickness * density).toInt()
             val outline = android.graphics.drawable.GradientDrawable().apply {
@@ -1730,9 +1798,12 @@ class MainActivity : SimpleActivity() {
                 cornerRadii = FloatArray(8) { r26 }
             }
             val drawable = android.graphics.drawable.LayerDrawable(arrayOf(outline))
-            // Sits exactly on the painted bar, which is now rounded all round and
-            // starts below the status bar rather than behind it.
-            drawable.setLayerInset(0, 0, statusBarInsetOf(binding.mainAppbar), 0, 0)
+            // Sits exactly on the painted bar, which is now rounded all round and starts
+            // below the status bar rather than behind it. The side inset is the bar's own:
+            // without it this optional outline was drawn across the full screen width while
+            // the capsule it is meant to trace stopped 16dp short of each edge.
+            val side = (com.texto.sms.helpers.TextoGlass.FLOATING_BAR_INSET_DP * density).toInt()
+            drawable.setLayerInset(0, side, statusBarInsetOf(binding.mainAppbar), side, 0)
             binding.mainAppbar.foreground = drawable
         } else {
             binding.mainAppbar.foreground = null

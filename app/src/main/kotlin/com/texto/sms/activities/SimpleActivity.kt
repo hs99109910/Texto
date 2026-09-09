@@ -77,8 +77,15 @@ open class SimpleActivity : BaseSimpleActivity() {
         return (this * resources.displayMetrics.density * uiScale).toInt()
     }
 
-    fun setupScaledToolbar(toolbar: Toolbar) {
-        val baseHeight = 70.getScaledPx()
+    /**
+     * [baseDp] is the bar's height before the UI-scale setting is applied. It is a parameter
+     * rather than a constant because the home screen's header carries only the wordmark and
+     * the gear and can sit tighter than the thread header, which carries a title, a subtitle
+     * and a row of action tiles. The 48dp floor is the platform's minimum touch target and
+     * holds whatever either of them asks for.
+     */
+    fun setupScaledToolbar(toolbar: Toolbar, baseDp: Int = 70) {
+        val baseHeight = baseDp.getScaledPx()
         val minHeightRequired = (48 * resources.displayMetrics.density).toInt()
         val finalHeight = max(baseHeight, minHeightRequired)
         
@@ -294,38 +301,51 @@ open class SimpleActivity : BaseSimpleActivity() {
         
         if (appBar != null) {
             val barColor = if (config.topBarColor != 0) config.topBarColor else Color.BLACK
-            // Same geometry as the floating home/search/settings pill (28dp radius, inset
-            // from the screen edges) so all three read as one family of glass surfaces.
-            val barRadius = 28 * density
-            val barSideInset = (12 * density).toInt()
+            // Same geometry as the floating nav pill and the composer, from the one place
+            // that holds it, so all three read as one family of glass surfaces. This used
+            // to be a 28dp radius on a 12dp inset while the pill was 26dp on 16dp, which is
+            // the mismatch you could see between the top and bottom of the screen.
+            val barSideInset = (TextoGlass.FLOATING_BAR_INSET_DP * density).toInt()
             val useNewUi = config.useNewUi
-            
+
             val topBarImage = config.topBarImage
-            // Rounded on all four corners now, not just the bottom. The bar no longer runs up
-            // behind the status bar either: its background is inset by the status-bar height
-            // so the clock, battery and signal icons keep a clear strip of their own above it.
-            val allCorners = FloatArray(8) { barRadius }
             // Settings -> "شفافیت نوارهای شیشه‌ای" drives every frosted bar, so the top bar,
             // the filter chips row and the floating nav pill stay visually in step.
             val glassOpacity = config.glassOpacity / 100f
-            val barShape = if (useNewUi) {
-                // The same recipe the floating nav pill is painted with, so the two capsules
-                // are one material rather than a frosted panel above and a gradient below.
-                TextoGlass.bar(
-                    tint = barColor,
-                    cornerRadii = allCorners,
-                    opacity = glassOpacity,
-                    // Through getScaledPx, like the nav pill and the filter chips. Raw
-                    // `density.toInt()` ignored the UI-scale setting and truncated besides,
-                    // so past a scale of about 1.2 the header kept a 2px hairline while the
-                    // two capsules it is meant to match had grown to 3.
-                    strokeWidthPx = 1.getScaledPx().coerceAtLeast(1)
-                )
-            } else {
-                GradientDrawable().apply {
-                    shape = GradientDrawable.RECTANGLE
-                    cornerRadii = allCorners
-                    setColor(barColor)
+
+            // A true capsule: the corner is half the bar's own height. Only what is painted
+            // below the status bar counts, since the background is inset by that strip -- the
+            // bar no longer runs up behind the clock and the battery.
+            //
+            // Half the height rather than a fixed dp because the header and the nav pill are
+            // not the same height, and a shared radius made them read as different shapes:
+            // at 26dp the 58dp header was 89% of the way to a capsule and the 76dp pill only
+            // 68%. This rule holds whatever either of them grows to.
+            fun capsuleRadius(view: View): Float =
+                (view.height - statusBarInsetOf(view)).coerceAtLeast(0) / 2f
+
+            fun barShapeOf(radius: Float): Drawable {
+                val corners = FloatArray(8) { radius }
+                return if (useNewUi) {
+                    // The same recipe the floating nav pill is painted with, so the two
+                    // capsules are one material rather than a frosted panel above and a
+                    // gradient below.
+                    TextoGlass.bar(
+                        tint = barColor,
+                        cornerRadii = corners,
+                        opacity = glassOpacity,
+                        // Through getScaledPx, like the nav pill and the filter chips. Raw
+                        // `density.toInt()` ignored the UI-scale setting and truncated
+                        // besides, so past a scale of about 1.2 the header kept a 2px
+                        // hairline while the two capsules it matches had grown to 3.
+                        strokeWidthPx = 1.getScaledPx().coerceAtLeast(1)
+                    )
+                } else {
+                    GradientDrawable().apply {
+                        shape = GradientDrawable.RECTANGLE
+                        cornerRadii = corners
+                        setColor(barColor)
+                    }
                 }
             }
 
@@ -336,22 +356,18 @@ open class SimpleActivity : BaseSimpleActivity() {
                 // Inset rather than a top margin: the toolbar's own top padding is applied by
                 // commons' edge-to-edge setup, and moving the view would fight it. Insetting
                 // only what gets painted leaves that padding doing its job.
-                val appliedInset = statusBarInsetOf(appBar)
-                appBar.background = android.graphics.drawable.InsetDrawable(
-                    barShape, barSideInset, appliedInset, barSideInset, 0
-                )
-                if (appliedInset == 0) {
-                    // On a cold start the insets are not known yet, which would paint the bar
-                    // from the very top. Rewrap the same shape once the first layout knows.
-                    appBar.doOnLayout { view ->
-                        val settled = statusBarInsetOf(view)
-                        if (settled > 0) {
-                            view.background = android.graphics.drawable.InsetDrawable(
-                                barShape, barSideInset, settled, barSideInset, 0
-                            )
-                        }
-                    }
+                fun paintBar(view: View) {
+                    val radius = capsuleRadius(view)
+                    if (radius <= 0f) return
+                    view.background = android.graphics.drawable.InsetDrawable(
+                        barShapeOf(radius), barSideInset, statusBarInsetOf(view), barSideInset, 0
+                    )
                 }
+                paintBar(appBar)
+                // Height and insets are both only settled once the bar has been laid out, and
+                // the radius is derived from the height, so it is always repainted there --
+                // not just on the cold start where the inset was still unknown.
+                appBar.doOnLayout { paintBar(it) }
             }
             
             appBar.isLiftOnScroll = false
@@ -363,7 +379,7 @@ open class SimpleActivity : BaseSimpleActivity() {
                 override fun getOutline(view: View, outline: android.graphics.Outline) {
                     outline.setRoundRect(
                         barSideInset, statusBarInsetOf(view),
-                        view.width - barSideInset, view.height, barRadius
+                        view.width - barSideInset, view.height, capsuleRadius(view)
                     )
                 }
             }
@@ -436,12 +452,15 @@ open class SimpleActivity : BaseSimpleActivity() {
                        findViewById<View>(R.id.new_conversation_search_container)
         if (inputBar != null) {
             val inputBgColor = config.inputBarBackgroundColor
-            // The design draws the nav pill and the composer capsule on the same 1.6rem, and
-            // the new-conversation search field a little tighter.
+            // The nav pill is a true capsule, like the header it has to match: its radius is
+            // half its own height and is taken at paint time, below. The composer keeps the
+            // design's fixed 1.6rem because it grows with the text it holds, and the
+            // new-conversation search field is a little tighter again.
+            val isNavPill = inputBar.id == R.id.texto_nav_container
             val isFloatingCapsule =
-                inputBar.id == R.id.texto_nav_container || inputBar.id == R.id.texto_message_input_bar
+                isNavPill || inputBar.id == R.id.texto_message_input_bar
             val inputRadius = if (isFloatingCapsule) {
-                26 * density
+                TextoGlass.COMPOSER_RADIUS_DP * density
             } else {
                 22 * density
             }
@@ -466,12 +485,23 @@ open class SimpleActivity : BaseSimpleActivity() {
                         // composer joined them when the send disc moved inside it -- it is
                         // the outer surface now, not a field sitting on one, and the design
                         // draws it with the same glass/divider/capsule-shadow recipe.
-                        inputBar.background = TextoGlass.bar(
-                            tint = inputBgColor,
-                            cornerRadius = inputRadius,
-                            opacity = config.glassOpacity / 100f,
-                            strokeWidthPx = 1.getScaledPx()
-                        )
+                        fun paintCapsule(view: View) {
+                            // Half the pill's own height, so it is the same shape as the
+                            // header whatever either of them measures. The composer is not
+                            // a fixed height and keeps its fixed corner.
+                            val radius = if (isNavPill) view.height / 2f else inputRadius
+                            if (radius <= 0f) return
+                            view.background = TextoGlass.bar(
+                                tint = inputBgColor,
+                                cornerRadius = radius,
+                                opacity = config.glassOpacity / 100f,
+                                strokeWidthPx = 1.getScaledPx()
+                            )
+                        }
+                        paintCapsule(inputBar)
+                        // The height is only known once laid out, and the radius comes from
+                        // it, so the pill is repainted there too.
+                        if (isNavPill) inputBar.doOnLayout { paintCapsule(it) }
                     } else {
                         // Typing fields are deliberately not glass. A frosted panel put a
                         // sheen and a bright rim on a surface that needs neither, and read

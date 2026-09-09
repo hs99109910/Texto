@@ -21,6 +21,32 @@ object TextoGlass {
 
     private const val BLUR_RADIUS = 28f
 
+    /**
+     * How far in from the screen edge every full-width floating bar sits: the header capsule
+     * and the nav pill. In dp, applied against `density`.
+     *
+     * It is here because the two had drifted apart. The header was inset 12dp against the
+     * pill's 16dp, so on a 1080px screen the header spanned 31..1049 and the pill 42..1038 --
+     * four dp further in on each side, and a comment in `setupOverlayBars` claimed they
+     * matched.
+     */
+    const val FLOATING_BAR_INSET_DP = 16
+
+    /**
+     * The two fixed-height floating bars are **true capsules**: their corner radius is half
+     * their own height, computed where they are painted rather than taken from here.
+     *
+     * A fixed radius cannot keep them looking alike, because they are not the same height.
+     * At a shared 26dp the 58dp header was 89% of the way to a capsule while the 76dp nav
+     * pill was only 68%, and the two read as different shapes -- measured corner profiles
+     * that matched row for row, on bars that plainly did not match. Half the height is the
+     * one rule that holds at any height.
+     *
+     * The composer is the exception and keeps this fixed 26dp -- the design's own `1.6rem`.
+     * It grows with the text it holds, and a capsule that tall reads as a lozenge.
+     */
+    const val COMPOSER_RADIUS_DP = 26
+
     val supportsRealBlur: Boolean
         get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
 
