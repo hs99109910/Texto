@@ -19,8 +19,6 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <!-- Optional: lets recently called people rank higher when picking a recipient. -->
-    <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <!--
         Both come in from androidx.biometric, behind commons' app lock. That feature is not
         reachable here: FossifyApp's isAppLockFeatureAvailable is read by nothing in commons

@@ -288,15 +288,16 @@ object AppThemes {
     )
 
     /**
-     * Falls back to Neon, which is what the app opens on. A retired Aurora id lands here
-     * only in the window before the retirement migration has run.
+     * Falls back to Nocturne, which is what the app opens on and what the picker calls
+     * "Default". A retired Aurora id lands here only in the window before the retirement
+     * migration has run.
      */
     fun familyOf(themeId: Int): ThemeFamily =
-        families.firstOrNull { it.has(themeId) } ?: families.last()
+        families.firstOrNull { it.has(themeId) } ?: families[1]
 
     fun isDarkVariant(themeId: Int): Boolean = familyOf(themeId).dark.id == themeId
 
-    fun byId(id: Int) = all.firstOrNull { it.id == id } ?: neonLight
+    fun byId(id: Int) = all.firstOrNull { it.id == id } ?: nocturne
 
     /** Overwrites the colour settings with [theme]'s values. */
     fun apply(config: Config, theme: AppTheme) {

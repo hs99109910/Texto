@@ -18,7 +18,6 @@ import com.reddit.indicatorfastscroll.FastScrollItemIndicator
 import org.fossify.commons.extensions.*
 import org.fossify.commons.helpers.MyContactsContentProvider
 import org.fossify.commons.helpers.NavigationIcon
-import org.fossify.commons.helpers.PERMISSION_READ_CALL_LOG
 import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
 import org.fossify.commons.helpers.SimpleContactsHelper
 import org.fossify.commons.helpers.ensureBackgroundThread
@@ -309,8 +308,6 @@ class NewConversationActivity : SimpleActivity() {
     }
 
     private fun fetchContacts() {
-        // Asked for up front but never required: recency falls back to messages alone.
-        handlePermission(PERMISSION_READ_CALL_LOG) {}
         handlePermission(PERMISSION_READ_CONTACTS) {
             if (it) {
                 ensureBackgroundThread {

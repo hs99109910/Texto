@@ -271,7 +271,7 @@
     <string name="unblock">رفع بلاک</string>
     <string name="copy_number_value">کپی عدد</string>
     <string name="forward_number_value">فوروارد عدد</string>
-    <string name="app_theme">پوستهٔ برنامه</string>
+    <string name="app_theme">تم</string>
     <string name="settings_dark_mode">تم تاریک</string>
     <string name="settings_dark_mode_sub">تغییر بین حالت تاریک و روشن</string>
     <string name="theme_applied">پوسته اعمال شد</string>
@@ -435,7 +435,7 @@
 
     <!-- Theme names: shown in the skin picker. -->
     <string name="theme_classic">کلاسیک</string>
-    <string name="theme_nocturne">نوکترن</string>
+    <string name="theme_nocturne">پیش‌فرض</string>
     <string name="theme_neon">نئون</string>
 
     <!-- Day labels and list punctuation, which are not the same character in the two languages. -->

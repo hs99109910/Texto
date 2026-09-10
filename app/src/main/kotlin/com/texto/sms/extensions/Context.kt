@@ -42,7 +42,6 @@ import org.fossify.commons.extensions.trimToComparableNumber
 import org.fossify.commons.helpers.DAY_SECONDS
 import org.fossify.commons.helpers.MONTH_SECONDS
 import org.fossify.commons.helpers.MyContactsContentProvider
-import org.fossify.commons.helpers.PERMISSION_READ_CALL_LOG
 import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
 import org.fossify.commons.helpers.SimpleContactsHelper
 import org.fossify.commons.helpers.ensureBackgroundThread
@@ -920,29 +919,6 @@ fun Context.getContactRecency(limit: Int = 500): Map<String, Long> {
     } catch (_: Exception) {
     }
 
-    // Recent calls count as "recently used" too, but the permission is optional: without
-    // it the ranking simply falls back to message history.
-    if (hasPermission(PERMISSION_READ_CALL_LOG)) {
-        try {
-            queryCursor(
-                android.provider.CallLog.Calls.CONTENT_URI,
-                arrayOf(
-                    android.provider.CallLog.Calls.NUMBER,
-                    android.provider.CallLog.Calls.DATE
-                ),
-                null,
-                null,
-                "${android.provider.CallLog.Calls.DATE} DESC LIMIT $limit"
-            ) { cursor ->
-                record(
-                    cursor.getStringValue(android.provider.CallLog.Calls.NUMBER),
-                    cursor.getLongValue(android.provider.CallLog.Calls.DATE)
-                )
-            }
-        } catch (_: Exception) {
-        }
-    }
-
     return recency
 }
 
@@ -986,27 +962,6 @@ fun Context.getSuggestedContacts(
             record(cursor.getStringValue(Sms.ADDRESS), cursor.getLongValue(Sms.DATE))
         }
     } catch (_: Exception) {
-    }
-
-    if (hasPermission(PERMISSION_READ_CALL_LOG)) {
-        try {
-            queryCursor(
-                android.provider.CallLog.Calls.CONTENT_URI,
-                arrayOf(
-                    android.provider.CallLog.Calls.NUMBER,
-                    android.provider.CallLog.Calls.DATE
-                ),
-                null,
-                null,
-                "${android.provider.CallLog.Calls.DATE} DESC LIMIT $limit"
-            ) { cursor ->
-                record(
-                    cursor.getStringValue(android.provider.CallLog.Calls.NUMBER),
-                    cursor.getLongValue(android.provider.CallLog.Calls.DATE)
-                )
-            }
-        } catch (_: Exception) {
-        }
     }
 
     val contacts = ArrayList<SimpleContact>()

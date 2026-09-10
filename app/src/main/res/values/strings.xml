@@ -277,7 +277,7 @@
     <string name="unblock">Unblock</string>
     <string name="copy_number_value">Copy number</string>
     <string name="forward_number_value">Forward number</string>
-    <string name="app_theme">App skin</string>
+    <string name="app_theme">Theme</string>
     <string name="settings_dark_mode">Dark mode</string>
     <string name="settings_dark_mode_sub">Switch between the dark and light variants</string>
     <string name="theme_applied">Skin applied</string>
@@ -440,7 +440,7 @@
 
     <!-- Theme names: shown in the skin picker. -->
     <string name="theme_classic">Classic</string>
-    <string name="theme_nocturne">Nocturne</string>
+    <string name="theme_nocturne">Default</string>
     <string name="theme_neon">Neon</string>
 
     <!-- Day labels and list punctuation, which are not the same character in the two languages. -->

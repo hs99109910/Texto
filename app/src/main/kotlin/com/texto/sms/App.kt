@@ -79,13 +79,15 @@ class App : FossifyApp() {
         // Classic is the default now, carrying the palette in AppThemes: light bars, blue ink
         // on all three text settings, and an accent turned onto the blue of Samsung's own
         // messaging icon. Its own flag again, for the same reason as the two before it.
-        // Neon's light variant is the default again. Classic keeps the palette it was given
-        // and stays pickable; it is simply no longer what the app opens on.
+        // Nocturne is the default now, and it is the one the picker calls "Default". Every
+        // flag below is already true on an install that has run the earlier migrations, so
+        // this block is reached only by a fresh install: changing which theme it applies
+        // moves what the app opens on without touching a theme anybody has chosen.
         if (!config.hasStoredAppTheme || !config.neonRefreshApplied ||
             !config.neonLightDefaultApplied || !config.classicDefaultApplied ||
             !config.neonLightRestored || !config.bubbleSidesSwapped
         ) {
-            AppThemes.apply(config, AppThemes.byId(AppThemes.NEON_LIGHT))
+            AppThemes.apply(config, AppThemes.byId(AppThemes.NOCTURNE))
             config.glassOpacity = Config.DEFAULT_GLASS_OPACITY
             config.neonRefreshApplied = true
             config.nocturneRefreshApplied = true
