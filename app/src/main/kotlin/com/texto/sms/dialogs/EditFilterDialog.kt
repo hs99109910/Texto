@@ -2,12 +2,8 @@ package com.texto.sms.dialogs
 
 import android.app.Activity
 import android.content.DialogInterface.BUTTON_POSITIVE
-import android.text.Editable
-import android.text.TextWatcher
-import android.view.ViewGroup
-import android.widget.BaseAdapter
-import android.widget.CheckedTextView
 import androidx.appcompat.app.AlertDialog
+import org.fossify.commons.extensions.beVisibleIf
 import org.fossify.commons.extensions.getAlertDialogBuilder
 import org.fossify.commons.extensions.setupDialogStuff
 import org.fossify.commons.extensions.showKeyboard
@@ -15,11 +11,12 @@ import org.fossify.commons.extensions.toast
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.databinding.DialogEditFilterBinding
-import com.texto.sms.databinding.DialogPickSendersBinding
 import com.texto.sms.helpers.FilterStore
 import com.texto.sms.helpers.MessageFilter
 import com.texto.sms.helpers.SystemBlockedNumbers
 import com.texto.sms.helpers.applyTextoDialogSkin
+import com.texto.sms.helpers.senderChip
+import com.texto.sms.helpers.textoSenderPicker
 
 /**
  * Creates or edits a user-defined filter chip. Passing an [existing] filter switches the
@@ -46,10 +43,10 @@ class EditFilterDialog(
             // Both sources are offered as visible rows rather than behind an extra
             // "where from?" prompt, so the choice is obvious without a detour.
             filterPickFromChats.setOnClickListener {
-                showSenderPicker(this, pickableSenders, R.string.no_conversations_to_pick)
+                showSenderPicker(this, pickableSenders, R.string.no_conversations_to_pick, R.string.pick_from_chats)
             }
             filterPickFromContacts.setOnClickListener {
-                showSenderPicker(this, pickableContacts, R.string.no_contacts_to_pick)
+                showSenderPicker(this, pickableContacts, R.string.no_contacts_to_pick, R.string.pick_from_contacts)
             }
             // The dialog can render light or dark depending on the theme, so take the tint
             // from text that is already correct for it rather than hard-coding a colour.
@@ -113,106 +110,55 @@ class EditFilterDialog(
     }
 
     private fun updateSenderSummary(binding: DialogEditFilterBinding) {
-        binding.filterSendersSummary.text = if (chosenNumbers.isEmpty()) {
-            activity.getString(R.string.no_senders_picked)
-        } else {
-            // The Persian comma is a different character from the Latin one, and mixing them
-            // reads as badly as an English list joined with "،".
-            chosenLabels.joinToString(activity.getString(R.string.list_separator))
+        val simpleActivity = activity as? SimpleActivity
+        binding.filterSendersEmpty.beVisibleIf(chosenNumbers.isEmpty())
+        binding.filterSendersChipsScroll.beVisibleIf(chosenNumbers.isNotEmpty())
+        binding.filterSendersChips.removeAllViews()
+        if (simpleActivity == null) return
+        chosenNumbers.forEachIndexed { index, number ->
+            binding.filterSendersChips.addView(
+                simpleActivity.senderChip(chosenLabels[index]) {
+                    chosenNumbers.removeAt(index)
+                    chosenLabels.removeAt(index)
+                    updateSenderSummary(binding)
+                }
+            )
         }
     }
 
-    /** Multi-choice, search-filterable list of one source, pre-ticked with what is saved. */
+    /** Search-filterable, multi-pick list of one source, pre-ticked with what is saved. */
     private fun showSenderPicker(
         binding: DialogEditFilterBinding,
         source: List<Pair<String, String>>,
         emptyMessage: Int,
+        titleRes: Int,
     ) {
         if (source.isEmpty()) {
             activity.toast(emptyMessage)
             return
         }
+        val simpleActivity = activity as? SimpleActivity ?: return
 
-        val labels = source.map { it.first }
-        val numbers = source.map { it.second }
-
-        // Selection is tracked by index into the full (unfiltered) arrays above, so it
-        // survives the search box narrowing/widening the visible rows.
-        val selectedIndices = HashSet<Int>()
-        numbers.forEachIndexed { index, number ->
-            val isChosen = chosenNumbers.any { SystemBlockedNumbers.isSameSender(it, number) }
-            if (isChosen) selectedIndices.add(index)
-        }
-
-        val pickerBinding = DialogPickSendersBinding.inflate(activity.layoutInflater)
-        var visibleIndices = labels.indices.toMutableList()
-
-        val listAdapter = object : BaseAdapter() {
-            override fun getCount() = visibleIndices.size
-            override fun getItem(position: Int) = visibleIndices[position]
-            override fun getItemId(position: Int) = visibleIndices[position].toLong()
-            override fun getView(position: Int, convertView: android.view.View?, parent: ViewGroup): android.view.View {
-                val itemIndex = visibleIndices[position]
-                val view = convertView as? CheckedTextView ?: activity.layoutInflater.inflate(
-                    android.R.layout.simple_list_item_multiple_choice, parent, false
-                ) as CheckedTextView
-                view.text = labels[itemIndex]
-                view.isChecked = selectedIndices.contains(itemIndex)
-                return view
-            }
-        }
-
-        pickerBinding.pickSendersList.apply {
-            adapter = listAdapter
-            setOnItemClickListener { _, view, position, _ ->
-                val itemIndex = visibleIndices[position]
-                if (!selectedIndices.add(itemIndex)) selectedIndices.remove(itemIndex)
-                (view as? CheckedTextView)?.isChecked = selectedIndices.contains(itemIndex)
-            }
-        }
-
-        pickerBinding.pickSendersSearch.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                val query = s?.toString()?.trim().orEmpty()
-                visibleIndices = if (query.isEmpty()) {
-                    labels.indices.toMutableList()
-                } else {
-                    labels.indices.filter { index ->
-                        labels[index].contains(query, ignoreCase = true) ||
-                            numbers[index].contains(query, ignoreCase = true)
-                    }.toMutableList()
+        simpleActivity.textoSenderPicker(
+            title = activity.getString(titleRes),
+            source = source,
+            initiallySelected = chosenNumbers,
+        ) { numbers, labels ->
+            // Only this source's entries are rewritten; anything picked from the other
+            // source stays, so a filter can mix chats and contacts.
+            val sourceNumbers = source.map { it.second }
+            sourceNumbers.forEach { number ->
+                val at = chosenNumbers.indexOfFirst { SystemBlockedNumbers.isSameSender(it, number) }
+                if (at >= 0) {
+                    chosenNumbers.removeAt(at)
+                    chosenLabels.removeAt(at)
                 }
-                listAdapter.notifyDataSetChanged()
             }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
-
-        // Built and shown directly rather than through setupDialogStuff, which swaps in
-        // its own content view and takes the picker layout and its buttons with it.
-        AlertDialog.Builder(activity)
-            .setTitle(R.string.pick_senders)
-            .setView(pickerBinding.root)
-            .setPositiveButton(R.string.action_confirm) { _, _ ->
-                // Only this source's entries are rewritten; anything picked from the other
-                // source stays, so a filter can mix chats and contacts.
-                numbers.forEachIndexed { index, number ->
-                    val at = chosenNumbers.indexOfFirst {
-                        SystemBlockedNumbers.isSameSender(it, number)
-                    }
-                    if (at >= 0) {
-                        chosenNumbers.removeAt(at)
-                        chosenLabels.removeAt(at)
-                    }
-                    if (selectedIndices.contains(index)) {
-                        chosenNumbers.add(number)
-                        chosenLabels.add(labels[index])
-                    }
-                }
-                updateSenderSummary(binding)
+            numbers.forEachIndexed { index, number ->
+                chosenNumbers.add(number)
+                chosenLabels.add(labels[index])
             }
-            .setNegativeButton(R.string.action_cancel, null)
-            .show()
+            updateSenderSummary(binding)
+        }
     }
 }

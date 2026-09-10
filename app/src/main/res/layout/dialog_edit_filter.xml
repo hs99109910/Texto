@@ -116,7 +116,7 @@
     </LinearLayout>
 
     <org.fossify.commons.views.MyTextView
-        android:id="@+id/filter_senders_summary"
+        android:id="@+id/filter_senders_empty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/big_margin"
@@ -124,10 +124,34 @@
         android:layout_marginEnd="@dimen/big_margin"
         android:gravity="start"
         android:alpha="0.8"
-        android:maxLines="3"
-        android:ellipsize="end"
+        android:text="@string/no_senders_picked"
         android:textSize="@dimen/normal_text_size"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/filter_pick_from_contacts" />
+
+    <!--
+        Each picked sender is its own chip with its own close glyph, tapped to drop that one
+        sender without reopening either picker. A plain joined-text summary used to sit here;
+        removing someone meant reopening the picker, finding their row again and unchecking it.
+    -->
+    <HorizontalScrollView
+        android:id="@+id/filter_senders_chips_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/big_margin"
+        android:layout_marginTop="@dimen/normal_margin"
+        android:layout_marginEnd="@dimen/big_margin"
+        android:scrollbars="none"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/filter_pick_from_contacts">
+
+        <LinearLayout
+            android:id="@+id/filter_senders_chips"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" />
+
+    </HorizontalScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -302,7 +302,7 @@ fun SimpleActivity.textoColorPicker(
 }
 
 /** The sheet's own ground: the same card and rim every other sheet in the app is drawn on. */
-private fun SimpleActivity.pickerCard(): GradientDrawable {
+fun SimpleActivity.pickerCard(): GradientDrawable {
     val density = resources.displayMetrics.density
     return GradientDrawable().apply {
         shape = GradientDrawable.RECTANGLE
@@ -312,7 +312,7 @@ private fun SimpleActivity.pickerCard(): GradientDrawable {
     }
 }
 
-private fun SimpleActivity.sectionLabel(text: String) = TextView(this).apply {
+fun SimpleActivity.sectionLabel(text: String) = TextView(this).apply {
     this.text = text
     setTextColor(config.accentGradientStart)
     setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
@@ -342,7 +342,7 @@ private fun SimpleActivity.recentTile(colour: Int, isChosen: Boolean, onTap: () 
 }
 
 /** The same capsule pair every other sheet ends with. */
-private fun SimpleActivity.pickerButton(
+fun SimpleActivity.pickerButton(
     label: String,
     filled: Boolean,
     onTap: () -> Unit,
