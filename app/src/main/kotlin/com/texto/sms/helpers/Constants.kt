@@ -16,11 +16,12 @@ const val THREAD_ATTACHMENT_URIS = "thread_attachment_uris"
 const val SEARCHED_MESSAGE_ID = "searched_message_id"
 const val USE_SIM_ID_PREFIX = "use_sim_id_"
 /**
- * Legacy channel id. The name is historical and deliberately not renamed: Android keys a
- * user's per-channel sound and importance settings by this string, so changing it would
- * silently create a second, default channel and strand what they had configured.
+ * Android keys a user's per-channel sound and importance settings by this string, so changing
+ * it on a shipped app silently creates a second, default channel and strands whatever they
+ * had configured. It carried the old brand name until now, and renaming it was free only
+ * because nothing has been released yet. After the first Play build this string is frozen.
  */
-const val NOTIFICATION_CHANNEL_ID = "nova_messages"
+const val NOTIFICATION_CHANNEL_ID = "texto_messages"
 const val SHOW_CHARACTER_COUNTER = "show_character_counter"
 const val USE_SIMPLE_CHARACTERS = "use_simple_characters"
 const val SEND_ON_ENTER = "send_on_enter"
@@ -70,11 +71,11 @@ const val RECENT_COLOR = "recent_color"
 const val UI_SCALE = "ui_scale"
 /** Language: 0 follows the phone, 1 Persian, 2 English. See TextoLocale. */
 const val APP_LANGUAGE = "app_language"
-/** Legacy storage key; renaming it would drop the font the user already picked. */
-const val FONT_FAMILY = "font_family_nova"
+/** Renamed off the old brand pre-release. Frozen once shipped, like the channel id. */
+const val FONT_FAMILY = "font_family_texto"
 const val FONT_TYPE = "font_type"
-/** Same legacy key as [FONT_FAMILY], kept for the same reason. */
-const val FONT_FAMILY_TEXTO = "font_family_nova"
+/** The same key as [FONT_FAMILY], under the name the rest of the app calls it by. */
+const val FONT_FAMILY_TEXTO = "font_family_texto"
 const val APP_THEME = "app_theme"
 /** One-shot marker for the move onto the Nocturne design. See App.onCreate. */
 const val NOCTURNE_REFRESH_APPLIED = "nocturne_refresh_applied"

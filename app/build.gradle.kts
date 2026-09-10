@@ -176,7 +176,7 @@ configurations.configureEach {
 }
 
 dependencies {
-    implementation(libs.nova.commons)
+    implementation(libs.fossify.commons)
     implementation(libs.eventbus)
     implementation(libs.indicator.fast.scroll)
     implementation(libs.mmslib)

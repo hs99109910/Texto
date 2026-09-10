@@ -520,17 +520,26 @@ source-availability obligation.
 
 ## Naming
 
-The word **nova** was removed. Classes are `TextoGlass`, `TextoAvatars`, `TextoFonts`,
+The word **nova** is gone. Classes are `TextoGlass`, `TextoAvatars`, `TextoFonts`,
 `TextoGlideModule`; view ids and drawables are `texto_*`.
 
-Four occurrences are **deliberately kept** and commented in place — do not "fix" them:
+Two stored keys carried it until the pre-release sweep and are now `texto_messages` and
+`font_family_texto`. **Both are frozen from the first Play release onwards**: Android keys a
+user's per-channel notification sound and importance by the channel id, and the font key is
+where their chosen typeface lives, so renaming either after shipping silently creates a
+second channel and drops the setting. Doing it before the first release was the only free
+moment, and that moment has passed once anything is uploaded.
 
-| Kept | Why |
+The baselines had it too, in stale `org.nova.messages` paths, and both were regenerated --
+which also turned the two quality gates green, since both had been failing on drift rather
+than on anything real.
+
+What is left is **not** the old brand and must stay:
+
+| Left | Why |
 |---|---|
-| `NOTIFICATION_CHANNEL_ID = "nova_messages"` | Android keys the user's per-channel sound and importance by this string; changing it strands their settings. |
-| `FONT_FAMILY` / `FONT_FAMILY_TEXTO = "font_family_nova"` | SharedPreferences key; renaming drops the font the user picked. |
-| `"org.nova.contacts"` | Another app's package id. |
-| `values-pt` / `values-sk` strings | Real Portuguese and Slovak words. |
+| `"org.nova.contacts"` ×4 | Another app's real package id, in `<queries>` and the contacts hand-off. Renaming it points at a package that does not exist. |
+| `values-ca/cs/eo/gl/hr/pt/sk` strings | "nova", "nová", "novamente", "znova" are ordinary words for *new* and *again* in those languages. They are also stripped from every build by `resConfigs("en", "fa")`, so they never ship. |
 
 ## Known gaps
 

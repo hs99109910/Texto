@@ -15,10 +15,10 @@
 # kotlinx.serialization looks the generated serializer up by name off the Companion, which
 # no bytecode reference points at.
 #
-# This block used to name `org.nova.messages.models.**` -- the package the app carried
-# before it was renamed to com.texto.sms -- so it had matched nothing for as long as the
-# rename has been in place. The serializable models are the backup format: MessagesBackup,
-# SmsBackup, MmsBackup, MmsPart, MmsAddress, BackupType and MessageCategory.
+# This block used to name the package the app carried before it was renamed to
+# com.texto.sms, so it had matched nothing for as long as the rename has been in place.
+# The serializable models are the backup format: MessagesBackup, SmsBackup, MmsBackup,
+# MmsPart, MmsAddress, BackupType and MessageCategory.
 -keepattributes InnerClasses
 -keepclassmembers class com.texto.sms.models.** {
     *** Companion;

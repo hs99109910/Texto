@@ -1,4 +1,4 @@
-**Official Website: https://theown68.github.io/Nova-Web/**
+**Official Website: https://github.com/hs99109910/Texto-sms**
 
 **Texto**
 A fast, lightweight, privacy‑focused SMS/MMS app designed to give you full control over your messaging experience.

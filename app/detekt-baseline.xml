@@ -3,77 +3,516 @@
   <ManuallySuppressedIssues/>
   <CurrentIssues>
     <ID>ComplexCondition:Activity.kt$contact.rawId &gt; 1000000 &amp;&amp; contact.contactId &gt; 1000000 &amp;&amp; contact.rawId == contact.contactId &amp;&amp; (isPackageInstalled(simpleContacts) || isPackageInstalled(simpleContactsDebug))</ID>
-    <ID>ComplexCondition:NewConversationActivity.kt$NewConversationActivity$contact.phoneNumbers.any { it.normalizedNumber.contains(searchString, true) } || contact.name.contains(searchString, true) || contact.name.contains(searchString.normalizeString(), true) || contact.name.normalizeString().contains(searchString, true)</ID>
+    <ID>ComplexCondition:App.kt$App$!config.hasStoredAppTheme || !config.neonRefreshApplied || !config.neonLightDefaultApplied || !config.classicDefaultApplied || !config.neonLightRestored || !config.bubbleSidesSwapped</ID>
+    <ID>ComplexCondition:AttachmentsAdapter.kt$AttachmentsAdapter$(compressImage || compressVideo) &amp;&amp; attachment.isPending &amp;&amp; config.mmsFileSizeLimit != FILE_SIZE_NONE</ID>
+    <ID>ComplexCondition:NewConversationActivity.kt$NewConversationActivity$wasImeVisible &amp;&amp; !isImeVisible &amp;&amp; config.useNewUi &amp;&amp; binding.newConversationAddress.text?.isEmpty() == true</ID>
+    <ID>ComplexCondition:SimpleActivity.kt$SimpleActivity$id == R.id.main_coordinator || id == R.id.settings_coordinator || id == R.id.thread_coordinator || id == R.id.main_nested_scrollview || id == R.id.main_coordinator_wrapper || id == R.id.message_holder</ID>
+    <ID>ComplexCondition:TextoTint.kt$TextoTint$!clamp &amp;&amp; (r &lt; -1e-4 || r &gt; 1 + 1e-4 || g &lt; -1e-4 || g &gt; 1 + 1e-4 || bl &lt; -1e-4 || bl &gt; 1 + 1e-4)</ID>
+    <ID>ComplexCondition:ThreadActivity.kt$ThreadActivity$mmsFileSizeLimit != FILE_SIZE_NONE &amp;&amp; fileSize &gt; mmsFileSizeLimit &amp;&amp; (!isImage || isGif || isRawImage) &amp;&amp; !isVideo</ID>
+    <ID>ComplexCondition:ThreadActivity.kt$ThreadActivity$wasImeVisible &amp;&amp; !isImeVisible &amp;&amp; config.useNewUi &amp;&amp; binding.messageHolder.threadTypeMessage.text?.isEmpty() == true &amp;&amp; !config.alwaysExpandSearchBar</ID>
+    <ID>CyclomaticComplexMethod:App.kt$App$override fun onCreate()</ID>
+    <ID>CyclomaticComplexMethod:AttachmentsAdapter.kt$AttachmentsAdapter$private fun setupMediaPreview(binding: ItemAttachmentMediaPreviewBinding, attachment: AttachmentSelection)</ID>
+    <ID>CyclomaticComplexMethod:BaseConversationsAdapter.kt$BaseConversationsAdapter$fun onDragEnded()</ID>
+    <ID>CyclomaticComplexMethod:BaseConversationsAdapter.kt$BaseConversationsAdapter$private fun setupRecentView(view: View, conversation: Conversation, position: Int, holder: ViewHolder)</ID>
+    <ID>CyclomaticComplexMethod:BaseConversationsAdapter.kt$BaseConversationsAdapter$private fun setupView(view: View, conversation: Conversation, holder: ViewHolder)</ID>
+    <ID>CyclomaticComplexMethod:BaseConversationsAdapter.kt$BaseConversationsAdapter$private fun showConversationActions(anchor: View, conversation: Conversation)</ID>
+    <ID>CyclomaticComplexMethod:Context.kt$fun Context.getContactsWithNamesSnapshot(): List&lt;Pair&lt;String, String&gt;&gt;</ID>
     <ID>CyclomaticComplexMethod:Context.kt$fun Context.getConversations( threadId: Long? = null, privateContacts: ArrayList&lt;SimpleContact&gt; = ArrayList(), ): ArrayList&lt;Conversation&gt;</ID>
     <ID>CyclomaticComplexMethod:ConversationsAdapter.kt$ConversationsAdapter$override fun actionItemPressed(id: Int)</ID>
-    <ID>CyclomaticComplexMethod:MainActivity.kt$MainActivity$private fun getNewConversations(cachedConversations: ArrayList&lt;Conversation&gt;)</ID>
+    <ID>CyclomaticComplexMethod:ImageCompressor.kt$ImageCompressor$fun compressImage(uri: Uri, compressSize: Long, callback: (compressedFileUri: Uri?) -&gt; Unit)</ID>
+    <ID>CyclomaticComplexMethod:JalaliRangePicker.kt$JalaliRangePicker$fun show(onPicked: (startMillis: Long, endMillis: Long) -&gt; Unit)</ID>
+    <ID>CyclomaticComplexMethod:JalaliRangePicker.kt$JalaliRangePicker$private fun renderMonth(): Unit</ID>
+    <ID>CyclomaticComplexMethod:MainActivity.kt$MainActivity$private fun dateChip( label: String, isActive: Boolean, opensPicker: Boolean = false, onTap: () -&gt; Unit, ): TextView</ID>
+    <ID>CyclomaticComplexMethod:MainActivity.kt$MainActivity$private fun setupConversations(conversations: ArrayList&lt;Conversation&gt;, cached: Boolean = false, isManualReorder: Boolean = false)</ID>
     <ID>CyclomaticComplexMethod:MessagesImporter.kt$MessagesImporter$private fun InputStream.importXml()</ID>
     <ID>CyclomaticComplexMethod:NotificationHelper.kt$NotificationHelper$@SuppressLint("NewApi") fun showMessageNotification( messageId: Long, address: String, body: String, threadId: Long, bitmap: Bitmap?, sender: String?, alertOnlyOnce: Boolean = false )</ID>
-    <ID>CyclomaticComplexMethod:ThreadActivity.kt$ThreadActivity$@SuppressLint("MissingPermission") private fun getThreadItems(): ArrayList&lt;ThreadItem&gt;</ID>
-    <ID>CyclomaticComplexMethod:ThreadActivity.kt$ThreadActivity$private fun refreshMenuItems()</ID>
+    <ID>CyclomaticComplexMethod:SettingsActivity.kt$SettingsActivity$override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?)</ID>
+    <ID>CyclomaticComplexMethod:SimpleActivity.kt$SimpleActivity$fun applyCustomColors()</ID>
+    <ID>CyclomaticComplexMethod:SimpleActivity.kt$SimpleActivity$fun showBubbleMenu( anchor: View, items: List&lt;BubbleAction&gt;, reactions: List&lt;String&gt; = emptyList(), activeReaction: String? = null, onReaction: (String) -&gt; Unit = {}, callback: (Int) -&gt; Unit, )</ID>
+    <ID>CyclomaticComplexMethod:SimpleActivity.kt$SimpleActivity$fun toggleCustomSelectionBar(show: Boolean, count: Int = 0, actions: List&lt;Int&gt; = emptyList(), onAction: (Int) -&gt; Unit = {})</ID>
+    <ID>CyclomaticComplexMethod:TextoColorPicker.kt$fun SimpleActivity.textoColorPicker( title: String, current: Int, defaultColour: Int? = null, contrastAgainst: Int? = null, onPick: (Int) -&gt; Unit, ): AlertDialog?</ID>
+    <ID>CyclomaticComplexMethod:TextoColorPicker.kt$fun SimpleActivity.textoTonalityPicker( title: String, degrees: List&lt;Int&gt;, current: Int, baseColour: Int, onPick: (Int) -&gt; Unit, ): AlertDialog?</ID>
+    <ID>CyclomaticComplexMethod:TextoDialog.kt$fun SimpleActivity.textoCapsuleDialog( title: String, choices: List&lt;CapsuleChoice&gt;, footer: View? = null, ): AlertDialog</ID>
+    <ID>CyclomaticComplexMethod:ThreadActivity.kt$ThreadActivity$@Subscribe(threadMode = ThreadMode.MAIN) fun refreshMessages(@Suppress("unused") event: Events.RefreshMessages)</ID>
+    <ID>CyclomaticComplexMethod:ThreadActivity.kt$ThreadActivity$private fun addAttachment(uri: Uri)</ID>
+    <ID>CyclomaticComplexMethod:ThreadActivity.kt$ThreadActivity$private fun setupAdapter(forceScroll: Boolean = false)</ID>
     <ID>CyclomaticComplexMethod:ThreadActivity.kt$ThreadActivity$private fun setupButtons()</ID>
-    <ID>CyclomaticComplexMethod:ThreadActivity.kt$ThreadActivity$private fun setupThread(callback: () -&gt; Unit)</ID>
+    <ID>CyclomaticComplexMethod:ThreadActivity.kt$ThreadActivity$private fun showThreadModernMenu(anchor: android.view.View)</ID>
+    <ID>CyclomaticComplexMethod:ThreadAdapter.kt$ThreadAdapter$private fun setupView(holder: ViewHolder, binding: ViewBinding, message: Message)</ID>
+    <ID>EmptyCatchBlock:ImageCompressor.kt$ImageCompressor${}</ID>
     <ID>EmptyCatchBlock:MessagesWriter.kt$MessagesWriter${ }</ID>
     <ID>EmptyFunctionBlock:ArchivedConversationsAdapter.kt$ArchivedConversationsAdapter${}</ID>
-    <ID>EmptyFunctionBlock:BaseConversationsAdapter.kt$BaseConversationsAdapter${}</ID>
     <ID>EmptyFunctionBlock:ContactsAdapter.kt$ContactsAdapter${}</ID>
-    <ID>EmptyFunctionBlock:ManageBlockedKeywordsAdapter.kt$ManageBlockedKeywordsAdapter${}</ID>
+    <ID>EmptyFunctionBlock:EditFilterDialog.kt$EditFilterDialog.&lt;no name provided&gt;${}</ID>
+    <ID>EmptyFunctionBlock:FilterChipDragCallback.kt$FilterChipDragCallback${}</ID>
+    <ID>EmptyFunctionBlock:Int.kt${}</ID>
+    <ID>EmptyFunctionBlock:MainActivity.kt$MainActivity${}</ID>
+    <ID>EmptyFunctionBlock:ModernDragCallback.kt$ModernDragCallback${}</ID>
     <ID>EmptyFunctionBlock:RecycleBinConversationsAdapter.kt$RecycleBinConversationsAdapter${}</ID>
     <ID>EmptyFunctionBlock:SearchResultsAdapter.kt$SearchResultsAdapter${}</ID>
-    <ID>EmptyFunctionBlock:ThreadAdapter.kt$ThreadAdapter${}</ID>
-    <ID>ForbiddenComment:MainActivity.kt$MainActivity$// FIXME: Scheduled message date is being reset here. Conversations with</ID>
+    <ID>EmptyFunctionBlock:SimpleActivity.kt$SimpleActivity.&lt;no name provided&gt;${}</ID>
+    <ID>EmptyFunctionBlock:ThreadActivity.kt$ThreadActivity${}</ID>
     <ID>ForbiddenComment:ShortcutHelper.kt$ShortcutHelper$// TODO: verify that thread isn't in recycle bin</ID>
     <ID>ForbiddenComment:SmsStatusDeliveredReceiver.kt$SmsStatusDeliveredReceiver$// TODO: Need to check whether SC still trying to deliver the SMS to destination and will send the report again?</ID>
     <ID>FunctionParameterNaming:Config.kt$Config$SIMId: Int</ID>
+    <ID>LargeClass:BaseConversationsAdapter.kt$BaseConversationsAdapter : MyRecyclerViewListAdapterOnPopupTextUpdate</ID>
+    <ID>LargeClass:MainActivity.kt$MainActivity : SimpleActivity</ID>
+    <ID>LargeClass:SettingsActivity.kt$SettingsActivity : SimpleActivity</ID>
+    <ID>LargeClass:SimpleActivity.kt$SimpleActivity : BaseSimpleActivity</ID>
     <ID>LargeClass:ThreadActivity.kt$ThreadActivity : SimpleActivity</ID>
+    <ID>LargeClass:ThreadAdapter.kt$ThreadAdapter : MyRecyclerViewListAdapter</ID>
+    <ID>LongMethod:BaseConversationsAdapter.kt$BaseConversationsAdapter$private fun setupRecentView(view: View, conversation: Conversation, position: Int, holder: ViewHolder)</ID>
+    <ID>LongMethod:JalaliRangePicker.kt$JalaliRangePicker$fun show(onPicked: (startMillis: Long, endMillis: Long) -&gt; Unit)</ID>
     <ID>LongMethod:NotificationHelper.kt$NotificationHelper$@SuppressLint("NewApi") fun showMessageNotification( messageId: Long, address: String, body: String, threadId: Long, bitmap: Bitmap?, sender: String?, alertOnlyOnce: Boolean = false )</ID>
+    <ID>LongMethod:SimpleActivity.kt$SimpleActivity$fun applyCustomColors()</ID>
+    <ID>LongMethod:SimpleActivity.kt$SimpleActivity$fun showBubbleMenu( anchor: View, items: List&lt;BubbleAction&gt;, reactions: List&lt;String&gt; = emptyList(), activeReaction: String? = null, onReaction: (String) -&gt; Unit = {}, callback: (Int) -&gt; Unit, )</ID>
+    <ID>LongMethod:TextoColorPicker.kt$fun SimpleActivity.textoColorPicker( title: String, current: Int, defaultColour: Int? = null, contrastAgainst: Int? = null, onPick: (Int) -&gt; Unit, ): AlertDialog?</ID>
+    <ID>LongMethod:TextoDialog.kt$fun SimpleActivity.textoCapsuleDialog( title: String, choices: List&lt;CapsuleChoice&gt;, footer: View? = null, ): AlertDialog</ID>
+    <ID>LongMethod:ThreadAdapter.kt$ThreadAdapter$private fun setupView(holder: ViewHolder, binding: ViewBinding, message: Message)</ID>
+    <ID>LoopWithTooManyJumpStatements:Context.kt$while</ID>
     <ID>MagicNumber:Activity.kt$1000000</ID>
+    <ID>MagicNumber:App.kt$App$100</ID>
+    <ID>MagicNumber:AttachmentPickerDialog.kt$AttachmentPickerDialog$0.18f</ID>
+    <ID>MagicNumber:AttachmentPickerDialog.kt$AttachmentPickerDialog$0.8f</ID>
+    <ID>MagicNumber:AttachmentPickerDialog.kt$AttachmentPickerDialog$1.15f</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$0.05f</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$0.10f</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$0.25f</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$0.35f</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$0.45f</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$0.50f</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$0.55f</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$0.60f</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$0.70f</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$0.7f</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$0.80f</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$0.90f</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$0x00FFFFFF</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$1.10f</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$1.20f</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$24</ID>
+    <ID>MagicNumber:AuroraBackground.kt$AuroraBackgroundDrawable$255</ID>
+    <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$0.36f</ID>
+    <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$0.45f</ID>
+    <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$0.52f</ID>
+    <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$0.58f</ID>
+    <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$0.5f</ID>
     <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$0.7f</ID>
+    <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$0.85f</ID>
     <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$0.8f</ID>
     <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$0.9f</ID>
+    <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$1.15f</ID>
+    <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$1.1f</ID>
     <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$1.2f</ID>
+    <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$100</ID>
+    <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$4</ID>
+    <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$4f</ID>
+    <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$5</ID>
+    <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$500</ID>
+    <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$6</ID>
+    <ID>MagicNumber:BaseConversationsAdapter.kt$BaseConversationsAdapter$8f</ID>
+    <ID>MagicNumber:ColorNames.kt$ColorNames$0.12f</ID>
+    <ID>MagicNumber:ColorNames.kt$ColorNames$0.2f</ID>
+    <ID>MagicNumber:ColorNames.kt$ColorNames$0.75f</ID>
+    <ID>MagicNumber:ColorNames.kt$ColorNames$15f</ID>
+    <ID>MagicNumber:ColorNames.kt$ColorNames$170f</ID>
+    <ID>MagicNumber:ColorNames.kt$ColorNames$200f</ID>
+    <ID>MagicNumber:ColorNames.kt$ColorNames$250f</ID>
+    <ID>MagicNumber:ColorNames.kt$ColorNames$290f</ID>
+    <ID>MagicNumber:ColorNames.kt$ColorNames$3</ID>
+    <ID>MagicNumber:ColorNames.kt$ColorNames$335f</ID>
+    <ID>MagicNumber:ColorNames.kt$ColorNames$360f</ID>
+    <ID>MagicNumber:ColorNames.kt$ColorNames$45f</ID>
+    <ID>MagicNumber:ColorNames.kt$ColorNames$70f</ID>
+    <ID>MagicNumber:Config.kt$Config$100</ID>
+    <ID>MagicNumber:Config.kt$Config$360</ID>
+    <ID>MagicNumber:Config.kt$Config$500</ID>
+    <ID>MagicNumber:ContactsAdapter.kt$ContactsAdapter$0.58f</ID>
+    <ID>MagicNumber:ContactsAdapter.kt$ContactsAdapter$0.7f</ID>
+    <ID>MagicNumber:ContactsAdapter.kt$ContactsAdapter$0.85f</ID>
+    <ID>MagicNumber:ContactsAdapter.kt$ContactsAdapter$0.8f</ID>
+    <ID>MagicNumber:ContactsAdapter.kt$ContactsAdapter$1.05f</ID>
     <ID>MagicNumber:ContactsAdapter.kt$ContactsAdapter$1.2f</ID>
+    <ID>MagicNumber:ContactsAdapter.kt$ContactsAdapter$8f</ID>
     <ID>MagicNumber:Context.kt$10</ID>
-    <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$0.6f</ID>
+    <ID>MagicNumber:ConversationDetailsActivity.kt$ConversationDetailsActivity$0.16f</ID>
+    <ID>MagicNumber:ConversationDetailsActivity.kt$ConversationDetailsActivity$0.45f</ID>
+    <ID>MagicNumber:ConversationDetailsActivity.kt$ConversationDetailsActivity$0.62f</ID>
+    <ID>MagicNumber:ConversationDetailsActivity.kt$ConversationDetailsActivity$0.68f</ID>
+    <ID>MagicNumber:ConversationDetailsActivity.kt$ConversationDetailsActivity$0.92f</ID>
+    <ID>MagicNumber:ConversationDetailsActivity.kt$ConversationDetailsActivity$1.35f</ID>
+    <ID>MagicNumber:ConversationDetailsActivity.kt$ConversationDetailsActivity$1.3f</ID>
+    <ID>MagicNumber:ConversationDetailsActivity.kt$ConversationDetailsActivity$100f</ID>
+    <ID>MagicNumber:CropperView.kt$CropperView.&lt;no name provided&gt;$0.1f</ID>
+    <ID>MagicNumber:CropperView.kt$CropperView.&lt;no name provided&gt;$10.0f</ID>
+    <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$0.2</ID>
+    <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$0.7</ID>
     <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$100</ID>
+    <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$15</ID>
     <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$180f</ID>
     <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$270f</ID>
-    <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$3</ID>
     <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$30</ID>
-    <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$56</ID>
-    <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$6</ID>
-    <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$8</ID>
+    <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$40</ID>
+    <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$60</ID>
+    <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$85</ID>
     <ID>MagicNumber:ImageCompressor.kt$ImageCompressor$90f</ID>
-    <ID>MagicNumber:MainActivity.kt$MainActivity$30</ID>
+    <ID>MagicNumber:ImageCropperActivity.kt$ImageCropperActivity$0x44FFFFFF</ID>
+    <ID>MagicNumber:ImageCropperActivity.kt$ImageCropperActivity$100</ID>
+    <ID>MagicNumber:ImageCropperActivity.kt$ImageCropperActivity$26</ID>
+    <ID>MagicNumber:ImageCropperActivity.kt$ImageCropperActivity$28</ID>
+    <ID>MagicNumber:ImageCropperActivity.kt$ImageCropperActivity$55</ID>
+    <ID>MagicNumber:ImageCropperActivity.kt$ImageCropperActivity$70</ID>
+    <ID>MagicNumber:ImageCropperActivity.kt$ImageCropperActivity$8</ID>
+    <ID>MagicNumber:Int.kt$0x00FFFFFF</ID>
+    <ID>MagicNumber:Int.kt$24</ID>
+    <ID>MagicNumber:Int.kt$255</ID>
+    <ID>MagicNumber:Int.kt$3</ID>
+    <ID>MagicNumber:JalaliDate.kt$100</ID>
+    <ID>MagicNumber:JalaliDate.kt$11</ID>
+    <ID>MagicNumber:JalaliDate.kt$12</ID>
+    <ID>MagicNumber:JalaliDate.kt$12053</ID>
+    <ID>MagicNumber:JalaliDate.kt$1461</ID>
+    <ID>MagicNumber:JalaliDate.kt$1600</ID>
+    <ID>MagicNumber:JalaliDate.kt$24L</ID>
+    <ID>MagicNumber:JalaliDate.kt$28</ID>
+    <ID>MagicNumber:JalaliDate.kt$29</ID>
+    <ID>MagicNumber:JalaliDate.kt$3</ID>
+    <ID>MagicNumber:JalaliDate.kt$30</ID>
+    <ID>MagicNumber:JalaliDate.kt$31</ID>
+    <ID>MagicNumber:JalaliDate.kt$32</ID>
+    <ID>MagicNumber:JalaliDate.kt$33</ID>
+    <ID>MagicNumber:JalaliDate.kt$365</ID>
+    <ID>MagicNumber:JalaliDate.kt$366</ID>
+    <ID>MagicNumber:JalaliDate.kt$399</ID>
+    <ID>MagicNumber:JalaliDate.kt$4</ID>
+    <ID>MagicNumber:JalaliDate.kt$400</ID>
+    <ID>MagicNumber:JalaliDate.kt$6</ID>
+    <ID>MagicNumber:JalaliDate.kt$60</ID>
+    <ID>MagicNumber:JalaliDate.kt$79</ID>
+    <ID>MagicNumber:JalaliDate.kt$8</ID>
+    <ID>MagicNumber:JalaliDate.kt$979</ID>
+    <ID>MagicNumber:JalaliDate.kt$99</ID>
+    <ID>MagicNumber:JalaliDate.kt$TextoCalendar$100</ID>
+    <ID>MagicNumber:JalaliDate.kt$TextoCalendar$11</ID>
+    <ID>MagicNumber:JalaliDate.kt$TextoCalendar$28</ID>
+    <ID>MagicNumber:JalaliDate.kt$TextoCalendar$29</ID>
+    <ID>MagicNumber:JalaliDate.kt$TextoCalendar$30</ID>
+    <ID>MagicNumber:JalaliDate.kt$TextoCalendar$31</ID>
+    <ID>MagicNumber:JalaliDate.kt$TextoCalendar$4</ID>
+    <ID>MagicNumber:JalaliDate.kt$TextoCalendar$400</ID>
+    <ID>MagicNumber:JalaliDate.kt$TextoCalendar$6</ID>
+    <ID>MagicNumber:JalaliDate.kt$TextoCalendar$7</ID>
+    <ID>MagicNumber:JalaliDate.kt$TextoCalendar$9</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$0.16f</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$0.18f</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$0.4f</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$0.5f</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$0.68f</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$0.72f</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$0.75f</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$0.78f</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$0.82f</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$0.88f</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$0.95f</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$1.05f</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$100f</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$12</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$180f</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$26</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$8</ID>
+    <ID>MagicNumber:JalaliRangePicker.kt$JalaliRangePicker$90f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$0.10f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$0.16f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$0.22f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$0.25f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$0.4f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$0.55f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$0.58f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$0.5f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$0.62f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$0.68f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$0.78f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$0.7f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$100f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$12f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$2.05f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$2.2f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$6</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$8</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity$800</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity.FilterHaloDecoration$0.16f</ID>
+    <ID>MagicNumber:MainActivity.kt$MainActivity.FilterHaloDecoration$0.25f</ID>
+    <ID>MagicNumber:ModernDragCallback.kt$ModernDragCallback$0.9f</ID>
+    <ID>MagicNumber:ModernDragCallback.kt$ModernDragCallback$1.15f</ID>
+    <ID>MagicNumber:ModernDragCallback.kt$ModernDragCallback$120</ID>
+    <ID>MagicNumber:ModernDragCallback.kt$ModernDragCallback$130</ID>
+    <ID>MagicNumber:ModernDragCallback.kt$ModernDragCallback$20f</ID>
+    <ID>MagicNumber:ModernDragCallback.kt$ModernDragCallback$30</ID>
+    <ID>MagicNumber:ModernDragCallback.kt$ModernDragCallback$40f</ID>
+    <ID>MagicNumber:NewConversationActivity.kt$NewConversationActivity$0.5f</ID>
+    <ID>MagicNumber:NewConversationActivity.kt$NewConversationActivity$0.6f</ID>
+    <ID>MagicNumber:NewConversationActivity.kt$NewConversationActivity$1.2f</ID>
+    <ID>MagicNumber:NewConversationActivity.kt$NewConversationActivity$100f</ID>
+    <ID>MagicNumber:NewConversationActivity.kt$NewConversationActivity$26f</ID>
+    <ID>MagicNumber:NewConversationActivity.kt$NewConversationActivity$300</ID>
+    <ID>MagicNumber:NewConversationActivity.kt$NewConversationActivity$450</ID>
+    <ID>MagicNumber:NewConversationActivity.kt$NewConversationActivity$5</ID>
+    <ID>MagicNumber:NewConversationActivity.kt$NewConversationActivity$8</ID>
+    <ID>MagicNumber:NumberSpans.kt$NumberSpans$4</ID>
+    <ID>MagicNumber:PersianDatePickerDialog.kt$PersianDatePickerDialog$0.45f</ID>
+    <ID>MagicNumber:PersianDatePickerDialog.kt$PersianDatePickerDialog$1.5f</ID>
+    <ID>MagicNumber:PersianDatePickerDialog.kt$PersianDatePickerDialog$12</ID>
+    <ID>MagicNumber:PersianDatePickerDialog.kt$PersianDatePickerDialog$31</ID>
+    <ID>MagicNumber:PersianDatePickerDialog.kt$PersianDatePickerDialog$5</ID>
+    <ID>MagicNumber:ReactionPickerDialog.kt$ReactionPickerDialog$0.8f</ID>
+    <ID>MagicNumber:ReactionPickerDialog.kt$ReactionPickerDialog$1.2f</ID>
+    <ID>MagicNumber:ReactionPickerDialog.kt$ReactionPickerDialog$12</ID>
+    <ID>MagicNumber:ReactionPickerDialog.kt$ReactionPickerDialog$14</ID>
+    <ID>MagicNumber:ReactionPickerDialog.kt$ReactionPickerDialog$24</ID>
+    <ID>MagicNumber:ReactionPickerDialog.kt$ReactionPickerDialog$255</ID>
+    <ID>MagicNumber:ReactionPickerDialog.kt$ReactionPickerDialog$26</ID>
+    <ID>MagicNumber:ReactionPickerDialog.kt$ReactionPickerDialog$32f</ID>
+    <ID>MagicNumber:ReactionPickerDialog.kt$ReactionPickerDialog$440</ID>
+    <ID>MagicNumber:ReactionPickerDialog.kt$ReactionPickerDialog$60</ID>
+    <ID>MagicNumber:ReactionPickerDialog.kt$ReactionPickerDialog$8</ID>
+    <ID>MagicNumber:ScheduleMessageDialog.kt$ScheduleMessageDialog$0.62f</ID>
+    <ID>MagicNumber:ScheduleMessageDialog.kt$ScheduleMessageDialog$0.78f</ID>
     <ID>MagicNumber:ScheduleMessageDialog.kt$ScheduleMessageDialog$23</ID>
     <ID>MagicNumber:ScheduleMessageDialog.kt$ScheduleMessageDialog$5</ID>
     <ID>MagicNumber:ScheduleMessageDialog.kt$ScheduleMessageDialog$59</ID>
+    <ID>MagicNumber:SearchDateRange.kt$SearchDateRange.Companion$29</ID>
+    <ID>MagicNumber:SearchDateRange.kt$SearchDateRange.Companion$6</ID>
+    <ID>MagicNumber:SearchDateRange.kt$SearchDateRange.Companion$89</ID>
+    <ID>MagicNumber:SearchResultsAdapter.kt$SearchResultsAdapter$0.6f</ID>
+    <ID>MagicNumber:SearchResultsAdapter.kt$SearchResultsAdapter$0.7f</ID>
     <ID>MagicNumber:SearchResultsAdapter.kt$SearchResultsAdapter$0.8f</ID>
-    <ID>MagicNumber:SearchResultsAdapter.kt$SearchResultsAdapter$0.9f</ID>
     <ID>MagicNumber:SearchResultsAdapter.kt$SearchResultsAdapter$1.2f</ID>
-    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$3</ID>
-    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$4</ID>
-    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$5</ID>
-    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$6</ID>
-    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$7</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$0.12f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$0.14f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$0.16f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$0.18f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$0.20f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$0.22f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$0.30f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$0.45f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$0.58f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$0.62f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$0.68f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$0.78f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$0.84f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$0.85f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$0.8f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$1.25f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$100</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$100f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$18</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$26</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$26f</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$360</ID>
+    <ID>MagicNumber:SettingsActivity.kt$SettingsActivity$8</ID>
     <ID>MagicNumber:ShortcutHelper.kt$ShortcutHelper$99</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$0.20f</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$0.6f</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$0.7f</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$0.85f</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$0.8f</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$0.95f</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$0.96f</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$0x00FFFFFF</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$1.25f</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$1.2f</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$10</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$100f</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$12</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$14</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$16</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$18f</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$22</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$24</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$255</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$3</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$48</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$60f</ID>
+    <ID>MagicNumber:SimpleActivity.kt$SimpleActivity$8</ID>
     <ID>MagicNumber:SmsStatusDeliveredReceiver.kt$SmsStatusDeliveredReceiver$0x03</ID>
     <ID>MagicNumber:SmsStatusDeliveredReceiver.kt$SmsStatusDeliveredReceiver$0x3f</ID>
     <ID>MagicNumber:SmsStatusDeliveredReceiver.kt$SmsStatusDeliveredReceiver$16</ID>
     <ID>MagicNumber:SmsStatusDeliveredReceiver.kt$SmsStatusDeliveredReceiver$24</ID>
     <ID>MagicNumber:SmsStatusDeliveredReceiver.kt$SmsStatusDeliveredReceiver$3</ID>
+    <ID>MagicNumber:TextoAvatars.kt$TextoAvatars.LetterAvatarDrawable$0.36f</ID>
+    <ID>MagicNumber:TextoAvatars.kt$TextoAvatars.LetterAvatarDrawable$40</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$0.18f</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$0.30f</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$0.34f</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$0.58f</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$0.72f</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$0.74f</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$0.76f</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$0.78f</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$0.88f</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$0.95f</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$1.05f</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$10</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$10.0</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$100f</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$11</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$26</ID>
+    <ID>MagicNumber:TextoColorPicker.kt$4.5</ID>
+    <ID>MagicNumber:TextoDialog.kt$0.18f</ID>
+    <ID>MagicNumber:TextoDialog.kt$0.45f</ID>
+    <ID>MagicNumber:TextoDialog.kt$0.5f</ID>
+    <ID>MagicNumber:TextoDialog.kt$0.68f</ID>
+    <ID>MagicNumber:TextoDialog.kt$0.75f</ID>
+    <ID>MagicNumber:TextoDialog.kt$0.76f</ID>
+    <ID>MagicNumber:TextoDialog.kt$0.82f</ID>
+    <ID>MagicNumber:TextoDialog.kt$0.88f</ID>
+    <ID>MagicNumber:TextoDialog.kt$1.05f</ID>
+    <ID>MagicNumber:TextoDialog.kt$100f</ID>
+    <ID>MagicNumber:TextoDialog.kt$16</ID>
+    <ID>MagicNumber:TextoDialog.kt$26</ID>
+    <ID>MagicNumber:TextoGlass.kt$TextoGlass$0.114</ID>
+    <ID>MagicNumber:TextoGlass.kt$TextoGlass$0.22f</ID>
+    <ID>MagicNumber:TextoGlass.kt$TextoGlass$0.299</ID>
+    <ID>MagicNumber:TextoGlass.kt$TextoGlass$0.5</ID>
+    <ID>MagicNumber:TextoGlass.kt$TextoGlass$0.587</ID>
+    <ID>MagicNumber:TextoGlass.kt$TextoGlass$0x00FFFFFF</ID>
+    <ID>MagicNumber:TextoGlass.kt$TextoGlass$20</ID>
+    <ID>MagicNumber:TextoGlass.kt$TextoGlass$23</ID>
+    <ID>MagicNumber:TextoGlass.kt$TextoGlass$24</ID>
+    <ID>MagicNumber:TextoGlass.kt$TextoGlass$255</ID>
+    <ID>MagicNumber:TextoGlass.kt$TextoGlass$43</ID>
+    <ID>MagicNumber:TextoHueStrip.kt$TextoHueStrip$0.30f</ID>
+    <ID>MagicNumber:TextoHueStrip.kt$TextoHueStrip$0.5f</ID>
+    <ID>MagicNumber:TextoHueStrip.kt$TextoHueStrip$1.5f</ID>
+    <ID>MagicNumber:TextoHueStrip.kt$TextoHueStrip$38</ID>
+    <ID>MagicNumber:TextoHueStrip.kt$TextoHueStrip$3f</ID>
+    <ID>MagicNumber:TextoHueStrip.kt$TextoHueStrip$46</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$0.03928</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$0.05</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$0.055</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$0.0722</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$0.2126</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$0.34</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$0.47</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$0.60</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$0.7152</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$0.73</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$0.86</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$1.055</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$12.92</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$2.4</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$255.0</ID>
+    <ID>MagicNumber:TextoPalette.kt$TextoPalette$4.5</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.0031308</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.0040720468</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.0041960863</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.0259040371</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.04045</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.0514459929</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.055</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.0638541728</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.072f</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.0883024619</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.0894841775</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.1055613458</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.1073969566</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.140f</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.143f</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.2104542553</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.2119034982</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.213f</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.2158037573</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.2309699292</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.2817188376</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.283f</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.285f</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.3413193965</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.3963377774</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.4122214708</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.4505937099</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.5363325363</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.6299787005</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.6806995451</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.7034186147</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.715f</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.7827717662</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.787f</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.7936177850</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.8086757660</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$0.928f</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$1.055</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$1.2684380046</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$1.2914855480</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$1.7076147010</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$1.9779984951</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$12.92</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$1e-4</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$2.4</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$2.4285922050</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$2.6097574011</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$255</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$255.0</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$3.3077115913</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$360</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$4.0767416621</ID>
+    <ID>MagicNumber:TextoTint.kt$TextoTint$8</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$0.22f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$0.30f</ID>
     <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$0.4f</ID>
-    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$0.9f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$0.55f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$0.58f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$0.5f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$0.68f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$0.6f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$0.7f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$0.88f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$0.95f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$1.4f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$1.5f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$10</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$100</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$10f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$12</ID>
     <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$150</ID>
-    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$2</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$160</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$2.2f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$20</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$220</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$26f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$3</ID>
     <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$30</ID>
-    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$500L</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$38</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$40</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$4f</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$5</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$6</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$8</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity$800</ID>
+    <ID>MagicNumber:ThreadActivity.kt$ThreadActivity.&lt;no name provided&gt;$120f</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$0.2f</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$0.35f</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$0.45f</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$0.68f</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$0.6f</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$0.75f</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$0.7f</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$0.85f</ID>
     <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$0.8f</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$0.95f</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$1.2f</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$16</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$20</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$20f</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$255</ID>
     <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$4</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$400</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter$5.6f</ID>
+    <ID>MagicNumber:ThreadAdapter.kt$ThreadAdapter.&lt;no name provided&gt;$0.6f</ID>
     <ID>MagicNumber:VCardViewerAdapter.kt$VCardViewerAdapter.VCardContactViewHolder$1.1f</ID>
     <ID>MagicNumber:VCardViewerAdapter.kt$VCardViewerAdapter.VCardPropertyViewHolder$1.1f</ID>
+    <ID>MatchingDeclarationName:AuroraBackground.kt$AuroraBackgroundDrawable : Drawable</ID>
+    <ID>MatchingDeclarationName:TextoDialog.kt$CapsuleChoice</ID>
     <ID>MatchingDeclarationName:ThreadItems.kt$ThreadItem</ID>
-    <ID>MaxLineLength:AddBlockedKeywordDialog.kt$AddBlockedKeywordDialog$class</ID>
     <ID>MaxLineLength:ArchivedConversationsAdapter.kt$ArchivedConversationsAdapter$val conversationsToRemove = currentList.filter { selectedKeys.contains(it.hashCode()) } as ArrayList&lt;Conversation&gt;</ID>
     <ID>MaxLineLength:ArchivedConversationsAdapter.kt$ArchivedConversationsAdapter$val conversationsToUnarchive = currentList.filter { selectedKeys.contains(it.hashCode()) } as ArrayList&lt;Conversation&gt;</ID>
     <ID>MaxLineLength:AttachmentPreviews.kt$vcardAttachmentHolder</ID>
@@ -81,19 +520,40 @@
     <ID>MaxLineLength:AttachmentsAdapter.kt$AttachmentsAdapter$onClick = { activity.launchViewIntent(attachment.uri, attachment.mimetype, attachment.filename) }</ID>
     <ID>MaxLineLength:AttachmentsAdapter.kt$AttachmentsAdapter.&lt;no name provided&gt;$override</ID>
     <ID>MaxLineLength:AutoCompleteTextViewAdapter.kt$AutoCompleteTextViewAdapter$class</ID>
+    <ID>MaxLineLength:BaseConversationsAdapter.kt$BaseConversationsAdapter$VIEW_TYPE_RECENT -&gt; com.texto.sms.databinding.ItemConversationRecentBinding.inflate(layoutInflater, parent, false)</ID>
+    <ID>MaxLineLength:BaseConversationsAdapter.kt$BaseConversationsAdapter$root.minimumHeight = (activity as SimpleActivity).getScaledDimen(org.fossify.commons.R.dimen.two_line_list_item_min_height)</ID>
+    <ID>MaxLineLength:Config.kt$Config$prefs.edit().remove(TOP_BAR_COLOR).remove(TOP_BAR_TEXT_COLOR).remove(MAIN_BACKGROUND_COLOR).remove(MAIN_TEXT_COLOR).remove(INPUT_BAR_BACKGROUND_COLOR).remove(INPUT_BAR_TEXT_COLOR).remove(SENT_BUBBLE_COLOR).remove(SENT_BUBBLE_TEXT_COLOR).remove(RECEIVED_BUBBLE_COLOR).remove(RECEIVED_BUBBLE_TEXT_COLOR).remove(RECENT_COLOR)</ID>
+    <ID>MaxLineLength:Config.kt$Config$set(bigContactsOutlineThickness) = prefs.edit().putInt(BIG_CONTACTS_OUTLINE_THICKNESS, bigContactsOutlineThickness).apply()</ID>
+    <ID>MaxLineLength:Config.kt$Config$set(receivedBubblesOutlineColor) = prefs.edit().putInt(RECEIVED_BUBBLES_OUTLINE_COLOR, receivedBubblesOutlineColor).apply()</ID>
+    <ID>MaxLineLength:Config.kt$Config$set(receivedBubblesOutlineThickness) = prefs.edit().putInt(RECEIVED_BUBBLES_OUTLINE_THICKNESS, receivedBubblesOutlineThickness).apply()</ID>
+    <ID>MaxLineLength:Config.kt$Config$set(searchBarOutlineThickness) = prefs.edit().putInt(SEARCH_BAR_OUTLINE_THICKNESS, searchBarOutlineThickness).apply()</ID>
+    <ID>MaxLineLength:Config.kt$Config$set(sentBubblesOutlineThickness) = prefs.edit().putInt(SENT_BUBBLES_OUTLINE_THICKNESS, sentBubblesOutlineThickness).apply()</ID>
+    <ID>MaxLineLength:Config.kt$Config$set(smallContactsOutlineColor) = prefs.edit().putInt(SMALL_CONTACTS_OUTLINE_COLOR, smallContactsOutlineColor).apply()</ID>
+    <ID>MaxLineLength:Config.kt$Config$set(smallContactsOutlineThickness) = prefs.edit().putInt(SMALL_CONTACTS_OUTLINE_THICKNESS, smallContactsOutlineThickness).apply()</ID>
     <ID>MaxLineLength:Constants.kt$/** Not to be used with real messages persisted in the telephony db. This is for internal use only (e.g. scheduled messages, notification ids etc). */</ID>
-    <ID>MaxLineLength:ContactsAdapter.kt$ContactsAdapter$activity: SimpleActivity</ID>
-    <ID>MaxLineLength:ConversationsDao.kt$ConversationsDao$@Query("SELECT (SELECT body FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NOT NULL AND messages.thread_id = conversations.thread_id ORDER BY messages.date DESC LIMIT 1) as new_snippet, * FROM conversations WHERE (SELECT COUNT(*) FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NOT NULL AND messages.thread_id = conversations.thread_id) &gt; 0")</ID>
-    <ID>MaxLineLength:ConversationsDao.kt$ConversationsDao$@Query("SELECT (SELECT body FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NULL AND messages.thread_id = conversations.thread_id ORDER BY messages.date DESC LIMIT 1) as new_snippet, * FROM conversations WHERE archived = 0")</ID>
-    <ID>MaxLineLength:ConversationsDao.kt$ConversationsDao$@Query("SELECT (SELECT body FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NULL AND messages.thread_id = conversations.thread_id ORDER BY messages.date DESC LIMIT 1) as new_snippet, * FROM conversations WHERE archived = 1")</ID>
-    <ID>MaxLineLength:ExportBlockedKeywordsDialog.kt$ExportBlockedKeywordsDialog$exportBlockedKeywordsFilename.setText("${activity.getString(R.string.blocked_keywords)}_${activity.getCurrentFormattedDateTime()}")</ID>
+    <ID>MaxLineLength:ContactsAdapter.kt$ContactsAdapter$VIEW_TYPE_MODERN_PILL -&gt; com.texto.sms.databinding.ItemConversationPillBinding.inflate(layoutInflater, parent, false)</ID>
+    <ID>MaxLineLength:ContactsAdapter.kt$ContactsAdapter$VIEW_TYPE_SUGGESTION -&gt; com.texto.sms.databinding.ItemConversationRecentBinding.inflate(layoutInflater, parent, false)</ID>
+    <ID>MaxLineLength:ContactsAdapter.kt$ContactsAdapter$private</ID>
+    <ID>MaxLineLength:ContactsAdapter.kt$ContactsAdapter$val gd = GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(lightened, baseColor, darkened))</ID>
+    <ID>MaxLineLength:Context.kt$val mmsCursor = contentResolver.query(mmsUri, mmsProjection, selection, selectionArgs, "${Mms.DATE} DESC LIMIT 1")</ID>
+    <ID>MaxLineLength:ConversationsDao.kt$ConversationsDao$@Query("SELECT (SELECT body FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NOT NULL AND messages.thread_id = conversations.thread_id ORDER BY messages.date DESC LIMIT 1) as new_snippet, * FROM conversations WHERE (SELECT COUNT(*) FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NOT NULL AND messages.thread_id = conversations.thread_id) &gt; 0 ORDER BY date DESC")</ID>
+    <ID>MaxLineLength:ConversationsDao.kt$ConversationsDao$@Query("SELECT (SELECT body FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NULL AND messages.thread_id = conversations.thread_id ORDER BY messages.date DESC LIMIT 1) as new_snippet, * FROM conversations WHERE archived = 0 AND ((SELECT COUNT(*) FROM messages WHERE messages.thread_id = conversations.thread_id) = 0 OR EXISTS (SELECT 1 FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NULL AND messages.thread_id = conversations.thread_id)) ORDER BY date DESC")</ID>
+    <ID>MaxLineLength:ConversationsDao.kt$ConversationsDao$@Query("SELECT (SELECT body FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NULL AND messages.thread_id = conversations.thread_id ORDER BY messages.date DESC LIMIT 1) as new_snippet, * FROM conversations WHERE archived = 1 AND ((SELECT COUNT(*) FROM messages WHERE messages.thread_id = conversations.thread_id) = 0 OR EXISTS (SELECT 1 FROM messages LEFT OUTER JOIN recycle_bin_messages ON messages.id = recycle_bin_messages.id WHERE recycle_bin_messages.id IS NULL AND messages.thread_id = conversations.thread_id)) ORDER BY date DESC")</ID>
     <ID>MaxLineLength:Gson.kt$private val gsonBuilder = GsonBuilder().registerTypeAdapter(object : TypeToken&lt;Map&lt;String, Any&gt;&gt;() {}.type, MapDeserializerDoubleAsIntFix())</ID>
     <ID>MaxLineLength:HeadlessSmsSendService.kt$HeadlessSmsSendService$val number = Uri.decode(intent.dataString!!.removePrefix("sms:").removePrefix("smsto:").removePrefix("mms").removePrefix("mmsto:").trim())</ID>
-    <ID>MaxLineLength:ImageCompressor.kt$ImageCompressor$fun</ID>
-    <ID>MaxLineLength:ImageCompressor.kt$ImageCompressor$private</ID>
-    <ID>MaxLineLength:ImageCompressor.kt$ImageCompressor$var imageFile = File(outputDirectory, System.currentTimeMillis().toString().plus(mimeType.getExtensionFromMimeType()))</ID>
+    <ID>MaxLineLength:ImageCompressor.kt$ImageCompressor$Bitmap.createScaledBitmap(originalBitmap, (width * scale).toInt(), (height * scale).toInt(), true)</ID>
+    <ID>MaxLineLength:ImageCompressor.kt$ImageCompressor$if ((width * scale).toInt() &lt; minResolution || (height * scale).toInt() &lt; minResolution) break</ID>
+    <ID>MaxLineLength:ImageCropperActivity.kt$ImageCropperActivity$val rectString = "${normalizedRect.left},${normalizedRect.top},${normalizedRect.right},${normalizedRect.bottom}"</ID>
+    <ID>MaxLineLength:MainActivity.kt$MainActivity$/** "همه" always ships with the app; "مخاطبین" and "تبلیغات" only show when enabled in settings; everything after them the user defined. */</ID>
+    <ID>MaxLineLength:MainActivity.kt$MainActivity$binding.textoNavContainer</ID>
+    <ID>MaxLineLength:MainActivity.kt$MainActivity$private</ID>
+    <ID>MaxLineLength:MainActivity.kt$MainActivity$results.add(SearchResult(messageId = -1, title = conv.title, snippet = conv.phoneNumber, date = date, threadId = conv.threadId, photoUri = conv.photoUri))</ID>
+    <ID>MaxLineLength:MainActivity.kt$MainActivity$results.add(SearchResult(messageId = msg.id, title = recipient, snippet = msg.body, date = date, threadId = msg.threadId, photoUri = msg.senderPhotoUri))</ID>
+    <ID>MaxLineLength:MainActivity.kt$MainActivity$val manualOrder = config.conversationOrder.split(",").filter { it.isNotEmpty() }.map { it.toLong() }</ID>
+    <ID>MaxLineLength:MessageCategory.kt$MessageClassifier$/** A thread matches when its sender's number is one of the [contactNumbers] loaded from the phone's address book. */</ID>
     <ID>MaxLineLength:MessagesDatabase.kt$MessagesDatabase.Companion.&lt;no name provided&gt;$"INSERT OR IGNORE INTO conversations_new (thread_id, snippet, date, read, title, photo_uri, is_group_conversation, phone_number) "</ID>
     <ID>MaxLineLength:MessagesDatabase.kt$MessagesDatabase.Companion.&lt;no name provided&gt;$"SELECT thread_id, snippet, date, read, title, photo_uri, is_group_conversation, phone_number FROM conversations"</ID>
+    <ID>MaxLineLength:MessagesDatabase.kt$MessagesDatabase.Companion.&lt;no name provided&gt;$db.execSQL("CREATE TABLE IF NOT EXISTS `reactions` (`message_id` INTEGER NOT NULL, `is_mms` INTEGER NOT NULL, `thread_id` INTEGER NOT NULL, `emoji` TEXT NOT NULL, PRIMARY KEY(`message_id`, `is_mms`))")</ID>
     <ID>MaxLineLength:MessagesDatabase.kt$MessagesDatabase.Companion.&lt;no name provided&gt;$execSQL("CREATE TABLE IF NOT EXISTS `attachments` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `message_id` INTEGER NOT NULL, `uri_string` TEXT NOT NULL, `mimetype` TEXT NOT NULL, `width` INTEGER NOT NULL, `height` INTEGER NOT NULL, `filename` TEXT NOT NULL)")</ID>
     <ID>MaxLineLength:MessagesDatabase.kt$MessagesDatabase.Companion.&lt;no name provided&gt;$execSQL("CREATE TABLE IF NOT EXISTS `drafts` (`thread_id` INTEGER NOT NULL PRIMARY KEY, `body` TEXT NOT NULL, `date` INTEGER NOT NULL)")</ID>
     <ID>MaxLineLength:MessagesDatabase.kt$MessagesDatabase.Companion.&lt;no name provided&gt;$execSQL("CREATE TABLE IF NOT EXISTS `message_attachments` (`id` INTEGER PRIMARY KEY NOT NULL, `text` TEXT NOT NULL, `attachments` TEXT NOT NULL)")</ID>
@@ -107,50 +567,93 @@
     <ID>MaxLineLength:Messaging.kt$*</ID>
     <ID>MaxLineLength:MessagingUtils.kt$MessagingUtils$context.showErrorToast(e.localizedMessage ?: context.getString(org.fossify.commons.R.string.unknown_error_occurred))</ID>
     <ID>MaxLineLength:MmsPart.kt$MmsPart$return !(text != null || contentType.lowercase().startsWith("text") || contentType.lowercase() == "application/smil")</ID>
+    <ID>MaxLineLength:ModernDragCallback.kt$ModernDragCallback$override</ID>
     <ID>MaxLineLength:NewConversationActivity.kt$NewConversationActivity$// READ_CONTACTS permission is not mandatory, but without it we won't be able to show any suggestions during typing</ID>
+    <ID>MaxLineLength:NewConversationActivity.kt$NewConversationActivity$if</ID>
+    <ID>MaxLineLength:NewConversationActivity.kt$NewConversationActivity$newConversationAddress.isFocusable = !newConversationAddress.text.isNullOrEmpty() || newConversationAddress.hasFocus()</ID>
+    <ID>MaxLineLength:NewConversationActivity.kt$NewConversationActivity$newConversationSearchContainer</ID>
+    <ID>MaxLineLength:NewConversationActivity.kt$NewConversationActivity$val placeholderText = if (hasPermission(PERMISSION_READ_CONTACTS)) org.fossify.commons.R.string.no_contacts_found else org.fossify.commons.R.string.no_access_to_contacts</ID>
+    <ID>MaxLineLength:NewConversationActivity.kt$NewConversationActivity$width = if (newConversationAddress.text.isNullOrEmpty() &amp;&amp; !newConversationAddress.hasFocus()) collapsedWidth else androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams.MATCH_PARENT</ID>
+    <ID>MaxLineLength:NumberSpans.kt$NumberSpans$"""(?&lt;![@\w.])[\w-]+(?:\.[\w-]+)*\.(?:com|net|org|ir|info|io|me|co|dev|app|xyz|biz|shop|site|online|gov|edu)(?::\d+)?(?:/[^\s&lt;&gt;"'،؛]*)?"""</ID>
+    <ID>MaxLineLength:PersianDatePickerDialog.kt$PersianDatePickerDialog$val jalali = TextoCalendar.fromCivil(initialDateTime.year, initialDateTime.monthOfYear, initialDateTime.dayOfMonth)</ID>
+    <ID>MaxLineLength:ReactionPickerDialog.kt$ReactionPickerDialog$GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM, intArrayOf(lightened, barColor, darkened))</ID>
+    <ID>MaxLineLength:ReactionPickerDialog.kt$ReactionPickerDialog$layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)</ID>
+    <ID>MaxLineLength:ReactionPickerDialog.kt$ReactionPickerDialog$layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)</ID>
+    <ID>MaxLineLength:ReactionPickerDialog.kt$ReactionPickerDialog$layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, (60 * density * config.uiScale).toInt())</ID>
     <ID>MaxLineLength:RecycleBinConversationsAdapter.kt$RecycleBinConversationsAdapter$val conversationsToRemove = currentList.filter { selectedKeys.contains(it.hashCode()) } as ArrayList&lt;Conversation&gt;</ID>
     <ID>MaxLineLength:SearchResult.kt$SearchResult</ID>
-    <ID>MaxLineLength:SearchResultsAdapter.kt$SearchResultsAdapter$SimpleContactsHelper(activity).loadContactImage(searchResult.photoUri, searchResultImage, searchResult.title)</ID>
     <ID>MaxLineLength:SearchResultsAdapter.kt$SearchResultsAdapter$activity: SimpleActivity</ID>
+    <ID>MaxLineLength:SettingsActivity.kt$SettingsActivity$bg.findDrawableByLayerId(R.id.color_preview_main)?.mutate()?.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN)</ID>
+    <ID>MaxLineLength:SettingsActivity.kt$SettingsActivity$pickColour</ID>
+    <ID>MaxLineLength:SettingsActivity.kt$SettingsActivity$val navigationHeight = insets.getInsets(androidx.core.view.WindowInsetsCompat.Type.navigationBars()).bottom</ID>
+    <ID>MaxLineLength:SimpleActivity.kt$SimpleActivity$appBar.background = appBar.background ?: ColorDrawable(barColor)</ID>
+    <ID>MaxLineLength:SimpleActivity.kt$SimpleActivity$findViewById&lt;ImageView&gt;(R.id.texto_search_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)</ID>
+    <ID>MaxLineLength:SimpleActivity.kt$SimpleActivity$fun</ID>
+    <ID>MaxLineLength:SimpleActivity.kt$SimpleActivity$private</ID>
+    <ID>MaxLineLength:SimpleActivity.kt$SimpleActivity$view.compoundDrawablesRelative.forEach { it?.setColorFilter(color, android.graphics.PorterDuff.Mode.SRC_IN) }</ID>
+    <ID>MaxLineLength:SimpleActivity.kt$SimpleActivity.DirectCropTransformation$override</ID>
     <ID>MaxLineLength:SmsSender.kt$SmsSender$val intent = Intent(SendStatusReceiver.SMS_DELIVERED_ACTION, requestUri, app, SmsStatusDeliveredReceiver::class.java)</ID>
     <ID>MaxLineLength:SmsStatusDeliveredReceiver.kt$SmsStatusDeliveredReceiver$// TODO: Need to check whether SC still trying to deliver the SMS to destination and will send the report again?</ID>
-    <ID>MaxLineLength:ThreadActivity.kt$ThreadActivity$// check keyboard height just to be sure, 150 seems like a good middle ground between ime and navigation bar</ID>
-    <ID>MaxLineLength:ThreadActivity.kt$ThreadActivity$// do not show the date/time above every message, only if the difference between the 2 messages is at least MIN_DATE_TIME_DIFF_SECS,</ID>
     <ID>MaxLineLength:ThreadActivity.kt$ThreadActivity$if</ID>
-    <ID>MaxLineLength:ThreadActivity.kt$ThreadActivity$privateContacts.firstOrNull { it.doesHavePhoneNumber(participant.phoneNumbers.first().normalizedNumber) }</ID>
-    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$// not sure how we can get UnknownFormatConversionException here, so show the error and hope that someone reports it</ID>
-    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$mimetype.isImageMimeType() || mimetype.isVideoMimeType() -&gt; setupImageView(holder, binding = this, message, attachment)</ID>
-    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$mimetype.isVCardMimeType() -&gt; setupVCardView(holder, threadMessageAttachmentsHolder, message, attachment)</ID>
-    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$private</ID>
+    <ID>MaxLineLength:ThreadActivity.kt$ThreadActivity$isPending = ((isImage &amp;&amp; !isGif &amp;&amp; !isRawImage) || isVideo) &amp;&amp; (mmsFileSizeLimit == FILE_SIZE_NONE || fileSize &gt; mmsFileSizeLimit)</ID>
+    <ID>MaxLineLength:ThreadActivity.kt$ThreadActivity$private fun getBottomBarColor()</ID>
+    <ID>MaxLineLength:ThreadActivity.kt$ThreadActivity$val normalizedNumber = participants.singleOrNull()?.phoneNumbers?.firstOrNull()?.normalizedNumber ?: return false</ID>
+    <ID>MaxLineLength:ThreadActivity.kt$ThreadActivity$val question = String.format(resources.getString(org.fossify.commons.R.string.block_confirmation), numbersString)</ID>
+    <ID>MaxLineLength:ThreadActivity.kt$ThreadActivity$val reactionMapDB = persistedReactions.associateBy({ MessagingCache.getReactionKey(it.messageId, it.isMms) }, { it.emoji })</ID>
+    <ID>MaxLineLength:ThreadActivity.kt$ThreadActivity$val recycledMessages = try { messagesDB.getThreadMessagesFromRecycleBin(threadId) } catch (e: Exception) { emptyList() }</ID>
+    <ID>MaxLineLength:ThreadActivity.kt$ThreadActivity$}</ID>
+    <ID>MaxLineLength:ThreadActivity.kt$ThreadActivity.&lt;no name provided&gt;$override</ID>
+    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$menu.findItem(R.id.cab_save_as)?.isVisible = isOneItemSelected &amp;&amp; isMms &amp;&amp; selectedMessage?.attachment?.attachments?.isNotEmpty() == true</ID>
+    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$mimetype.isImageMimeType() || mimetype.isVideoMimeType() -&gt; setupImageView(holder, binding, message, attachment)</ID>
     <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$threadSuccess.setImageResource(if (isDelivered) R.drawable.ic_check_double_vector else org.fossify.commons.R.drawable.ic_check_vector)</ID>
     <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$val</ID>
+    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$val attachmentsHolder = if (binding is ItemMessageReceivedBinding) binding.threadMessageAttachmentsHolder else (binding as ItemMessageSentBinding).threadMessageAttachmentsHolder</ID>
+    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$val backgroundDrawable = AppCompatResources.getDrawable(activity, if (isReceived) R.drawable.item_received_background else R.drawable.item_sent_background)</ID>
+    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$val bodyHolder = if (binding is ItemMessageReceivedBinding) binding.threadMessageBodyHolder else (binding as ItemMessageSentBinding).threadMessageBodyHolder</ID>
+    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$val bodyView = if (binding is ItemMessageReceivedBinding) binding.threadMessageBody else (binding as ItemMessageSentBinding).threadMessageBody</ID>
+    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$val holderView = if (binding is ItemMessageReceivedBinding) binding.threadMessageHolder else (binding as ItemMessageSentBinding).threadMessageHolder</ID>
+    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$val overlay = if (binding is ItemMessageReceivedBinding) binding.selectionOverlay else (binding as ItemMessageSentBinding).selectionOverlay</ID>
+    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$val photoView = if (binding is ItemMessageReceivedBinding) binding.threadMessageSenderPhoto else (binding as ItemMessageSentBinding).threadMessageSenderPhoto</ID>
+    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$val playOutline = if (binding is ItemMessageReceivedBinding) binding.threadMessagePlayOutline else (binding as ItemMessageSentBinding).threadMessagePlayOutline</ID>
+    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$val reactionView = if (binding is ItemMessageReceivedBinding) binding.messageReaction else (binding as ItemMessageSentBinding).messageReaction</ID>
+    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$val selectionCheck = if (binding is ItemMessageReceivedBinding) binding.selectionCheck else (binding as ItemMessageSentBinding).selectionCheck</ID>
+    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter$val wrapper = if (binding is ItemMessageReceivedBinding) binding.threadMessageWrapper else (binding as ItemMessageSentBinding).threadMessageWrapper</ID>
     <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter.&lt;no name provided&gt;$override</ID>
-    <ID>MaxLineLength:ThreadAdapter.kt$ThreadAdapter.&lt;no name provided&gt;$override fun onResourceReady(dr: Drawable, a: Any, t: Target&lt;Drawable&gt;, d: DataSource, i: Boolean)</ID>
     <ID>MaxLineLength:VCard.kt$Telephone::class.java</ID>
     <ID>MaxLineLength:VCard.kt$VCardPropertyWrapper.Companion$is Note -&gt; VCardPropertyWrapper(value, context.getString(org.fossify.commons.R.string.notes), property)</ID>
     <ID>MaxLineLength:VCard.kt$VCardPropertyWrapper.Companion$is Telephone -&gt; VCardPropertyWrapper(text.normalizePhoneNumber(), getPropertyTypeString(context), property)</ID>
     <ID>MaxLineLength:VCard.kt$VCardWrapper$data</ID>
     <ID>MaxLineLength:VCardViewerAdapter.kt$VCardViewerAdapter.VCardPropertyViewHolder$inner</ID>
     <ID>NestedBlockDepth:AttachmentUtils.kt$AttachmentUtils$private fun readBody(parser: XmlPullParser): List&lt;String&gt;</ID>
+    <ID>NestedBlockDepth:Context.kt$fun Context.getContactNumbersSnapshot(): Set&lt;String&gt;</ID>
+    <ID>NestedBlockDepth:Context.kt$fun Context.getContactsWithNamesSnapshot(): List&lt;Pair&lt;String, String&gt;&gt;</ID>
+    <ID>NestedBlockDepth:Context.kt$fun Context.getPhoneNumbersFromAddressIds(addressIds: Collection&lt;Int&gt;): Map&lt;Int, String&gt;</ID>
     <ID>NestedBlockDepth:Context.kt$fun Context.getThreadParticipants( threadId: Long, contactsMap: HashMap&lt;Int, SimpleContact&gt;?, ): ArrayList&lt;SimpleContact&gt;</ID>
+    <ID>NestedBlockDepth:Context.kt$fun Context.getThreadSnippet(threadId: Long): String</ID>
+    <ID>NestedBlockDepth:MainActivity.kt$MainActivity$private fun setupConversations(conversations: ArrayList&lt;Conversation&gt;, cached: Boolean = false, isManualReorder: Boolean = false)</ID>
     <ID>NestedBlockDepth:MessagesImporter.kt$MessagesImporter$private fun InputStream.importXml()</ID>
     <ID>NestedBlockDepth:MessagesWriter.kt$MessagesWriter$@SuppressLint("NewApi") private fun writeMmsPart(mmsPart: MmsPart, messageId: Long)</ID>
     <ID>NestedBlockDepth:Messaging.kt$fun Context.sendMessageCompat( text: String, addresses: List&lt;String&gt;, subId: Int?, attachments: List&lt;Attachment&gt;, messageId: Long? = null )</ID>
     <ID>NestedBlockDepth:MessagingUtils.kt$MessagingUtils$@Deprecated("TODO: Move/rewrite MMS code into the app.") fun sendMmsMessage( text: String, addresses: List&lt;String&gt;, attachment: Attachment?, settings: Settings, messageId: Long? = null )</ID>
     <ID>NestedBlockDepth:MessagingUtils.kt$MessagingUtils$fun updateSmsMessageSendingStatus(messageUri: Uri?, type: Int)</ID>
+    <ID>NestedBlockDepth:SettingsActivity.kt$SettingsActivity$private fun scaleRowsIn(card: View)</ID>
+    <ID>NestedBlockDepth:SimpleActivity.kt$SimpleActivity$fun applyCustomColors()</ID>
+    <ID>NestedBlockDepth:SimpleActivity.kt$SimpleActivity$fun toggleCustomSelectionBar(show: Boolean, count: Int = 0, actions: List&lt;Int&gt; = emptyList(), onAction: (Int) -&gt; Unit = {})</ID>
     <ID>NestedBlockDepth:SmsStatusDeliveredReceiver.kt$SmsStatusDeliveredReceiver$override fun updateAndroidDatabase(context: Context, intent: Intent, receiverResultCode: Int)</ID>
+    <ID>NestedBlockDepth:ThreadActivity.kt$ThreadActivity$override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?)</ID>
+    <ID>NestedBlockDepth:ThreadActivity.kt$ThreadActivity$private fun processReactions(messages: List&lt;Message&gt;): List&lt;Message&gt;</ID>
     <ID>NestedBlockDepth:ThreadActivity.kt$ThreadActivity$private fun setupButtons()</ID>
-    <ID>NestedBlockDepth:ThreadAdapter.kt$ThreadAdapter$private fun setupSentMessageView(messageBinding: ItemMessageBinding, message: Message)</ID>
-    <ID>NestedBlockDepth:ThreadAdapter.kt$ThreadAdapter$private fun setupView(holder: ViewHolder, view: View, message: Message)</ID>
+    <ID>NestedBlockDepth:ThreadAdapter.kt$ThreadAdapter$private fun setupView(holder: ViewHolder, binding: ViewBinding, message: Message)</ID>
     <ID>PrintStackTrace:Context.kt$e</ID>
     <ID>PrintStackTrace:ScheduledMessageReceiver.kt$ScheduledMessageReceiver$e</ID>
+    <ID>PrintStackTrace:SettingsActivity.kt$SettingsActivity$e</ID>
     <ID>PrintStackTrace:SmsManager.kt$e</ID>
+    <ID>PrintStackTrace:ThreadActivity.kt$ThreadActivity$e</ID>
     <ID>ReturnCount:MapDeserializerDoubleAsIntFix.kt$MapDeserializerDoubleAsIntFix$fun read(element: JsonElement): Any?</ID>
+    <ID>ReturnCount:NumberSpans.kt$NumberSpans.SpanOnlyMovementMethod$override fun onTouchEvent( widget: TextView, buffer: Spannable, event: MotionEvent, ): Boolean</ID>
     <ID>SpreadOperator:Context.kt$(*scheduledMessages)</ID>
-    <ID>SpreadOperator:MainActivity.kt$MainActivity$(*currentMessages.toTypedArray())</ID>
-    <ID>SpreadOperator:ThreadActivity.kt$ThreadActivity$(*currentMessages.toTypedArray())</ID>
+    <ID>SpreadOperator:Context.kt$(*uncached.toTypedArray())</ID>
     <ID>SwallowedException:ArchivedConversationsActivity.kt$ArchivedConversationsActivity$e: Exception</ID>
-    <ID>SwallowedException:BlockedKeywordsExporter.kt$BlockedKeywordsExporter$e: Exception</ID>
     <ID>SwallowedException:ImageCompressor.kt$ImageCompressor$e: Exception</ID>
     <ID>SwallowedException:JsonElement.kt$e: Exception</ID>
     <ID>SwallowedException:MessagesReader.kt$MessagesReader$e: IOException</ID>
@@ -161,22 +664,21 @@
     <ID>SwallowedException:SimpleContact.kt$e: Exception</ID>
     <ID>SwallowedException:SmsIntentParser.kt$SmsIntentParser$e: UnsupportedEncodingException</ID>
     <ID>SwallowedException:SmsStatusDeliveredReceiver.kt$SmsStatusDeliveredReceiver$e: NullPointerException</ID>
-    <ID>SwallowedException:ThreadActivity.kt$ThreadActivity$e: ActivityNotFoundException</ID>
+    <ID>SwallowedException:ThreadActivity.kt$ThreadActivity$e2: Exception</ID>
     <ID>SwallowedException:ThreadActivity.kt$ThreadActivity$e: Exception</ID>
     <ID>SwallowedException:VCardParser.kt$e: Exception</ID>
+    <ID>SwallowedException:VideoCompressor.kt$VideoCompressor$e: Exception</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:AttachmentUtils.kt$AttachmentUtils$IllegalStateException()</ID>
     <ID>ThrowingExceptionsWithoutMessageOrCause:MessagesImporter.kt$MessagesImporter$IllegalStateException()</ID>
     <ID>ThrowsCount:SmsSender.kt$SmsSender$fun sendMessage( subId: Int, destination: String, body: String, serviceCenter: String?, requireDeliveryReport: Boolean, messageUri: Uri )</ID>
     <ID>TooGenericExceptionCaught:Activity.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ArchivedConversationsActivity.kt$ArchivedConversationsActivity$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:BlockedKeywordsExporter.kt$BlockedKeywordsExporter$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:BlockedKeywordsImporter.kt$BlockedKeywordsImporter$e: Exception</ID>
     <ID>TooGenericExceptionCaught:Context.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:DirectReplyReceiver.kt$DirectReplyReceiver$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ExportMessagesDialog.kt$ExportMessagesDialog$e: Throwable</ID>
     <ID>TooGenericExceptionCaught:ImageCompressor.kt$ImageCompressor$e: Exception</ID>
     <ID>TooGenericExceptionCaught:JsonElement.kt$e: Exception</ID>
-    <ID>TooGenericExceptionCaught:ManageBlockedKeywordsActivity.kt$ManageBlockedKeywordsActivity$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:MainActivity.kt$MainActivity$e: Exception</ID>
     <ID>TooGenericExceptionCaught:MessagesImporter.kt$MessagesImporter$e: Exception</ID>
     <ID>TooGenericExceptionCaught:MessagesImporter.kt$MessagesImporter$e: Throwable</ID>
     <ID>TooGenericExceptionCaught:MessagesWriter.kt$MessagesWriter$e: Exception</ID>
@@ -185,49 +687,107 @@
     <ID>TooGenericExceptionCaught:MessagingUtils.kt$MessagingUtils$e: Exception</ID>
     <ID>TooGenericExceptionCaught:MmsReceiver.kt$MmsReceiver$e: Exception</ID>
     <ID>TooGenericExceptionCaught:NewConversationActivity.kt$NewConversationActivity$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ReactionPickerDialog.kt$ReactionPickerDialog$e: Exception</ID>
     <ID>TooGenericExceptionCaught:RecycleBinConversationsActivity.kt$RecycleBinConversationsActivity$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ScheduledMessageReceiver.kt$ScheduledMessageReceiver$e: Error</ID>
     <ID>TooGenericExceptionCaught:ScheduledMessageReceiver.kt$ScheduledMessageReceiver$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:SettingsActivity.kt$SettingsActivity$e: Exception</ID>
     <ID>TooGenericExceptionCaught:SimpleContact.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:SmsManager.kt$e: Exception</ID>
     <ID>TooGenericExceptionCaught:SmsSender.kt$SmsSender$e: Exception</ID>
     <ID>TooGenericExceptionCaught:SmsStatusDeliveredReceiver.kt$SmsStatusDeliveredReceiver$e: NullPointerException</ID>
-    <ID>TooGenericExceptionCaught:ThreadActivity.kt$ThreadActivity$e: Error</ID>
+    <ID>TooGenericExceptionCaught:ThreadActivity.kt$ThreadActivity$e2: Exception</ID>
     <ID>TooGenericExceptionCaught:ThreadActivity.kt$ThreadActivity$e: Exception</ID>
     <ID>TooGenericExceptionCaught:ThreadAdapter.kt$ThreadAdapter$e: Exception</ID>
     <ID>TooGenericExceptionCaught:VCardParser.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:VideoCompressor.kt$VideoCompressor$e: Exception</ID>
+    <ID>TooGenericExceptionThrown:ImageCompressor.kt$ImageCompressor$throw Exception("Failed to decode")</ID>
     <ID>TooManyFunctions:ArchivedConversationsActivity.kt$ArchivedConversationsActivity : SimpleActivity</ID>
     <ID>TooManyFunctions:BaseConversationsAdapter.kt$BaseConversationsAdapter : MyRecyclerViewListAdapterOnPopupTextUpdate</ID>
-    <ID>TooManyFunctions:ContactsAdapter.kt$ContactsAdapter : MyRecyclerViewAdapter</ID>
-    <ID>TooManyFunctions:Context.kt$org.nova.messages.extensions.Context.kt</ID>
+    <ID>TooManyFunctions:Config.kt$Config : BaseConfig</ID>
+    <ID>TooManyFunctions:ContactsAdapter.kt$ContactsAdapter : MyRecyclerViewListAdapter</ID>
+    <ID>TooManyFunctions:Context.kt$com.texto.sms.extensions.Context.kt</ID>
     <ID>TooManyFunctions:ConversationsAdapter.kt$ConversationsAdapter : BaseConversationsAdapter</ID>
     <ID>TooManyFunctions:ConversationsDao.kt$ConversationsDao</ID>
-    <ID>TooManyFunctions:JsonObject.kt$org.nova.messages.extensions.gson.JsonObject.kt</ID>
+    <ID>TooManyFunctions:FilterChipsAdapter.kt$FilterChipsAdapter : Adapter</ID>
+    <ID>TooManyFunctions:Int.kt$com.texto.sms.extensions.Int.kt</ID>
+    <ID>TooManyFunctions:JalaliDate.kt$com.texto.sms.extensions.JalaliDate.kt</ID>
+    <ID>TooManyFunctions:JsonObject.kt$com.texto.sms.extensions.gson.JsonObject.kt</ID>
     <ID>TooManyFunctions:MainActivity.kt$MainActivity : SimpleActivity</ID>
-    <ID>TooManyFunctions:ManageBlockedKeywordsActivity.kt$ManageBlockedKeywordsActivity : SimpleActivityRefreshRecyclerViewListener</ID>
-    <ID>TooManyFunctions:ManageBlockedKeywordsAdapter.kt$ManageBlockedKeywordsAdapter : MyRecyclerViewAdapter</ID>
     <ID>TooManyFunctions:MessagesDao.kt$MessagesDao</ID>
     <ID>TooManyFunctions:MessagesWriter.kt$MessagesWriter</ID>
+    <ID>TooManyFunctions:NewConversationActivity.kt$NewConversationActivity : SimpleActivity</ID>
     <ID>TooManyFunctions:RecycleBinConversationsActivity.kt$RecycleBinConversationsActivity : SimpleActivity</ID>
     <ID>TooManyFunctions:SearchResultsAdapter.kt$SearchResultsAdapter : MyRecyclerViewAdapter</ID>
     <ID>TooManyFunctions:SettingsActivity.kt$SettingsActivity : SimpleActivity</ID>
     <ID>TooManyFunctions:ShortcutHelper.kt$ShortcutHelper</ID>
+    <ID>TooManyFunctions:SimpleActivity.kt$SimpleActivity : BaseSimpleActivity</ID>
+    <ID>TooManyFunctions:String.kt$com.texto.sms.extensions.String.kt</ID>
+    <ID>TooManyFunctions:SystemBlockedNumbers.kt$SystemBlockedNumbers</ID>
+    <ID>TooManyFunctions:TextoGlass.kt$TextoGlass</ID>
     <ID>TooManyFunctions:ThreadActivity.kt$ThreadActivity : SimpleActivity</ID>
     <ID>TooManyFunctions:ThreadAdapter.kt$ThreadAdapter : MyRecyclerViewListAdapter</ID>
+    <ID>UnusedParameter:Int.kt$toolbar: View</ID>
+    <ID>UnusedParameter:MainActivity.kt$MainActivity$cached: ArrayList&lt;Conversation&gt;</ID>
+    <ID>UnusedParameter:ThreadActivity.kt$ThreadActivity$data: Uri</ID>
+    <ID>UnusedParameter:ThreadAdapter.kt$ThreadAdapter$ink: Int</ID>
+    <ID>UnusedPrivateMember:TextoGlass.kt$TextoGlass$private fun darken(color: Int, factor: Float)</ID>
+    <ID>UnusedPrivateMember:TextoGlass.kt$TextoGlass$private fun lighten(color: Int, factor: Float)</ID>
+    <ID>UnusedPrivateMember:ThreadActivity.kt$ThreadActivity$private fun isMmsMessage(text: String): Boolean</ID>
+    <ID>UnusedPrivateMember:ThreadAdapter.kt$ThreadAdapter$private fun adjustColor(color: Int, factor: Float): Int</ID>
+    <ID>UnusedPrivateProperty:AppThemes.kt$AppThemes$/** * The skin's signature hues, shared by every theme so the accent gradient stays * recognisable whichever ground it sits on. */ private val CYAN = Config.AURORA_CYAN</ID>
+    <ID>UnusedPrivateProperty:AppThemes.kt$AppThemes$private val BLUE = Config.AURORA_BLUE</ID>
+    <ID>UnusedPrivateProperty:BaseConversationsAdapter.kt$BaseConversationsAdapter$private val lastSenderCache = HashMap&lt;Long, Int&gt;()</ID>
+    <ID>UnusedPrivateProperty:ReactionPickerDialog.kt$ReactionPickerDialog$private val anchor: View</ID>
+    <ID>UnusedPrivateProperty:SimpleActivity.kt$SimpleActivity$private val globalLayoutListener = ViewTreeObserver.OnGlobalLayoutListener { // Removed to fix infinite layout loop and jitter }</ID>
+    <ID>UnusedPrivateProperty:SimpleActivity.kt$SimpleActivity$val rowRadius = 100f * resources.displayMetrics.density</ID>
+    <ID>UnusedPrivateProperty:TextoGlass.kt$TextoGlass$val isDarkTint = isDark(tint)</ID>
+    <ID>UnusedPrivateProperty:ThreadActivity.kt$ThreadActivity$private var refreshedSinceSent = false</ID>
+    <ID>UnusedPrivateProperty:ThreadActivity.kt$ThreadActivity$val cachedMessagesCode = messages.hashCode()</ID>
+    <ID>UnusedPrivateProperty:VideoCompressor.kt$VideoCompressor$private val outputDirectory = File(context.cacheDir, "compressed").apply { if (!exists()) { mkdirs() } }</ID>
     <ID>UseCheckOrError:AttachmentUtils.kt$AttachmentUtils$throw IllegalStateException()</ID>
     <ID>UseCheckOrError:MessagesImporter.kt$MessagesImporter$throw IllegalStateException()</ID>
     <ID>UseRequire:SmsSender.kt$SmsSender$throw IllegalArgumentException("SmsSender: empty text message")</ID>
     <ID>VariableNaming:MainActivity.kt$MainActivity$private val MAKE_DEFAULT_APP_REQUEST = 1</ID>
+    <ID>VariableNaming:MainActivity.kt$MainActivity$val r_base = 100f * density</ID>
     <ID>VariableNaming:MessagesWriter.kt$MessagesWriter$private val INVALID_ID = -1L</ID>
+    <ID>VariableNaming:NewConversationActivity.kt$NewConversationActivity$val r_base = 100f * density</ID>
+    <ID>VariableNaming:SettingsActivity.kt$SettingsActivity$val r_base = 100f * density</ID>
+    <ID>WildcardImport:AttachmentPreviews.kt$import com.texto.sms.extensions.*</ID>
     <ID>WildcardImport:AttachmentPreviews.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:AttachmentPreviews.kt$import org.nova.messages.extensions.*</ID>
+    <ID>WildcardImport:AttachmentsAdapter.kt$import com.texto.sms.extensions.*</ID>
+    <ID>WildcardImport:AttachmentsAdapter.kt$import com.texto.sms.helpers.*</ID>
     <ID>WildcardImport:AttachmentsAdapter.kt$import org.fossify.commons.extensions.*</ID>
-    <ID>WildcardImport:AttachmentsAdapter.kt$import org.nova.messages.extensions.*</ID>
-    <ID>WildcardImport:AttachmentsAdapter.kt$import org.nova.messages.helpers.*</ID>
-    <ID>WildcardImport:DirectReplyReceiver.kt$import org.nova.messages.extensions.*</ID>
+    <ID>WildcardImport:AutoCompleteTextViewAdapter.kt$import com.texto.sms.extensions.*</ID>
+    <ID>WildcardImport:BaseConversationsAdapter.kt$import com.texto.sms.extensions.*</ID>
+    <ID>WildcardImport:ContactsAdapter.kt$import com.texto.sms.extensions.*</ID>
+    <ID>WildcardImport:ConversationDetailsActivity.kt$import com.texto.sms.extensions.*</ID>
+    <ID>WildcardImport:ConversationDetailsActivity.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:DirectReplyReceiver.kt$import com.texto.sms.extensions.*</ID>
+    <ID>WildcardImport:ImageCropperActivity.kt$import com.texto.sms.helpers.*</ID>
     <ID>WildcardImport:JsonElement.kt$import com.google.gson.*</ID>
-    <ID>WildcardImport:ManageBlockedKeywordsAdapter.kt$import android.view.*</ID>
+    <ID>WildcardImport:MainActivity.kt$import com.texto.sms.extensions.*</ID>
+    <ID>WildcardImport:MainActivity.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:MainActivity.kt$import org.fossify.commons.helpers.*</ID>
+    <ID>WildcardImport:NewConversationActivity.kt$import com.texto.sms.extensions.*</ID>
+    <ID>WildcardImport:NewConversationActivity.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:SearchResultsAdapter.kt$import com.texto.sms.extensions.*</ID>
+    <ID>WildcardImport:SettingsActivity.kt$import com.texto.sms.helpers.*</ID>
+    <ID>WildcardImport:SettingsActivity.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:SimpleActivity.kt$import com.texto.sms.helpers.*</ID>
+    <ID>WildcardImport:ThreadActivity.kt$import com.texto.sms.extensions.*</ID>
+    <ID>WildcardImport:ThreadActivity.kt$import com.texto.sms.helpers.*</ID>
+    <ID>WildcardImport:ThreadActivity.kt$import com.texto.sms.messaging.*</ID>
+    <ID>WildcardImport:ThreadActivity.kt$import com.texto.sms.models.*</ID>
+    <ID>WildcardImport:ThreadActivity.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:ThreadActivity.kt$import org.fossify.commons.helpers.*</ID>
+    <ID>WildcardImport:ThreadAdapter.kt$import com.texto.sms.databinding.*</ID>
+    <ID>WildcardImport:ThreadAdapter.kt$import com.texto.sms.extensions.*</ID>
+    <ID>WildcardImport:ThreadAdapter.kt$import com.texto.sms.helpers.*</ID>
+    <ID>WildcardImport:ThreadAdapter.kt$import org.fossify.commons.extensions.*</ID>
     <ID>WildcardImport:VCard.kt$import ezvcard.property.*</ID>
+    <ID>WildcardImport:VCardViewerAdapter.kt$import com.texto.sms.extensions.*</ID>
     <ID>WildcardImport:VCardViewerAdapter.kt$import org.fossify.commons.extensions.*</ID>
+    <ID>WildcardImport:VideoCompressor.kt$import android.media.*</ID>
   </CurrentIssues>
 </SmellBaseline>
