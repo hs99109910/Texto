@@ -37,7 +37,6 @@ class TextoHueStrip @JvmOverloads constructor(
     private val clip = Path()
     private val bounds = RectF()
     private val segment = RectF()
-    private val marker = RectF()
 
     private var colours: List<Int> = emptyList()
 
@@ -63,11 +62,20 @@ class TextoHueStrip @JvmOverloads constructor(
         invalidate()
     }
 
+    /**
+     * The band is a stripe down the middle rather than the whole view, so the lens marking
+     * the chosen colour has room to stand proud of it at both edges.
+     */
+    private val bandTop get() = height * (1f - BAND_FRACTION) / 2f
+    private val bandBottom get() = height - bandTop
+
     override fun onDraw(canvas: Canvas) {
         if (colours.isEmpty() || width == 0 || height == 0) return
 
-        val radius = height / 2f
-        bounds.set(0f, 0f, width.toFloat(), height.toFloat())
+        val top = bandTop
+        val bottom = bandBottom
+        val radius = (bottom - top) / 2f
+        bounds.set(0f, top, width.toFloat(), bottom)
         clip.reset()
         clip.addRoundRect(bounds, radius, radius, Path.Direction.CW)
 
@@ -80,7 +88,7 @@ class TextoHueStrip @JvmOverloads constructor(
         colours.forEachIndexed { index, colour ->
             val slot = slotOf(index)
             fill.color = colour
-            segment.set(slot * step - 0.5f, 0f, (slot + 1) * step + 0.5f, height.toFloat())
+            segment.set(slot * step - 0.5f, top, (slot + 1) * step + 0.5f, bottom)
             canvas.drawRect(segment, fill)
         }
         canvas.restoreToCount(saved)
@@ -97,36 +105,53 @@ class TextoHueStrip @JvmOverloads constructor(
     }
 
     /**
-     * Two concentric rounded squares, white inside a near black.
+     * A lens: the chosen colour lifted out of the band as a disc that overhangs it top and
+     * bottom, ringed in white and dropped on a soft shadow.
      *
-     * A single stroke cannot work here: any one colour disappears against some part of a band
-     * that runs the whole wheel from near white to near black. A light ring with a dark one
-     * behind it is legible on every hue, which is why the mark on a colour picker is nearly
-     * always drawn this way.
+     * This replaced two concentric rounded squares sitting flat inside the band. Those were
+     * legible but read as a hole punched in the strip, and on a band of 24 tonalities the
+     * square was wider than the segment it named, so it looked like a crop mark rather than a
+     * choice. Standing the colour proud of the band says "this one" the way a handle does,
+     * and it can carry the colour itself, so the mark is also a swatch.
+     *
+     * The white ring is what keeps it readable across the whole wheel: a single stroke in any
+     * one colour disappears against some part of a strip running near white to near black,
+     * and the shadow underneath separates the disc from a band of a similar tone.
      */
     private fun drawMarker(canvas: Canvas, step: Float) {
         val index = selectedIndex
         if (index !in colours.indices) return
 
-        val inset = height * 0.22f
-        val side = (height - inset * 2f).coerceAtLeast(2f)
-        // With two dozen tonalities a segment is far narrower than the marker, so a marker
-        // simply centred on the chosen one hangs off the end of the band at either extreme :
-        // at index 0 it was drawn from -5px and the capsule clipped its left half away.
-        // Sliding it back inside keeps the whole ring visible; which segment it names is
-        // still unambiguous, because it is the only one there is.
-        val edge = side / 2f + inset
-        val centre = ((slotOf(index) + 0.5f) * step).coerceIn(edge, width - edge)
-        marker.set(centre - side / 2f, inset, centre + side / 2f, height - inset)
-        val corner = side * 0.32f
+        val lensRadius = height / 2f - density
+        // With two dozen tonalities a segment is far narrower than the lens, so one simply
+        // centred on the chosen colour hangs off the end at either extreme : at index 0 it
+        // was drawn from -5px and half of it was clipped away. Sliding it back inside keeps
+        // the whole disc visible, and which segment it names is still unambiguous because it
+        // is the only one there.
+        val centre = ((slotOf(index) + 0.5f) * step)
+            .coerceIn(lensRadius + density, width - lensRadius - density)
+        val middle = height / 2f
 
-        markerOuter.color = Color.argb(120, 0, 0, 0)
-        markerOuter.strokeWidth = 3f * density
-        canvas.drawRoundRect(marker, corner, corner, markerOuter)
+        // Drawn rather than a shadow layer: setShadowLayer needs the whole view in software,
+        // which is a heavy price for one disc.
+        markerOuter.style = Paint.Style.FILL
+        markerOuter.color = Color.argb(38, 0, 0, 0)
+        canvas.drawCircle(centre, middle + 1.5f * density, lensRadius, markerOuter)
 
+        fill.color = colours[index]
+        canvas.drawCircle(centre, middle, lensRadius, fill)
+
+        markerInner.style = Paint.Style.STROKE
         markerInner.color = Color.WHITE
-        markerInner.strokeWidth = 2f * density
-        canvas.drawRoundRect(marker, corner, corner, markerInner)
+        markerInner.strokeWidth = 3f * density
+        canvas.drawCircle(centre, middle, lensRadius - markerInner.strokeWidth / 2f, markerInner)
+
+        // A hairline outside the white, so the lens still has an edge when the colour it
+        // carries is itself near white.
+        markerOuter.style = Paint.Style.STROKE
+        markerOuter.color = Color.argb(46, 0, 0, 0)
+        markerOuter.strokeWidth = density
+        canvas.drawCircle(centre, middle, lensRadius, markerOuter)
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -164,6 +189,11 @@ class TextoHueStrip @JvmOverloads constructor(
      */
     private fun slotOf(index: Int): Int =
         if (layoutDirection == LAYOUT_DIRECTION_RTL) colours.size - 1 - index else index
+
+    private companion object {
+        /** How much of the view height the band itself takes; the rest is lens overhang. */
+        const val BAND_FRACTION = 0.58f
+    }
 
     private fun indexAt(x: Float): Int {
         val step = width.toFloat() / colours.size

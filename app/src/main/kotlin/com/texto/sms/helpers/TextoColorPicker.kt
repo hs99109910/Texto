@@ -116,7 +116,7 @@ fun SimpleActivity.textoColorPicker(
     )
     val familyStrip = TextoHueStrip(this).apply {
         layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, 44.getScaledPx()
+            ViewGroup.LayoutParams.MATCH_PARENT, 56.getScaledPx()
         ).apply { topMargin = 8.getScaledPx() }
     }
     sheet.addView(familyStrip)
@@ -146,7 +146,7 @@ fun SimpleActivity.textoColorPicker(
 
     val shadeStrip = TextoHueStrip(this).apply {
         layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, 44.getScaledPx()
+            ViewGroup.LayoutParams.MATCH_PARENT, 56.getScaledPx()
         ).apply { topMargin = 8.getScaledPx() }
     }
     sheet.addView(shadeStrip)
@@ -379,4 +379,157 @@ private fun SimpleActivity.pickerButton(
         ).apply { marginStart = 8.getScaledPx() }
         setOnClickListener { onTap() }
     }
+}
+
+/**
+ * The tonality sheet: the same card, preview and buttons as [textoColorPicker], with one band
+ * instead of two.
+ *
+ * It is one band because a tonality has only one dimension. Rotating the skin's accent has no
+ * "how light" to ask about -- [TextoTint.rotateHue] holds lightness and chroma fixed on
+ * purpose, which is the whole reason the strip reads as evenly lit. Forcing a second row in
+ * to match would be a control with nothing behind it.
+ *
+ * Everything else is deliberately identical, because this used to be the one colour on the
+ * settings screen chosen a different way: a strip sitting open in the row while every other
+ * colour opened a sheet.
+ *
+ * @param degrees the rotations offered, in order
+ * @param current the rotation stored now
+ * @param baseColour the skin's own accent, unrotated, which each step is a rotation of
+ */
+fun SimpleActivity.textoTonalityPicker(
+    title: String,
+    degrees: List<Int>,
+    current: Int,
+    baseColour: Int,
+    onPick: (Int) -> Unit,
+): AlertDialog? {
+    val density = resources.displayMetrics.density
+    var dialog: AlertDialog? = null
+
+    val swatches = degrees.map { TextoTint.rotateHue(baseColour, it) }
+    var index = degrees.indexOf(current).coerceAtLeast(0)
+    var saved = false
+
+    val sheet = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        val pad = 20.getScaledPx()
+        setPadding(pad, pad, pad, pad)
+        background = pickerCard()
+        outlineProvider = ViewOutlineProvider.BACKGROUND
+        clipToOutline = true
+    }
+
+    sheet.addView(
+        TextView(this).apply {
+            text = title
+            setTextColor(config.mainTextColor)
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.05f))
+            typeface = typefaceFor(Typeface.BOLD)
+            gravity = Gravity.START
+            setPadding(0, 0, 0, 16.getScaledPx())
+        }
+    )
+
+    // The preview carries the accent *gradient* rather than one swatch, because that is what
+    // a tonality actually moves: fifty surfaces read the three stops, not the middle one.
+    val preview = TextView(this).apply {
+        gravity = Gravity.CENTER
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.95f))
+        typeface = typefaceFor(Typeface.BOLD)
+        layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, 64.getScaledPx()
+        )
+        outlineProvider = ViewOutlineProvider.BACKGROUND
+        clipToOutline = true
+    }
+    sheet.addView(preview)
+
+    val valueLabel = TextView(this).apply {
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.76f))
+        typeface = typefaceFor(Typeface.NORMAL)
+        gravity = Gravity.CENTER
+        setTextColor(config.mainTextColor.withAlpha(0.72f))
+        layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = 8.getScaledPx() }
+    }
+    sheet.addView(valueLabel)
+
+    // No section label above this one. The two-band sheet needs them to say which band asks
+    // what; here there is a single band and the sheet's own title already names it, so a
+    // label would just print the title twice.
+    val strip = TextoHueStrip(this).apply {
+        layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, 56.getScaledPx()
+        ).apply { topMargin = 20.getScaledPx() }
+    }
+    sheet.addView(strip)
+
+    fun renderPreview() {
+        val shift = degrees[index]
+        // Read straight from config rather than rotating here. `accentHueShift` is applied on
+        // the way *out* of these getters, and onPick has already written it, so rotating
+        // again would apply the tonality twice.
+        preview.background = TextoGlass.accent(
+            start = config.accentGradientStart,
+            end = config.accentGradientEnd,
+            cornerRadius = 100f * density,
+            mid = config.accentGradientMid
+        )
+        preview.text = getString(R.string.colour_preview_sample)
+        preview.setTextColor(config.accentInkColor)
+        valueLabel.text = if (shift == 0) {
+            getString(R.string.settings_accent_hue_original)
+        } else {
+            "$shift°".toUiDigits()
+        }
+    }
+
+    strip.submit(swatches, index)
+    strip.onPicked = { picked ->
+        index = picked
+        onPick(degrees[picked])
+        renderPreview()
+    }
+    renderPreview()
+
+    val footer = LinearLayout(this).apply {
+        orientation = LinearLayout.HORIZONTAL
+        gravity = Gravity.CENTER_VERTICAL
+        layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = 22.getScaledPx() }
+    }
+    footer.addView(
+        pickerButton(getString(R.string.colour_default), filled = false) {
+            index = 0
+            strip.setSelectedSilently(0)
+            onPick(degrees[0])
+            renderPreview()
+        }
+    )
+    footer.addView(
+        pickerButton(getString(R.string.colour_save), filled = true) {
+            saved = true
+            dialog?.dismiss()
+        }
+    )
+    sheet.addView(footer)
+
+    dialog = AlertDialog.Builder(this)
+        .setView(android.widget.ScrollView(this).apply {
+            isFillViewport = true
+            overScrollMode = View.OVER_SCROLL_NEVER
+            addView(sheet)
+        })
+        .create()
+        .apply {
+            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            setOnDismissListener { if (!saved) onPick(current) }
+            show()
+        }
+
+    return dialog
 }

@@ -817,16 +817,18 @@ class SettingsActivity : SimpleActivity() {
             config.accentGradientMid.takeIf { it != 0 } ?: config.accentGradientEnd, -stored
         )
 
-        // The same band the colour picker's two rows are, so a tonality is chosen the way
-        // every other colour in the app is. It used to be a scrolling row of dots that had to
-        // be centred to be read, which is a second idea for the same job.
+        // Opens the same sheet every other colour row opens, rather than sitting open in the
+        // row. This was the one colour on the screen chosen a different way: first a grid of
+        // dots, then a strip that had to be scrolled to the middle to be read, while its
+        // neighbours all opened a picker.
         val degrees = (0 until 360 step ACCENT_HUE_STEP).toList()
-        settingsAccentHueWheel.apply {
-            onPicked = { index -> applyAccentHue(degrees[index]) }
-            submit(
-                colours = degrees.map { com.texto.sms.helpers.TextoTint.rotateHue(base, it) },
-                selectedIndex = degrees.indexOf(stored).coerceAtLeast(0)
-            )
+        settingsAccentHueHolder.setOnClickListener {
+            textoTonalityPicker(
+                title = getString(R.string.settings_accent_hue),
+                degrees = degrees,
+                current = config.accentHueShift,
+                baseColour = base
+            ) { chosen -> applyAccentHue(chosen) }
         }
     }
 

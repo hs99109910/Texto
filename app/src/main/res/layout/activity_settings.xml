@@ -479,17 +479,6 @@
                         android:id="@+id/settings_accent_hue_sub"
                         style="@style/SettingsRowSubtitle"
                         android:text="@string/settings_accent_hue_sub" />
-                    <!--
-                        One row of tonalities, the middle one chosen. Filled by
-                        SettingsActivity.setupAccentHue. It replaced a four:row grid of equal
-                        dots, which spent a third of the screen saying nothing and left the
-                        selection to a ring too thin to find on the darker hues.
-                    -->
-                    <com.texto.sms.helpers.TextoHueStrip
-                        android:id="@+id/settings_accent_hue_wheel"
-                        android:layout_width="match_parent"
-                        android:layout_height="44dp"
-                        android:layout_marginTop="10dp" />
                 </LinearLayout>
                 <View
                     android:layout_width="match_parent"
