@@ -1317,8 +1317,33 @@ class ThreadActivity : SimpleActivity() {
                 enforceRecycleBinThreadLimit()
             } else {
                 messages.forEach { deleteMessage(it.id, it.isMMS) }
+                // A thread with nothing left in it goes now rather than at the next full
+                // sync. pruneVanishedConversations already removes it, but that only runs
+                // when the conversation list next asks the provider for everything, so
+                // emptying a chat left its name on the list for the twenty seconds or so
+                // that took -- long enough to read as "it did not work".
+                dropConversationIfEmptied()
             }
             refreshMessages()
+        }
+    }
+
+    /**
+     * Removes this conversation once its last message is gone.
+     *
+     * Checked against the provider rather than the adapter: the recycle bin and scheduled
+     * sends live in Room under the same thread id and both should keep the thread alive, and
+     * `getNonRecycledThreadMessages` is what the list itself counts.
+     */
+    private fun dropConversationIfEmptied() {
+        try {
+            val localLeft = messagesDB.countThreadMessages(threadId)
+            if (localLeft > 0) return
+            if (getMessages(threadId, limit = 1).isNotEmpty()) return
+            deleteConversation(threadId)
+            refreshConversations()
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 

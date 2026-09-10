@@ -817,6 +817,17 @@ class SettingsActivity : SimpleActivity() {
             config.accentGradientMid.takeIf { it != 0 } ?: config.accentGradientEnd, -stored
         )
 
+        // The swatch every other colour row carries, so the row says what it opens before it
+        // is opened. Painted with the accent *gradient* rather than one stop, because that is
+        // what a tonality moves and what makes it recognisable as this row and not another
+        // flat colour. Taking the strip out of the row had left it as bare text.
+        settingsAccentHuePreview.background = com.texto.sms.helpers.TextoGlass.accent(
+            start = config.accentGradientStart,
+            end = config.accentGradientEnd,
+            cornerRadius = 100f * resources.displayMetrics.density,
+            mid = config.accentGradientMid
+        )
+
         // Opens the same sheet every other colour row opens, rather than sitting open in the
         // row. This was the one colour on the screen chosen a different way: first a grid of
         // dots, then a strip that had to be scrolled to the middle to be read, while its
@@ -843,12 +854,16 @@ class SettingsActivity : SimpleActivity() {
     private fun applyAccentHue(degrees: Int) {
         config.accentHueShift = degrees
 
-        // Deliberately NOT setupAccentHue(): that rebuilds the very row being swiped and
-        // re-centres it, which killed the fling halfway and made the gesture feel like it
-        // was fighting back. The row already knows where it is; this only has to repaint
-        // everything that reads the accent.
+        // Still not setupAccentHue(): that would re-register the row's click listener on
+        // every step of a drag. Only the two things the row actually shows are repainted.
         binding.settingsAccentHueValue.text = accentHueLabel(degrees)
         binding.settingsAccentHueValue.setTextColor(config.accentGradientStart)
+        binding.settingsAccentHuePreview.background = com.texto.sms.helpers.TextoGlass.accent(
+            start = config.accentGradientStart,
+            end = config.accentGradientEnd,
+            cornerRadius = 100f * resources.displayMetrics.density,
+            mid = config.accentGradientMid
+        )
 
         applyCustomColors()
         updateCustomizationUI()

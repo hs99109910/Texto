@@ -456,29 +456,49 @@
                     android:id="@+id/settings_accent_hue_holder"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
                     android:paddingHorizontal="16dp"
-                    android:paddingTop="2dp"
-                    android:paddingBottom="15dp">
+                    android:paddingVertical="15dp"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:id="@+id/settings_accent_hue_icon"
+                        android:src="@drawable/ic_ph_swatches"
+                        android:importantForAccessibility="no"
+                        android:layout_width="19dp"
+                        android:layout_height="19dp"
+                        android:layout_marginEnd="13dp" />
                     <LinearLayout
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical">
+                        android:layout_weight="1"
+                        android:orientation="vertical">
                         <TextView
                             android:id="@+id/settings_accent_hue_label"
                             style="@style/SettingsRowTitle"
-                            android:layout_width="0dp"
-                            android:layout_weight="1"
                             android:text="@string/settings_accent_hue" />
                         <TextView
-                            android:id="@+id/settings_accent_hue_value"
-                            style="@style/SettingsRowValue" />
+                            android:id="@+id/settings_accent_hue_sub"
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/settings_accent_hue_sub" />
                     </LinearLayout>
                     <TextView
-                        android:id="@+id/settings_accent_hue_sub"
-                        style="@style/SettingsRowSubtitle"
-                        android:text="@string/settings_accent_hue_sub" />
+                        android:id="@+id/settings_accent_hue_value"
+                        style="@style/SettingsRowValue"
+                        android:layout_marginEnd="10dp" />
+                    <FrameLayout
+                        android:id="@+id/settings_accent_hue_preview_container"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp">
+                        <View
+                            android:id="@+id/settings_accent_hue_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/color_preview_bg" />
+                    </FrameLayout>
                 </LinearLayout>
                 <View
                     android:layout_width="match_parent"
