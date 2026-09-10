@@ -139,6 +139,13 @@ provider, and drops a cached thread only when it *also* holds nothing locally: a
 send lives in `messages` under its own thread id and would otherwise be deleted out from
 under the alarm waiting to send it.
 
+That prune alone was not enough, and the gap looked like the bug still being there. It only
+fires when the list next asks the provider for everything, so emptying a chat left its name
+up for the twenty seconds or so that took. `ThreadActivity.dropConversationIfEmptied` closes
+that: deleting the last message removes the conversation on the spot. Both halves are needed
+-- the prune catches threads emptied from anywhere else, the immediate drop is what makes the
+common case feel like it worked. Confirmed on device.
+
 **Room refuses the main thread.** Several menu actions wrote to the SMS provider and then to
 Room straight from a click handler and killed the process. Anything touching
 `conversationsDB` or a `ContentResolver` goes in `ensureBackgroundThread { }`, with the UI
