@@ -249,6 +249,8 @@
     <string name="add_filter">فیلتر جدید</string>
     <string name="edit_filter">ویرایش فیلتر</string>
     <string name="filter_customize">رنگ‌ها و صدا</string>
+    <string name="filter_appearance">ظاهر</string>
+    <string name="filter_senders_section">فرستنده‌ها</string>
     <string name="filter_customize_title">%s: رنگ‌ها و صدا</string>
     <string name="filter_customize_subtitle">فقط روی گفتگوهای همین فیلتر اعمال می‌شود</string>
     <string name="filter_colour_following">برنامه</string>
@@ -257,6 +259,7 @@
     <string name="filter_sound">صدای اعلان</string>
     <string name="filter_sound_following">پیش‌فرض برنامه</string>
     <string name="filter_clear_customization">پاک کردن</string>
+    <string name="filter_clear_confirmation">رنگ‌ها و صدای این فیلتر پاک شود؟</string>
     <string name="filter_name">نام فیلتر</string>
     <string name="filter_name_required">نام فیلتر را وارد کنید</string>
     <string name="pick_senders">انتخاب از چت‌ها</string>

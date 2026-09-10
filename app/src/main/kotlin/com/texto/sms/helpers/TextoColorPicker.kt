@@ -345,6 +345,8 @@ private fun SimpleActivity.recentTile(colour: Int, isChosen: Boolean, onTap: () 
 fun SimpleActivity.pickerButton(
     label: String,
     filled: Boolean,
+    /** Overrides the label's colour, for the one button on a sheet that destroys something. */
+    ink: Int? = null,
     onTap: () -> Unit,
 ): TextView {
     val density = resources.displayMetrics.density
@@ -353,7 +355,7 @@ fun SimpleActivity.pickerButton(
         gravity = Gravity.CENTER
         setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.88f))
         typeface = typefaceFor(if (filled) Typeface.BOLD else Typeface.NORMAL)
-        setTextColor(if (filled) config.accentInkColor else config.mainTextColor)
+        setTextColor(ink ?: if (filled) config.accentInkColor else config.mainTextColor)
         val padV = 12.getScaledPx()
         setPadding(0, padV, 0, padV)
         background = if (filled) {

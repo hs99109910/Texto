@@ -256,19 +256,33 @@ fun SimpleActivity.textoFilterCustomizer(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
         ).apply { topMargin = 18.getScaledPx() }
     }
-    footer.addView(pickerButton(getString(R.string.filter_clear_customization), filled = false) {
-        working = working.copy(
-            sentBubbleColor = null,
-            sentBubbleTextColor = null,
-            receivedBubbleColor = null,
-            receivedBubbleTextColor = null,
-            backgroundColor = null,
-            notificationSoundUri = null,
-            notificationSoundLabel = null,
-        )
-        onSave(working)
-        dialog?.dismiss()
-    })
+    // Asked for rather than done: this throws away all five colours and the sound at once,
+    // and it sits where a sheet normally puts Cancel -- one stray tap used to be enough to
+    // silently undo every choice on the sheet with nothing to say it had happened.
+    footer.addView(
+        pickerButton(
+            getString(R.string.filter_clear_customization),
+            filled = false,
+            ink = DESTRUCTIVE_INK,
+        ) {
+            textoConfirmDialog(
+                message = getString(R.string.filter_clear_confirmation),
+                isDestructive = true,
+            ) {
+                working = working.copy(
+                    sentBubbleColor = null,
+                    sentBubbleTextColor = null,
+                    receivedBubbleColor = null,
+                    receivedBubbleTextColor = null,
+                    backgroundColor = null,
+                    notificationSoundUri = null,
+                    notificationSoundLabel = null,
+                )
+                onSave(working)
+                dialog?.dismiss()
+            }
+        }
+    )
     footer.addView(pickerButton(getString(R.string.colour_save), filled = true) {
         onSave(working)
         dialog?.dismiss()
@@ -287,3 +301,4 @@ fun SimpleActivity.textoFilterCustomizer(
             show()
         }
 }
+

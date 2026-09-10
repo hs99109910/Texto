@@ -438,6 +438,22 @@ Picking a received colour also has to switch the accent gradient off (`receivedI
 the same reason the settings picker does -- a gradient painted over the chosen colour ignores
 the choice.
 
+The filter editor itself is one of the app's own sheets now, not a commons-inflated dialog:
+it was the last screen in that flow still arriving as a white card with a Material field in
+the base theme's blue and three all-caps system buttons, which is what the chip, the two
+pickers and the colours sheet had all already stopped doing. Its sender list wraps through
+`TextoFlowLayout` rather than scrolling sideways -- a filter with five senders showed about
+two of them behind an edge with nothing to say the rest were there, on the one screen whose
+job is to show exactly that -- and the colours row carries the actual swatches and the
+sound's name, so "is anything set here" is answerable without opening it.
+
+**A destructive button sitting where Cancel goes needs to ask.** The colours sheet's Clear
+throws away all five colours and the sound at once, and it sits in the footer's first slot,
+which on every other sheet is Cancel. It went off silently, and a single mistaken tap looked
+exactly like the overrides having failed to persist -- which cost a full round of chasing a
+storage bug that did not exist. It is red and it confirms now. Storage was measured clean
+either way: the overrides survive a process restart *and* a language switch.
+
 Two traps came out of building it. The editor holds the filter as it was when it opened, so
 confirming it after the colours sheet had saved wrote the pre-customisation copy back over
 the overrides: the write in `MainActivity` merges the stored appearance fields back in rather

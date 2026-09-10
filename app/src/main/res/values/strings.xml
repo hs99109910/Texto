@@ -255,6 +255,8 @@
     <string name="add_filter">New filter</string>
     <string name="edit_filter">Edit filter</string>
     <string name="filter_customize">Colours and sound</string>
+    <string name="filter_appearance">Appearance</string>
+    <string name="filter_senders_section">Senders</string>
     <string name="filter_customize_title">%s: colours and sound</string>
     <string name="filter_customize_subtitle">Applies only to the chats this filter covers</string>
     <string name="filter_colour_following">App</string>
@@ -263,6 +265,7 @@
     <string name="filter_sound">Notification sound</string>
     <string name="filter_sound_following">App default</string>
     <string name="filter_clear_customization">Clear</string>
+    <string name="filter_clear_confirmation">Clear the colours and sound for this filter?</string>
     <string name="filter_name">Filter name</string>
     <string name="filter_name_required">Enter a name for the filter</string>
     <string name="pick_senders">Pick from chats</string>

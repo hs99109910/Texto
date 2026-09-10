@@ -1066,7 +1066,7 @@ class MainActivity : SimpleActivity() {
             onDelete = if (existing == null) null else {
                 { deleteFilter(existing) }
             },
-            onCustomize = { filter -> customizeFilter(filter) }
+            onCustomize = { filter, onSaved -> customizeFilter(filter, onSaved) }
         ) { filter ->
             val filters = config.customFilters.toMutableList()
             val index = filters.indexOfFirst { it.id == filter.id }
@@ -1103,7 +1103,7 @@ class MainActivity : SimpleActivity() {
      * stays up while the picker is in front of it, so the callback is still live when it
      * returns and the row updates in place rather than the whole sheet being rebuilt.
      */
-    private fun customizeFilter(filter: MessageFilter) {
+    private fun customizeFilter(filter: MessageFilter, onSaved: (MessageFilter) -> Unit = {}) {
         textoFilterCustomizer(
             filter = filter,
             onPickSound = { current, onPicked ->
@@ -1133,6 +1133,9 @@ class MainActivity : SimpleActivity() {
                 config.customFilters = filters
                 buildFilterChips()
             }
+            // Back to the editor underneath, so its preview shows what was just saved rather
+            // than what the filter looked like when it opened.
+            onSaved(updated)
         }
     }
 
