@@ -534,12 +534,21 @@ The baselines had it too, in stale `org.nova.messages` paths, and both were rege
 which also turned the two quality gates green, since both had been failing on drift rather
 than on anything real.
 
-What is left is **not** the old brand and must stay:
+A case-insensitive `grep -ri nova` across the tracked tree now returns nothing outside this
+file. The two things once listed here as deliberately kept are both gone rather than just
+renamed:
 
-| Left | Why |
-|---|---|
-| `"org.nova.contacts"` ×4 | Another app's real package id, in `<queries>` and the contacts hand-off. Renaming it points at a package that does not exist. |
-| `values-ca/cs/eo/gl/hr/pt/sk` strings | "nova", "nová", "novamente", "znova" are ordinary words for *new* and *again* in those languages. They are also stripped from every build by `resConfigs("en", "fa")`, so they never ship. |
+`org.nova.contacts` was a hand-off to a companion contacts app, by its real package id, for
+one narrow case -- a "private" contact whose raw and contact ids both exceed 1000000. Nothing
+in this codebase can rename someone else's package, so removing the brand's last trace here
+meant removing the hand-off itself: `startContactDetailsIntent` now always resolves the
+contact's public lookup key and opens it, the special-cased branch and its `<queries>` entries
+for `org.nova.contacts` / `org.nova.contacts.debug` are gone, and a private contact opens the
+same way a normal one does rather than handing off to an app that shared the old name.
+
+The `values-ca/cs/eo/gl/hr/pt/sk` folders that held "nova" as an ordinary word for *new* in
+those languages were deleted in the locale sweep — `resConfigs("en", "fa")` meant they never
+shipped in a built APK, confirmed against `aapt2 dump badging` before removing them.
 
 ## Known gaps
 

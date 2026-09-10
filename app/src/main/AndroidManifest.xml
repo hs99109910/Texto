@@ -37,11 +37,6 @@
         android:name="android.permission.USE_FINGERPRINT"
         tools:node="remove" />
 
-    <queries>
-        <package android:name="org.nova.contacts.debug" />
-        <package android:name="org.nova.contacts" />
-    </queries>
-
     <uses-feature android:name="android.hardware.telephony" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
