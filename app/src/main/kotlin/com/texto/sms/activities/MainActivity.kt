@@ -1436,9 +1436,18 @@ class MainActivity : SimpleActivity() {
             if (allSortedByDate.isEmpty()) {
                 allSortedByDate
             } else {
-                val top2 = allSortedByDate.take(2)
-                val remaining = allSortedByDate.filter { conv -> !top2.any { it.threadId == conv.threadId } }
-                
+                // "Pin to top" wrote to config.pinnedConversations and nothing here ever read
+                // it: the two most recent conversations were taken unconditionally, so a
+                // pinned conversation only ever surfaced by coincidence of also being recent.
+                // Pulling pinned threads out first, ahead of the recency/manual sort below,
+                // is what the action's own name promises.
+                val pinnedIds = config.pinnedConversations
+                val pinned = allSortedByDate.filter { pinnedIds.contains(it.threadId.toString()) }
+                val unpinned = allSortedByDate.filter { !pinnedIds.contains(it.threadId.toString()) }
+
+                val top2 = unpinned.take(2)
+                val remaining = unpinned.filter { conv -> !top2.any { it.threadId == conv.threadId } }
+
                 val sortedPills = when (config.contactSortingMode) {
                     1 -> remaining.sortedBy { it.title.lowercase() }
                     2 -> remaining.sortedByDescending { it.date }
@@ -1456,7 +1465,7 @@ class MainActivity : SimpleActivity() {
                         manuallySorted
                     }
                 }
-                top2 + sortedPills
+                pinned + top2 + sortedPills
             }
         } else {
             conversations.sortedWith(

@@ -597,7 +597,10 @@ abstract class BaseConversationsAdapter(
             recentPinIndicator.beVisibleIf(
                 activity.config.pinnedConversations.contains(conversation.threadId.toString())
             )
-            recentPinIndicator.applyColorFilter(mainTextColor.withAlpha(0.36f))
+            // Matches the preview line's own weight (58%, see idle-ink convention) rather
+            // than the 36% it carried: at that alpha the mark that is supposed to explain
+            // why a conversation jumped to the top was harder to see than the text around it.
+            recentPinIndicator.applyColorFilter(mainTextColor.withAlpha(0.58f))
             setupBadgeCount(recentUnreadBadge, isUnread, conversation.unreadCount)
 
             recentImage.updateLayoutParams {

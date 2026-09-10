@@ -71,8 +71,12 @@ object AppThemes {
      * the reset button was still applying the skin from two defaults ago, so resetting landed
      * on a theme the app no longer starts with. Its own comment had already caught that
      * happening once. Change it here and all three follow.
+     *
+     * The light variant, not the dark one: a fresh install and a reset are both meant to open
+     * in light mode. Dark mode is a choice made from inside the app, not the state it should
+     * arrive in.
      */
-    const val DEFAULT = NOCTURNE
+    const val DEFAULT = NOCTURNE_LIGHT
 
     /**
      * Aurora's two ids. The skin is gone, but the numbers were written into
