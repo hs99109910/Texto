@@ -419,31 +419,6 @@ Picking writes straight to `config` so the screen behind updates live, which mea
 without Save has to put the original back -- otherwise a cancelled look-around silently
 becomes the setting.
 
-**`textoSwatchDialog` and `TextoColorWheel` are now unreachable** and kept only because
-nothing has been decided about deleting them. The notes below describe a widget no screen
-inflates any more; do not read them as live guidance.
-
-**`TextoColorWheel` centres by padding, and two APIs quietly disagree with that.** The row
-pads each end by half its width so the first and last swatch can reach the middle, and three
-things have to line up with that padding or the ends break:
-
-- `scrollToPositionWithOffset`'s offset is measured from the **padded** start edge
-  (`LinearLayoutManager` lays the anchor at `getStartAfterPadding() + offset`), so once the
-  padding centres a swatch the offset that centres is `0`. Passing the padding again put the
-  chosen colour half a row right of the middle.
-- `smoothScrollToPosition` scrolls **minimally** -- it brings the item just inside the nearest
-  edge. Tapping a swatch near either end left it at the edge, `LinearSnapHelper` then settled
-  on whatever really was nearest the middle, and the listener reported *that* index: the tap
-  applied a different colour than the one touched. Centring needs a `LinearSmoothScroller`
-  with `calculateDtToFit` returning box centre minus view centre.
-- The swatches carry a `GAP_RATIO` margin on each side and that margin is inside the box the
-  layout manager scrolls, so the padding must subtract it. Without that the row stopped a gap
-  short at each end and the first and last colour never reached full scale -- they looked
-  unselectable, which is how this was reported.
-
-Verified by sampling the strip's pixels: the centred swatch measures 113px wide at x=540 in a
-row spanning 84..996, and a tap three swatches right of centre applies exactly +45°.
-
 **The tonality strip rotates the accent, and it does so inside `Config`.** `accentHueShift`
 is applied on the way *out* of `accentGradientStart/Mid/End`, `auroraAccentColor` and the
 halo slots, never written back. That is the hook: roughly fifty surfaces read those getters
