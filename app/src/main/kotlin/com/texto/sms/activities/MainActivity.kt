@@ -7,6 +7,8 @@ import android.annotation.SuppressLint
 import android.app.role.RoleManager
 import android.content.Intent
 import android.graphics.Color
+import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Bundle
 import android.provider.Telephony
 import android.text.TextUtils
@@ -39,6 +41,7 @@ import com.texto.sms.helpers.SEARCHED_MESSAGE_ID
 import com.texto.sms.helpers.THREAD_ID
 import com.texto.sms.helpers.THREAD_TITLE
 import com.texto.sms.helpers.textoConfirmDialog
+import com.texto.sms.helpers.textoFilterCustomizer
 import com.texto.sms.models.Conversation
 import com.texto.sms.models.Events
 import com.texto.sms.models.Message
@@ -56,6 +59,9 @@ class MainActivity : SimpleActivity() {
          * tallest a chip gets at the largest UI scale.
          */
         const val CHIP_PILL_RADIUS_DP = 100
+
+        /** Ringtone picker for a filter's own notification sound. */
+        const val PICK_FILTER_SOUND_REQUEST = 1201
 
         /** The design's wordmark: 20% up from the 34dp it shipped at, then 10% back down. */
         const val LOGO_HEIGHT_DP = 37
@@ -124,6 +130,10 @@ class MainActivity : SimpleActivity() {
     /** Phone book snapshot kept for the "build a filter from contacts" picker. */
     private var cachedContactsForFilters: List<Pair<String, String>> = emptyList()
     private var activeFilter: MessageFilter = MessageFilter.all("")
+
+    /** The customiser's sound row, waiting on the ringtone picker; see [customizeFilter]. */
+    private var pendingSoundPick: ((uri: String?, label: String?) -> Unit)? = null
+
     /** False until the bottom capsule's halo has been put somewhere; see styleNavTabs. */
     private var navHaloPlaced = false
 
@@ -827,6 +837,22 @@ class MainActivity : SimpleActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, resultData: Intent?) {
         super.onActivityResult(requestCode, resultCode, resultData)
+        if (requestCode == PICK_FILTER_SOUND_REQUEST) {
+            val callback = pendingSoundPick
+            pendingSoundPick = null
+            if (resultCode == RESULT_OK && callback != null) {
+                val uri = resultData
+                    ?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+                // A null uri here is "Silent", which is a choice rather than a cancellation --
+                // cancelling never reaches this branch at all. Both it and a real ringtone are
+                // an override; only the sheet's own Clear puts the filter back on the app's.
+                val label = uri?.let {
+                    runCatching { RingtoneManager.getRingtone(this, it)?.getTitle(this) }.getOrNull()
+                } ?: getString(org.fossify.commons.R.string.no_sound)
+                callback(uri?.toString(), label)
+            }
+            return
+        }
         if (requestCode == MAKE_DEFAULT_APP_REQUEST) {
             if (isQPlus()) {
                 val roleManager = getSystemService(RoleManager::class.java)
@@ -1039,15 +1065,74 @@ class MainActivity : SimpleActivity() {
             pickableContacts = pickableContacts,
             onDelete = if (existing == null) null else {
                 { deleteFilter(existing) }
-            }
+            },
+            onCustomize = { filter -> customizeFilter(filter) }
         ) { filter ->
             val filters = config.customFilters.toMutableList()
             val index = filters.indexOfFirst { it.id == filter.id }
-            if (index >= 0) filters[index] = filter else filters.add(filter)
+            if (index >= 0) {
+                // The editor holds the filter as it was when it opened, so anything the
+                // colours-and-sound sheet saved while it was up -- that sheet writes straight
+                // through, since it is reached from here and has nowhere else to save to --
+                // is not in the copy coming back. Confirming would otherwise quietly undo it.
+                val stored = filters[index]
+                filters[index] = filter.copy(
+                    sentBubbleColor = stored.sentBubbleColor,
+                    sentBubbleTextColor = stored.sentBubbleTextColor,
+                    receivedBubbleColor = stored.receivedBubbleColor,
+                    receivedBubbleTextColor = stored.receivedBubbleTextColor,
+                    backgroundColor = stored.backgroundColor,
+                    notificationSoundUri = stored.notificationSoundUri,
+                    notificationSoundLabel = stored.notificationSoundLabel,
+                )
+            } else {
+                filters.add(filter)
+            }
             config.customFilters = filters
             config.activeFilterId = filter.id
             buildFilterChips()
             applyActiveFilter()
+        }
+    }
+
+    /**
+     * The colours-and-sound sheet, and the ringtone picker it cannot open itself.
+     *
+     * A ringtone picker is an activity result, so the sheet hands the request back here and
+     * [pendingSoundPick] holds the sheet's callback until [onActivityResult] fires. The sheet
+     * stays up while the picker is in front of it, so the callback is still live when it
+     * returns and the row updates in place rather than the whole sheet being rebuilt.
+     */
+    private fun customizeFilter(filter: MessageFilter) {
+        textoFilterCustomizer(
+            filter = filter,
+            onPickSound = { current, onPicked ->
+                pendingSoundPick = onPicked
+                val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
+                    putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)
+                    putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, getString(R.string.filter_sound))
+                    putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+                    putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, true)
+                    putExtra(
+                        RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
+                        current?.let { Uri.parse(it) }
+                    )
+                }
+                try {
+                    startActivityForResult(intent, PICK_FILTER_SOUND_REQUEST)
+                } catch (e: Exception) {
+                    pendingSoundPick = null
+                    showErrorToast(e)
+                }
+            }
+        ) { updated ->
+            val filters = config.customFilters.toMutableList()
+            val index = filters.indexOfFirst { it.id == updated.id }
+            if (index >= 0) {
+                filters[index] = updated
+                config.customFilters = filters
+                buildFilterChips()
+            }
         }
     }
 

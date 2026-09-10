@@ -323,6 +323,9 @@ class ThreadActivity : SimpleActivity() {
         // After applyCustomColors, which would otherwise repaint the header tiles with the
         // generic top-bar tint and undo the design's own weights.
         styleThreadHeader()
+        // Also after it: applyCustomColors paints the window from the app's own background,
+        // so a filter's own ground has to be laid over the top of that rather than under it.
+        applyFilterAppearance()
 
         if (isFirstResume && config.useNewUi) {
             isFirstResume = false
@@ -1168,8 +1171,31 @@ class ThreadActivity : SimpleActivity() {
                 checkSendMessageAvailability()
                 refreshMenuItems()
                 refreshMessages()
+                // The participants are what decide which filter this thread belongs to, so
+                // this is the first moment the answer is known.
+                applyFilterAppearance()
             }
         }
+    }
+
+    /**
+     * A filter's own colours, for the threads that filter covers.
+     *
+     * Only a one-to-one thread takes them: a filter covers senders, and a group thread has
+     * several, so "which filter is this" has no single answer there and the app's own colours
+     * stay. The adapter repaints its bubbles from [ThreadAdapter.filterOverride]; the ground
+     * behind them is the window's, which is painted here because applyCustomColors -- shared
+     * by every screen -- knows nothing about filters.
+     */
+    private fun applyFilterAppearance() {
+        val number = participants.singleOrNull()?.phoneNumbers?.firstOrNull()?.value
+        val override = number?.let {
+            FilterStore.customisedFilterFor(config.customFilters, it) { filter ->
+                filter.hasAppearanceOverride
+            }
+        }
+        getOrCreateThreadAdapter().filterOverride = override
+        override?.backgroundColor?.let { window.decorView.setBackgroundColor(it) }
     }
 
     private fun showSelectedContacts() {

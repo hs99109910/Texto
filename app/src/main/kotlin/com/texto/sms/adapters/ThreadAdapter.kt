@@ -84,6 +84,41 @@ class ThreadAdapter(
     private var lastTapMessageId = -1L
     private var lastTapAt = 0L
 
+    /**
+     * The filter this thread's sender belongs to, when that filter carries colours of its own.
+     * Null is every other thread, and every thread before this existed: the four accessors
+     * below fall through to the app's own settings, which is exactly what they read before.
+     *
+     * Set by [ThreadActivity] once the participants are known, so a thread opened from a
+     * notification -- where the participants land a moment after the list does -- repaints
+     * rather than staying on the app's colours until it is reopened.
+     */
+    var filterOverride: MessageFilter? = null
+        set(value) {
+            if (field == value) return
+            field = value
+            notifyItemRangeChanged(0, itemCount)
+        }
+
+    private val sentBubbleColor
+        get() = filterOverride?.sentBubbleColor ?: activity.config.sentBubbleColor
+    private val sentBubbleTextColor
+        get() = filterOverride?.sentBubbleTextColor ?: activity.config.sentBubbleTextColor
+    private val receivedBubbleColor
+        get() = filterOverride?.receivedBubbleColor ?: activity.config.receivedBubbleColor
+    private val receivedBubbleTextColor
+        get() = filterOverride?.receivedBubbleTextColor ?: activity.config.receivedBubbleTextColor
+    private val threadBackgroundColor
+        get() = filterOverride?.backgroundColor ?: activity.config.mainBackgroundColor
+
+    /**
+     * True while the received side wears the accent gradient rather than a flat colour. A
+     * filter picking its own received colour has to switch it off for the same reason the
+     * settings picker does: a gradient painted over the chosen colour ignores the choice.
+     */
+    private val receivedIsFlat
+        get() = filterOverride?.receivedBubbleColor != null || activity.config.receivedBubbleColorSet
+
     fun setSearchTerm(term: String) {
         if (term == searchTerm) return
         searchTerm = term
@@ -619,7 +654,7 @@ class ThreadAdapter(
         // The picker wins over it: choose a colour for the received bubble in settings and
         // that side goes flat, which is what makes both bubble colours editable rather
         // than one of them being quietly ignored by the gradient.
-        val hasAccent = isReceived && !activity.config.receivedBubbleColorSet
+        val hasAccent = isReceived && !receivedIsFlat
 
         val wrapper = if (binding is ItemMessageReceivedBinding) binding.threadMessageWrapper else (binding as ItemMessageSentBinding).threadMessageWrapper
         val holderView = if (binding is ItemMessageReceivedBinding) binding.threadMessageHolder else (binding as ItemMessageSentBinding).threadMessageHolder
@@ -646,11 +681,7 @@ class ThreadAdapter(
             text = (message.date * 1000L).formatUiTimeOnly()
             setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.68f)
             // `--meta-on-primary` over the sent gradient, `--muted` on a received bubble.
-            val ink = if (isReceived) {
-                activity.config.receivedBubbleTextColor
-            } else {
-                activity.config.sentBubbleTextColor
-            }
+            val ink = if (isReceived) receivedBubbleTextColor else sentBubbleTextColor
             setTextColor(ink.withAlpha(if (isReceived) 0.6f else 0.7f))
             typeface = Typeface.create((activity as SimpleActivity).getCustomTypeface(), Typeface.NORMAL)
         }
@@ -676,7 +707,7 @@ class ThreadAdapter(
                     height = (16 * density).toInt()
                 }
                 imageTintList = android.content.res.ColorStateList.valueOf(
-                    (activity as SimpleActivity).config.sentBubbleTextColor
+                    sentBubbleTextColor
                 )
             }
         }
@@ -695,7 +726,7 @@ class ThreadAdapter(
             // The badge sits half off the bubble, so it needs a ground of its own to stay
             // readable over both the bubble above it and the thread behind it.
             reactionView.background = com.texto.sms.helpers.TextoGlass.bar(
-                tint = activity.config.mainBackgroundColor,
+                tint = threadBackgroundColor,
                 cornerRadius = 100f * resources.displayMetrics.density,
                 opacity = 1f,
                 strokeWidthPx = 1.getScaledPxIn(activity as SimpleActivity),
@@ -731,7 +762,7 @@ class ThreadAdapter(
 
         bodyHolder.apply {
             val config = activity.config
-            val bgColor = if (isReceived) config.receivedBubbleColor else config.sentBubbleColor
+            val bgColor = if (isReceived) receivedBubbleColor else sentBubbleColor
             
             val isNewUi = (activity as SimpleActivity).config.useNewUi
             val backgroundDrawable = AppCompatResources.getDrawable(activity, if (isReceived) R.drawable.item_received_background else R.drawable.item_sent_background)
@@ -883,9 +914,8 @@ class ThreadAdapter(
         }
 
         bodyView.apply {
-            val config = activity.config
-            val bgColor = if (isReceived) config.receivedBubbleColor else config.sentBubbleColor
-            val textColor = if (isReceived) config.receivedBubbleTextColor else config.sentBubbleTextColor
+            val bgColor = if (isReceived) receivedBubbleColor else sentBubbleColor
+            val textColor = if (isReceived) receivedBubbleTextColor else sentBubbleTextColor
             
             // Safety: if background and text are too similar or transparent, use defaults
             val finalTextColor = if (textColor == 0 || textColor == Color.TRANSPARENT || textColor == bgColor) {

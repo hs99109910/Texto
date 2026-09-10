@@ -30,6 +30,12 @@ class EditFilterDialog(
     /** The phone book, offered as the second source to build a filter from. */
     private val pickableContacts: List<Pair<String, String>> = emptyList(),
     private val onDelete: (() -> Unit)? = null,
+    /**
+     * Opens the colours-and-sound sheet for [existing]. Null on a filter being created, which
+     * has no id to hang an override on yet: the row is hidden rather than disabled, since a
+     * greyed row on a "new filter" screen only invites a tap that cannot work.
+     */
+    private val onCustomize: ((MessageFilter) -> Unit)? = null,
     private val callback: (filter: MessageFilter) -> Unit,
 ) {
     private var dialog: AlertDialog? = null
@@ -53,6 +59,21 @@ class EditFilterDialog(
             val iconTint = filterSourcesCaption.currentTextColor
             filterPickFromChatsIcon.setColorFilter(iconTint)
             filterPickFromContactsIcon.setColorFilter(iconTint)
+            filterCustomizeIcon.setColorFilter(iconTint)
+
+            // Only an already-saved filter can be customised: the overrides are stored on the
+            // filter, and one that has not been confirmed yet has nothing to store them on.
+            filterCustomize.beVisibleIf(existing != null && onCustomize != null)
+            filterCustomize.setOnClickListener {
+                existing?.let { filter ->
+                    // The name may have been edited without confirming yet. Carrying it across
+                    // means the sheet's title says what is on screen rather than what was saved.
+                    val label = filterNameEditText.text.toString().trim()
+                    onCustomize?.invoke(
+                        if (label.isEmpty()) filter else filter.copy(label = label)
+                    )
+                }
+            }
             updateSenderSummary(this)
         }
 

@@ -115,6 +115,47 @@
 
     </LinearLayout>
 
+    <!--
+        Colours and sound for this one filter. Below the two sources rather than beside the
+        name, because it is a different question from "who is in this filter": everything
+        above defines the filter, this defines how the chats it covers look and sound.
+    -->
+    <LinearLayout
+        android:id="@+id/filter_customize"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/big_margin"
+        android:layout_marginTop="@dimen/small_margin"
+        android:layout_marginEnd="@dimen/big_margin"
+        android:background="@drawable/filter_source_row_bg"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/normal_margin"
+        android:paddingVertical="@dimen/activity_margin"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/filter_pick_from_contacts">
+
+        <ImageView
+            android:id="@+id/filter_customize_icon"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_marginEnd="@dimen/normal_margin"
+            android:alpha="0.8"
+            android:src="@drawable/ic_ph_swatches" />
+
+        <org.fossify.commons.views.MyTextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="start|center_vertical"
+            android:text="@string/filter_customize"
+            android:textSize="@dimen/normal_text_size" />
+
+    </LinearLayout>
+
     <org.fossify.commons.views.MyTextView
         android:id="@+id/filter_senders_empty"
         android:layout_width="match_parent"
@@ -128,7 +169,7 @@
         android:textSize="@dimen/normal_text_size"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/filter_pick_from_contacts" />
+        app:layout_constraintTop_toBottomOf="@id/filter_customize" />
 
     <!--
         Each picked sender is its own chip with its own close glyph, tapped to drop that one
@@ -145,7 +186,7 @@
         android:scrollbars="none"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/filter_pick_from_contacts">
+        app:layout_constraintTop_toBottomOf="@id/filter_customize">
 
         <LinearLayout
             android:id="@+id/filter_senders_chips"

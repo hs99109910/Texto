@@ -426,6 +426,26 @@ Picking writes straight to `config` so the screen behind updates live, which mea
 without Save has to put the original back -- otherwise a cancelled look-around silently
 becomes the setting.
 
+**A filter can override the app's colours, and every override is nullable on purpose.**
+`MessageFilter` carries five colours and a sound, all null by default: null means "follow the
+app", so a filter nobody has customised is byte-identical to one from before the fields
+existed, and picking the app's own value back in the sheet stores null rather than that
+value -- otherwise the filter would be frozen on today's theme while everything else follows
+the next one. `ThreadAdapter.filterOverride` is where they land, set by `ThreadActivity` once
+the participants are known, since the participants are what decide which filter a thread is
+in. Only a one-to-one thread takes them: a group has several senders and so no single answer.
+Picking a received colour also has to switch the accent gradient off (`receivedIsFlat`), for
+the same reason the settings picker does -- a gradient painted over the chosen colour ignores
+the choice.
+
+Two traps came out of building it. The editor holds the filter as it was when it opened, so
+confirming it after the colours sheet had saved wrote the pre-customisation copy back over
+the overrides: the write in `MainActivity` merges the stored appearance fields back in rather
+than replacing the row. And a notification channel's sound is frozen at creation --
+`createNotificationChannel` on an existing id updates the name and nothing else -- so the
+channel id hashes the sound uri into itself (`filter_<id>_<hash>`), or a filter whose sound is
+changed keeps playing the old one for good.
+
 **The tonality strip rotates the accent, and it does so inside `Config`.** `accentHueShift`
 is applied on the way *out* of `accentGradientStart/Mid/End`, `auroraAccentColor` and the
 halo slots, never written back. That is the hook: roughly fifty surfaces read those getters

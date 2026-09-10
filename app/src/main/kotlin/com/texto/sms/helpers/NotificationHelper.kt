@@ -11,6 +11,7 @@ import android.graphics.Bitmap
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.RingtoneManager
+import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
@@ -47,10 +48,27 @@ class NotificationHelper(private val context: Context) {
     ) {
         val hasCustomNotifications =
             context.config.customNotifications.contains(threadId.toString())
-        val notificationChannelId =
-            if (hasCustomNotifications) threadId.toString() else NOTIFICATION_CHANNEL_ID
+        // A filter can carry a sound of its own, for every sender it covers. The per-thread
+        // channel wins over it: that one was set on this exact conversation, which is more
+        // specific than a rule about a group of senders.
+        val filterSound = if (hasCustomNotifications) {
+            null
+        } else {
+            FilterStore.customisedFilterFor(context.config.customFilters, address) {
+                it.notificationSoundUri != null
+            }
+        }
+        val notificationChannelId = when {
+            hasCustomNotifications -> threadId.toString()
+            filterSound != null -> filterChannelId(filterSound)
+            else -> NOTIFICATION_CHANNEL_ID
+        }
         if (!hasCustomNotifications) {
-            createChannel(notificationChannelId, context.getString(R.string.channel_received_sms))
+            createChannel(
+                id = notificationChannelId,
+                name = filterSound?.label ?: context.getString(R.string.channel_received_sms),
+                sound = filterSound?.notificationSoundUri?.let { Uri.parse(it) } ?: soundUri
+            )
         }
 
         val notificationId = threadId.hashCode()
@@ -162,7 +180,13 @@ class NotificationHelper(private val context: Context) {
             setCategory(Notification.CATEGORY_MESSAGE)
             setAutoCancel(true)
             setOnlyAlertOnce(alertOnlyOnce)
-            setSound(soundUri, AudioManager.STREAM_NOTIFICATION)
+            // The channel carries the sound from Oreo on; this is what plays below it, so the
+            // filter's choice has to be repeated here or it would only apply on newer phones.
+            setSound(
+                filterSound?.notificationSoundUri?.let { Uri.parse(it) }
+                    ?: if (filterSound != null) null else soundUri,
+                AudioManager.STREAM_NOTIFICATION
+            )
             // Paired watches (Galaxy Watch, Wear OS) only mirror notifications that are
             // not marked phone-only.
             setLocalOnly(false)
@@ -239,7 +263,21 @@ class NotificationHelper(private val context: Context) {
         notificationManager.notify(notificationId, builder.build())
     }
 
-    private fun createChannel(id: String, name: String) {
+    /**
+     * A channel per filter *and per sound it has carried*.
+     *
+     * A channel's sound is frozen the moment it is created -- createNotificationChannel on an
+     * id that already exists updates the name and nothing else -- so a filter whose sound is
+     * changed has to move to a new id or it keeps playing the old one for good. Hashing the
+     * uri into the id is what makes changing the sound take effect; the abandoned channel is
+     * left behind rather than deleted, because deleting one and recreating the same id later
+     * restores the settings the user had on it, which is worse than an unused entry in the
+     * system list.
+     */
+    private fun filterChannelId(filter: MessageFilter) =
+        "filter_${filter.id}_${filter.notificationSoundUri?.hashCode() ?: 0}"
+
+    private fun createChannel(id: String, name: String, sound: Uri? = soundUri) {
         val audioAttributes = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_NOTIFICATION)
             .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
@@ -250,7 +288,9 @@ class NotificationHelper(private val context: Context) {
         NotificationChannel(id, name, importance).apply {
             setBypassDnd(false)
             enableLights(true)
-            setSound(soundUri, audioAttributes)
+            // A null uri is the picker's "Silent", which is a choice and has to survive as
+            // one: setSound(null, ...) is how a channel is told to stay quiet.
+            setSound(sound, audioAttributes)
             enableVibration(true)
             notificationManager.createNotificationChannel(this)
         }

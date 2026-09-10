@@ -19,7 +19,29 @@ data class MessageFilter(
     val senders: List<String> = emptyList(),
     /** Display names for [senders], kept only so the editor can list them back. */
     val senderLabels: List<String> = emptyList(),
+    /**
+     * Per-filter appearance. Null means "follow the app's own setting", which is what every
+     * filter carried before this and what every field goes back to when its picker is reset,
+     * so a filter that has never been customised is byte-identical to one from before these
+     * fields existed. New fields with defaults, so stored JSON written by an older build still
+     * decodes -- and [FilterStore]'s reader ignores unknown keys in the other direction.
+     */
+    val sentBubbleColor: Int? = null,
+    val sentBubbleTextColor: Int? = null,
+    val receivedBubbleColor: Int? = null,
+    val receivedBubbleTextColor: Int? = null,
+    val backgroundColor: Int? = null,
+    /** A ringtone URI, as [android.net.Uri.toString]. Null follows the app's own channel. */
+    val notificationSoundUri: String? = null,
+    /** The sound's display name, kept so the customiser can name it without resolving it. */
+    val notificationSoundLabel: String? = null,
 ) {
+    /** True when anything here overrides the app's own look for the threads it covers. */
+    val hasAppearanceOverride: Boolean
+        get() = sentBubbleColor != null || sentBubbleTextColor != null ||
+            receivedBubbleColor != null || receivedBubbleTextColor != null ||
+            backgroundColor != null
+
     companion object {
         const val ID_ALL = "all"
         const val ID_CONTACTS_ONLY = "contacts_only"
@@ -86,6 +108,26 @@ object FilterStore {
         json.encodeToString(filter)
     } catch (_: Exception) {
         ""
+    }
+
+    /**
+     * The customised filter covering [phoneNumber], or null when none does.
+     *
+     * First match wins rather than merging, because two filters can legitimately cover the
+     * same sender and there is no sensible way to blend two palettes: the one the user
+     * ordered first on the chip row is the one that gets to say how the thread looks.
+     * [predicate] is what "customised" means to the caller -- an appearance override for the
+     * thread screen, a sound for a notification -- so a filter that only sets one of the two
+     * does not claim the other.
+     */
+    fun customisedFilterFor(
+        filters: List<MessageFilter>,
+        phoneNumber: String,
+        predicate: (MessageFilter) -> Boolean,
+    ): MessageFilter? = filters.firstOrNull { filter ->
+        predicate(filter) && filter.senders.any {
+            SystemBlockedNumbers.isSameSender(it, phoneNumber)
+        }
     }
 
     fun newCustomFilter(
