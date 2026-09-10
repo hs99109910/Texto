@@ -426,10 +426,10 @@ class SettingsActivity : SimpleActivity() {
             // here the screen would come back on the bare code defaults and only settle on
             // the real default theme at the next cold start, when App.onCreate notices that
             // nothing is stored. Reset now lands where a fresh install lands.
-            // NEON_LIGHT, not NEON: the light variant is what a fresh install opens on, and
-            // this was left pointing at the dark one when that default changed, so a reset
-            // came back on a theme the app never starts with.
-            AppThemes.apply(config, AppThemes.byId(AppThemes.NEON_LIGHT))
+            // AppThemes.DEFAULT rather than a named skin: this line held NEON, then
+            // NEON_LIGHT, and each time the default moved it was left behind pointing at a
+            // theme the app no longer starts with.
+            AppThemes.apply(config, AppThemes.byId(AppThemes.DEFAULT))
             config.glassOpacity = Config.DEFAULT_GLASS_OPACITY
             // App.onCreate writes these on every launch to keep the upstream first-run
             // popups away, but the reset does not restart the process -- only the activity --

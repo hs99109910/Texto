@@ -87,7 +87,7 @@ class App : FossifyApp() {
             !config.neonLightDefaultApplied || !config.classicDefaultApplied ||
             !config.neonLightRestored || !config.bubbleSidesSwapped
         ) {
-            AppThemes.apply(config, AppThemes.byId(AppThemes.NOCTURNE))
+            AppThemes.apply(config, AppThemes.byId(AppThemes.DEFAULT))
             config.glassOpacity = Config.DEFAULT_GLASS_OPACITY
             config.neonRefreshApplied = true
             config.nocturneRefreshApplied = true

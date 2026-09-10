@@ -277,7 +277,7 @@ class Config(context: Context) : BaseConfig(context) {
     }
 
     var appTheme: Int
-        get() = prefs.getInt(APP_THEME, AppThemes.NOCTURNE)
+        get() = prefs.getInt(APP_THEME, AppThemes.DEFAULT)
         set(appTheme) = prefs.edit().putInt(APP_THEME, appTheme).apply()
 
     /** Set once the install has been moved onto the Nocturne design. See App.onCreate. */

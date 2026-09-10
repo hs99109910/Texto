@@ -64,6 +64,17 @@ object AppThemes {
     const val NEON_LIGHT = 6
 
     /**
+     * What a fresh install opens on, what "Reset to defaults" returns to, and what an
+     * install with nothing stored is labelled as. The picker names it "Default".
+     *
+     * One constant because this id was written out by hand in three places, and they drifted:
+     * the reset button was still applying the skin from two defaults ago, so resetting landed
+     * on a theme the app no longer starts with. Its own comment had already caught that
+     * happening once. Change it here and all three follow.
+     */
+    const val DEFAULT = NOCTURNE
+
+    /**
      * Aurora's two ids. The skin is gone, but the numbers were written into
      * `appTheme` on every install that ever wore it, so they still have to be recognised --
      * see the retirement migration in `App`, which moves those installs onto Neon. Nothing
