@@ -104,6 +104,7 @@
     <string name="colour_default">پیش‌فرض</string>
     <string name="colour_save">ذخیره</string>
     <string name="colour_preview_sample">نمونهٔ متن</string>
+    <string name="privacy_policy">سیاست حریم خصوصی</string>
     <!-- Image cropper -->
     <string name="set_image">ثبت تصویر</string>
     <!-- Recycle bin -->

@@ -1,0 +1,67 @@
+Texto — Privacy Policy
+
+Last updated: 10 September 2026
+
+SHORT VERSION
+
+Texto does not collect anything. It has no account, no server, no analytics, no advertising and no crash reporting. Your messages and contacts stay on your phone. Nothing about you is sent anywhere.
+
+WHAT TEXTO WORKS WITH
+
+Texto is an SMS and MMS app, so it necessarily handles:
+
+- The text, pictures and attachments of the messages you send and receive. These live in Android's own system message store, the same one every SMS app uses. Texto also keeps a local copy on the phone so the conversation list opens quickly and so drafts, scheduled messages and the recycle bin work.
+
+- The names and photos of your contacts, read so a conversation can show a name instead of a bare number. They are read as they are needed and are not copied anywhere.
+
+- Which SIM a message belongs to, on a dual-SIM phone.
+
+All of it stays on your device.
+
+WHAT TEXTO SENDS, AND WHERE
+
+Text messages go to your mobile network operator, exactly as they would from any other SMS app. Picture messages (MMS) are handed to Android's own messaging service, which sends them over your operator's MMS gateway. That is the whole of it.
+
+Texto has no backend of its own. It makes no network requests, and it contains no code that could make one: there is no HTTP client anywhere in the app.
+
+WHAT TEXTO DOES NOT DO
+
+- No account, no sign-in, no profile.
+- No analytics, telemetry or usage statistics.
+- No advertising and no advertising identifiers.
+- No crash or error reporting to anyone.
+- No selling or sharing of any data, because none is collected.
+- Nothing is uploaded to us. There is no "us" to upload it to.
+
+PERMISSIONS, AND WHY EACH ONE IS ASKED FOR
+
+- SMS and MMS (read, write, send, receive): reading, showing, sending and storing your messages. Android requires an app to hold these to be usable as your default messaging app.
+- Contacts: showing names and photos instead of phone numbers.
+- Phone state: which SIM to send from on a dual-SIM phone.
+- Internet: required by Android to hand a picture message to the system MMS service. Texto makes no other use of it.
+- Camera and microphone: only while you are attaching a photo or a voice recording to a message. Nothing is captured at any other time.
+- Notifications: showing you that a message arrived.
+- Exact alarms, wake lock, run at startup: sending a scheduled message at the time you chose, including after the phone restarts.
+- Phone call: the call button inside a conversation, which opens your dialler.
+
+Texto does not request access to your call log, your location, your files or your microphone outside of recording an attachment.
+
+BACKUPS
+
+Automatic cloud backup is switched off in the app's manifest, on purpose, so your message database cannot be copied off the device by the system backup service. If you use Texto's own export feature, the file is written where you choose it and nowhere else.
+
+DELETING YOUR DATA
+
+Uninstalling Texto removes everything it stored: the local message copy, drafts, scheduled messages, the recycle bin and every setting. Your SMS also exist in Android's system message store, which is shared with any other messaging app you install; removing them there is done from within a messaging app before uninstalling.
+
+CHILDREN
+
+Texto is a general-purpose messaging app and is not directed at children.
+
+CHANGES
+
+If this policy changes, the date at the top changes with it.
+
+CONTACT
+
+hs1989.claude@gmail.com

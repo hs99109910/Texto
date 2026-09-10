@@ -905,6 +905,59 @@ class SettingsActivity : SimpleActivity() {
     private val skin get() = com.texto.sms.helpers.AppThemes.byId(config.appTheme)
 
     /**
+     * The policy itself, read from `res/raw` so the copy the store links to and the copy in
+     * the app are one file per language. `raw-fa` resolves through the same locale wrapper
+     * every other resource does, so it follows the app's language setting rather than the
+     * phone's.
+     */
+    private fun showPrivacyPolicy() {
+        val density = resources.displayMetrics.density
+        val body = try {
+            resources.openRawResource(R.raw.privacy_policy)
+                .bufferedReader().use { it.readText() }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return
+        }
+
+        val pad = 20.getScaledPx()
+        val text = TextView(this).apply {
+            setText(body)
+            setTextColor(config.mainTextColor)
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.84f))
+            setLineSpacing(0f, 1.25f)
+            setPadding(pad, pad, pad, pad)
+            setTextIsSelectable(true)
+        }
+
+        val scroller = android.widget.ScrollView(this).apply {
+            overScrollMode = View.OVER_SCROLL_NEVER
+            addView(text)
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 26 * density
+                setColor(config.recentColor)
+                setStroke(
+                    1.getScaledPx(),
+                    com.texto.sms.helpers.TextoGlass.rimFor(config.recentColor, 0.18f)
+                )
+            }
+            outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+            clipToOutline = true
+        }
+
+        androidx.appcompat.app.AlertDialog.Builder(this)
+            .setView(scroller)
+            .create()
+            .apply {
+                window?.setBackgroundDrawable(
+                    android.graphics.drawable.ColorDrawable(Color.TRANSPARENT)
+                )
+                show()
+            }
+    }
+
+    /**
      * The about sheet: the maker's mark on the app's own card, and the version.
      *
      * Deliberately just the image for now. The artwork is wider than it is tall, so it is
@@ -957,6 +1010,27 @@ class SettingsActivity : SimpleActivity() {
                 layoutParams = android.widget.LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
                 ).apply { topMargin = 14.getScaledPx() }
+            }
+        )
+
+        // Play requires a policy for this permission set, and requires it to be reachable
+        // from inside the app as well as from the store listing. Shown from a bundled file
+        // rather than opened in a browser, so it is readable with no connection and cannot
+        // rot into a dead link.
+        sheet.addView(
+            TextView(this).apply {
+                text = getString(R.string.privacy_policy)
+                gravity = android.view.Gravity.CENTER
+                setTextColor(config.accentGradientStart)
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.85f))
+                typeface = typefaceFor(android.graphics.Typeface.BOLD)
+                val padV = 12.getScaledPx()
+                setPadding(0, padV, 0, padV)
+                isClickable = true
+                layoutParams = android.widget.LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply { topMargin = 10.getScaledPx() }
+                setOnClickListener { showPrivacyPolicy() }
             }
         )
 

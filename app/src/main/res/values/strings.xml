@@ -115,6 +115,7 @@
     <string name="colour_default">Default</string>
     <string name="colour_save">Save</string>
     <string name="colour_preview_sample">Sample text</string>
+    <string name="privacy_policy">Privacy policy</string>
     <!-- Image cropper -->
     <string name="set_image">Set Image</string>
     <!-- Recycle bin -->

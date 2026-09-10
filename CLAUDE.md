@@ -500,9 +500,22 @@ is not the problem it looks like. `com.klinker.android.send_message.Transaction`
 `SmsManager.sendMultimediaMessage` — verified in the AAR's bytecode — and the platform makes
 the MMSC connection. targetSdk 36 blocking cleartext therefore does not break MMS.
 
-**Still outstanding.** A privacy policy exists nowhere — not in the repo, not in the app, and
-Play requires one for this permission set. The About screen is opened with `licenseMask = 0L`,
-so no third-party licences are listed. The project is GPL-3.0 and distributing it carries the
+**The privacy policy is one text per language, and everything else comes from it.**
+`res/raw/privacy_policy.txt` and `res/raw-fa/privacy_policy.txt` are the source. The About
+sheet reads whichever the locale wrapper resolves, so it follows the app's language setting
+rather than the phone's, and `docs/privacy-policy.html` is generated from the same two files
+for hosting : Play wants a URL on the listing *and* a copy reachable inside the app.
+
+Write each paragraph as a single line. Hard-wrapped at 70 columns, the TextView wrapped
+already-wrapped text and every paragraph came out ragged.
+
+Its claims were checked against the code rather than assumed: no HTTP client anywhere in the
+app, nothing resembling analytics, ads or crash reporting in the dependency list,
+`allowBackup="false"`, and MMS handed to the platform instead of sent by the app. Add a
+network library and the policy stops being true.
+
+**Still outstanding.** The About screen is opened with `licenseMask = 0L`, so no third-party
+licences are listed. The project is GPL-3.0 and distributing it carries the
 source-availability obligation.
 
 ## Naming
