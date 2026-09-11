@@ -773,17 +773,18 @@ class ThreadActivity : SimpleActivity() {
 
             styleComposerDisc(threadAddEmoji, inputBarColor)
             threadAddEmoji.alpha = 1.0f
-            // Opens the keyboard rather than a picker of its own. The emoji, GIFs and
-            // stickers are the keyboard's, reached from its own key: there are thousands of
-            // them, it knows which ones get sent, and several can be sent in a row without
-            // the sheet closing between them. Android exposes no way to open that panel
-            // directly, so this puts the cursor in the field and brings the keyboard up,
-            // which is one tap from it.
+            // The app's own sheet, because Android offers no way into the keyboard's emoji
+            // panel: there is no intent for it, and KEYCODE_PICTSYMBOLS -- the one key that
+            // is supposed to mean this -- was tried on the device and ignored. Messages,
+            // WhatsApp and Telegram all draw their own for the same reason. Stickers and
+            // GIFs still come from the keyboard, through the composer field's accepted
+            // content types; this covers what that route cannot.
             threadAddEmoji.setOnClickListener {
-                val field = binding.messageHolder.threadTypeMessage
-                if (!field.isFocusable) expandInputBar()
-                field.requestFocus()
-                showKeyboard(field)
+                textoEmojiPicker { glyph ->
+                    val field = binding.messageHolder.threadTypeMessage
+                    val at = field.selectionStart.coerceAtLeast(0)
+                    field.text?.insert(at, glyph)
+                }
             }
 
             // threadMessagesFastscroller removed

@@ -215,6 +215,15 @@
     <string name="search_type_more">Type at least two characters to search</string>
     <string name="action_confirm">Confirm</string>
     <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="emoji_category_smileys">Smileys</string>
+    <string name="emoji_category_people">People</string>
+    <string name="emoji_category_nature">Nature</string>
+    <string name="emoji_category_food">Food</string>
+    <string name="emoji_category_activity">Activity</string>
+    <string name="emoji_category_travel">Travel</string>
+    <string name="emoji_category_objects">Objects</string>
+    <string name="emoji_category_symbols">Symbols</string>
     <string name="search_date_picked">Selected date</string>
     <string name="search_in_thread">Search this conversation</string>
     <string name="couldnt_download_mms">The MMS could not be downloaded</string>

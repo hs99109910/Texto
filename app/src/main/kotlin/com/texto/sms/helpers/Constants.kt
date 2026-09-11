@@ -106,6 +106,11 @@ const val RECENT_COLOURS = "recent_colours"
 
 /** How many recent colours the picker keeps. Five is the row it draws. */
 const val RECENT_COLOURS_KEPT = 5
+
+const val RECENT_EMOJI = "recent_emoji"
+
+/** Three rows of the emoji grid, which is as far as a "recent" list stays useful. */
+const val RECENT_EMOJI_KEPT = 24
 const val ACTIVE_FILTER_ID = "active_filter_id"
 const val SHOW_CONTACTS_ONLY_FILTER = "show_contacts_only_filter"
 const val SHOW_ADS_FILTER = "show_ads_filter"

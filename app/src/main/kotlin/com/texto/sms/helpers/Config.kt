@@ -477,6 +477,26 @@ class Config(context: Context) : BaseConfig(context) {
         recentColours = listOf(opaque) + recentColours.filter { it != opaque }
     }
 
+    /**
+     * The emoji most recently sent, newest first, and the picker's first tab.
+     *
+     * Newline-separated rather than comma-separated like the colours: an emoji is arbitrary
+     * text, and one of them -- the keycap digits, for instance -- can perfectly well contain
+     * a comma's worth of ambiguity. A newline cannot appear inside a single emoji sequence.
+     */
+    var recentEmoji: List<String>
+        get() = prefs.getString(RECENT_EMOJI, "")!!
+            .split('\n')
+            .filter { it.isNotBlank() }
+        set(emoji) = prefs.edit()
+            .putString(RECENT_EMOJI, emoji.take(RECENT_EMOJI_KEPT).joinToString("\n"))
+            .apply()
+
+    /** Records [emoji] as the newest pick, without letting it appear twice. */
+    fun rememberEmoji(emoji: String) {
+        recentEmoji = listOf(emoji) + recentEmoji.filter { it != emoji }
+    }
+
     /** User-defined filter chips, serialized as JSON. */
     var customFilters: List<MessageFilter>
         get() = FilterStore.decode(prefs.getString(CUSTOM_FILTERS, "")!!)

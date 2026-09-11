@@ -205,6 +205,15 @@
     <string name="search_type_more">برای شروع جستجو دست‌کم دو حرف بنویسید</string>
     <string name="action_confirm">تأیید</string>
     <string name="action_cancel">انصراف</string>
+    <string name="action_close">بستن</string>
+    <string name="emoji_category_smileys">شکلک‌ها</string>
+    <string name="emoji_category_people">آدم‌ها</string>
+    <string name="emoji_category_nature">طبیعت</string>
+    <string name="emoji_category_food">خوراکی</string>
+    <string name="emoji_category_activity">فعالیت</string>
+    <string name="emoji_category_travel">سفر</string>
+    <string name="emoji_category_objects">اشیا</string>
+    <string name="emoji_category_symbols">نمادها</string>
     <string name="search_date_picked">تاریخ انتخابی</string>
     <string name="search_in_thread">جستجو در این گفتگو</string>
     <string name="couldnt_download_mms">دریافت MMS ممکن نشد</string>
