@@ -7,8 +7,8 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.ContactsContract
 import org.fossify.commons.FossifyApp
-import org.fossify.commons.extensions.hasPermission
-import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
+import com.texto.sms.extensions.hasPermission
+import com.texto.sms.extensions.PERMISSION_READ_CONTACTS
 import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.config
 import com.texto.sms.extensions.rescheduleAllScheduledMessages

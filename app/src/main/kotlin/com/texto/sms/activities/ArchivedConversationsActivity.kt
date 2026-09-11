@@ -7,7 +7,7 @@ import com.texto.sms.extensions.areSystemAnimationsEnabled
 import com.texto.sms.extensions.beVisibleIf
 import com.texto.sms.extensions.hideKeyboard
 import com.texto.sms.extensions.viewBinding
-import org.fossify.commons.helpers.NavigationIcon
+import com.texto.sms.helpers.NavigationIcon
 import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.R
 import com.texto.sms.adapters.ArchivedConversationsAdapter
@@ -41,7 +41,7 @@ class ArchivedConversationsActivity : SimpleActivity() {
 
     override fun onResume() {
         super.onResume()
-        setupTopAppBar(binding.archiveAppbar, NavigationIcon.Arrow)
+        setupTextoTopAppBar(binding.archiveAppbar, NavigationIcon.Arrow)
         loadArchivedConversations()
         applyCustomColors()
         updateAppFonts(binding.root)

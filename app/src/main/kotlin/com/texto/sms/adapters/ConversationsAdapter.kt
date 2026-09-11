@@ -160,7 +160,7 @@ class ConversationsAdapter(
 
     private fun dialNumber() {
         val conversation = getSelectedItems().firstOrNull() ?: return
-        activity.dialNumber(conversation.phoneNumber) {
+        (activity as SimpleActivity).dialNumber(conversation.phoneNumber) {
             finishActMode()
         }
     }

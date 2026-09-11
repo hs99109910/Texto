@@ -16,7 +16,7 @@ import android.widget.ArrayAdapter
 import androidx.core.view.updateLayoutParams
 import android.widget.TextView
 
-import org.fossify.commons.helpers.NavigationIcon
+import com.texto.sms.helpers.NavigationIcon
 import org.fossify.commons.views.MyAppBarLayout
 import com.texto.sms.helpers.textoCapsuleDialog
 import com.texto.sms.BuildConfig
@@ -52,7 +52,7 @@ class SettingsActivity : SimpleActivity() {
         setContentView(binding.root)
 
         setupEdgeToEdge(padBottomImeAndSystem = listOf(binding.settingsNestedScrollview))
-        setupTopAppBar(binding.settingsAppbar, NavigationIcon.Arrow, Color.TRANSPARENT)
+        setupTextoTopAppBar(binding.settingsAppbar, NavigationIcon.Arrow, Color.TRANSPARENT)
 
         (binding.settingsAppbar as? MyAppBarLayout)?.let { appBar ->
             appBar.setBackgroundColor(Color.TRANSPARENT)

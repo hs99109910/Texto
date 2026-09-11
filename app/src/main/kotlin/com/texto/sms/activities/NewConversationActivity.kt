@@ -16,8 +16,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import com.reddit.indicatorfastscroll.FastScrollItemIndicator
 
-import org.fossify.commons.helpers.NavigationIcon
-import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
+import com.texto.sms.helpers.NavigationIcon
+import com.texto.sms.extensions.PERMISSION_READ_CONTACTS
 import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.models.SimpleContact
@@ -40,7 +40,7 @@ import com.texto.sms.extensions.copyToClipboard
 import com.texto.sms.extensions.darkenColor
 import org.fossify.commons.extensions.getColorStateList
 import com.texto.sms.extensions.getContrastColor
-import org.fossify.commons.extensions.hasPermission
+import com.texto.sms.extensions.hasPermission
 import com.texto.sms.extensions.hideKeyboard
 import com.texto.sms.dialogs.maybeShowNumberPickerDialog
 import com.texto.sms.extensions.normalizeString
@@ -110,7 +110,7 @@ class NewConversationActivity : SimpleActivity() {
     override fun onResume() {
         super.onResume()
         applyOutlines()
-        setupTopAppBar(binding.newConversationAppbar, NavigationIcon.Arrow)
+        setupTextoTopAppBar(binding.newConversationAppbar, NavigationIcon.Arrow)
         binding.newConversationToolbar.setNavigationOnClickListener {
             finish()
         }

@@ -45,7 +45,11 @@ import org.fossify.commons.extensions.getTextSize
 import com.texto.sms.extensions.applyColorFilter
 import com.texto.sms.R
 import com.texto.sms.extensions.asLtrPhone
+import androidx.activity.result.contract.ActivityResultContracts
+import com.texto.sms.extensions.PERMISSION_POST_NOTIFICATIONS
 import com.texto.sms.extensions.config
+import com.texto.sms.extensions.hasPermission
+import com.texto.sms.extensions.isTiramisuPlus
 import com.texto.sms.helpers.*
 import java.io.File
 import kotlin.math.max
@@ -53,6 +57,76 @@ import kotlin.math.max
 open class SimpleActivity : BaseSimpleActivity() {
 
     val uiScale get() = config.uiScale
+
+    /**
+     * Runtime permissions, asked one at a time.
+     *
+     * One launcher for the whole activity rather than one per call site: a launcher has to be
+     * registered before the activity is started, and several of these are asked from a click
+     * handler. The pending callback is what carries the answer back to whoever asked.
+     */
+    private var pendingPermissionCallback: ((Boolean) -> Unit)? = null
+
+    private val permissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            val callback = pendingPermissionCallback
+            pendingPermissionCallback = null
+            callback?.invoke(granted)
+        }
+
+    fun handlePermission(permission: String, callback: (Boolean) -> Unit) {
+        if (hasPermission(permission)) {
+            callback(true)
+        } else {
+            pendingPermissionCallback = callback
+            permissionLauncher.launch(permission)
+        }
+    }
+
+    /**
+     * Notifications are a permission only from Android 13 on; before that the answer is
+     * always yes and asking would hand the user a prompt the platform cannot show.
+     */
+    fun askNotificationPermission(callback: (Boolean) -> Unit) {
+        if (!isTiramisuPlus()) {
+            callback(true)
+        } else {
+            handlePermission(PERMISSION_POST_NOTIFICATIONS, callback)
+        }
+    }
+
+    /**
+     * The up affordance, and nothing else.
+     *
+     * Commons also painted the bar here; this app paints all three of its floating surfaces
+     * in [setupOverlayBars] on every resume, so anything set now would be overwritten within
+     * the frame. The icon`s own tint is applied there too.
+     */
+    fun setupTextoTopAppBar(
+        appBar: com.google.android.material.appbar.AppBarLayout,
+        navigationIcon: NavigationIcon = NavigationIcon.None,
+        @Suppress("UNUSED_PARAMETER") backgroundColor: Int = 0,
+    ) {
+        val toolbar = findToolbarIn(appBar) ?: return
+        when (navigationIcon) {
+            NavigationIcon.Arrow -> toolbar.setNavigationIcon(R.drawable.ic_ph_arrow_left)
+            NavigationIcon.Cross -> toolbar.setNavigationIcon(R.drawable.ic_ph_x)
+            NavigationIcon.None -> toolbar.navigationIcon = null
+        }
+        if (navigationIcon != NavigationIcon.None) {
+            toolbar.setNavigationContentDescription(R.string.back)
+            toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
+        }
+    }
+
+    private fun findToolbarIn(parent: android.view.ViewGroup): androidx.appcompat.widget.Toolbar? {
+        for (i in 0 until parent.childCount) {
+            val child = parent.getChildAt(i)
+            if (child is androidx.appcompat.widget.Toolbar) return child
+            if (child is android.view.ViewGroup) findToolbarIn(child)?.let { return it }
+        }
+        return null
+    }
 
 
 

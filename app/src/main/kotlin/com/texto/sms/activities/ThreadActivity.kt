@@ -96,10 +96,10 @@ import com.texto.sms.extensions.beVisibleIf
 import com.texto.sms.extensions.toast
 import com.texto.sms.extensions.showErrorToast
 import com.texto.sms.extensions.viewBinding
-import org.fossify.commons.helpers.NavigationIcon
-import org.fossify.commons.helpers.PERMISSION_CAMERA
-import org.fossify.commons.helpers.PERMISSION_READ_PHONE_STATE
-import org.fossify.commons.helpers.PERMISSION_RECORD_AUDIO
+import com.texto.sms.helpers.NavigationIcon
+import com.texto.sms.extensions.PERMISSION_CAMERA
+import com.texto.sms.extensions.PERMISSION_READ_PHONE_STATE
+import com.texto.sms.extensions.PERMISSION_RECORD_AUDIO
 import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.isQPlus
 import com.texto.sms.extensions.isSPlus
@@ -322,10 +322,10 @@ class ThreadActivity : SimpleActivity() {
         currentThreadId = threadId
         // No navigation icon: the design's back control is the rounded tile at the head of
         // the header row, which setupOptionsMenu wires up.
-        setupTopAppBar(
-            topAppBar = binding.threadAppbar,
+        setupTextoTopAppBar(
+            appBar = binding.threadAppbar,
             navigationIcon = NavigationIcon.None,
-            topBarColor = Color.TRANSPARENT
+            backgroundColor = Color.TRANSPARENT
         )
 
         isActivityVisible = true

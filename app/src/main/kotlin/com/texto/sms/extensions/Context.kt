@@ -31,7 +31,7 @@ import com.texto.sms.extensions.getIntValue
 import com.texto.sms.extensions.getIntValueOr
 import com.texto.sms.extensions.getLongValue
 import com.texto.sms.extensions.getStringValue
-import org.fossify.commons.extensions.hasPermission
+import com.texto.sms.extensions.hasPermission
 import com.texto.sms.extensions.normalizeString
 import com.texto.sms.extensions.notificationManager
 import com.texto.sms.extensions.queryCursor
@@ -39,7 +39,7 @@ import com.texto.sms.extensions.showErrorToast
 import com.texto.sms.extensions.toast
 import org.fossify.commons.helpers.DAY_SECONDS
 import org.fossify.commons.helpers.MONTH_SECONDS
-import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
+import com.texto.sms.extensions.PERMISSION_READ_CONTACTS
 import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.isQPlus

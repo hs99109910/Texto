@@ -66,10 +66,10 @@ import com.texto.sms.extensions.beVisibleIf
 import com.texto.sms.extensions.toast
 import com.texto.sms.extensions.showErrorToast
 import com.texto.sms.extensions.viewBinding
-import org.fossify.commons.helpers.NavigationIcon
-import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
-import org.fossify.commons.helpers.PERMISSION_READ_SMS
-import org.fossify.commons.helpers.PERMISSION_SEND_SMS
+import com.texto.sms.helpers.NavigationIcon
+import com.texto.sms.extensions.PERMISSION_READ_CONTACTS
+import com.texto.sms.extensions.PERMISSION_READ_SMS
+import com.texto.sms.extensions.PERMISSION_SEND_SMS
 import com.texto.sms.extensions.isQPlus
 import com.texto.sms.extensions.isSPlus
 import androidx.core.view.isVisible
@@ -176,7 +176,7 @@ class MainActivity : SimpleActivity() {
 
         setupEdgeToEdge(padBottomImeAndSystem = listOf(binding.conversationsList))
         setupSearchEdgeToEdge()
-        setupTopAppBar(binding.mainAppbar, NavigationIcon.None, Color.TRANSPARENT)
+        setupTextoTopAppBar(binding.mainAppbar, NavigationIcon.None, Color.TRANSPARENT)
 
         setupTextoNavBar()
 
@@ -913,7 +913,7 @@ class MainActivity : SimpleActivity() {
                 }
 
                 handlePermission(PERMISSION_READ_CONTACTS) {
-                    handleNotificationPermission { granted ->
+                    askNotificationPermission { granted ->
                         if (!granted) {
                             // The app's own sheet: commons' builds itself from the base theme
                             // and its own English strings. See the same swap in ThreadActivity.

@@ -11,7 +11,7 @@ import android.media.RingtoneManager
 import android.os.Bundle
 import android.provider.Settings
 
-import org.fossify.commons.helpers.NavigationIcon
+import com.texto.sms.helpers.NavigationIcon
 import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.models.SimpleContact
@@ -76,7 +76,7 @@ class ConversationDetailsActivity : SimpleActivity() {
 
     override fun onResume() {
         super.onResume()
-        setupTopAppBar(binding.conversationDetailsAppbar, NavigationIcon.Arrow)
+        setupTextoTopAppBar(binding.conversationDetailsAppbar, NavigationIcon.Arrow)
         applyCustomColors()
         styleDetails()
     }

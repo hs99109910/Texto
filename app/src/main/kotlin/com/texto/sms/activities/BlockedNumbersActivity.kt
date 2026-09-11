@@ -10,7 +10,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import com.texto.sms.extensions.beVisibleIf
 import com.texto.sms.extensions.toast
-import org.fossify.commons.helpers.NavigationIcon
+import com.texto.sms.helpers.NavigationIcon
 import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.viewBinding
 import com.texto.sms.R
@@ -33,13 +33,13 @@ class BlockedNumbersActivity : SimpleActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        setupTopAppBar(binding.blockedNumbersAppbar, NavigationIcon.Arrow)
+        setupTextoTopAppBar(binding.blockedNumbersAppbar, NavigationIcon.Arrow)
         binding.blockedNumbersToolbar.setNavigationOnClickListener { finish() }
     }
 
     override fun onResume() {
         super.onResume()
-        setupTopAppBar(binding.blockedNumbersAppbar, NavigationIcon.Arrow)
+        setupTextoTopAppBar(binding.blockedNumbersAppbar, NavigationIcon.Arrow)
         reload()
         applyCustomColors()
         updateAppFonts(binding.root)

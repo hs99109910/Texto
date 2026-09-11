@@ -5,21 +5,21 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.provider.ContactsContract
-import org.fossify.commons.activities.BaseSimpleActivity
 import org.fossify.commons.extensions.getMimeType
 import com.texto.sms.extensions.hideKeyboard
 import org.fossify.commons.extensions.launchViewContactIntent
 import com.texto.sms.extensions.showErrorToast
 import com.texto.sms.extensions.toast
-import org.fossify.commons.helpers.PERMISSION_CALL_PHONE
+import com.texto.sms.extensions.PERMISSION_CALL_PHONE
 import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.models.SimpleContact
 import com.texto.sms.activities.ConversationDetailsActivity
+import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.helpers.THREAD_ID
 import java.util.Locale
 
-fun BaseSimpleActivity.dialNumber(phoneNumber: String, callback: (() -> Unit)? = null) {
+fun SimpleActivity.dialNumber(phoneNumber: String, callback: (() -> Unit)? = null) {
     hideKeyboard()
     handlePermission(PERMISSION_CALL_PHONE) {
         val action = if (it) Intent.ACTION_CALL else Intent.ACTION_DIAL
