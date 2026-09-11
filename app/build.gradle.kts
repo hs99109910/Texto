@@ -191,6 +191,21 @@ configurations.configureEach {
     exclude(group = "androidx.activity", module = "activity-compose")
     exclude(group = "androidx.lifecycle", module = "lifecycle-runtime-compose")
     exclude(group = "androidx.lifecycle", module = "lifecycle-viewmodel-compose")
+
+    // The app-lock feature's biometric half. Commons offers a pattern/PIN/fingerprint lock;
+    // this app draws its own settings screen and offers no lock, and FossifyApp's
+    // isAppLockFeatureAvailable is read by nothing in commons 6.1.5 -- checked against the
+    // library's own bytecode. The manifest already removes the two permissions this brought.
+    exclude(group = "com.github.tibbi", module = "reprint")
+    exclude(group = "androidx.biometric")
+
+    // Commons' own view pager, for screens this app does not open.
+    exclude(group = "com.github.naveensingh", module = "rtl-viewpager")
+
+    // patternLockView and RecyclerView-FastScroller are *not* excluded, though nothing here
+    // uses either: commons' own resources reference theirs (dimen/corner_radius,
+    // color/colorPrimary), so dropping the artifacts fails resource linking rather than
+    // merely shrinking the build. They come out with commons itself.
 }
 
 dependencies {
