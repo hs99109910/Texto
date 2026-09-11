@@ -30,9 +30,8 @@ import com.bumptech.glide.load.resource.bitmap.FitCenter
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
-import org.fossify.commons.adapters.MyRecyclerViewListAdapter
 
-import org.fossify.commons.views.MyRecyclerView
+import com.texto.sms.views.TextoRecyclerView
 import com.texto.sms.R
 import com.texto.sms.activities.NewConversationActivity
 import com.texto.sms.activities.SimpleActivity
@@ -67,11 +66,11 @@ import com.texto.sms.extensions.viewBinding
 
 class ThreadAdapter(
     activity: SimpleActivity,
-    recyclerView: MyRecyclerView,
+    recyclerView: TextoRecyclerView,
     itemClick: (Any) -> Unit,
     private val isRecycleBin: Boolean,
     private val deleteMessages: (messages: List<Message>, toRecycleBin: Boolean, fromRecycleBin: Boolean) -> Unit
-) : MyRecyclerViewListAdapter<ThreadItem>(activity, recyclerView, ThreadItemDiffCallback(), itemClick) {
+) : BaseTextoRecyclerViewListAdapter<ThreadItem>(activity, recyclerView, ThreadItemDiffCallback(), itemClick) {
 
     /**
      * The activity's tap handler, kept as a property because [itemClick] is a plain
@@ -1085,7 +1084,7 @@ class ThreadAdapter(
         }
 
         imageViewBinding.attachmentImage.setOnClickListener {
-            if (actModeCallback.isSelectable) {
+            if (isSelecting()) {
                 holder.viewClicked(message)
             } else {
                 activity.launchViewIntent(uri, mimetype, attachment.filename)
@@ -1104,7 +1103,7 @@ class ThreadAdapter(
                 activity = activity,
                 uri = uri,
                 onClick = {
-                    if (actModeCallback.isSelectable) {
+                    if (isSelecting()) {
                         holder.viewClicked(message)
                     } else {
                         val intent = Intent(activity, VCardViewerActivity::class.java).also {
@@ -1129,7 +1128,7 @@ class ThreadAdapter(
                 title = attachment.filename,
                 mimeType = attachment.mimetype,
                 onClick = {
-                    if (actModeCallback.isSelectable) {
+                    if (isSelecting()) {
                         holder.viewClicked(message)
                     } else {
                         activity.launchViewIntent(uri, mimetype, attachment.filename)

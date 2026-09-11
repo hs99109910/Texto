@@ -3,7 +3,7 @@ package com.texto.sms.adapters
 import android.view.Menu
 import com.texto.sms.extensions.notificationManager
 import com.texto.sms.extensions.ensureBackgroundThread
-import org.fossify.commons.views.MyRecyclerView
+import com.texto.sms.views.TextoRecyclerView
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.extensions.deleteConversation
@@ -13,7 +13,7 @@ import com.texto.sms.helpers.textoConfirmDialog
 import com.texto.sms.models.Conversation
 
 class RecycleBinConversationsAdapter(
-    activity: SimpleActivity, recyclerView: MyRecyclerView, onRefresh: () -> Unit, itemClick: (Any) -> Unit
+    activity: SimpleActivity, recyclerView: TextoRecyclerView, onRefresh: () -> Unit, itemClick: (Any) -> Unit
 ) : BaseConversationsAdapter(activity, recyclerView, onRefresh, itemClick) {
     override fun getActionMenuId() = R.menu.cab_recycle_bin_conversations
 

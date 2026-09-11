@@ -21,7 +21,7 @@
 
     </org.fossify.commons.views.MyAppBarLayout>
 
-    <org.fossify.commons.views.MyRecyclerView
+    <com.texto.sms.views.TextoRecyclerView
         android:id="@+id/contacts_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

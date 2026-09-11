@@ -157,7 +157,7 @@
                     android:textSize="@dimen/bigger_text_size"
                     android:visibility="gone" />
 
-                <org.fossify.commons.views.MyRecyclerView
+                <com.texto.sms.views.TextoRecyclerView
                     android:id="@+id/conversations_list"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
@@ -319,7 +319,7 @@
                 android:textSize="@dimen/bigger_text_size"
                 android:textStyle="italic" />
 
-            <org.fossify.commons.views.MyRecyclerView
+            <com.texto.sms.views.TextoRecyclerView
                 android:id="@+id/search_results_list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

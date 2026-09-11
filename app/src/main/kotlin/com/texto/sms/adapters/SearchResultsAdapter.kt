@@ -6,10 +6,9 @@ import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
-import org.fossify.commons.adapters.MyRecyclerViewAdapter
 import com.texto.sms.extensions.highlightTextPart
 import com.texto.sms.helpers.SimpleContactsHelper
-import org.fossify.commons.views.MyRecyclerView
+import com.texto.sms.views.TextoRecyclerView
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.databinding.ItemSearchResultBinding
 import com.texto.sms.extensions.*
@@ -17,8 +16,8 @@ import com.texto.sms.models.SearchResult
 import com.texto.sms.helpers.TextoAvatars
 
 class SearchResultsAdapter(
-    activity: SimpleActivity, var searchResults: ArrayList<SearchResult>, recyclerView: MyRecyclerView, highlightText: String, itemClick: (Any) -> Unit
-) : MyRecyclerViewAdapter(activity, recyclerView, itemClick) {
+    activity: SimpleActivity, var searchResults: ArrayList<SearchResult>, recyclerView: TextoRecyclerView, highlightText: String, itemClick: (Any) -> Unit
+) : BaseTextoRecyclerViewAdapter(activity, recyclerView, itemClick) {
 
     private var fontSize = activity.getScaledTextSize()
     private var textToHighlight = highlightText

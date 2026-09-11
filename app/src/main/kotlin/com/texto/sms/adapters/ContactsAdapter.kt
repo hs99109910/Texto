@@ -10,12 +10,11 @@ import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import org.fossify.commons.adapters.MyRecyclerViewListAdapter
 import com.texto.sms.extensions.beGone
 import com.texto.sms.extensions.beVisibleIf
 import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.models.SimpleContact
-import org.fossify.commons.views.MyRecyclerView
+import com.texto.sms.views.TextoRecyclerView
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.extensions.*
@@ -29,9 +28,9 @@ import com.texto.sms.helpers.TextoGlass
 class ContactsAdapter(
     activity: SimpleActivity,
     items: ArrayList<out Any>,
-    recyclerView: MyRecyclerView,
+    recyclerView: TextoRecyclerView,
     itemClick: (Any) -> Unit
-) : MyRecyclerViewListAdapter<Any>(
+) : BaseTextoRecyclerViewListAdapter<Any>(
     activity = activity,
     recyclerView = recyclerView,
     diffUtil = ContactsDiffCallback(),
@@ -83,7 +82,7 @@ class ContactsAdapter(
         return if (position < suggestionsCount) VIEW_TYPE_SUGGESTION else VIEW_TYPE_CONTACT
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyRecyclerViewListAdapter<Any>.ViewHolder {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = when (viewType) {
             VIEW_TYPE_SUGGESTION -> com.texto.sms.databinding.ItemConversationRecentBinding.inflate(layoutInflater, parent, false)
             VIEW_TYPE_MODERN_PILL -> com.texto.sms.databinding.ItemConversationPillBinding.inflate(layoutInflater, parent, false)
@@ -92,7 +91,7 @@ class ContactsAdapter(
         return ContactViewHolder(binding)
     }
 
-    override fun onBindViewHolder(holder: MyRecyclerViewListAdapter<Any>.ViewHolder, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = getItem(position)
         val view = holder.itemView
         when (getItemViewType(position)) {
@@ -103,7 +102,7 @@ class ContactsAdapter(
         bindViewHolder(holder)
     }
 
-    private fun setupSuggestionView(view: View, item: ConversationListItem, holder: MyRecyclerViewListAdapter<Any>.ViewHolder) {
+    private fun setupSuggestionView(view: View, item: ConversationListItem, holder: ViewHolder) {
         val conversation = item.conversation
         ItemConversationRecentBinding.bind(view).apply {
             val mainTextColor = activity.config.mainTextColor
@@ -125,7 +124,7 @@ class ContactsAdapter(
         }
     }
 
-    private fun setupContactView(view: View, item: Any, holder: MyRecyclerViewListAdapter<Any>.ViewHolder) {
+    private fun setupContactView(view: View, item: Any, holder: ViewHolder) {
         ItemConversationBinding.bind(view).apply {
             val texto = activity as SimpleActivity
             val mainTextColor = activity.config.mainTextColor
@@ -211,7 +210,7 @@ class ContactsAdapter(
         }
     }
 
-    private fun setupModernPillView(view: View, item: Any, holder: MyRecyclerViewListAdapter<Any>.ViewHolder) {
+    private fun setupModernPillView(view: View, item: Any, holder: ViewHolder) {
         com.texto.sms.databinding.ItemConversationPillBinding.bind(view).apply {
             val mainTextColor = activity.config.mainTextColor
             val contact = item as SimpleContact

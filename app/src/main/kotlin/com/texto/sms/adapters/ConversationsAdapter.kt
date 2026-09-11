@@ -10,7 +10,7 @@ import com.texto.sms.extensions.launchActivityIntent
 import com.texto.sms.extensions.notificationManager
 import com.texto.sms.extensions.KEY_PHONE
 import com.texto.sms.extensions.ensureBackgroundThread
-import org.fossify.commons.views.MyRecyclerView
+import com.texto.sms.views.TextoRecyclerView
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.dialogs.RenameConversationDialog
@@ -30,7 +30,7 @@ import com.texto.sms.models.Conversation
 
 class ConversationsAdapter(
     activity: SimpleActivity,
-    recyclerView: MyRecyclerView,
+    recyclerView: TextoRecyclerView,
     onRefresh: () -> Unit,
     itemClick: (Any) -> Unit
 ) : BaseConversationsAdapter(activity, recyclerView, onRefresh, itemClick) {

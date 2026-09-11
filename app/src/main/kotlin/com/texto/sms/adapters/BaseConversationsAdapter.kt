@@ -17,14 +17,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller
-import org.fossify.commons.adapters.MyRecyclerViewListAdapter
 import com.texto.sms.extensions.applyColorFilter
 import com.texto.sms.extensions.beVisibleIf
 import com.texto.sms.extensions.setupViewBackground
 import com.texto.sms.extensions.toast
 import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
-import org.fossify.commons.views.MyRecyclerView
+import com.texto.sms.views.TextoRecyclerView
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.databinding.ItemConversationBinding
@@ -36,10 +35,10 @@ import com.texto.sms.models.Conversation
 @Suppress("LeakingThis")
 abstract class BaseConversationsAdapter(
     activity: SimpleActivity,
-    recyclerView: MyRecyclerView,
+    recyclerView: TextoRecyclerView,
     onRefresh: () -> Unit,
     itemClick: (Any) -> Unit,
-) : MyRecyclerViewListAdapter<Conversation>(
+) : BaseTextoRecyclerViewListAdapter<Conversation>(
     activity = activity,
     recyclerView = recyclerView,
     diffUtil = ConversationDiffCallback(),
