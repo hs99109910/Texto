@@ -2,11 +2,17 @@ package com.texto.sms.helpers
 
 import android.content.Context
 import android.graphics.Color
-import org.fossify.commons.helpers.BaseConfig
+import android.text.format.DateFormat as AndroidDateFormat
+import com.texto.sms.extensions.PREFS_KEY
 import com.texto.sms.extensions.getDefaultKeyboardHeight
 import com.texto.sms.models.Conversation
+import java.text.SimpleDateFormat
+import java.util.Locale
 
-class Config(context: Context) : BaseConfig(context) {
+class Config(val context: Context) {
+    val prefs: android.content.SharedPreferences =
+        context.getSharedPreferences(PREFS_KEY, Context.MODE_PRIVATE)
+
     companion object {
         fun newInstance(context: Context) = Config(context)
         
@@ -826,4 +832,89 @@ class Config(context: Context) : BaseConfig(context) {
         }
         editor.apply()
     }
+
+    // The properties below used to come free from commons' BaseConfig. Nothing here ever
+    // rendered on screen -- every visible colour in the app is one of the properties above,
+    // read through TextoGlass and the app's own theme system -- so these keep exactly the
+    // defaults BaseConfig shipped, read from its own bytecode rather than assumed, and are
+    // folded in here now that Config no longer extends it.
+
+    /** Whether the SMS/MMS receivers should silently drop a message from an unknown number. */
+    var blockUnknownNumbers: Boolean
+        get() = prefs.getBoolean(BLOCK_UNKNOWN_NUMBERS, false)
+        set(value) = prefs.edit().putBoolean(BLOCK_UNKNOWN_NUMBERS, value).apply()
+
+    /**
+     * Forced to 100 on every launch (see App.onCreate) to keep it past the "just installed"
+     * checks in MainActivity that would otherwise close the app if the SMS-default prompt is
+     * declined on a fresh install.
+     */
+    var appRunCount: Int
+        get() = prefs.getInt(APP_RUN_COUNT, 0)
+        set(value) = prefs.edit().putInt(APP_RUN_COUNT, value).apply()
+
+    var appId: String
+        get() = prefs.getString(APP_ID, "")!!
+        set(value) = prefs.edit().putString(APP_ID, value).apply()
+
+    var appSideloadingStatus: Int
+        get() = prefs.getInt(APP_SIDELOADING_STATUS, 0)
+        set(value) = prefs.edit().putInt(APP_SIDELOADING_STATUS, value).apply()
+
+    var hadThankYouInstalled: Boolean
+        get() = prefs.getBoolean(HAD_THANK_YOU_INSTALLED, false)
+        set(value) = prefs.edit().putBoolean(HAD_THANK_YOU_INSTALLED, value).apply()
+
+    var fontSize: Int
+        get() = prefs.getInt(FONT_SIZE, 1) // 0 small, 1 medium, 2 large, 3 extra large
+        set(value) = prefs.edit().putInt(FONT_SIZE, value).apply()
+
+    /**
+     * The pattern message-detail screens and vCard export format a date with. Nothing in the
+     * app ever writes this -- there is no date-format picker -- so every install reads the
+     * one default BaseConfig computed from the phone's own short-date pattern, matched against
+     * a small set of canonical formats. Kept faithful to that matching rather than simplified,
+     * since simplifying it would be a silent, unrequested behaviour change on installs whose
+     * locale does not fall through to the final default.
+     */
+    var dateFormat: String
+        get() = prefs.getString(DATE_FORMAT, null) ?: defaultDateFormat()
+        set(value) = prefs.edit().putString(DATE_FORMAT, value).apply()
+
+    private fun defaultDateFormat(): String {
+        val localized = (AndroidDateFormat.getDateFormat(context) as? SimpleDateFormat)
+            ?.toLocalizedPattern() ?: return "d MMMM yyyy"
+        val key = localized.replace(",", "").lowercase(Locale.ROOT)
+        return when (key) {
+            "d.m.y" -> "dd.MM.yyyy"
+            "dd/mm/y" -> "dd/MM/yyyy"
+            "mm/dd/y" -> "MM/dd/yyyy"
+            "y-mm-dd" -> "yyyy-MM-dd"
+            "dmmmmy" -> "d MMMM yyyy"
+            "mmmmdy" -> "MMMM d yyyy"
+            "mm-dd-y" -> "MM-dd-yyyy"
+            "dd-mm-y" -> "dd-MM-yyyy"
+            else -> "d MMMM yyyy"
+        }
+    }
+
+    /**
+     * The three colours below are BaseConfig's own defaults -- read from its bytecode, not
+     * assumed -- kept for parity with whatever an install that never wrote them is already
+     * showing. Nothing in this app's own screens draws with them: [properPrimaryColor] in the
+     * two RecyclerView adapter bases is the only reader, for a selection-row glow and a
+     * search-result highlight, and it is worth knowing that colour has been commons' own dark
+     * green (`#106D1F`) the whole time rather than anything from the app's own theme.
+     */
+    var textColor: Int
+        get() = prefs.getInt(TEXT_COLOR_BASE, Color.parseColor("#EEEEEE"))
+        set(value) = prefs.edit().putInt(TEXT_COLOR_BASE, value).apply()
+
+    var backgroundColor: Int
+        get() = prefs.getInt(BACKGROUND_COLOR_BASE, Color.parseColor("#161616"))
+        set(value) = prefs.edit().putInt(BACKGROUND_COLOR_BASE, value).apply()
+
+    var primaryColor: Int
+        get() = prefs.getInt(PRIMARY_COLOR_BASE, 0xFF106D1F.toInt())
+        set(value) = prefs.edit().putInt(PRIMARY_COLOR_BASE, value).apply()
 }

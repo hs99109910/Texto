@@ -1587,9 +1587,9 @@ class MainActivity : SimpleActivity() {
         }
 
         // Every row is now a full-width card, so a single column is used in both UI modes.
-        if (binding.conversationsList.layoutManager !is org.fossify.commons.views.MyLinearLayoutManager) {
+        if (binding.conversationsList.layoutManager !is com.texto.sms.views.TextoLinearLayoutManager) {
             binding.conversationsList.layoutManager =
-                org.fossify.commons.views.MyLinearLayoutManager(this)
+                com.texto.sms.views.TextoLinearLayoutManager(this)
         }
 
         // No per-position offsets: the card's own margin is the only gap, so the spacing

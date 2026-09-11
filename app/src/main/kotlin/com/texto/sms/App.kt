@@ -1,12 +1,12 @@
 package com.texto.sms
 
+import android.app.Application
 import android.content.pm.ApplicationInfo
 import android.database.ContentObserver
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.provider.ContactsContract
-import org.fossify.commons.FossifyApp
 import com.texto.sms.extensions.hasPermission
 import com.texto.sms.extensions.PERMISSION_READ_CONTACTS
 import com.texto.sms.extensions.ensureBackgroundThread
@@ -17,9 +17,7 @@ import com.texto.sms.helpers.Config
 import com.texto.sms.helpers.MessagingCache
 import com.texto.sms.helpers.TextoLocale
 
-class App : FossifyApp() {
-    override val isAppLockFeatureAvailable = true
-
+class App : Application() {
     /**
      * Notifications, toasts posted from a receiver and anything else built off the
      * application context resolve their strings here, not on an activity. Without this the

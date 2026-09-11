@@ -18,7 +18,6 @@ import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
-import org.fossify.commons.activities.BaseSimpleActivity
 
 import com.texto.sms.R
 import com.texto.sms.activities.VCardViewerActivity
@@ -46,7 +45,7 @@ import com.texto.sms.extensions.showErrorToast
 import com.texto.sms.extensions.viewBinding
 
 class AttachmentsAdapter(
-    val activity: BaseSimpleActivity,
+    val activity: com.texto.sms.activities.SimpleActivity,
     val recyclerView: RecyclerView,
     val onAttachmentsRemoved: () -> Unit,
     val onReady: (() -> Unit)

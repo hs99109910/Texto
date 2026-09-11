@@ -508,10 +508,6 @@ class NewConversationActivity : SimpleActivity() {
         finish()
     }
 
-    override fun getAppIconIDs() = arrayListOf(R.mipmap.ic_launcher)
-    override fun getAppLauncherName() = getString(R.string.app_launcher_name)
-    override fun getRepositoryName() = "Messages"
-
     private fun applyOutlines() = binding.apply {
         val density = resources.displayMetrics.density
         val isNewUi = config.useNewUi

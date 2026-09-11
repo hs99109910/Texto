@@ -5,7 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.provider.Telephony
 import android.telephony.SubscriptionManager
-import org.fossify.commons.extensions.baseConfig
+import com.texto.sms.extensions.config
 import com.texto.sms.helpers.isNumberBlockedBySystem
 import com.texto.sms.helpers.ContactLookupResult
 import com.texto.sms.helpers.SimpleContactsHelper
@@ -46,7 +46,7 @@ class SmsReceiver : BroadcastReceiver() {
                 val body = buildString { parts.forEach { append(it.messageBody.orEmpty()) } }
 
                 if (appContext.isNumberBlockedBySystem(address)) return@ensureBackgroundThread
-                if (appContext.baseConfig.blockUnknownNumbers) {
+                if (appContext.config.blockUnknownNumbers) {
                     val result = SimpleContactsHelper(appContext).existsSync(address, null)
                     if (result == ContactLookupResult.NotFound) return@ensureBackgroundThread
                 }

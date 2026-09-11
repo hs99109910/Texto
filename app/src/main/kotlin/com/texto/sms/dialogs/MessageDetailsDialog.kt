@@ -2,38 +2,98 @@ package com.texto.sms.dialogs
 
 import android.annotation.SuppressLint
 import android.telephony.SubscriptionInfo
+import android.util.TypedValue
+import android.view.Gravity
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
 import com.texto.sms.activities.SimpleActivity
-import org.fossify.commons.dialogs.BasePropertiesDialog
-import com.texto.sms.helpers.getAlertDialogBuilder
-import com.texto.sms.extensions.getTimeFormatWithSeconds
-import com.texto.sms.helpers.setupDialogStuff
-import com.texto.sms.R
 import com.texto.sms.extensions.config
+import com.texto.sms.extensions.getTimeFormatWithSeconds
+import com.texto.sms.extensions.showErrorToast
+import com.texto.sms.extensions.toast
 import com.texto.sms.helpers.applyTextoDialogSkin
+import com.texto.sms.helpers.getAlertDialogBuilder
+import com.texto.sms.helpers.setupDialogStuff
+import com.texto.sms.extensions.copyToClipboard
 import com.texto.sms.extensions.subscriptionManagerCompat
+import com.texto.sms.extensions.withAlpha
 import com.texto.sms.models.Message
+import com.texto.sms.R
 import org.joda.time.DateTime
 
-class MessageDetailsDialog(val activity: SimpleActivity, val message: Message) : BasePropertiesDialog(activity) {
+/**
+ * Replaces commons' `BasePropertiesDialog`: a scrolling stack of label/value rows, each row
+ * copying its value to the clipboard on long-press -- the one behaviour that dialog gave for
+ * free and this app's own message-details screen still wants.
+ */
+class MessageDetailsDialog(val activity: SimpleActivity, val message: Message) {
     init {
         @SuppressLint("MissingPermission")
         val availableSIMs = activity.subscriptionManagerCompat().activeSubscriptionInfoList.orEmpty()
 
-        addProperty(message.getSenderOrReceiverLabel(), message.getSenderOrReceiverPhoneNumbers())
-        if (availableSIMs.count() > 1) {
-            addProperty(R.string.message_details_sim, message.getSIM(availableSIMs))
+        val holder = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            val side = 16.getScaledPx()
+            setPadding(side, 0, side, 0)
         }
-        addProperty(message.getSentOrReceivedAtLabel(), message.getSentOrReceivedAt())
+        val scroll = ScrollView(activity).addView(holder)
+
+        addProperty(holder, message.getSenderOrReceiverLabel(), message.getSenderOrReceiverPhoneNumbers())
+        if (availableSIMs.count() > 1) {
+            addProperty(holder, R.string.message_details_sim, message.getSIM(availableSIMs))
+        }
+        addProperty(holder, message.getSentOrReceivedAtLabel(), message.getSentOrReceivedAt())
 
         activity.getAlertDialogBuilder()
             .setPositiveButton(R.string.action_confirm) { _, _ -> }
             .apply {
                 activity.setupDialogStuff(
-                    mDialogView.root, this, R.string.message_details
+                    scroll, this, R.string.message_details
                 ) { alertDialog ->
-                    (activity as? SimpleActivity)?.applyTextoDialogSkin(alertDialog)
+                    activity.applyTextoDialogSkin(alertDialog)
                 }
             }
+    }
+
+    private fun ScrollView.addView(child: LinearLayout): ScrollView {
+        addView(child)
+        return this
+    }
+
+    private fun px(dp: Int): Int = with(activity) { dp.getScaledPx() }
+
+    private fun addProperty(holder: LinearLayout, labelRes: Int, value: String) {
+        val row = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            isClickable = true
+            isLongClickable = true
+        }
+        val label = TextView(activity).apply {
+            text = activity.getString(labelRes)
+            setTextColor(activity.config.mainTextColor.withAlpha(0.6f))
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, activity.getScaledTextSize(0.85f))
+            gravity = Gravity.START
+            setPadding(px(4), px(16), px(4), 0)
+        }
+        val valueView = TextView(activity).apply {
+            text = value
+            setTextColor(activity.config.mainTextColor)
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, activity.getScaledTextSize(1.05f))
+            gravity = Gravity.START
+            setPadding(px(4), px(2), px(4), px(4))
+        }
+        row.addView(label)
+        row.addView(valueView)
+        row.setOnLongClickListener {
+            try {
+                activity.copyToClipboard(value)
+            } catch (e: Exception) {
+                activity.showErrorToast(e)
+            }
+            true
+        }
+        holder.addView(row)
     }
 
     private fun Message.getSenderOrReceiverLabel(): Int {
@@ -64,7 +124,7 @@ class MessageDetailsDialog(val activity: SimpleActivity, val message: Message) :
 
     private fun Message.getSIM(availableSIMs: List<SubscriptionInfo>): String {
         return availableSIMs.firstOrNull { it.subscriptionId == subscriptionId }?.displayName?.toString()
-            ?: activity.getString(org.fossify.commons.R.string.unknown)
+            ?: activity.getString(R.string.unknown)
     }
 
     private fun Message.getSentOrReceivedAtLabel(): Int {

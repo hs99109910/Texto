@@ -17,7 +17,7 @@ import androidx.core.view.updateLayoutParams
 import android.widget.TextView
 
 import com.texto.sms.helpers.NavigationIcon
-import org.fossify.commons.views.MyAppBarLayout
+import com.texto.sms.views.TextoAppBarLayout
 import com.texto.sms.helpers.textoCapsuleDialog
 import com.texto.sms.BuildConfig
 import com.texto.sms.extensions.viewBinding
@@ -54,7 +54,7 @@ class SettingsActivity : SimpleActivity() {
         setupEdgeToEdge(padBottomImeAndSystem = listOf(binding.settingsNestedScrollview))
         setupTextoTopAppBar(binding.settingsAppbar, NavigationIcon.Arrow, Color.TRANSPARENT)
 
-        (binding.settingsAppbar as? MyAppBarLayout)?.let { appBar ->
+        (binding.settingsAppbar as? TextoAppBarLayout)?.let { appBar ->
             appBar.setBackgroundColor(Color.TRANSPARENT)
             binding.settingsToolbar.navigationIcon?.setTint(config.topBarTextColor)
             binding.settingsToolbar.setNavigationOnClickListener { finish() }
@@ -1066,10 +1066,10 @@ class SettingsActivity : SimpleActivity() {
      * strings arrive in English under this app's locked locale, so the row read "Medium".
      */
     private val fontSizes = listOf(
-        org.fossify.commons.helpers.FONT_SIZE_SMALL to R.string.font_size_small,
-        org.fossify.commons.helpers.FONT_SIZE_MEDIUM to R.string.font_size_medium,
-        org.fossify.commons.helpers.FONT_SIZE_LARGE to R.string.font_size_large,
-        org.fossify.commons.helpers.FONT_SIZE_EXTRA_LARGE to R.string.font_size_extra_large,
+        com.texto.sms.helpers.FONT_SIZE_SMALL to R.string.font_size_small,
+        com.texto.sms.helpers.FONT_SIZE_MEDIUM to R.string.font_size_medium,
+        com.texto.sms.helpers.FONT_SIZE_LARGE to R.string.font_size_large,
+        com.texto.sms.helpers.FONT_SIZE_EXTRA_LARGE to R.string.font_size_extra_large,
     )
 
     /** The three states of the language setting, in the order the sheet lists them. */

@@ -39,7 +39,7 @@ import androidx.core.view.size
 import androidx.core.graphics.toColorInt
 import androidx.core.view.updateLayoutParams
 import com.google.android.material.appbar.AppBarLayout
-import org.fossify.commons.activities.BaseSimpleActivity
+import androidx.appcompat.app.AppCompatActivity
 import com.texto.sms.extensions.isRPlus
 import com.texto.sms.extensions.getTextSize
 import com.texto.sms.extensions.applyColorFilter
@@ -54,7 +54,7 @@ import com.texto.sms.helpers.*
 import java.io.File
 import kotlin.math.max
 
-open class SimpleActivity : BaseSimpleActivity() {
+open class SimpleActivity : AppCompatActivity() {
 
     val uiScale get() = config.uiScale
 
@@ -795,20 +795,70 @@ open class SimpleActivity : BaseSimpleActivity() {
         }
     }
 
-    private var isCheckingPackage = false
-
-    override fun getPackageName(): String {
-        return if (isCheckingPackage) "org.fossify.messages" else super.getPackageName()
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
-        isCheckingPackage = true
         super.onCreate(savedInstanceState)
-        isCheckingPackage = false
+        androidx.core.view.WindowCompat.enableEdgeToEdge(window)
 
         onBackPressedDispatcher.addCallback(this, selectionBackCallback)
         requestHighRefreshRate()
     }
+
+    /**
+     * Replaces commons' `EdgeToEdgeActivity.setupEdgeToEdge`. Every screen here calls it with
+     * exactly one of the two lists below -- confirmed by grep before dropping the other two
+     * commons offered (a top-inset list and a fourth bottom-inset variant), which nothing here
+     * ever populated.
+     */
+    fun setupEdgeToEdge(
+        padTopSystem: List<View> = emptyList(),
+        padBottomSystem: List<View> = emptyList(),
+        padBottomImeAndSystem: List<View> = emptyList(),
+    ) {
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content)) { _, insets ->
+            val systemBars = insets.getInsetsIgnoringVisibility(WindowInsetsCompat.Type.systemBars())
+            val imeAndSystemBars = insets.getInsets(
+                WindowInsetsCompat.Type.ime() or WindowInsetsCompat.Type.systemBars()
+            )
+            padTopSystem.forEach { it.updateBasePadding(top = systemBars.top) }
+            padBottomSystem.forEach { it.updateBasePadding(bottom = systemBars.bottom) }
+            padBottomImeAndSystem.forEach { it.updateBasePadding(bottom = imeAndSystemBars.bottom) }
+            insets
+        }
+        ViewCompat.requestApplyInsets(findViewById(android.R.id.content))
+    }
+
+    /**
+     * Adds [top]/[bottom] to whatever padding the view was laid out with, the way
+     * [TextoAppBarLayout] does for the app bar itself -- an inset callback fires more than
+     * once, and must not keep stacking a growing padding on top of its own previous result.
+     */
+    private fun View.updateBasePadding(top: Int? = null, bottom: Int? = null) {
+        val tagKey = R.id.texto_tag_base_padding
+        var base = getTag(tagKey) as? IntArray
+        if (base == null) {
+            base = intArrayOf(paddingLeft, paddingTop, paddingRight, paddingBottom)
+            setTag(tagKey, base)
+        }
+        setPadding(
+            paddingLeft,
+            if (top != null) base[1] + top else paddingTop,
+            paddingRight,
+            if (bottom != null) base[3] + bottom else paddingBottom,
+        )
+    }
+
+    /**
+     * Replaces commons' `EdgeToEdgeActivity.setupMaterialScrollListener`, which faded the app
+     * bar between two colours read off commons' own base theme -- exactly the trap this app
+     * has spent this whole pass removing everywhere else, on the one screen (vCard viewing)
+     * that still called it. [setupOverlayBars] already repaints this bar in the app's own
+     * theme colours on every resume, so there is nothing left here for a scroll listener to
+     * usefully animate between.
+     */
+    fun setupMaterialScrollListener(
+        @Suppress("UNUSED_PARAMETER") scrollingView: androidx.core.view.ScrollingView,
+        @Suppress("UNUSED_PARAMETER") topAppBar: com.google.android.material.appbar.AppBarLayout,
+    ) = Unit
 
     override fun onResume() {
         super.onResume()
@@ -1028,14 +1078,6 @@ open class SimpleActivity : BaseSimpleActivity() {
             }
         }
     }
-
-    override fun getAppIconIDs() = arrayListOf(
-        R.mipmap.ic_launcher
-    )
-
-    override fun getAppLauncherName() = getString(R.string.app_launcher_name)
-
-    override fun getRepositoryName() = "Messages"
 
     /** One row of [showBubbleMenu]. */
     data class BubbleAction(val id: Int, val label: String, val iconRes: Int)

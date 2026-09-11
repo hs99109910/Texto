@@ -22,6 +22,26 @@ const val USE_SIM_ID_PREFIX = "use_sim_id_"
  * because nothing has been released yet. After the first Play build this string is frozen.
  */
 const val NOTIFICATION_CHANNEL_ID = "texto_messages"
+
+// The nine keys below are commons' own pref names, kept as-is so an existing install's stored
+// values under them are still read after Config stopped inheriting BaseConfig.
+const val BLOCK_UNKNOWN_NUMBERS = "block_unknown_numbers"
+const val APP_RUN_COUNT = "app_run_count"
+const val APP_ID = "app_id"
+const val APP_SIDELOADING_STATUS = "app_sideloading_status"
+const val HAD_THANK_YOU_INSTALLED = "had_thank_you_installed"
+const val FONT_SIZE = "font_size"
+const val DATE_FORMAT = "date_format"
+const val TEXT_COLOR_BASE = "text_color"
+const val BACKGROUND_COLOR_BASE = "background_color"
+const val PRIMARY_COLOR_BASE = "primary_color_2"
+
+/** The four rungs [Config.fontSize] and [com.texto.sms.extensions.getTextSize] read. */
+const val FONT_SIZE_SMALL = 0
+const val FONT_SIZE_MEDIUM = 1
+const val FONT_SIZE_LARGE = 2
+const val FONT_SIZE_EXTRA_LARGE = 3
+
 const val SHOW_CHARACTER_COUNTER = "show_character_counter"
 const val USE_SIMPLE_CHARACTERS = "use_simple_characters"
 const val SEND_ON_ENTER = "send_on_enter"
