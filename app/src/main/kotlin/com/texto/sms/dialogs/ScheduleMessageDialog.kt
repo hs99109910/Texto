@@ -8,14 +8,14 @@ import androidx.appcompat.app.AlertDialog
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
 import org.fossify.commons.activities.BaseSimpleActivity
-import org.fossify.commons.extensions.applyColorFilter
+import com.texto.sms.extensions.applyColorFilter
 import org.fossify.commons.extensions.getAlertDialogBuilder
 import org.fossify.commons.extensions.getDatePickerDialogTheme
 import org.fossify.commons.extensions.getProperTextColor
 import org.fossify.commons.extensions.getTimeFormat
 import org.fossify.commons.extensions.isDynamicTheme
 import org.fossify.commons.extensions.setupDialogStuff
-import org.fossify.commons.extensions.toast
+import com.texto.sms.extensions.toast
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.databinding.ScheduleMessageDialogBinding

@@ -15,12 +15,12 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import com.reddit.indicatorfastscroll.FastScrollItemIndicator
-import org.fossify.commons.extensions.*
+
 import org.fossify.commons.helpers.MyContactsContentProvider
 import org.fossify.commons.helpers.NavigationIcon
 import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
 import org.fossify.commons.helpers.SimpleContactsHelper
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
 import org.fossify.commons.models.SimpleContact
 import com.texto.sms.R
 import com.texto.sms.adapters.ContactsAdapter
@@ -36,6 +36,41 @@ import com.texto.sms.helpers.THREAD_TEXT
 import com.texto.sms.helpers.THREAD_TITLE
 import com.texto.sms.messaging.isShortCodeWithLetters
 import java.util.Locale
+import org.fossify.commons.extensions.areSystemAnimationsEnabled
+import org.fossify.commons.extensions.copyToClipboard
+import org.fossify.commons.extensions.darkenColor
+import org.fossify.commons.extensions.formatSize
+import org.fossify.commons.extensions.getBottomNavigationBackgroundColor
+import org.fossify.commons.extensions.getColorStateList
+import org.fossify.commons.extensions.getContrastColor
+import org.fossify.commons.extensions.getFilenameFromPath
+import org.fossify.commons.extensions.getFilenameFromUri
+import org.fossify.commons.extensions.getMyContactsCursor
+import org.fossify.commons.extensions.getMyFileUri
+import org.fossify.commons.extensions.getTimeFormat
+import org.fossify.commons.extensions.hasPermission
+import org.fossify.commons.extensions.hideKeyboard
+import org.fossify.commons.extensions.isDynamicTheme
+import org.fossify.commons.extensions.maybeShowNumberPickerDialog
+import org.fossify.commons.extensions.normalizeString
+import org.fossify.commons.extensions.notificationManager
+import org.fossify.commons.extensions.onGlobalLayout
+import org.fossify.commons.extensions.onTextChangeListener
+import org.fossify.commons.extensions.openNotificationSettings
+import org.fossify.commons.extensions.openRequestExactAlarmSettings
+import org.fossify.commons.extensions.shareTextIntent
+import org.fossify.commons.extensions.showKeyboard
+import org.fossify.commons.extensions.underlineText
+import org.fossify.commons.extensions.updateTextColors
+import org.fossify.commons.extensions.usableScreenSize
+import com.texto.sms.extensions.applyColorFilter
+import com.texto.sms.extensions.beGone
+import com.texto.sms.extensions.beVisible
+import com.texto.sms.extensions.beGoneIf
+import com.texto.sms.extensions.beVisibleIf
+import com.texto.sms.extensions.toast
+import com.texto.sms.extensions.showErrorToast
+import com.texto.sms.extensions.viewBinding
 
 class NewConversationActivity : SimpleActivity() {
     private var allContacts = ArrayList<SimpleContact>()

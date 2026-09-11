@@ -10,8 +10,8 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import org.fossify.commons.extensions.beGone
-import org.fossify.commons.extensions.beVisible
+import com.texto.sms.extensions.beGone
+import com.texto.sms.extensions.beVisible
 import com.texto.sms.databinding.ItemFilterChipBinding
 import com.texto.sms.extensions.getScaledPx
 import com.texto.sms.extensions.getScaledPxIn

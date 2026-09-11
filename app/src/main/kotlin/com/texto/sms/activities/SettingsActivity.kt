@@ -15,18 +15,53 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.core.view.updateLayoutParams
 import android.widget.TextView
-import org.fossify.commons.extensions.*
+
 import org.fossify.commons.helpers.NavigationIcon
 import org.fossify.commons.helpers.PERMISSION_WRITE_STORAGE
 import org.fossify.commons.views.MyAppBarLayout
 import com.texto.sms.helpers.textoCapsuleDialog
 import com.texto.sms.BuildConfig
+import com.texto.sms.extensions.viewBinding
 import com.texto.sms.R
 import com.texto.sms.databinding.ActivitySettingsBinding
 import com.texto.sms.extensions.config
 import com.texto.sms.extensions.toUiDigits
 import com.texto.sms.extensions.uiPercentSign
 import com.texto.sms.helpers.*
+import org.fossify.commons.extensions.areSystemAnimationsEnabled
+import org.fossify.commons.extensions.copyToClipboard
+import org.fossify.commons.extensions.darkenColor
+import org.fossify.commons.extensions.formatSize
+import org.fossify.commons.extensions.getBottomNavigationBackgroundColor
+import org.fossify.commons.extensions.getColorStateList
+import org.fossify.commons.extensions.getContrastColor
+import org.fossify.commons.extensions.getFilenameFromPath
+import org.fossify.commons.extensions.getFilenameFromUri
+import org.fossify.commons.extensions.getMyContactsCursor
+import org.fossify.commons.extensions.getMyFileUri
+import org.fossify.commons.extensions.getTimeFormat
+import org.fossify.commons.extensions.hasPermission
+import org.fossify.commons.extensions.hideKeyboard
+import org.fossify.commons.extensions.isDynamicTheme
+import org.fossify.commons.extensions.maybeShowNumberPickerDialog
+import org.fossify.commons.extensions.normalizeString
+import org.fossify.commons.extensions.notificationManager
+import org.fossify.commons.extensions.onGlobalLayout
+import org.fossify.commons.extensions.onTextChangeListener
+import org.fossify.commons.extensions.openNotificationSettings
+import org.fossify.commons.extensions.openRequestExactAlarmSettings
+import org.fossify.commons.extensions.shareTextIntent
+import org.fossify.commons.extensions.showKeyboard
+import org.fossify.commons.extensions.underlineText
+import org.fossify.commons.extensions.updateTextColors
+import org.fossify.commons.extensions.usableScreenSize
+import com.texto.sms.extensions.applyColorFilter
+import com.texto.sms.extensions.beGone
+import com.texto.sms.extensions.beVisible
+import com.texto.sms.extensions.beGoneIf
+import com.texto.sms.extensions.beVisibleIf
+import com.texto.sms.extensions.toast
+import com.texto.sms.extensions.showErrorToast
 
 class SettingsActivity : SimpleActivity() {
 
@@ -462,7 +497,6 @@ class SettingsActivity : SimpleActivity() {
 
     }
 
-
     /**
      * The contacts-only filter toggle now lives on the main settings screen (outside every
      * collapsible section), so it is set up on its own rather than from setupNewUi().
@@ -689,7 +723,6 @@ class SettingsActivity : SimpleActivity() {
             }
         }
     }
-
 
     /**
      * Material's Slider throws IllegalStateException the first time it is measured with a
@@ -1058,7 +1091,6 @@ class SettingsActivity : SimpleActivity() {
         org.fossify.commons.helpers.FONT_SIZE_LARGE to R.string.font_size_large,
         org.fossify.commons.helpers.FONT_SIZE_EXTRA_LARGE to R.string.font_size_extra_large,
     )
-
 
     /** The three states of the language setting, in the order the sheet lists them. */
     private val languages = listOf(

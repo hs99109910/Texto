@@ -8,9 +8,9 @@ import ezvcard.property.Email
 import ezvcard.property.Telephone
 import org.fossify.commons.extensions.normalizePhoneNumber
 import org.fossify.commons.extensions.sendEmailIntent
-import org.fossify.commons.extensions.viewBinding
 import org.fossify.commons.helpers.NavigationIcon
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
+import com.texto.sms.extensions.viewBinding
 import com.texto.sms.R
 import com.texto.sms.adapters.VCardViewerAdapter
 import com.texto.sms.databinding.ActivityVcardViewerBinding

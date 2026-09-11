@@ -4,9 +4,9 @@ import androidx.appcompat.app.AlertDialog
 import org.fossify.commons.extensions.getAlertDialogBuilder
 import org.fossify.commons.extensions.getProperPrimaryColor
 import org.fossify.commons.extensions.setupDialogStuff
-import org.fossify.commons.extensions.toast
+import com.texto.sms.extensions.toast
 import org.fossify.commons.helpers.MEDIUM_ALPHA
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.databinding.DialogImportMessagesBinding

@@ -16,7 +16,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
-import org.fossify.commons.extensions.toast
+import com.texto.sms.extensions.toast
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.extensions.config

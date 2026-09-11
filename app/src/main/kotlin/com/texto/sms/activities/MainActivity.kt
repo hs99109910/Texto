@@ -27,8 +27,8 @@ import androidx.core.view.doOnLayout
 import androidx.core.view.updateLayoutParams
 import android.widget.RelativeLayout
 import androidx.core.widget.addTextChangedListener
-import org.fossify.commons.extensions.*
-import org.fossify.commons.helpers.*
+
+
 import com.texto.sms.R
 import com.texto.sms.adapters.ConversationsAdapter
 import com.texto.sms.adapters.SearchResultsAdapter
@@ -49,6 +49,53 @@ import com.texto.sms.models.SearchResult
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
+import org.fossify.commons.extensions.areSystemAnimationsEnabled
+import org.fossify.commons.extensions.copyToClipboard
+import org.fossify.commons.extensions.darkenColor
+import org.fossify.commons.extensions.formatSize
+import org.fossify.commons.extensions.getBottomNavigationBackgroundColor
+import org.fossify.commons.extensions.getColorStateList
+import org.fossify.commons.extensions.getContrastColor
+import org.fossify.commons.extensions.getFilenameFromPath
+import org.fossify.commons.extensions.getFilenameFromUri
+import org.fossify.commons.extensions.getMyContactsCursor
+import org.fossify.commons.extensions.getMyFileUri
+import org.fossify.commons.extensions.getTimeFormat
+import org.fossify.commons.extensions.hasPermission
+import org.fossify.commons.extensions.hideKeyboard
+import org.fossify.commons.extensions.isDynamicTheme
+import org.fossify.commons.extensions.maybeShowNumberPickerDialog
+import org.fossify.commons.extensions.normalizeString
+import org.fossify.commons.extensions.notificationManager
+import org.fossify.commons.extensions.onGlobalLayout
+import org.fossify.commons.extensions.onTextChangeListener
+import org.fossify.commons.extensions.openNotificationSettings
+import org.fossify.commons.extensions.openRequestExactAlarmSettings
+import org.fossify.commons.extensions.shareTextIntent
+import org.fossify.commons.extensions.showKeyboard
+import org.fossify.commons.extensions.underlineText
+import org.fossify.commons.extensions.updateTextColors
+import org.fossify.commons.extensions.usableScreenSize
+import com.texto.sms.extensions.applyColorFilter
+import com.texto.sms.extensions.beGone
+import com.texto.sms.extensions.beVisible
+import com.texto.sms.extensions.beGoneIf
+import com.texto.sms.extensions.beVisibleIf
+import com.texto.sms.extensions.toast
+import com.texto.sms.extensions.showErrorToast
+import com.texto.sms.extensions.viewBinding
+import org.fossify.commons.helpers.MyContactsContentProvider
+import org.fossify.commons.helpers.NavigationIcon
+import org.fossify.commons.helpers.PERMISSION_CAMERA
+import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
+import org.fossify.commons.helpers.PERMISSION_READ_PHONE_STATE
+import org.fossify.commons.helpers.PERMISSION_READ_SMS
+import org.fossify.commons.helpers.PERMISSION_RECORD_AUDIO
+import org.fossify.commons.helpers.PERMISSION_SEND_SMS
+import org.fossify.commons.helpers.SimpleContactsHelper
+import org.fossify.commons.helpers.isQPlus
+import org.fossify.commons.helpers.isSPlus
+import androidx.core.view.isVisible
 
 class MainActivity : SimpleActivity() {
 

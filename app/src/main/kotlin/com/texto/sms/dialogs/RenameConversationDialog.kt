@@ -4,7 +4,7 @@ import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.helpers.textoInputDialog
 import com.texto.sms.models.Conversation
-import org.fossify.commons.extensions.toast
+import com.texto.sms.extensions.toast
 
 /**
  * Renaming a conversation.

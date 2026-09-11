@@ -11,7 +11,7 @@ import android.view.ViewOutlineProvider
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
-import org.fossify.commons.extensions.applyColorFilter
+import com.texto.sms.extensions.applyColorFilter
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.databinding.DialogAttachmentPickerBinding

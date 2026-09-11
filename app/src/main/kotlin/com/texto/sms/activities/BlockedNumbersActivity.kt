@@ -8,11 +8,11 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import org.fossify.commons.extensions.beVisibleIf
-import org.fossify.commons.extensions.toast
-import org.fossify.commons.extensions.viewBinding
+import com.texto.sms.extensions.beVisibleIf
+import com.texto.sms.extensions.toast
 import org.fossify.commons.helpers.NavigationIcon
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
+import com.texto.sms.extensions.viewBinding
 import com.texto.sms.R
 import com.texto.sms.databinding.ActivityBlockedNumbersBinding
 import com.texto.sms.extensions.asLtrPhone

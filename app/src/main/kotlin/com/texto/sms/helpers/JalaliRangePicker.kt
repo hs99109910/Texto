@@ -19,7 +19,7 @@ import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.extensions.TextoCalendar
 import com.texto.sms.extensions.config
 import com.texto.sms.extensions.toUiDigits
-import org.fossify.commons.extensions.applyColorFilter
+import com.texto.sms.extensions.applyColorFilter
 import com.texto.sms.extensions.withAlpha
 import java.util.Calendar
 

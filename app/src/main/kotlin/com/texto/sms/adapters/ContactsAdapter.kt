@@ -11,8 +11,8 @@ import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import org.fossify.commons.adapters.MyRecyclerViewListAdapter
-import org.fossify.commons.extensions.beGone
-import org.fossify.commons.extensions.beVisibleIf
+import com.texto.sms.extensions.beGone
+import com.texto.sms.extensions.beVisibleIf
 import org.fossify.commons.helpers.SimpleContactsHelper
 import org.fossify.commons.models.SimpleContact
 import org.fossify.commons.views.MyRecyclerView

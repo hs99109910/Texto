@@ -11,7 +11,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
 import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions
 import com.bumptech.glide.request.RequestOptions
-import org.fossify.commons.extensions.*
+
 import org.fossify.commons.helpers.SimpleContactsHelper
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
@@ -19,6 +19,41 @@ import com.texto.sms.databinding.ItemVcardContactBinding
 import com.texto.sms.databinding.ItemVcardContactPropertyBinding
 import com.texto.sms.models.VCardPropertyWrapper
 import com.texto.sms.models.VCardWrapper
+import org.fossify.commons.extensions.areSystemAnimationsEnabled
+import org.fossify.commons.extensions.copyToClipboard
+import org.fossify.commons.extensions.darkenColor
+import org.fossify.commons.extensions.formatSize
+import org.fossify.commons.extensions.getBottomNavigationBackgroundColor
+import org.fossify.commons.extensions.getColorStateList
+import org.fossify.commons.extensions.getContrastColor
+import org.fossify.commons.extensions.getFilenameFromPath
+import org.fossify.commons.extensions.getFilenameFromUri
+import org.fossify.commons.extensions.getMyContactsCursor
+import org.fossify.commons.extensions.getMyFileUri
+import org.fossify.commons.extensions.getTimeFormat
+import org.fossify.commons.extensions.hasPermission
+import org.fossify.commons.extensions.hideKeyboard
+import org.fossify.commons.extensions.isDynamicTheme
+import org.fossify.commons.extensions.maybeShowNumberPickerDialog
+import org.fossify.commons.extensions.normalizeString
+import org.fossify.commons.extensions.notificationManager
+import org.fossify.commons.extensions.onGlobalLayout
+import org.fossify.commons.extensions.onTextChangeListener
+import org.fossify.commons.extensions.openNotificationSettings
+import org.fossify.commons.extensions.openRequestExactAlarmSettings
+import org.fossify.commons.extensions.shareTextIntent
+import org.fossify.commons.extensions.showKeyboard
+import org.fossify.commons.extensions.underlineText
+import org.fossify.commons.extensions.updateTextColors
+import org.fossify.commons.extensions.usableScreenSize
+import com.texto.sms.extensions.applyColorFilter
+import com.texto.sms.extensions.beGone
+import com.texto.sms.extensions.beVisible
+import com.texto.sms.extensions.beGoneIf
+import com.texto.sms.extensions.beVisibleIf
+import com.texto.sms.extensions.toast
+import com.texto.sms.extensions.showErrorToast
+import com.texto.sms.extensions.viewBinding
 
 private const val TYPE_VCARD_CONTACT = 1
 private const val TYPE_VCARD_CONTACT_PROPERTY = 2

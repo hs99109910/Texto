@@ -42,7 +42,7 @@ import com.google.android.material.appbar.AppBarLayout
 import org.fossify.commons.activities.BaseSimpleActivity
 import org.fossify.commons.helpers.isRPlus
 import org.fossify.commons.extensions.getTextSize
-import org.fossify.commons.extensions.applyColorFilter
+import com.texto.sms.extensions.applyColorFilter
 import com.texto.sms.R
 import com.texto.sms.extensions.config
 import com.texto.sms.helpers.*

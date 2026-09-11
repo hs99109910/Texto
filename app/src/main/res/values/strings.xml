@@ -405,6 +405,7 @@
         The %s placeholders match the ones commons declares : do not drop them.
     -->
     <string name="unknown_error_occurred">An unknown error occurred</string>
+    <string name="error">Error: %s</string>
     <string name="no_app_found">No app was found to do this</string>
     <string name="block_confirmation">Are you sure you want to block \"%s\"?</string>
     <string name="deletion_confirmation">Are you sure you want to delete %s?</string>

@@ -2,7 +2,7 @@ package com.texto.sms.dialogs
 
 import android.app.Activity
 import androidx.appcompat.app.AlertDialog
-import org.fossify.commons.extensions.beGoneIf
+import com.texto.sms.extensions.beGoneIf
 import org.fossify.commons.extensions.getAlertDialogBuilder
 import org.fossify.commons.extensions.setupDialogStuff
 import com.texto.sms.R

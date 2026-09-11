@@ -9,7 +9,7 @@ import android.provider.ContactsContract
 import org.fossify.commons.FossifyApp
 import org.fossify.commons.extensions.hasPermission
 import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.config
 import com.texto.sms.extensions.rescheduleAllScheduledMessages
 import com.texto.sms.helpers.AppThemes
