@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.media.ExifInterface
 import android.net.Uri
-import org.fossify.commons.extensions.getCompressionFormat
 import org.fossify.commons.extensions.getMyFileUri
 import org.fossify.commons.helpers.ensureBackgroundThread
 import com.texto.sms.extensions.extension

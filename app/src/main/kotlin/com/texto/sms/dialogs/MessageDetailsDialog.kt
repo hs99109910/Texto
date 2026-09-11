@@ -5,7 +5,6 @@ import android.telephony.SubscriptionInfo
 import org.fossify.commons.activities.BaseSimpleActivity
 import org.fossify.commons.dialogs.BasePropertiesDialog
 import org.fossify.commons.extensions.getAlertDialogBuilder
-import org.fossify.commons.extensions.getTimeFormat
 import org.fossify.commons.extensions.getTimeFormatWithSeconds
 import org.fossify.commons.extensions.setupDialogStuff
 import com.texto.sms.R

@@ -8,7 +8,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
 import org.fossify.commons.extensions.getAlertDialogBuilder
 import org.fossify.commons.extensions.getCurrentFormattedDateTime
-import org.fossify.commons.extensions.getProperPrimaryColor
 import org.fossify.commons.extensions.isAValidFilename
 import org.fossify.commons.extensions.setupDialogStuff
 import com.texto.sms.extensions.showErrorToast

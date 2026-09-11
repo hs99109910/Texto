@@ -37,7 +37,6 @@ import com.texto.sms.extensions.notificationManager
 import com.texto.sms.extensions.queryCursor
 import com.texto.sms.extensions.showErrorToast
 import com.texto.sms.extensions.toast
-import org.fossify.commons.extensions.trimToComparableNumber
 import org.fossify.commons.helpers.DAY_SECONDS
 import org.fossify.commons.helpers.MONTH_SECONDS
 import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS

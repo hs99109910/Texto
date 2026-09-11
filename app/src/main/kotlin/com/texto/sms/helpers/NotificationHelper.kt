@@ -15,7 +15,6 @@ import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
-import org.fossify.commons.extensions.getProperPrimaryColor
 import com.texto.sms.extensions.notificationManager
 import org.fossify.commons.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread

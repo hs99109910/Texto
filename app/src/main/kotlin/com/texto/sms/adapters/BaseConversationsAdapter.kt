@@ -20,10 +20,8 @@ import com.qtalk.recyclerviewfastscroller.RecyclerViewFastScroller
 import org.fossify.commons.adapters.MyRecyclerViewListAdapter
 import com.texto.sms.extensions.applyColorFilter
 import com.texto.sms.extensions.beVisibleIf
-import org.fossify.commons.extensions.getTextSize
 import org.fossify.commons.extensions.setupViewBackground
 import com.texto.sms.extensions.toast
-import org.fossify.commons.helpers.FontHelper
 import org.fossify.commons.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
 import org.fossify.commons.views.MyRecyclerView
