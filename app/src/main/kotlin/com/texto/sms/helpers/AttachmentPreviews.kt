@@ -21,7 +21,6 @@ import org.fossify.commons.extensions.getColorStateList
 import com.texto.sms.extensions.getContrastColor
 import org.fossify.commons.extensions.getFilenameFromPath
 import org.fossify.commons.extensions.getFilenameFromUri
-import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.getMyFileUri
 import org.fossify.commons.extensions.getTimeFormat
 import org.fossify.commons.extensions.hasPermission

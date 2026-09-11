@@ -8,8 +8,6 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.text.isDigitsOnly
-import org.fossify.commons.extensions.getMyContactsCursor
-import org.fossify.commons.helpers.MyContactsContentProvider
 import org.fossify.commons.helpers.SimpleContactsHelper
 import org.fossify.commons.helpers.isOnMainThread
 import org.fossify.commons.models.SimpleContact
@@ -35,16 +33,7 @@ class ShortcutHelper(private val context: Context) {
         conv: Conversation,
         capabilities: List<String> = emptyList(),
     ): ShortcutInfoCompat {
-        val contactsMap: HashMap<Int, SimpleContact>? = if (!isOnMainThread()) {
-            val privateCursor =
-                context.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
-            val contacts = MyContactsContentProvider.getSimpleContacts(context, privateCursor)
-            HashMap(contacts.associateBy { it.rawId })
-        } else {
-            null
-        }
-
-        val participants = context.getThreadParticipants(conv.threadId, contactsMap)
+        val participants = context.getThreadParticipants(conv.threadId, null)
         val persons: Array<Person> = participants.map { it.toPerson(context) }.toTypedArray()
         val intent = Intent(context, ThreadActivity::class.java).apply {
             action = Intent.ACTION_VIEW

@@ -30,7 +30,6 @@ import org.fossify.commons.extensions.areDigitsOnly
 import org.fossify.commons.extensions.getIntValue
 import org.fossify.commons.extensions.getIntValueOr
 import org.fossify.commons.extensions.getLongValue
-import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.getStringValue
 import org.fossify.commons.extensions.hasPermission
 import org.fossify.commons.extensions.normalizeString
@@ -41,7 +40,6 @@ import com.texto.sms.extensions.toast
 import org.fossify.commons.extensions.trimToComparableNumber
 import org.fossify.commons.helpers.DAY_SECONDS
 import org.fossify.commons.helpers.MONTH_SECONDS
-import org.fossify.commons.helpers.MyContactsContentProvider
 import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
 import org.fossify.commons.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
@@ -355,10 +353,7 @@ fun Context.getUnreadCountsByThread(): Map<Long, Int> {
     return result
 }
 
-fun Context.getConversations(
-    threadId: Long? = null,
-    privateContacts: ArrayList<SimpleContact> = ArrayList(),
-): ArrayList<Conversation> {
+fun Context.getConversations(threadId: Long? = null): ArrayList<Conversation> {
     val archiveAvailable = config.isArchiveAvailable
 
     val uri = "${Threads.CONTENT_URI}?simple=true".toUri()
@@ -427,7 +422,7 @@ fun Context.getConversations(
             && archiveAvailable
         ) {
             config.isArchiveAvailable = false
-            return getConversations(threadId, privateContacts)
+            return getConversations(threadId)
         } else {
             showErrorToast(sqliteException)
         }
@@ -456,12 +451,7 @@ fun Context.getConversations(
         val names = ArrayList<String>(phoneNumbers.size)
         phoneNumbers.forEachIndexed { index, number ->
             val resolvedName = namePhotos[index].name
-            if (resolvedName != number) {
-                names.add(resolvedName)
-            } else {
-                val privateContact = privateContacts.firstOrNull { it.doesHavePhoneNumber(number) }
-                names.add(privateContact?.name ?: resolvedName)
-            }
+            names.add(resolvedName)
         }
         val title = TextUtils.join(", ", names.toTypedArray())
         val photoUri =
@@ -741,27 +731,14 @@ fun Context.getPhoneNumbersFromAddressIds(addressIds: Collection<Int>): Map<Int,
     return result
 }
 
-fun Context.getThreadContactNames(
-    phoneNumbers: List<String>,
-    privateContacts: ArrayList<SimpleContact>,
-): ArrayList<String> {
+fun Context.getThreadContactNames(phoneNumbers: List<String>): ArrayList<String> {
     val names = ArrayList<String>()
     phoneNumbers.forEach { number ->
         // Reuse the LruCache-backed lookup (getNameAndPhotoFromPhoneNumber) instead of
         // SimpleContactsHelper(this).getNameFromPhoneNumber, which issues an uncached
         // contacts-provider query on every call -- previously once per recipient per
         // conversation, a dominant cost when loading a large conversation list.
-        val name = getNameAndPhotoFromPhoneNumber(number).name
-        if (name != number) {
-            names.add(name)
-        } else {
-            val privateContact = privateContacts.firstOrNull { it.doesHavePhoneNumber(number) }
-            if (privateContact == null) {
-                names.add(name)
-            } else {
-                names.add(privateContact.name)
-            }
-        }
+        names.add(getNameAndPhotoFromPhoneNumber(number).name)
     }
     return names
 }
@@ -934,10 +911,7 @@ fun Context.getContactRecency(limit: Int = 500): Map<String, Long> {
  * outright, which is backwards: somebody texted but never saved is among the likeliest people
  * to want to text again, and this screen offered no other way to reach them.
  */
-fun Context.getSuggestedContacts(
-    privateContacts: ArrayList<SimpleContact>,
-    limit: Int = 50,
-): ArrayList<SimpleContact> {
+fun Context.getSuggestedContacts(limit: Int = 50): ArrayList<SimpleContact> {
     val blockedNumbers = blockedNumbersSnapshot()
     // Newest first, de-duplicated by the same comparable form the recency map is keyed on --
     // one person reached by call and by SMS is one row.
@@ -974,17 +948,6 @@ fun Context.getSuggestedContacts(
             val namePhoto = getNameAndPhotoFromPhoneNumber(senderNumber)
             var senderName = namePhoto.name
             var photoUri = namePhoto.photoUri ?: ""
-
-            // No contact card: the phone book gives the number back as the name. Check the
-            // private contacts for a better one, and otherwise keep the number as the label.
-            if (namePhoto.name == senderNumber) {
-                privateContacts.firstOrNull {
-                    it.phoneNumbers.firstOrNull()?.normalizedNumber == senderNumber
-                }?.let {
-                    senderName = it.name
-                    photoUri = it.photoUri
-                }
-            }
 
             val phoneNumber = PhoneNumber(senderNumber, 0, "", senderNumber)
             contacts.add(
@@ -1481,26 +1444,12 @@ fun Context.showReceivedMessageNotification(
     )
 }
 
-fun Context.getNameFromAddress(address: String, privateCursor: Cursor?): String {
-    var sender = getNameAndPhotoFromPhoneNumber(address).name
-    if (address == sender) {
-        val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
-        sender = privateContacts.firstOrNull { it.doesHavePhoneNumber(address) }?.name ?: address
-    }
-    return sender
-}
+fun Context.getNameFromAddress(address: String): String =
+    getNameAndPhotoFromPhoneNumber(address).name
 
 fun Context.getContactFromAddress(address: String, callback: ((contact: SimpleContact?) -> Unit)) {
-    val privateCursor = getMyContactsCursor(false, true)
     SimpleContactsHelper(this).getAvailableContacts(false) {
-        val contact = it.firstOrNull { it.doesHavePhoneNumber(address) }
-        if (contact == null) {
-            val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
-            val privateContact = privateContacts.firstOrNull { it.doesHavePhoneNumber(address) }
-            callback(privateContact)
-        } else {
-            callback(contact)
-        }
+        callback(it.firstOrNull { contact -> contact.doesHavePhoneNumber(address) })
     }
 }
 

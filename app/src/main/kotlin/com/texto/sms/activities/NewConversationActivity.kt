@@ -16,7 +16,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import com.reddit.indicatorfastscroll.FastScrollItemIndicator
 
-import org.fossify.commons.helpers.MyContactsContentProvider
 import org.fossify.commons.helpers.NavigationIcon
 import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
 import org.fossify.commons.helpers.SimpleContactsHelper
@@ -45,7 +44,6 @@ import org.fossify.commons.extensions.getColorStateList
 import com.texto.sms.extensions.getContrastColor
 import org.fossify.commons.extensions.getFilenameFromPath
 import org.fossify.commons.extensions.getFilenameFromUri
-import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.getMyFileUri
 import org.fossify.commons.extensions.getTimeFormat
 import org.fossify.commons.extensions.hasPermission
@@ -74,7 +72,6 @@ import com.texto.sms.extensions.viewBinding
 
 class NewConversationActivity : SimpleActivity() {
     private var allContacts = ArrayList<SimpleContact>()
-    private var privateContacts = ArrayList<SimpleContact>()
     private var wasImeVisible = false
 
     /** Whether the address field is asking the IME for a keypad rather than a text keyboard. */
@@ -348,15 +345,6 @@ class NewConversationActivity : SimpleActivity() {
                 ensureBackgroundThread {
                     SimpleContactsHelper(this).getAvailableContacts(false) { contacts ->
                         allContacts = contacts as ArrayList<SimpleContact>
-
-                        val privateCursor = getMyContactsCursor(false, true)
-                        privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
-
-                        if (privateContacts.isNotEmpty()) {
-                            allContacts.addAll(privateContacts)
-                            allContacts.sortBy { it.name.lowercase() }
-                        }
-
                         contactRecency = getContactRecency()
 
                         runOnUiThread {
@@ -443,10 +431,7 @@ class NewConversationActivity : SimpleActivity() {
 
     private fun fillSuggestedContacts(callback: () -> Unit) {
         ensureBackgroundThread {
-            val privateCursor = getMyContactsCursor(false, true)
-            val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
-            
-            val suggestions = getSuggestedContacts(privateContacts)
+            val suggestions = getSuggestedContacts()
 
             // Merged on the number, not on contactId. Every suggestion is built with
             // contactId 0, so an id comparison matched the first one already added and threw

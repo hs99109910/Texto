@@ -80,7 +80,6 @@ import org.fossify.commons.extensions.getColorStateList
 import com.texto.sms.extensions.getContrastColor
 import org.fossify.commons.extensions.getFilenameFromPath
 import org.fossify.commons.extensions.getFilenameFromUri
-import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.getMyFileUri
 import org.fossify.commons.extensions.getTimeFormat
 import org.fossify.commons.extensions.hasPermission
@@ -107,7 +106,6 @@ import com.texto.sms.extensions.beVisibleIf
 import com.texto.sms.extensions.toast
 import com.texto.sms.extensions.showErrorToast
 import com.texto.sms.extensions.viewBinding
-import org.fossify.commons.helpers.MyContactsContentProvider
 import org.fossify.commons.helpers.NavigationIcon
 import org.fossify.commons.helpers.PERMISSION_CAMERA
 import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
@@ -139,7 +137,6 @@ class ThreadActivity : SimpleActivity() {
     private var bus: EventBus? = null
     private var conversation: Conversation? = null
     private var participants = ArrayList<SimpleContact>()
-    private var privateContactsMap = HashMap<Int, SimpleContact>()
     private var messages = ArrayList<Message>()
     private val availableSIMCards = ArrayList<SIMCard>()
     private var pendingAttachmentsToSave: List<Attachment>? = null
@@ -481,11 +478,7 @@ class ThreadActivity : SimpleActivity() {
             finish()
             return
         }
-        val privateCursor = getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
         ensureBackgroundThread {
-            val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
-            privateContacts.forEach { privateContactsMap[it.contactId] = it }
-
             val cachedMessagesCode = messages.hashCode()
             if (!isRecycleBin) {
                 val rawMessages = getMessages(threadId)
@@ -582,7 +575,6 @@ class ThreadActivity : SimpleActivity() {
 
         SimpleContactsHelper(this).getAvailableContacts(false) { contacts ->
             if (isFinishing || isDestroyed) return@getAvailableContacts
-            contacts.addAll(privateContactsMap.values)
             runOnUiThread {
                 if (isFinishing || isDestroyed) return@runOnUiThread
                 val adapter = AutoCompleteTextViewAdapter(this, contacts)
@@ -1246,7 +1238,7 @@ class ThreadActivity : SimpleActivity() {
 
     private fun setupParticipants() {
         ensureBackgroundThread {
-            participants = getThreadParticipants(threadId, privateContactsMap)
+            participants = getThreadParticipants(threadId, null)
             runOnUiThread {
                 if (isFinishing || isDestroyed) return@runOnUiThread
                 showSelectedContacts()

@@ -5,7 +5,6 @@ import android.net.Uri
 import com.bumptech.glide.Glide
 import com.klinker.android.send_message.MmsReceivedReceiver
 import org.fossify.commons.extensions.baseConfig
-import org.fossify.commons.extensions.getMyContactsCursor
 import com.texto.sms.helpers.isNumberBlockedBySystem
 import org.fossify.commons.extensions.showErrorToast
 import org.fossify.commons.helpers.ContactLookupResult
@@ -28,8 +27,7 @@ class MmsReceiver : MmsReceivedReceiver() {
     override fun isAddressBlocked(context: Context, address: String): Boolean {
         if (context.isNumberBlockedBySystem(address)) return true
         if (context.baseConfig.blockUnknownNumbers) {
-            val privateCursor = context.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
-            val result = SimpleContactsHelper(context).existsSync(address, privateCursor)
+            val result = SimpleContactsHelper(context).existsSync(address, null)
             return result == ContactLookupResult.NotFound
         }
 
@@ -69,9 +67,7 @@ class MmsReceiver : MmsReceivedReceiver() {
         }
 
 
-        val senderName = context.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true).use {
-            context.getNameFromAddress(address, it)
-        }
+        val senderName = context.getNameFromAddress(address)
 
         context.showReceivedMessageNotification(
             messageId = mms.id,

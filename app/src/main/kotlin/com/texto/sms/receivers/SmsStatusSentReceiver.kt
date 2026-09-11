@@ -9,7 +9,6 @@ import android.os.Looper
 import android.provider.Telephony.Sms
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
-import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.helpers.ensureBackgroundThread
 import com.texto.sms.extensions.getMessageRecipientAddress
 import com.texto.sms.extensions.getNameFromAddress
@@ -64,11 +63,11 @@ class SmsStatusSentReceiver : SendStatusReceiver() {
             if (ProcessLifecycleOwner.get().lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
                 return@post
             }
-            val privateCursor = context.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
+
             ensureBackgroundThread {
                 val address = context.getMessageRecipientAddress(messageId)
                 val threadId = context.getThreadId(address)
-                val recipientName = context.getNameFromAddress(address, privateCursor)
+                val recipientName = context.getNameFromAddress(address)
                 context.notificationHelper.showSendingFailedNotification(recipientName, threadId)
             }
         }

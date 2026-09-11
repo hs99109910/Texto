@@ -6,7 +6,6 @@ import android.content.Intent
 import android.provider.Telephony
 import android.telephony.SubscriptionManager
 import org.fossify.commons.extensions.baseConfig
-import org.fossify.commons.extensions.getMyContactsCursor
 import com.texto.sms.helpers.isNumberBlockedBySystem
 import org.fossify.commons.helpers.ContactLookupResult
 import org.fossify.commons.helpers.SimpleContactsHelper
@@ -48,9 +47,7 @@ class SmsReceiver : BroadcastReceiver() {
 
                 if (appContext.isNumberBlockedBySystem(address)) return@ensureBackgroundThread
                 if (appContext.baseConfig.blockUnknownNumbers) {
-                    val privateCursor =
-                        appContext.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
-                    val result = SimpleContactsHelper(appContext).existsSync(address, privateCursor)
+                    val result = SimpleContactsHelper(appContext).existsSync(address, null)
                     if (result == ContactLookupResult.NotFound) return@ensureBackgroundThread
                 }
 
@@ -115,9 +112,7 @@ class SmsReceiver : BroadcastReceiver() {
             runCatching { context.insertOrUpdateConversation(conv) }
         }
 
-        val senderName = context.getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true).use {
-            context.getNameFromAddress(address, it)
-        }
+        val senderName = context.getNameFromAddress(address)
 
         val participant = SimpleContact(
             rawId = 0,

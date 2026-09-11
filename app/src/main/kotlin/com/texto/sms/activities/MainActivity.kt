@@ -58,7 +58,6 @@ import org.fossify.commons.extensions.getColorStateList
 import com.texto.sms.extensions.getContrastColor
 import org.fossify.commons.extensions.getFilenameFromPath
 import org.fossify.commons.extensions.getFilenameFromUri
-import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.getMyFileUri
 import org.fossify.commons.extensions.getTimeFormat
 import org.fossify.commons.extensions.hasPermission
@@ -84,7 +83,6 @@ import com.texto.sms.extensions.beVisibleIf
 import com.texto.sms.extensions.toast
 import com.texto.sms.extensions.showErrorToast
 import com.texto.sms.extensions.viewBinding
-import org.fossify.commons.helpers.MyContactsContentProvider
 import org.fossify.commons.helpers.NavigationIcon
 import org.fossify.commons.helpers.PERMISSION_CAMERA
 import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
@@ -1496,11 +1494,7 @@ class MainActivity : SimpleActivity() {
         // getCachedConversations); otherwise this is itself a fresh top-level fetch.
         val myGeneration = generation ?: ++conversationLoadGeneration
         ensureBackgroundThread {
-            // Querying the contacts provider for the cursor itself is a synchronous call,
-            // not just consuming it below -- both need to happen off the main thread.
-            val privateCursor = getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
-            val privateContacts = MyContactsContentProvider.getSimpleContacts(this, privateCursor)
-            val conversations = getConversations(privateContacts = privateContacts)
+            val conversations = getConversations()
             insertOrUpdateConversations(conversations)
             // The provider is the authority on which threads still exist, and this is the one
             // pass that has just asked it, so it is also the only place that can tell a
@@ -1511,18 +1505,11 @@ class MainActivity : SimpleActivity() {
             // that loads the list. Rows then bind without touching the database.
             val snippets = getLatestSnippets()
             // The address book itself is the source for the "مخاطبین" filter. It used to be
-            // built from privateContacts alone -- the Fossify private-contacts provider,
-            // which is empty unless the user also runs Simple Contacts -- so the filter
-            // matched nothing and always came up empty.
-            val contactNumbers = getContactNumbersSnapshot() +
-                privateContacts.flatMap { it.phoneNumbers }
-                    .map { com.texto.sms.helpers.SystemBlockedNumbers.comparable(it.normalizedNumber) }
-                    .filter { it.isNotEmpty() }
-            val contactsForFilters = getContactsWithNamesSnapshot() +
-                privateContacts.mapNotNull { contact ->
-                    val number = contact.phoneNumbers.firstOrNull()?.normalizedNumber.orEmpty()
-                    if (number.isBlank()) null else contact.name.ifBlank { number } to number
-                }
+            // built from the Fossify private-contacts provider alone, which is empty unless
+            // that separate app is installed, so the filter matched nothing and always came
+            // up empty.
+            val contactNumbers = getContactNumbersSnapshot()
+            val contactsForFilters = getContactsWithNamesSnapshot()
             runOnUiThread {
                 if (!isFinishing && !isDestroyed && myGeneration == conversationLoadGeneration) {
                     contactPhoneNumbers = contactNumbers
