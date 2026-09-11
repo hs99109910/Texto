@@ -7,7 +7,7 @@ import android.net.Uri
 import android.provider.ContactsContract
 import org.fossify.commons.activities.BaseSimpleActivity
 import org.fossify.commons.extensions.getMimeType
-import org.fossify.commons.extensions.hideKeyboard
+import com.texto.sms.extensions.hideKeyboard
 import org.fossify.commons.extensions.launchViewContactIntent
 import org.fossify.commons.extensions.showErrorToast
 import org.fossify.commons.extensions.toast

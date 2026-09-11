@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Filter
 import org.fossify.commons.databinding.ItemContactWithNumberBinding
-import org.fossify.commons.extensions.darkenColor
-import org.fossify.commons.extensions.getContrastColor
+import com.texto.sms.extensions.darkenColor
+import com.texto.sms.extensions.getContrastColor
 import org.fossify.commons.extensions.getProperBackgroundColor
 import org.fossify.commons.extensions.normalizeString
 import org.fossify.commons.helpers.SimpleContactsHelper

@@ -89,3 +89,62 @@ fun Context.updateAppFonts(view: View) {
 }
 
 fun Context.setupScaledToolbar(toolbar: View) {}
+
+/**
+ * Darkens by [factor] percent of *lightness*, working in HSL rather than HSV.
+ *
+ * The distinction is the whole point and the reason this is not [adjustColor]: HSV's "value"
+ * is the brightest channel, so scaling it turns a pale colour grey long before it turns dark,
+ * while HSL's lightness is the midpoint between the brightest and darkest channels and steps
+ * evenly. Eight percent is what the callers here have always used -- a nudge for a pressed or
+ * recessed surface, not a shade.
+ */
+fun Int.darkenColor(factor: Int = 8): Int {
+    if (this == Color.WHITE || this == Color.BLACK) return this
+
+    val hsv = FloatArray(3)
+    Color.colorToHSV(this, hsv)
+    val hsl = hsvToHsl(hsv)
+    hsl[2] = (hsl[2] - factor / 100f).coerceAtLeast(0f)
+    return Color.HSVToColor(hslToHsv(hsl))
+}
+
+/**
+ * The ink to put on this colour: near-black or white, whichever the eye can actually read.
+ *
+ * Decided by measured contrast rather than by a luminance threshold, because the two
+ * disagree exactly where it matters -- a mid blue can sit either side of "0.5 luminance"
+ * while one of the two inks is plainly the readable one. A translucent colour has no single
+ * answer, since what shows through decides it, so that case falls back to luminance.
+ */
+fun Int.getContrastColor(): Int {
+    if (Color.alpha(this) < 255) {
+        return if (androidx.core.graphics.ColorUtils.calculateLuminance(this) < 0.5) {
+            Color.WHITE
+        } else {
+            DARK_INK
+        }
+    }
+    val onDark = androidx.core.graphics.ColorUtils.calculateContrast(DARK_INK, this)
+    val onLight = androidx.core.graphics.ColorUtils.calculateContrast(Color.WHITE, this)
+    return if (onDark >= onLight) DARK_INK else Color.WHITE
+}
+
+/** The near-black half of the contrast pair. Not pure black, which reads as a hole. */
+private const val DARK_INK = 0xFF333333.toInt()
+
+private fun hsvToHsl(hsv: FloatArray): FloatArray {
+    val lightness = (2 - hsv[1]) * hsv[2] / 2
+    val saturation = when {
+        lightness == 0f || lightness == 1f -> 0f
+        lightness < 0.5f -> hsv[1] * hsv[2] / (lightness * 2)
+        else -> hsv[1] * hsv[2] / (2 - lightness * 2)
+    }
+    return floatArrayOf(hsv[0], saturation.coerceIn(0f, 1f), lightness)
+}
+
+private fun hslToHsv(hsl: FloatArray): FloatArray {
+    val value = hsl[2] + hsl[1] * minOf(hsl[2], 1 - hsl[2])
+    val saturation = if (value == 0f) 0f else 2 * (1 - hsl[2] / value)
+    return floatArrayOf(hsl[0], saturation.coerceIn(0f, 1f), value)
+}

@@ -34,7 +34,7 @@ import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.getStringValue
 import org.fossify.commons.extensions.hasPermission
 import org.fossify.commons.extensions.normalizeString
-import org.fossify.commons.extensions.notificationManager
+import com.texto.sms.extensions.notificationManager
 import org.fossify.commons.extensions.queryCursor
 import com.texto.sms.extensions.showErrorToast
 import com.texto.sms.extensions.toast
@@ -45,7 +45,7 @@ import org.fossify.commons.helpers.MyContactsContentProvider
 import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
 import org.fossify.commons.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
-import org.fossify.commons.helpers.isQPlus
+import com.texto.sms.extensions.isQPlus
 import org.fossify.commons.models.PhoneNumber
 import org.fossify.commons.models.SimpleContact
 import com.texto.sms.R

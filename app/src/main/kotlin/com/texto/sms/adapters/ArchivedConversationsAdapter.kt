@@ -1,7 +1,7 @@
 package com.texto.sms.adapters
 
 import android.view.Menu
-import org.fossify.commons.extensions.notificationManager
+import com.texto.sms.extensions.notificationManager
 import org.fossify.commons.helpers.ensureBackgroundThread
 import org.fossify.commons.views.MyRecyclerView
 import com.texto.sms.R

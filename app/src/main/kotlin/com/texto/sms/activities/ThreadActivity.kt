@@ -72,32 +72,32 @@ import org.fossify.commons.models.SimpleContact
 import com.texto.sms.messaging.*
 import com.texto.sms.dialogs.AttachmentPickerDialog
 import org.fossify.commons.extensions.areSystemAnimationsEnabled
-import org.fossify.commons.extensions.copyToClipboard
-import org.fossify.commons.extensions.darkenColor
+import com.texto.sms.extensions.copyToClipboard
+import com.texto.sms.extensions.darkenColor
 import org.fossify.commons.extensions.formatSize
 import org.fossify.commons.extensions.getBottomNavigationBackgroundColor
 import org.fossify.commons.extensions.getColorStateList
-import org.fossify.commons.extensions.getContrastColor
+import com.texto.sms.extensions.getContrastColor
 import org.fossify.commons.extensions.getFilenameFromPath
 import org.fossify.commons.extensions.getFilenameFromUri
 import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.getMyFileUri
 import org.fossify.commons.extensions.getTimeFormat
 import org.fossify.commons.extensions.hasPermission
-import org.fossify.commons.extensions.hideKeyboard
+import com.texto.sms.extensions.hideKeyboard
 import org.fossify.commons.extensions.isDynamicTheme
 import org.fossify.commons.extensions.maybeShowNumberPickerDialog
 import org.fossify.commons.extensions.normalizeString
-import org.fossify.commons.extensions.notificationManager
+import com.texto.sms.extensions.notificationManager
 import org.fossify.commons.extensions.onGlobalLayout
 import org.fossify.commons.extensions.onTextChangeListener
 import org.fossify.commons.extensions.openNotificationSettings
 import org.fossify.commons.extensions.openRequestExactAlarmSettings
 import org.fossify.commons.extensions.shareTextIntent
-import org.fossify.commons.extensions.showKeyboard
+import com.texto.sms.extensions.showKeyboard
 import org.fossify.commons.extensions.underlineText
 import org.fossify.commons.extensions.updateTextColors
-import org.fossify.commons.extensions.usableScreenSize
+import com.texto.sms.extensions.usableScreenSize
 import com.texto.sms.extensions.applyColorFilter
 import com.texto.sms.extensions.beGone
 import com.texto.sms.extensions.isVisible
@@ -116,8 +116,8 @@ import org.fossify.commons.helpers.PERMISSION_READ_SMS
 import org.fossify.commons.helpers.PERMISSION_RECORD_AUDIO
 import org.fossify.commons.helpers.PERMISSION_SEND_SMS
 import org.fossify.commons.helpers.SimpleContactsHelper
-import org.fossify.commons.helpers.isQPlus
-import org.fossify.commons.helpers.isSPlus
+import com.texto.sms.extensions.isQPlus
+import com.texto.sms.extensions.isSPlus
 
 class ThreadActivity : SimpleActivity() {
 

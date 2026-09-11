@@ -10,7 +10,7 @@ import com.google.android.mms.pdu_alt.PduHeaders
 import com.klinker.android.send_message.Utils
 import org.fossify.commons.extensions.getLongValue
 import org.fossify.commons.extensions.queryCursor
-import org.fossify.commons.helpers.isRPlus
+import com.texto.sms.extensions.isRPlus
 import com.texto.sms.extensions.updateLastConversationMessage
 import com.texto.sms.models.MmsAddress
 import com.texto.sms.models.MmsBackup

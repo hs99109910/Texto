@@ -11,8 +11,8 @@ import org.fossify.commons.extensions.getLongValue
 import org.fossify.commons.extensions.getStringValue
 import org.fossify.commons.extensions.getStringValueOrNull
 import org.fossify.commons.extensions.queryCursor
-import org.fossify.commons.helpers.isQPlus
-import org.fossify.commons.helpers.isRPlus
+import com.texto.sms.extensions.isQPlus
+import com.texto.sms.extensions.isRPlus
 import com.texto.sms.extensions.getConversationIds
 import com.texto.sms.models.MessagesBackup
 import com.texto.sms.models.MmsAddress

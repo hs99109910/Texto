@@ -40,7 +40,7 @@ import androidx.core.graphics.toColorInt
 import androidx.core.view.updateLayoutParams
 import com.google.android.material.appbar.AppBarLayout
 import org.fossify.commons.activities.BaseSimpleActivity
-import org.fossify.commons.helpers.isRPlus
+import com.texto.sms.extensions.isRPlus
 import org.fossify.commons.extensions.getTextSize
 import com.texto.sms.extensions.applyColorFilter
 import com.texto.sms.R
