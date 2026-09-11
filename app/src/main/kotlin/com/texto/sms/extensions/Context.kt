@@ -1061,7 +1061,12 @@ fun Context.getNameAndPhotoFromPhoneNumber(number: String): NamePhoto {
         cursor.use {
             if (cursor?.moveToFirst() == true) {
                 val name = cursor.getStringValue(PhoneLookup.DISPLAY_NAME)
-                val photoUri = cursor.getStringValue(PhoneLookup.PHOTO_URI)
+                // PHOTO_URI is genuinely null for any contact with no picture set -- most of
+                // them -- and getStringValue()'s non-null return turned that into an NPE that
+                // this function's own catch swallowed, silently falling back to the raw number
+                // for every photo-less contact. Measured on device: a saved contact
+                // (+989050579640) showed as its own number until this was null-safe.
+                val photoUri = cursor.getStringValueOrNull(PhoneLookup.PHOTO_URI)
                 NamePhoto(name, photoUri)
             } else {
                 NamePhoto(number, null)
