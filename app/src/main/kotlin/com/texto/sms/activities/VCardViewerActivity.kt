@@ -6,7 +6,7 @@ import android.os.Bundle
 import ezvcard.VCard
 import ezvcard.property.Email
 import ezvcard.property.Telephone
-import org.fossify.commons.extensions.normalizePhoneNumber
+import com.texto.sms.extensions.normalizePhoneNumber
 import org.fossify.commons.extensions.sendEmailIntent
 import org.fossify.commons.helpers.NavigationIcon
 import com.texto.sms.extensions.ensureBackgroundThread

@@ -77,13 +77,13 @@ import org.fossify.commons.extensions.getBottomNavigationBackgroundColor
 import com.texto.sms.extensions.getContrastColor
 import org.fossify.commons.extensions.getFilenameFromPath
 import org.fossify.commons.extensions.getFilenameFromUri
-import org.fossify.commons.extensions.getMyFileUri
-import org.fossify.commons.extensions.getTimeFormat
+import com.texto.sms.extensions.getMyFileUri
+import com.texto.sms.extensions.getTimeFormat
 import com.texto.sms.extensions.hideKeyboard
 import org.fossify.commons.extensions.isDynamicTheme
-import org.fossify.commons.extensions.normalizeString
+import com.texto.sms.extensions.normalizeString
 import com.texto.sms.extensions.notificationManager
-import org.fossify.commons.extensions.onTextChangeListener
+import com.texto.sms.extensions.onTextChangeListener
 import org.fossify.commons.extensions.openRequestExactAlarmSettings
 import com.texto.sms.extensions.showKeyboard
 import com.texto.sms.extensions.usableScreenSize

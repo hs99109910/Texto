@@ -3,7 +3,7 @@ package com.texto.sms.models
 import android.content.Context
 import ezvcard.VCard
 import ezvcard.property.*
-import org.fossify.commons.extensions.normalizePhoneNumber
+import com.texto.sms.extensions.normalizePhoneNumber
 import com.texto.sms.extensions.config
 import com.texto.sms.extensions.format
 import com.texto.sms.helpers.parseNameFromVCard

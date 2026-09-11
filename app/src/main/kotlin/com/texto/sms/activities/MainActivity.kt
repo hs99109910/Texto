@@ -49,7 +49,7 @@ import com.texto.sms.models.SearchResult
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
-import org.fossify.commons.extensions.areSystemAnimationsEnabled
+import com.texto.sms.extensions.areSystemAnimationsEnabled
 import com.texto.sms.extensions.copyToClipboard
 import com.texto.sms.extensions.darkenColor
 import com.texto.sms.extensions.getContrastColor

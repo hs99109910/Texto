@@ -10,7 +10,7 @@ import com.google.android.material.timepicker.TimeFormat
 import org.fossify.commons.activities.BaseSimpleActivity
 import com.texto.sms.extensions.applyColorFilter
 import org.fossify.commons.extensions.getAlertDialogBuilder
-import org.fossify.commons.extensions.getTimeFormat
+import com.texto.sms.extensions.getTimeFormat
 import org.fossify.commons.extensions.isDynamicTheme
 import org.fossify.commons.extensions.setupDialogStuff
 import com.texto.sms.extensions.toast

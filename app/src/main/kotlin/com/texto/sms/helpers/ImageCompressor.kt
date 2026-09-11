@@ -6,7 +6,7 @@ import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.media.ExifInterface
 import android.net.Uri
-import org.fossify.commons.extensions.getMyFileUri
+import com.texto.sms.extensions.getMyFileUri
 import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.extension
 import com.texto.sms.extensions.getFileSizeFromUri

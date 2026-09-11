@@ -10,7 +10,7 @@ import android.widget.Filter
 import org.fossify.commons.databinding.ItemContactWithNumberBinding
 import com.texto.sms.extensions.darkenColor
 import com.texto.sms.extensions.getContrastColor
-import org.fossify.commons.extensions.normalizeString
+import com.texto.sms.extensions.normalizeString
 import org.fossify.commons.helpers.SimpleContactsHelper
 import org.fossify.commons.models.SimpleContact
 import com.texto.sms.activities.SimpleActivity

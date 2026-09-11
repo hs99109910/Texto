@@ -3,7 +3,7 @@ package com.texto.sms.activities
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import org.fossify.commons.extensions.areSystemAnimationsEnabled
+import com.texto.sms.extensions.areSystemAnimationsEnabled
 import com.texto.sms.extensions.beVisibleIf
 import com.texto.sms.extensions.hideKeyboard
 import com.texto.sms.extensions.viewBinding

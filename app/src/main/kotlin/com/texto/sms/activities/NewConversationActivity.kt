@@ -35,7 +35,7 @@ import com.texto.sms.helpers.THREAD_TEXT
 import com.texto.sms.helpers.THREAD_TITLE
 import com.texto.sms.messaging.isShortCodeWithLetters
 import java.util.Locale
-import org.fossify.commons.extensions.areSystemAnimationsEnabled
+import com.texto.sms.extensions.areSystemAnimationsEnabled
 import com.texto.sms.extensions.copyToClipboard
 import com.texto.sms.extensions.darkenColor
 import org.fossify.commons.extensions.getColorStateList
@@ -43,9 +43,9 @@ import com.texto.sms.extensions.getContrastColor
 import org.fossify.commons.extensions.hasPermission
 import com.texto.sms.extensions.hideKeyboard
 import org.fossify.commons.extensions.maybeShowNumberPickerDialog
-import org.fossify.commons.extensions.normalizeString
+import com.texto.sms.extensions.normalizeString
 import com.texto.sms.extensions.notificationManager
-import org.fossify.commons.extensions.onTextChangeListener
+import com.texto.sms.extensions.onTextChangeListener
 import com.texto.sms.extensions.showKeyboard
 import org.fossify.commons.extensions.underlineText
 import org.fossify.commons.extensions.updateTextColors

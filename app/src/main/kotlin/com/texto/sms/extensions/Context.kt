@@ -32,7 +32,7 @@ import com.texto.sms.extensions.getIntValueOr
 import com.texto.sms.extensions.getLongValue
 import com.texto.sms.extensions.getStringValue
 import org.fossify.commons.extensions.hasPermission
-import org.fossify.commons.extensions.normalizeString
+import com.texto.sms.extensions.normalizeString
 import com.texto.sms.extensions.notificationManager
 import com.texto.sms.extensions.queryCursor
 import com.texto.sms.extensions.showErrorToast
