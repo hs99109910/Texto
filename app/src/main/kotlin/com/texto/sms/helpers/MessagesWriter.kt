@@ -8,8 +8,8 @@ import android.provider.Telephony.Sms
 import android.util.Base64
 import com.google.android.mms.pdu_alt.PduHeaders
 import com.klinker.android.send_message.Utils
-import org.fossify.commons.extensions.getLongValue
-import org.fossify.commons.extensions.queryCursor
+import com.texto.sms.extensions.getLongValue
+import com.texto.sms.extensions.queryCursor
 import com.texto.sms.extensions.isRPlus
 import com.texto.sms.extensions.updateLastConversationMessage
 import com.texto.sms.models.MmsAddress

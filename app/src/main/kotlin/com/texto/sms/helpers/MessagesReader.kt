@@ -6,11 +6,11 @@ import android.net.Uri
 import android.provider.Telephony.Mms
 import android.provider.Telephony.Sms
 import android.util.Base64
-import org.fossify.commons.extensions.getIntValue
-import org.fossify.commons.extensions.getLongValue
-import org.fossify.commons.extensions.getStringValue
-import org.fossify.commons.extensions.getStringValueOrNull
-import org.fossify.commons.extensions.queryCursor
+import com.texto.sms.extensions.getIntValue
+import com.texto.sms.extensions.getLongValue
+import com.texto.sms.extensions.getStringValue
+import com.texto.sms.extensions.getStringValueOrNull
+import com.texto.sms.extensions.queryCursor
 import com.texto.sms.extensions.isQPlus
 import com.texto.sms.extensions.isRPlus
 import com.texto.sms.extensions.getConversationIds
