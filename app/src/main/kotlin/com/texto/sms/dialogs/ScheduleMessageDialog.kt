@@ -7,15 +7,14 @@ import android.text.format.DateFormat
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
-import org.fossify.commons.activities.BaseSimpleActivity
+import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.extensions.applyColorFilter
-import org.fossify.commons.extensions.getAlertDialogBuilder
+import com.texto.sms.helpers.getAlertDialogBuilder
 import com.texto.sms.extensions.getTimeFormat
 import org.fossify.commons.extensions.isDynamicTheme
-import org.fossify.commons.extensions.setupDialogStuff
+import com.texto.sms.helpers.setupDialogStuff
 import com.texto.sms.extensions.toast
 import com.texto.sms.R
-import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.databinding.ScheduleMessageDialogBinding
 import com.texto.sms.helpers.applyTextoDialogSkin
 import com.texto.sms.extensions.roundToClosestMultipleOf
@@ -30,7 +29,7 @@ import org.joda.time.DateTime
 import java.util.Calendar
 
 class ScheduleMessageDialog(
-    private val activity: BaseSimpleActivity,
+    private val activity: SimpleActivity,
     private var dateTime: DateTime? = null,
     private val callback: (dateTime: DateTime?) -> Unit
 ) {

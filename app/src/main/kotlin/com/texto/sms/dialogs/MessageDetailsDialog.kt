@@ -2,20 +2,19 @@ package com.texto.sms.dialogs
 
 import android.annotation.SuppressLint
 import android.telephony.SubscriptionInfo
-import org.fossify.commons.activities.BaseSimpleActivity
-import org.fossify.commons.dialogs.BasePropertiesDialog
-import org.fossify.commons.extensions.getAlertDialogBuilder
-import org.fossify.commons.extensions.getTimeFormatWithSeconds
-import org.fossify.commons.extensions.setupDialogStuff
-import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
+import org.fossify.commons.dialogs.BasePropertiesDialog
+import com.texto.sms.helpers.getAlertDialogBuilder
+import org.fossify.commons.extensions.getTimeFormatWithSeconds
+import com.texto.sms.helpers.setupDialogStuff
+import com.texto.sms.R
 import com.texto.sms.extensions.config
 import com.texto.sms.helpers.applyTextoDialogSkin
 import com.texto.sms.extensions.subscriptionManagerCompat
 import com.texto.sms.models.Message
 import org.joda.time.DateTime
 
-class MessageDetailsDialog(val activity: BaseSimpleActivity, val message: Message) : BasePropertiesDialog(activity) {
+class MessageDetailsDialog(val activity: SimpleActivity, val message: Message) : BasePropertiesDialog(activity) {
     init {
         @SuppressLint("MissingPermission")
         val availableSIMs = activity.subscriptionManagerCompat().activeSubscriptionInfoList.orEmpty()

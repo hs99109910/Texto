@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <item name="texto_dialog_title" type="id" />
     <item name="more_options" type="id" />
     <item name="dial_number" type="id" />
     <item name="archive" type="id" />

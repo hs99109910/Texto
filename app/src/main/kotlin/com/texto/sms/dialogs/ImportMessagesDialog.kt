@@ -1,8 +1,8 @@
 package com.texto.sms.dialogs
 
 import androidx.appcompat.app.AlertDialog
-import org.fossify.commons.extensions.getAlertDialogBuilder
-import org.fossify.commons.extensions.setupDialogStuff
+import com.texto.sms.helpers.getAlertDialogBuilder
+import com.texto.sms.helpers.setupDialogStuff
 import com.texto.sms.extensions.toast
 import org.fossify.commons.helpers.MEDIUM_ALPHA
 import com.texto.sms.extensions.ensureBackgroundThread

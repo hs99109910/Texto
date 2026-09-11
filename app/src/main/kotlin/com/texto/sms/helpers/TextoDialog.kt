@@ -227,7 +227,7 @@ fun SimpleActivity.applyTextoDialogSkin(dialog: AlertDialog) {
     // up on identical type.
     updateAppFonts(decor)
 
-    decor.findViewById<TextView>(org.fossify.commons.R.id.dialog_title_textview)?.apply {
+    decor.findViewById<TextView>(com.texto.sms.R.id.texto_dialog_title)?.apply {
         setTextColor(config.mainTextColor)
         setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.05f))
         typeface = typefaceFor(Typeface.BOLD)

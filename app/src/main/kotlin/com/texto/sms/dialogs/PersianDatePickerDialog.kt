@@ -7,11 +7,10 @@ import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.widget.NumberPicker
 import androidx.appcompat.app.AlertDialog
-import org.fossify.commons.activities.BaseSimpleActivity
-import org.fossify.commons.extensions.getAlertDialogBuilder
-import org.fossify.commons.extensions.setupDialogStuff
-import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
+import com.texto.sms.helpers.getAlertDialogBuilder
+import com.texto.sms.helpers.setupDialogStuff
+import com.texto.sms.R
 import com.texto.sms.databinding.PersianDatePickerDialogBinding
 import com.texto.sms.helpers.applyTextoDialogSkin
 import com.texto.sms.extensions.TextoCalendar
@@ -26,7 +25,7 @@ import org.joda.time.DateTime
  * display calendar themselves.
  */
 class PersianDatePickerDialog(
-    private val activity: BaseSimpleActivity,
+    private val activity: SimpleActivity,
     initialDateTime: DateTime,
     private val minDateTime: DateTime,
     private val onDateSet: (year: Int, month: Int, day: Int) -> Unit
