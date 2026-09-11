@@ -7,7 +7,7 @@ import ezvcard.VCard
 import ezvcard.property.Email
 import ezvcard.property.Telephone
 import com.texto.sms.extensions.normalizePhoneNumber
-import org.fossify.commons.extensions.sendEmailIntent
+import com.texto.sms.extensions.sendEmailIntent
 import com.texto.sms.helpers.NavigationIcon
 import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.viewBinding

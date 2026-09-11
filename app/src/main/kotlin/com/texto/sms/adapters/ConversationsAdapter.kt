@@ -6,9 +6,9 @@ import android.view.Menu
 import android.view.View
 import android.view.animation.AnimationUtils
 import com.texto.sms.extensions.copyToClipboard
-import org.fossify.commons.extensions.launchActivityIntent
+import com.texto.sms.extensions.launchActivityIntent
 import com.texto.sms.extensions.notificationManager
-import org.fossify.commons.helpers.KEY_PHONE
+import com.texto.sms.extensions.KEY_PHONE
 import com.texto.sms.extensions.ensureBackgroundThread
 import org.fossify.commons.views.MyRecyclerView
 import com.texto.sms.R

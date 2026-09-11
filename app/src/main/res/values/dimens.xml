@@ -16,4 +16,9 @@
     <dimen name="attachment_button_height">96dp</dimen>
     <dimen name="attachment_button_width">90dp</dimen>
     <dimen name="default_keyboard_height">250dp</dimen>
+    <!-- Type ladder behind the font-size setting: small, medium, large, extra large. -->
+    <dimen name="texto_text_small">12sp</dimen>
+    <dimen name="texto_text_medium">16sp</dimen>
+    <dimen name="texto_text_large">18sp</dimen>
+    <dimen name="texto_text_extra_large">22sp</dimen>
 </resources>

@@ -26,7 +26,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.mms.pdu_alt.PduHeaders
-import org.fossify.commons.extensions.areDigitsOnly
+import com.texto.sms.extensions.areDigitsOnly
 import com.texto.sms.extensions.getIntValue
 import com.texto.sms.extensions.getIntValueOr
 import com.texto.sms.extensions.getLongValue
@@ -37,8 +37,8 @@ import com.texto.sms.extensions.notificationManager
 import com.texto.sms.extensions.queryCursor
 import com.texto.sms.extensions.showErrorToast
 import com.texto.sms.extensions.toast
-import org.fossify.commons.helpers.DAY_SECONDS
-import org.fossify.commons.helpers.MONTH_SECONDS
+import com.texto.sms.extensions.DAY_SECONDS
+import com.texto.sms.extensions.MONTH_SECONDS
 import com.texto.sms.extensions.PERMISSION_READ_CONTACTS
 import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread

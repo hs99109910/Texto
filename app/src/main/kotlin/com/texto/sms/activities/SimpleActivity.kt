@@ -41,7 +41,7 @@ import androidx.core.view.updateLayoutParams
 import com.google.android.material.appbar.AppBarLayout
 import org.fossify.commons.activities.BaseSimpleActivity
 import com.texto.sms.extensions.isRPlus
-import org.fossify.commons.extensions.getTextSize
+import com.texto.sms.extensions.getTextSize
 import com.texto.sms.extensions.applyColorFilter
 import com.texto.sms.R
 import com.texto.sms.extensions.asLtrPhone

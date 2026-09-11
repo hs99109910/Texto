@@ -73,10 +73,10 @@ import com.texto.sms.messaging.*
 import com.texto.sms.dialogs.AttachmentPickerDialog
 import com.texto.sms.extensions.copyToClipboard
 import com.texto.sms.extensions.darkenColor
-import org.fossify.commons.extensions.getBottomNavigationBackgroundColor
+import com.texto.sms.extensions.getBottomNavigationBackgroundColor
 import com.texto.sms.extensions.getContrastColor
-import org.fossify.commons.extensions.getFilenameFromPath
-import org.fossify.commons.extensions.getFilenameFromUri
+import com.texto.sms.extensions.getFilenameFromPath
+import com.texto.sms.extensions.getFilenameFromUri
 import com.texto.sms.extensions.getMyFileUri
 import com.texto.sms.extensions.getTimeFormat
 import com.texto.sms.extensions.hideKeyboard
@@ -84,7 +84,7 @@ import org.fossify.commons.extensions.isDynamicTheme
 import com.texto.sms.extensions.normalizeString
 import com.texto.sms.extensions.notificationManager
 import com.texto.sms.extensions.onTextChangeListener
-import org.fossify.commons.extensions.openRequestExactAlarmSettings
+import com.texto.sms.extensions.openRequestExactAlarmSettings
 import com.texto.sms.extensions.showKeyboard
 import com.texto.sms.extensions.usableScreenSize
 import com.texto.sms.extensions.applyColorFilter

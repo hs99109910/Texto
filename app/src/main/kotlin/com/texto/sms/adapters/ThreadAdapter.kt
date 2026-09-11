@@ -53,7 +53,7 @@ import com.texto.sms.extensions.darkenColor
 import com.texto.sms.extensions.getContrastColor
 import com.texto.sms.extensions.hideKeyboard
 import com.texto.sms.extensions.notificationManager
-import org.fossify.commons.extensions.shareTextIntent
+import com.texto.sms.extensions.shareTextIntent
 import com.texto.sms.extensions.showKeyboard
 import com.texto.sms.extensions.usableScreenSize
 import com.texto.sms.extensions.applyColorFilter

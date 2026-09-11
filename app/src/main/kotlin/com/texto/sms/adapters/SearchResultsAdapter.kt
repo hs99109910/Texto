@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import org.fossify.commons.adapters.MyRecyclerViewAdapter
-import org.fossify.commons.extensions.highlightTextPart
+import com.texto.sms.extensions.highlightTextPart
 import com.texto.sms.helpers.SimpleContactsHelper
 import org.fossify.commons.views.MyRecyclerView
 import com.texto.sms.activities.SimpleActivity

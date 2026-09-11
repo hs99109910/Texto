@@ -3,7 +3,7 @@ package com.texto.sms.helpers
 import android.content.Context
 import android.content.res.Configuration
 import androidx.core.os.ConfigurationCompat
-import org.fossify.commons.helpers.PREFS_KEY
+import com.texto.sms.extensions.PREFS_KEY
 import java.util.Locale
 
 /**

@@ -7,13 +7,13 @@ import androidx.appcompat.app.AlertDialog
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToStream
 import com.texto.sms.helpers.getAlertDialogBuilder
-import org.fossify.commons.extensions.getCurrentFormattedDateTime
-import org.fossify.commons.extensions.isAValidFilename
+import com.texto.sms.extensions.getCurrentFormattedDateTime
+import com.texto.sms.extensions.isAValidFilename
 import com.texto.sms.helpers.setupDialogStuff
 import com.texto.sms.extensions.showErrorToast
 import com.texto.sms.extensions.toast
-import org.fossify.commons.extensions.value
-import org.fossify.commons.helpers.MEDIUM_ALPHA
+import com.texto.sms.extensions.value
+import com.texto.sms.extensions.MEDIUM_ALPHA
 import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity

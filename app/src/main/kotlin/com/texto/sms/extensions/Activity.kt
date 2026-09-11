@@ -5,9 +5,9 @@ import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.provider.ContactsContract
-import org.fossify.commons.extensions.getMimeType
+import com.texto.sms.extensions.getMimeType
 import com.texto.sms.extensions.hideKeyboard
-import org.fossify.commons.extensions.launchViewContactIntent
+import com.texto.sms.extensions.launchViewContactIntent
 import com.texto.sms.extensions.showErrorToast
 import com.texto.sms.extensions.toast
 import com.texto.sms.extensions.PERMISSION_CALL_PHONE

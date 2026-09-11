@@ -38,7 +38,7 @@ import java.util.Locale
 import com.texto.sms.extensions.areSystemAnimationsEnabled
 import com.texto.sms.extensions.copyToClipboard
 import com.texto.sms.extensions.darkenColor
-import org.fossify.commons.extensions.getColorStateList
+import com.texto.sms.extensions.getColorStateList
 import com.texto.sms.extensions.getContrastColor
 import com.texto.sms.extensions.hasPermission
 import com.texto.sms.extensions.hideKeyboard
@@ -47,8 +47,7 @@ import com.texto.sms.extensions.normalizeString
 import com.texto.sms.extensions.notificationManager
 import com.texto.sms.extensions.onTextChangeListener
 import com.texto.sms.extensions.showKeyboard
-import org.fossify.commons.extensions.underlineText
-import org.fossify.commons.extensions.updateTextColors
+import com.texto.sms.extensions.underlineText
 import com.texto.sms.extensions.usableScreenSize
 import com.texto.sms.extensions.applyColorFilter
 import com.texto.sms.extensions.beGone
@@ -83,7 +82,10 @@ class NewConversationActivity : SimpleActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
         title = getString(R.string.new_conversation)
-        updateTextColors(binding.newConversationHolder)
+        // No colour pass here. Commons' updateTextColors resolves against the base (light)
+        // theme rather than the user's skin, so it painted dark ink on a dark ground; the
+        // app's own updateAppFonts runs over the same tree in onResume, moments later, and
+        // is the one that reads config.mainTextColor.
 
         setupEdgeToEdge(padBottomImeAndSystem = listOf(binding.contactsList))
         setupSearchEdgeToEdge()

@@ -4,7 +4,7 @@ import androidx.appcompat.app.AlertDialog
 import com.texto.sms.helpers.getAlertDialogBuilder
 import com.texto.sms.helpers.setupDialogStuff
 import com.texto.sms.extensions.toast
-import org.fossify.commons.helpers.MEDIUM_ALPHA
+import com.texto.sms.extensions.MEDIUM_ALPHA
 import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity

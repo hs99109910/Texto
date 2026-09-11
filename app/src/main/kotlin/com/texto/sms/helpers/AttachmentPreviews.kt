@@ -14,7 +14,7 @@ import com.texto.sms.databinding.ItemAttachmentVcardPreviewBinding
 import com.texto.sms.extensions.*
 import com.texto.sms.extensions.copyToClipboard
 import com.texto.sms.extensions.darkenColor
-import org.fossify.commons.extensions.formatSize
+import com.texto.sms.extensions.formatSize
 import com.texto.sms.extensions.getContrastColor
 import com.texto.sms.extensions.hideKeyboard
 import com.texto.sms.extensions.notificationManager
