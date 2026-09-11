@@ -5,13 +5,10 @@ import android.app.TimePickerDialog
 import android.app.TimePickerDialog.OnTimeSetListener
 import android.text.format.DateFormat
 import androidx.appcompat.app.AlertDialog
-import com.google.android.material.timepicker.MaterialTimePicker
-import com.google.android.material.timepicker.TimeFormat
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.extensions.applyColorFilter
 import com.texto.sms.helpers.getAlertDialogBuilder
 import com.texto.sms.extensions.getTimeFormat
-import org.fossify.commons.extensions.isDynamicTheme
 import com.texto.sms.helpers.setupDialogStuff
 import com.texto.sms.extensions.toast
 import com.texto.sms.R
@@ -139,57 +136,46 @@ class ScheduleMessageDialog(
         ) { y, m, d -> dateSet(y, m, d) }
     }
 
+    /**
+     * The platform clock, at the polarity of whatever the skin actually paints behind it.
+     *
+     * This used to switch to a Material You picker when the system's dynamic-colour setting
+     * was on, which meant the sheet no longer wore any of the app's own themes -- Neon,
+     * Classic, whichever the user had actually chosen -- and instead picked up whatever the
+     * wallpaper produced. The app has its own themes for exactly this; the platform picker
+     * dialog is themed to match one of them rather than to Material You.
+     *
+     * Commons resolved this from the *base* theme, so on a dark skin the picker arrived as a
+     * white panel over a near-black screen.
+     */
     private fun showTimePicker() {
         val hourOfDay = dateTime?.hourOfDay ?: getNextHour()
         val minute = dateTime?.minuteOfHour ?: getNextMinute()
 
-        if (activity.isDynamicTheme()) {
-            val timeFormat = if (DateFormat.is24HourFormat(activity)) {
-                TimeFormat.CLOCK_24H
-            } else {
-                TimeFormat.CLOCK_12H
-            }
-
-            val timePicker = MaterialTimePicker.Builder()
-                .setTimeFormat(timeFormat)
-                .setHour(hourOfDay)
-                .setMinute(minute)
-                .build()
-
-            timePicker.addOnPositiveButtonClickListener {
-                timeSet(timePicker.hour, timePicker.minute)
-            }
-
-            timePicker.show(activity.supportFragmentManager, "")
+        val timeSetListener = OnTimeSetListener { _, hours, minutes -> timeSet(hours, minutes) }
+        val pickerTheme = if (TextoGlass.isDark(activity.config.mainBackgroundColor)) {
+            android.R.style.Theme_DeviceDefault_Dialog_Alert
         } else {
-            val timeSetListener = OnTimeSetListener { _, hours, minutes -> timeSet(hours, minutes) }
-            // The platform clock, at the polarity of whatever the skin actually paints behind
-            // it. Commons resolves this from the *base* theme, so on a dark skin the picker
-            // arrived as a white panel over a near-black screen.
-            val pickerTheme = if (TextoGlass.isDark(activity.config.mainBackgroundColor)) {
-                android.R.style.Theme_DeviceDefault_Dialog_Alert
-            } else {
-                android.R.style.Theme_DeviceDefault_Light_Dialog_Alert
-            }
-            TimePickerDialog(
-                activity,
-                pickerTheme,
-                timeSetListener,
-                hourOfDay,
-                minute,
-                DateFormat.is24HourFormat(activity)
-            ).apply {
-                show()
-                getButton(AlertDialog.BUTTON_NEGATIVE).apply {
-                    // Commons' string reaches this Persian-only screen in English.
-                    text = activity.getString(R.string.action_cancel)
-                    setOnClickListener {
-                        dismiss()
-                    }
+            android.R.style.Theme_DeviceDefault_Light_Dialog_Alert
+        }
+        TimePickerDialog(
+            activity,
+            pickerTheme,
+            timeSetListener,
+            hourOfDay,
+            minute,
+            DateFormat.is24HourFormat(activity)
+        ).apply {
+            show()
+            getButton(AlertDialog.BUTTON_NEGATIVE).apply {
+                // Commons' string reaches this Persian-only screen in English.
+                text = activity.getString(R.string.action_cancel)
+                setOnClickListener {
+                    dismiss()
                 }
-                getButton(AlertDialog.BUTTON_POSITIVE)?.text =
-                    activity.getString(R.string.action_confirm)
             }
+            getButton(AlertDialog.BUTTON_POSITIVE)?.text =
+                activity.getString(R.string.action_confirm)
         }
     }
 

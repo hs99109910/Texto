@@ -80,7 +80,6 @@ import com.texto.sms.extensions.getFilenameFromUri
 import com.texto.sms.extensions.getMyFileUri
 import com.texto.sms.extensions.getTimeFormat
 import com.texto.sms.extensions.hideKeyboard
-import org.fossify.commons.extensions.isDynamicTheme
 import com.texto.sms.extensions.normalizeString
 import com.texto.sms.extensions.notificationManager
 import com.texto.sms.extensions.onTextChangeListener
@@ -2454,7 +2453,13 @@ class ThreadActivity : SimpleActivity() {
         }
     }
 
-    private fun getBottomBarColor() = if (isDynamicTheme()) resources.getColor(org.fossify.commons.R.color.you_bottom_bar_color) else getBottomNavigationBackgroundColor()
+    /**
+     * The scroll-to-bottom FAB's colour follows the app's own theme, not the system's
+     * dynamic-colour palette -- the app has its own set of themes (Neon, Classic, ...) for
+     * this, and picking up Material You here meant the one floating control on this screen
+     * could be wearing a colour the user never chose from any of them.
+     */
+    private fun getBottomBarColor() = getBottomNavigationBackgroundColor()
 
     private fun launchGetContentIntent(types: Array<String>, requestCode: Int) {
         val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
