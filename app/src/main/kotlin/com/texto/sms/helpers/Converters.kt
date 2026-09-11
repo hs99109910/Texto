@@ -3,7 +3,7 @@ package com.texto.sms.helpers
 import androidx.room.TypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import org.fossify.commons.models.SimpleContact
+import com.texto.sms.models.SimpleContact
 import com.texto.sms.models.Attachment
 import com.texto.sms.models.MessageAttachment
 

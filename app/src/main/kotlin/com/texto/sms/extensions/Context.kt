@@ -40,11 +40,11 @@ import com.texto.sms.extensions.toast
 import org.fossify.commons.helpers.DAY_SECONDS
 import org.fossify.commons.helpers.MONTH_SECONDS
 import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
-import org.fossify.commons.helpers.SimpleContactsHelper
+import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.isQPlus
-import org.fossify.commons.models.PhoneNumber
-import org.fossify.commons.models.SimpleContact
+import com.texto.sms.models.PhoneNumber
+import com.texto.sms.models.SimpleContact
 import com.texto.sms.R
 import com.texto.sms.databases.MessagesDatabase
 import com.texto.sms.helpers.AttachmentUtils.parseAttachmentNames

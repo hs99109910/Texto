@@ -4,7 +4,7 @@ import android.app.Activity
 import android.net.Uri
 import android.view.View
 
-import org.fossify.commons.helpers.SimpleContactsHelper
+import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.R
 import com.texto.sms.databinding.ItemAttachmentDocumentBinding

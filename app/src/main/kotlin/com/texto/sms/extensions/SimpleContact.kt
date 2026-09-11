@@ -7,8 +7,8 @@ import android.provider.ContactsContract
 import android.text.TextUtils
 import androidx.core.app.Person
 import androidx.core.graphics.drawable.IconCompat
-import org.fossify.commons.helpers.SimpleContactsHelper
-import org.fossify.commons.models.SimpleContact
+import com.texto.sms.helpers.SimpleContactsHelper
+import com.texto.sms.models.SimpleContact
 import androidx.core.net.toUri
 
 fun ArrayList<SimpleContact>.getThreadTitle(): String {

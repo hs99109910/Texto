@@ -8,7 +8,7 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.text.isDigitsOnly
-import org.fossify.commons.helpers.SimpleContactsHelper
+import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.isOnMainThread
 import com.texto.sms.activities.ThreadActivity
 import com.texto.sms.extensions.conversationsDB
@@ -56,16 +56,14 @@ class ShortcutHelper(private val context: Context) {
             if (!conv.isGroupConversation && !conv.usesCustomTitle && persons.isNotEmpty()) {
                 setIcon(persons[0].icon)
             } else {
-                val icon = if (conv.isGroupConversation) {
-                    IconCompat.createWithAdaptiveBitmap(
-                        contactsHelper.getColoredGroupIcon(conv.title).toBitmap()
-                    )
-                } else {
+                // A group and a one-to-one thread both fall back to the monogram of the
+                // title: commons drew groups a different icon, and the app has no second
+                // artwork for them.
+                setIcon(
                     IconCompat.createWithAdaptiveBitmap(
                         contactsHelper.getContactLetterIcon(conv.title)
                     )
-                }
-                setIcon(icon)
+                )
             }
             capabilities.forEach { c ->
                 addCapabilityBinding(c)

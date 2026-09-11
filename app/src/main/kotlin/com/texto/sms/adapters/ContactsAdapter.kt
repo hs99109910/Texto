@@ -13,8 +13,8 @@ import androidx.recyclerview.widget.RecyclerView
 import org.fossify.commons.adapters.MyRecyclerViewListAdapter
 import com.texto.sms.extensions.beGone
 import com.texto.sms.extensions.beVisibleIf
-import org.fossify.commons.helpers.SimpleContactsHelper
-import org.fossify.commons.models.SimpleContact
+import com.texto.sms.helpers.SimpleContactsHelper
+import com.texto.sms.models.SimpleContact
 import org.fossify.commons.views.MyRecyclerView
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
@@ -174,12 +174,7 @@ class ContactsAdapter(
                 height = avatarSize
             }
             TextoAvatars.clipToSquircle(conversationImage)
-            SimpleContactsHelper(activity).loadContactImage(
-                path = photoUri,
-                imageView = conversationImage,
-                placeholderName = name,
-                placeholderImage = TextoAvatars.letterAvatar(texto, name)
-            )
+            TextoAvatars.loadInto(activity, conversationImage, photoUri, TextoAvatars.letterAvatar(texto, name))
 
             val fontSize = texto.getScaledTextSize()
             conversationAddress.apply {
@@ -224,12 +219,7 @@ class ContactsAdapter(
             pillAddress.setTextColor(mainTextColor)
             
             TextoAvatars.clipToSquircle(pillImage)
-            SimpleContactsHelper(activity).loadContactImage(
-                path = contact.photoUri,
-                imageView = pillImage,
-                placeholderName = contact.name,
-                placeholderImage = TextoAvatars.letterAvatar(activity, contact.name)
-            )
+            TextoAvatars.loadInto(activity, pillImage, contact.photoUri, TextoAvatars.letterAvatar(activity, contact.name))
 
             // A flat glass capsule, the same one the filter chips and the composer are.
             // The lighten/darken wash plus 6dp of lift was the embossed look the rest of the

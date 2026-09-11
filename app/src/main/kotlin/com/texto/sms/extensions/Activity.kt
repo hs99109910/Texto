@@ -12,9 +12,9 @@ import org.fossify.commons.extensions.launchViewContactIntent
 import com.texto.sms.extensions.showErrorToast
 import com.texto.sms.extensions.toast
 import org.fossify.commons.helpers.PERMISSION_CALL_PHONE
-import org.fossify.commons.helpers.SimpleContactsHelper
+import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
-import org.fossify.commons.models.SimpleContact
+import com.texto.sms.models.SimpleContact
 import com.texto.sms.activities.ConversationDetailsActivity
 import com.texto.sms.helpers.THREAD_ID
 import java.util.Locale

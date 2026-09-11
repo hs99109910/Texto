@@ -177,6 +177,7 @@
     <string name="attachment_sized_exceeds_max_limit">The attachment is larger than the MMS limit</string>
     <string name="sim_card_not_available">No SIM card available</string>
     <string name="select_sim_card">Select a SIM card</string>
+    <string name="select_phone_number">Select a number</string>
     <string name="no_browser_found">No browser was found to open this link</string>
     <string name="insert_emoji">Insert emoji</string>
     <!-- %1$s is the carrier name, %2$s the colour assigned to that SIM slot. -->

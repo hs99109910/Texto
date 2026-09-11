@@ -22,7 +22,7 @@ import com.texto.sms.extensions.applyColorFilter
 import com.texto.sms.extensions.beVisibleIf
 import org.fossify.commons.extensions.setupViewBackground
 import com.texto.sms.extensions.toast
-import org.fossify.commons.helpers.SimpleContactsHelper
+import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
 import org.fossify.commons.views.MyRecyclerView
 import com.texto.sms.R
@@ -978,12 +978,7 @@ abstract class BaseConversationsAdapter(
             // Real contact photos get clipped to the same silhouette as the generated ones.
             TextoAvatars.clipToSquircle(conversationImage)
 
-            SimpleContactsHelper(activity).loadContactImage(
-                path = conversation.photoUri,
-                imageView = conversationImage,
-                placeholderName = conversation.title,
-                placeholderImage = placeholder
-            )
+            TextoAvatars.loadInto(activity, conversationImage, conversation.photoUri, placeholder)
         }
     }
 

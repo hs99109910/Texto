@@ -12,9 +12,9 @@ import android.os.Bundle
 import android.provider.Settings
 
 import org.fossify.commons.helpers.NavigationIcon
-import org.fossify.commons.helpers.SimpleContactsHelper
+import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
-import org.fossify.commons.models.SimpleContact
+import com.texto.sms.models.SimpleContact
 import com.texto.sms.adapters.ContactsAdapter
 import com.texto.sms.databinding.ActivityConversationDetailsBinding
 import com.texto.sms.dialogs.RenameConversationDialog
@@ -165,12 +165,7 @@ class ConversationDetailsActivity : SimpleActivity() {
         binding.detailsHeroName.text = title
         
         TextoAvatars.clipToSquircle(binding.detailsHeroImage)
-        SimpleContactsHelper(this).loadContactImage(
-            path = participants.firstOrNull()?.photoUri ?: "",
-            imageView = binding.detailsHeroImage,
-            placeholderName = title,
-            placeholderImage = TextoAvatars.letterAvatar(this, title)
-        )
+        TextoAvatars.loadInto(this, binding.detailsHeroImage, participants.firstOrNull()?.photoUri ?: "", TextoAvatars.letterAvatar(this, title))
     }
 
     private fun setupRenaming() {

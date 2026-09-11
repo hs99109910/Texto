@@ -7,8 +7,8 @@ import com.klinker.android.send_message.MmsReceivedReceiver
 import org.fossify.commons.extensions.baseConfig
 import com.texto.sms.helpers.isNumberBlockedBySystem
 import com.texto.sms.extensions.showErrorToast
-import org.fossify.commons.helpers.ContactLookupResult
-import org.fossify.commons.helpers.SimpleContactsHelper
+import com.texto.sms.helpers.ContactLookupResult
+import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.R
 import com.texto.sms.extensions.getConversations

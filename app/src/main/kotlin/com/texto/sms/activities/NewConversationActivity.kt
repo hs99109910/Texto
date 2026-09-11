@@ -18,9 +18,9 @@ import com.reddit.indicatorfastscroll.FastScrollItemIndicator
 
 import org.fossify.commons.helpers.NavigationIcon
 import org.fossify.commons.helpers.PERMISSION_READ_CONTACTS
-import org.fossify.commons.helpers.SimpleContactsHelper
+import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
-import org.fossify.commons.models.SimpleContact
+import com.texto.sms.models.SimpleContact
 import com.texto.sms.R
 import com.texto.sms.adapters.ContactsAdapter
 import com.texto.sms.databinding.ActivityNewConversationBinding
@@ -42,7 +42,7 @@ import org.fossify.commons.extensions.getColorStateList
 import com.texto.sms.extensions.getContrastColor
 import org.fossify.commons.extensions.hasPermission
 import com.texto.sms.extensions.hideKeyboard
-import org.fossify.commons.extensions.maybeShowNumberPickerDialog
+import com.texto.sms.dialogs.maybeShowNumberPickerDialog
 import com.texto.sms.extensions.normalizeString
 import com.texto.sms.extensions.notificationManager
 import com.texto.sms.extensions.onTextChangeListener

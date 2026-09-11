@@ -2,6 +2,7 @@ package com.texto.sms.helpers
 
 import android.content.Context
 import com.texto.sms.extensions.config
+import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.LinearGradient
 import android.graphics.Paint
@@ -9,6 +10,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.drawable.Drawable
+import androidx.core.graphics.createBitmap
 import kotlin.math.min
 
 /**
@@ -144,6 +146,22 @@ object TextoAvatars {
         textColor = context.config.accentInkColor,
         density = context.resources.displayMetrics.density
     )
+
+    /**
+     * The same avatar rasterised, for the surfaces that can only take a Bitmap: a
+     * notification large icon and a shortcut. Square at [sizeDp], because both of those get
+     * masked to the platform`s own shape rather than the app`s squircle.
+     */
+    fun letterBitmap(context: Context, name: String, sizeDp: Int = 48): Bitmap {
+        val size = (sizeDp * context.resources.displayMetrics.density).toInt().coerceAtLeast(1)
+        val bitmap = createBitmap(size, size)
+        val canvas = Canvas(bitmap)
+        letterAvatar(context, name).apply {
+            setBounds(0, 0, size, size)
+            draw(canvas)
+        }
+        return bitmap
+    }
 
     /**
      * Up to two leading letters. Persian names split on whitespace the same way Latin ones

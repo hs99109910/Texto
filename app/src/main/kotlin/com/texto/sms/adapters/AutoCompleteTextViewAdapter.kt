@@ -11,8 +11,8 @@ import org.fossify.commons.databinding.ItemContactWithNumberBinding
 import com.texto.sms.extensions.darkenColor
 import com.texto.sms.extensions.getContrastColor
 import com.texto.sms.extensions.normalizeString
-import org.fossify.commons.helpers.SimpleContactsHelper
-import org.fossify.commons.models.SimpleContact
+import com.texto.sms.helpers.SimpleContactsHelper
+import com.texto.sms.models.SimpleContact
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.helpers.TextoAvatars
 
@@ -50,12 +50,7 @@ class AutoCompleteTextViewAdapter(val activity: SimpleActivity, val contacts: Ar
                 itemContactName.text = contact.name
                 itemContactNumber.text = contact.phoneNumbers.first().normalizedNumber
                 TextoAvatars.clipToSquircle(itemContactImage)
-                SimpleContactsHelper(context).loadContactImage(
-                    path = contact.photoUri,
-                    imageView = itemContactImage,
-                    placeholderName = contact.name,
-                    placeholderImage = TextoAvatars.letterAvatar(context, contact.name)
-                )
+                TextoAvatars.loadInto(context, itemContactImage, contact.photoUri, TextoAvatars.letterAvatar(context, contact.name))
             }
         }
 

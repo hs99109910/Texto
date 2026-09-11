@@ -36,6 +36,5 @@
 # Gson keys off the field *names*, so anything it round-trips must not be renamed. These
 # are not transient: `Converters` stores attachments and participants into Room as JSON, so
 # a build that renamed their fields would write rows the next build cannot read back. That
-# includes commons' SimpleContact, which is serialised into the conversations table.
+# includes SimpleContact and PhoneNumber, serialised into the conversations table.
 -keep class com.texto.sms.models.** { *; }
--keep class org.fossify.commons.models.SimpleContact { *; }

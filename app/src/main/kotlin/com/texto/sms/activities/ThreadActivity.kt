@@ -68,7 +68,7 @@ import org.greenrobot.eventbus.Subscribe
 import org.greenrobot.eventbus.ThreadMode
 import org.joda.time.DateTime
 import java.io.File
-import org.fossify.commons.models.SimpleContact
+import com.texto.sms.models.SimpleContact
 import com.texto.sms.messaging.*
 import com.texto.sms.dialogs.AttachmentPickerDialog
 import com.texto.sms.extensions.copyToClipboard
@@ -100,7 +100,7 @@ import org.fossify.commons.helpers.NavigationIcon
 import org.fossify.commons.helpers.PERMISSION_CAMERA
 import org.fossify.commons.helpers.PERMISSION_READ_PHONE_STATE
 import org.fossify.commons.helpers.PERMISSION_RECORD_AUDIO
-import org.fossify.commons.helpers.SimpleContactsHelper
+import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.isQPlus
 import com.texto.sms.extensions.isSPlus
 
@@ -1321,12 +1321,7 @@ class ThreadActivity : SimpleActivity() {
 
         binding.threadHeaderAvatar.beVisible()
         val placeholder = com.texto.sms.helpers.TextoAvatars.letterAvatar(this, finalTitle)
-        SimpleContactsHelper(this).loadContactImage(
-            path = conversation?.photoUri.orEmpty(),
-            imageView = binding.threadHeaderAvatar,
-            placeholderName = finalTitle,
-            placeholderImage = placeholder
-        )
+        TextoAvatars.loadInto(this, binding.threadHeaderAvatar, conversation?.photoUri.orEmpty(), placeholder)
     }
 
     private fun showParticipantNumbers() {

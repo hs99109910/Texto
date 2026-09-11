@@ -1,7 +1,7 @@
 package com.texto.sms.helpers
 
 import android.util.LruCache
-import org.fossify.commons.models.SimpleContact
+import com.texto.sms.models.SimpleContact
 import com.texto.sms.models.NamePhoto
 
 private const val CACHE_SIZE = 512

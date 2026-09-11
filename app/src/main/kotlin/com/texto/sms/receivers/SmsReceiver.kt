@@ -7,11 +7,11 @@ import android.provider.Telephony
 import android.telephony.SubscriptionManager
 import org.fossify.commons.extensions.baseConfig
 import com.texto.sms.helpers.isNumberBlockedBySystem
-import org.fossify.commons.helpers.ContactLookupResult
-import org.fossify.commons.helpers.SimpleContactsHelper
+import com.texto.sms.helpers.ContactLookupResult
+import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
-import org.fossify.commons.models.PhoneNumber
-import org.fossify.commons.models.SimpleContact
+import com.texto.sms.models.PhoneNumber
+import com.texto.sms.models.SimpleContact
 import com.texto.sms.extensions.getConversations
 import com.texto.sms.extensions.getNameFromAddress
 import com.texto.sms.extensions.getNotificationBitmap

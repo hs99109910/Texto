@@ -8,7 +8,7 @@ import android.view.ViewGroup
 import com.bumptech.glide.Glide
 import org.fossify.commons.adapters.MyRecyclerViewAdapter
 import org.fossify.commons.extensions.highlightTextPart
-import org.fossify.commons.helpers.SimpleContactsHelper
+import com.texto.sms.helpers.SimpleContactsHelper
 import org.fossify.commons.views.MyRecyclerView
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.databinding.ItemSearchResultBinding
@@ -96,12 +96,7 @@ class SearchResultsAdapter(
             }
 
             TextoAvatars.clipToSquircle(searchResultImage)
-            SimpleContactsHelper(activity).loadContactImage(
-                path = searchResult.photoUri,
-                imageView = searchResultImage,
-                placeholderName = searchResult.title,
-                placeholderImage = TextoAvatars.letterAvatar(activity, searchResult.title)
-            )
+            TextoAvatars.loadInto(activity, searchResultImage, searchResult.photoUri, TextoAvatars.letterAvatar(activity, searchResult.title))
         }
     }
 
