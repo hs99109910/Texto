@@ -47,7 +47,7 @@ class ConversationsAdapter(
 
         menu.apply {
             findItem(R.id.cab_block_number).title =
-                activity.getString(org.fossify.commons.R.string.block_number)
+                activity.getString(R.string.block_number)
             findItem(R.id.cab_add_number_to_contact).isVisible =
                 isSingleSelection && !isGroupConversation
             findItem(R.id.cab_dial_number).isVisible =
@@ -128,7 +128,7 @@ class ConversationsAdapter(
         val numbers = getSelectedItems().distinctBy { it.phoneNumber }.map { it.phoneNumber }
         val numbersString = TextUtils.join(", ", numbers)
         val question = String.format(
-            resources.getString(org.fossify.commons.R.string.block_confirmation),
+            resources.getString(R.string.block_confirmation),
             numbersString
         )
 
@@ -175,7 +175,7 @@ class ConversationsAdapter(
         val itemsCnt = selectedKeys.size
         val items = resources.getQuantityString(R.plurals.delete_conversations, itemsCnt, itemsCnt)
 
-        val baseString = org.fossify.commons.R.string.deletion_confirmation
+        val baseString = R.string.deletion_confirmation
         val question = String.format(resources.getString(baseString), items)
 
         (activity as SimpleActivity).textoConfirmDialog(question, isDestructive = true) {

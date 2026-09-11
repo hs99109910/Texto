@@ -226,43 +226,43 @@
                 android:id="@+id/selected_contacts"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="@dimen/activity_margin"
+                android:layout_margin="@dimen/texto_activity_margin"
                 android:orientation="vertical" />
 
             <ImageView
                 android:id="@+id/confirm_manage_contacts"
-                android:layout_width="@dimen/normal_icon_size"
-                android:layout_height="@dimen/normal_icon_size"
+                android:layout_width="@dimen/texto_normal_icon_size"
+                android:layout_height="@dimen/texto_normal_icon_size"
                 android:layout_alignParentEnd="true"
-                android:layout_marginStart="@dimen/medium_margin"
-                android:layout_marginTop="@dimen/normal_margin"
-                android:layout_marginEnd="@dimen/medium_margin"
+                android:layout_marginStart="@dimen/texto_medium_margin"
+                android:layout_marginTop="@dimen/texto_normal_margin"
+                android:layout_marginEnd="@dimen/texto_medium_margin"
                 android:background="?selectableItemBackgroundBorderless"
-                android:padding="@dimen/small_margin"
-                android:src="@drawable/ic_check_vector" />
+                android:padding="@dimen/texto_small_margin"
+                android:src="@drawable/ic_ph_check" />
 
             <View
                 android:id="@+id/message_divider_one"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/divider_height"
+                android:layout_height="@dimen/texto_divider_height"
                 android:layout_below="@+id/selected_contacts"
-                android:background="@color/divider_grey"
+                android:background="@color/texto_divider_grey"
                 android:importantForAccessibility="no" />
 
-            <org.fossify.commons.views.MyAutoCompleteTextView
+            <android.widget.AutoCompleteTextView
                 android:id="@+id/add_contact_or_number"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/normal_icon_size"
+                android:layout_height="@dimen/texto_normal_icon_size"
                 android:layout_below="@+id/message_divider_one"
-                android:layout_marginStart="@dimen/activity_margin"
-                android:layout_marginEnd="@dimen/activity_margin"
+                android:layout_marginStart="@dimen/texto_activity_margin"
+                android:layout_marginEnd="@dimen/texto_activity_margin"
                 android:layout_toStartOf="@+id/confirm_inserted_number"
                 android:background="@android:color/transparent"
                 android:completionThreshold="2"
                 android:gravity="center_vertical"
                 android:hint="@string/add_contact_or_number"
                 android:inputType="textCapWords"
-                android:textSize="@dimen/big_text_size" />
+                android:textSize="@dimen/texto_big_text_size" />
 
             <ImageView
                 android:id="@+id/confirm_inserted_number"
@@ -271,21 +271,21 @@
                 android:layout_alignTop="@+id/add_contact_or_number"
                 android:layout_alignBottom="@+id/add_contact_or_number"
                 android:layout_alignParentEnd="true"
-                android:layout_marginStart="@dimen/medium_margin"
-                android:layout_marginEnd="@dimen/medium_margin"
+                android:layout_marginStart="@dimen/texto_medium_margin"
+                android:layout_marginEnd="@dimen/texto_medium_margin"
                 android:background="?selectableItemBackgroundBorderless"
                 android:contentDescription="@string/confirm_selection"
-                android:paddingStart="@dimen/medium_margin"
-                android:paddingEnd="@dimen/medium_margin"
-                android:src="@drawable/ic_check_vector"
+                android:paddingStart="@dimen/texto_medium_margin"
+                android:paddingEnd="@dimen/texto_medium_margin"
+                android:src="@drawable/ic_ph_check"
                 android:visibility="gone" />
 
             <View
                 android:id="@+id/message_divider_two"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/divider_height"
+                android:layout_height="@dimen/texto_divider_height"
                 android:layout_below="@+id/add_contact_or_number"
-                android:background="@color/divider_grey"
+                android:background="@color/texto_divider_grey"
                 android:importantForAccessibility="no" />
 
         </RelativeLayout>

@@ -1,5 +1,7 @@
 package com.texto.sms.helpers
 
+import com.texto.sms.R
+
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable

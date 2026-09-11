@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Mirror of drawable/item_received_background.xml: the small "tail" corner moves from
+     bottom-left to bottom-right under RTL, since a received bubble stays on the layout's
+     start side either way. Commons' own dimens and a stray colour here were replaced with
+     the same values the LTR file already uses. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-
+    <solid android:color="@color/texto_light_grey" />
     <corners
-        android:bottomLeftRadius="@dimen/big_margin"
-        android:bottomRightRadius="@dimen/small_margin"
-        android:topLeftRadius="@dimen/big_margin"
-        android:topRightRadius="@dimen/big_margin" />
-
-    <solid android:color="#EEEEEE" />
-
+        android:bottomLeftRadius="18dp"
+        android:bottomRightRadius="4dp"
+        android:topLeftRadius="18dp"
+        android:topRightRadius="18dp" />
 </shape>

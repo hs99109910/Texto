@@ -34,10 +34,10 @@ class MessageDetailsDialog(val activity: SimpleActivity, val message: Message) {
 
         val holder = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
-            val side = 16.getScaledPx()
+            val side = px(16)
             setPadding(side, 0, side, 0)
         }
-        val scroll = ScrollView(activity).addView(holder)
+        val scroll = ScrollView(activity).apply { addView(holder) }
 
         addProperty(holder, message.getSenderOrReceiverLabel(), message.getSenderOrReceiverPhoneNumbers())
         if (availableSIMs.count() > 1) {
@@ -54,11 +54,6 @@ class MessageDetailsDialog(val activity: SimpleActivity, val message: Message) {
                     activity.applyTextoDialogSkin(alertDialog)
                 }
             }
-    }
-
-    private fun ScrollView.addView(child: LinearLayout): ScrollView {
-        addView(child)
-        return this
     }
 
     private fun px(dp: Int): Int = with(activity) { dp.getScaledPx() }

@@ -1,6 +1,7 @@
 package com.texto.sms.views
 
 import android.content.Context
+import android.util.AttributeSet
 import androidx.recyclerview.widget.LinearLayoutManager
 
 /**
@@ -9,6 +10,16 @@ import androidx.recyclerview.widget.LinearLayoutManager
  * changes with its content (a draft marker, a pinned badge, the preview line wrapping), which
  * is exactly what predictive animation gets wrong -- rows jumping or flickering on a refresh.
  */
-class TextoLinearLayoutManager(context: Context) : LinearLayoutManager(context) {
+class TextoLinearLayoutManager : LinearLayoutManager {
+    constructor(context: Context) : super(context)
+
+    /** The four-arg constructor `app:layoutManager="..."` in XML actually instantiates. */
+    constructor(
+        context: Context,
+        attrs: AttributeSet?,
+        defStyleAttr: Int,
+        defStyleRes: Int,
+    ) : super(context, attrs, defStyleAttr, defStyleRes)
+
     override fun supportsPredictiveItemAnimations() = false
 }

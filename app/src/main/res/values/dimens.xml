@@ -22,4 +22,27 @@
     <dimen name="texto_text_large">18sp</dimen>
     <dimen name="texto_text_extra_large">22sp</dimen>
     <dimen name="texto_dragselect_hotspot_height">56dp</dimen>
+    <dimen name="texto_activity_margin">16dp</dimen>
+    <dimen name="texto_big_margin">24dp</dimen>
+    <dimen name="texto_medium_margin">8dp</dimen>
+    <dimen name="texto_list_icon_size_medium">40dp</dimen>
+    <dimen name="texto_two_line_list_item_min_height">72dp</dimen>
+    <dimen name="texto_tiny_margin">2dp</dimen>
+    <dimen name="texto_small_margin">4dp</dimen>
+    <dimen name="texto_normal_margin">12dp</dimen>
+    <dimen name="texto_bigger_margin">20dp</dimen>
+    <dimen name="texto_min_row_height">60dp</dimen>
+    <dimen name="texto_normal_icon_size">48dp</dimen>
+    <dimen name="texto_fab_size">56dp</dimen>
+    <dimen name="texto_divider_height">2px</dimen>
+    <dimen name="texto_material_button_corner_radius">24dp</dimen>
+    <dimen name="texto_smaller_text_size">12sp</dimen>
+    <dimen name="texto_normal_text_size">14sp</dimen>
+    <dimen name="texto_bigger_text_size">16sp</dimen>
+    <dimen name="texto_middle_text_size">17sp</dimen>
+    <dimen name="texto_big_text_size">18sp</dimen>
+    <dimen name="texto_list_tertiary_text_size">11sp</dimen>
+    <dimen name="texto_list_secondary_text_size">14sp</dimen>
+    <dimen name="texto_list_primary_text_size">16sp</dimen>
+    <dimen name="texto_actionbar_text_size">21sp</dimen>
 </resources>

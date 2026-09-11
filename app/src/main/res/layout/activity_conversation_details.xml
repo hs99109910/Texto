@@ -112,7 +112,7 @@
                     android:layout_alignParentEnd="true"
                     android:layout_centerVertical="true"
                     android:importantForAccessibility="no"
-                    android:src="@drawable/ic_edit_vector" />
+                    android:src="@drawable/ic_ph_pencil" />
             </RelativeLayout>
 
             <!-- Notifications Pill -->
@@ -132,10 +132,12 @@
                     android:layout_centerVertical="true"
                     android:text="@string/notifications_title" />
 
-                <org.fossify.commons.views.MyMaterialSwitch
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    style="@style/Widget.Material3.CompoundButton.MaterialSwitch"
                     android:id="@+id/custom_notifications_switch"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                        app:showText="false"
                     android:layout_alignParentEnd="true"
                     android:clickable="false"
                     android:focusable="false" />

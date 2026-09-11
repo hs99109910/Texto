@@ -7,4 +7,19 @@
     <color name="texto_dark_grey">#333333</color>
     <color name="texto_light_grey">#E0E0E0</color>
     <color name="texto_dialog_bg">#1E1E22</color>
+
+    <!-- The eight colours below are commons' own values, read from its bytecode. colorPrimary
+         and color_primary sit behind surfaces the app repaints from Config before they are
+         ever shown (ConversationDetailsActivity's pills, the reaction pill's TextoGlass
+         background): given as the app's own accent rather than Fossify's red, on the
+         reasoning that a placeholder nothing displays may as well match the brand it is
+         standing in for. The rest are plain utility colours (dividers, ripple masks). -->
+    <color name="texto_colorPrimary">#00D8CF</color>
+    <color name="texto_color_primary">#FF106D1F</color>
+    <color name="texto_activated_item_foreground">#44888888</color>
+    <color name="texto_divider_grey">#55808080</color>
+    <color name="texto_md_grey_black">#000000</color>
+    <color name="texto_md_grey_white">#FFFFFF</color>
+    <color name="texto_light_grey_stroke">#40FFFFFF</color>
+    <color name="texto_pressed_item_foreground">#08000000</color>
 </resources>

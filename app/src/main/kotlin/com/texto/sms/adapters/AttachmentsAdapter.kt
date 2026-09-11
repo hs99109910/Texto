@@ -195,7 +195,7 @@ class AttachmentsAdapter(
     }
 
     private fun loadMediaPreview(binding: ItemAttachmentMediaPreviewBinding, attachment: AttachmentSelection) {
-        val roundedCornersRadius = resources.getDimension(org.fossify.commons.R.dimen.activity_margin).toInt()
+        val roundedCornersRadius = resources.getDimension(R.dimen.texto_activity_margin).toInt()
         val size = resources.getDimension(R.dimen.attachment_preview_size).toInt()
 
         val options = RequestOptions()

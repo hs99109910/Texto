@@ -418,6 +418,7 @@
     <string name="error">Error: %s</string>
     <string name="value_copied_to_clipboard">Copied to clipboard</string>
     <string name="no_app_found">No app was found to do this</string>
+    <string name="no_sound">No sound</string>
     <string name="share_via">Share via</string>
     <string name="block_confirmation">Are you sure you want to block \"%s\"?</string>
     <string name="deletion_confirmation">Are you sure you want to delete %s?</string>

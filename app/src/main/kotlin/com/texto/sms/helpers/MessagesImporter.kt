@@ -1,5 +1,7 @@
 package com.texto.sms.helpers
 
+import com.texto.sms.R
+
 import android.net.Uri
 import android.util.Xml
 import kotlinx.serialization.SerializationException
@@ -34,7 +36,7 @@ class MessagesImporter(private val activity: SimpleActivity) {
             val isXml =
                 isXmlMimeType(fileType) || (uri.path?.endsWith("txt") == true && isFileXml(uri))
             if (isXml) {
-                activity.toast(org.fossify.commons.R.string.importing)
+                activity.toast(R.string.importing)
                 getInputStreamFromUri(uri)!!.importXml()
             } else {
                 importJson(uri)
@@ -53,7 +55,7 @@ class MessagesImporter(private val activity: SimpleActivity) {
                 }
 
             if (deserializedList.isEmpty()) {
-                activity.toast(org.fossify.commons.R.string.no_entries_for_importing)
+                activity.toast(R.string.no_entries_for_importing)
                 return
             }
 
@@ -72,9 +74,9 @@ class MessagesImporter(private val activity: SimpleActivity) {
 
             ImportMessagesDialog(activity, messages)
         } catch (_: SerializationException) {
-            activity.toast(org.fossify.commons.R.string.invalid_file_format)
+            activity.toast(R.string.invalid_file_format)
         } catch (_: IllegalArgumentException) {
-            activity.toast(org.fossify.commons.R.string.invalid_file_format)
+            activity.toast(R.string.invalid_file_format)
         } catch (e: Exception) {
             activity.showErrorToast(e)
         }
@@ -157,14 +159,14 @@ class MessagesImporter(private val activity: SimpleActivity) {
             }
             when {
                 messagesFailed > 0 && messagesImported > 0 -> {
-                    activity.toast(org.fossify.commons.R.string.importing_some_entries_failed)
+                    activity.toast(R.string.importing_some_entries_failed)
                 }
 
-                messagesFailed > 0 -> activity.toast(org.fossify.commons.R.string.importing_failed)
-                else -> activity.toast(org.fossify.commons.R.string.importing_successful)
+                messagesFailed > 0 -> activity.toast(R.string.importing_failed)
+                else -> activity.toast(R.string.importing_successful)
             }
         } catch (_: Exception) {
-            activity.toast(org.fossify.commons.R.string.invalid_file_format)
+            activity.toast(R.string.invalid_file_format)
         }
     }
 

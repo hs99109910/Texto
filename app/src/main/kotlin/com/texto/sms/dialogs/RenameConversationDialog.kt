@@ -27,7 +27,7 @@ class RenameConversationDialog(
             initialText = if (conversation.usesCustomTitle) conversation.title else ""
         ) { newTitle ->
             if (newTitle.isBlank()) {
-                activity.toast(org.fossify.commons.R.string.empty_name)
+                activity.toast(R.string.empty_name)
             } else {
                 callback(newTitle)
             }

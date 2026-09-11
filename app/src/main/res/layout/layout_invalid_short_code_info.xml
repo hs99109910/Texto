@@ -4,12 +4,12 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <org.fossify.commons.views.MyTextView
+    <TextView
         android:id="@+id/reply_disabled_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/normal_margin"
-        android:padding="@dimen/activity_margin"
+        android:layout_marginStart="@dimen/texto_normal_margin"
+        android:padding="@dimen/texto_activity_margin"
         android:text="@string/invalid_short_code"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/reply_disabled_info"
@@ -19,13 +19,13 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/reply_disabled_info"
-        android:layout_width="@dimen/normal_icon_size"
-        android:layout_height="@dimen/normal_icon_size"
-        android:layout_marginEnd="@dimen/normal_margin"
+        android:layout_width="@dimen/texto_normal_icon_size"
+        android:layout_height="@dimen/texto_normal_icon_size"
+        android:layout_marginEnd="@dimen/texto_normal_margin"
         android:background="?selectableItemBackgroundBorderless"
         android:contentDescription="@string/more_info"
-        android:padding="@dimen/normal_margin"
-        android:src="@drawable/ic_info_vector"
+        android:padding="@dimen/texto_normal_margin"
+        android:src="@drawable/ic_ph_info"
         android:tooltipText="@string/more_info"
         app:layout_constraintBottom_toBottomOf="@id/reply_disabled_text"
         app:layout_constraintEnd_toEndOf="parent"

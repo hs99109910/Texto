@@ -121,8 +121,6 @@ class MainActivity : SimpleActivity() {
     private var searchFilter: MessageFilter = MessageFilter.all("")
     private var searchFilterChipsAdapter: com.texto.sms.adapters.FilterChipsAdapter? = null
 
-    override var isSearchBarEnabled = false
-
     private val MAKE_DEFAULT_APP_REQUEST = 1
     private var storedTextColor = 0
     private var lastSearchedText = ""
@@ -845,7 +843,7 @@ class MainActivity : SimpleActivity() {
                     startActivityForResult(intent, MAKE_DEFAULT_APP_REQUEST)
                 }
             } else if (!isFinishing && !isDestroyed && config.appRunCount <= 1) {
-                toast(org.fossify.commons.R.string.unknown_error_occurred)
+                toast(R.string.unknown_error_occurred)
                 finish()
             }
         } else {
@@ -872,7 +870,7 @@ class MainActivity : SimpleActivity() {
                 // an override; only the sheet's own Clear puts the filter back on the app's.
                 val label = uri?.let {
                     runCatching { RingtoneManager.getRingtone(this, it)?.getTitle(this) }.getOrNull()
-                } ?: getString(org.fossify.commons.R.string.no_sound)
+                } ?: getString(R.string.no_sound)
                 callback(uri?.toString(), label)
             }
             return

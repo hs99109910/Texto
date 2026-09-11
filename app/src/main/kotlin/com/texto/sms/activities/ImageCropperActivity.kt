@@ -124,7 +124,7 @@ class ImageCropperActivity : SimpleActivity() {
             setResult(Activity.RESULT_OK, resultIntent)
             finish()
         } else {
-            toast(org.fossify.commons.R.string.unknown_error_occurred)
+            toast(R.string.unknown_error_occurred)
         }
     }
 }

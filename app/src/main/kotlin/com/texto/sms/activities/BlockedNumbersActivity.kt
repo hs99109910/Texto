@@ -99,7 +99,7 @@ class BlockedNumbersActivity : SimpleActivity() {
 
         row.addView(
             ImageView(this).apply {
-                setImageResource(org.fossify.commons.R.drawable.ic_cross_vector)
+                setImageResource(R.drawable.ic_ph_x)
                 imageTintList = android.content.res.ColorStateList.valueOf(config.topBarTextColor)
                 contentDescription = getString(R.string.unblock)
                 setPadding(10.getScaledPx(), 10.getScaledPx(), 10.getScaledPx(), 10.getScaledPx())
@@ -116,7 +116,7 @@ class BlockedNumbersActivity : SimpleActivity() {
             val removed = unblockNumber(number)
             runOnUiThread {
                 if (isFinishing || isDestroyed) return@runOnUiThread
-                if (!removed) toast(org.fossify.commons.R.string.unknown_error_occurred)
+                if (!removed) toast(R.string.unknown_error_occurred)
                 reload()
             }
         }

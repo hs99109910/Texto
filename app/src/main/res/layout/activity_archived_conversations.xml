@@ -17,7 +17,7 @@
             android:layout_height="?attr/actionBarSize"
             android:background="@android:color/transparent"
             app:title="@string/archived_conversations"
-            app:titleTextAppearance="@style/AppTheme.ActionBar.TitleTextStyle" />
+            app:titleTextAppearance="@style/TextoActionBarTitleTextStyle" />
 
     </com.texto.sms.views.TextoAppBarLayout>
 
@@ -51,18 +51,18 @@
                     app:showDelay="250"
                     tools:visibility="visible" />
 
-                <org.fossify.commons.views.MyTextView
+                <TextView
                     android:id="@+id/no_conversations_placeholder"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
-                    android:layout_marginTop="@dimen/bigger_margin"
+                    android:layout_marginTop="@dimen/texto_bigger_margin"
                     android:alpha="0.8"
                     android:gravity="center"
-                    android:paddingStart="@dimen/activity_margin"
-                    android:paddingEnd="@dimen/activity_margin"
+                    android:paddingStart="@dimen/texto_activity_margin"
+                    android:paddingEnd="@dimen/texto_activity_margin"
                     android:text="@string/no_archived_conversations"
-                    android:textSize="@dimen/bigger_text_size"
+                    android:textSize="@dimen/texto_bigger_text_size"
                     android:textStyle="italic"
                     android:visibility="gone" />
 
@@ -71,7 +71,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:clipToPadding="false"
-                    android:layoutAnimation="@anim/layout_animation"
+                    android:layoutAnimation="@anim/texto_layout_animation"
                     android:overScrollMode="ifContentScrolls"
                     android:scrollbars="none"
                     app:layoutManager="com.texto.sms.views.TextoLinearLayoutManager" />

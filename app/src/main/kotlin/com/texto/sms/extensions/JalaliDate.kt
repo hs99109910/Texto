@@ -1,5 +1,7 @@
 package com.texto.sms.extensions
 
+import com.texto.sms.R
+
 import java.util.Calendar
 import java.util.TimeZone
 import com.texto.sms.helpers.TextoLocale

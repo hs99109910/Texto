@@ -35,7 +35,7 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <org.fossify.commons.views.MyTextView
+            <TextView
                 android:id="@+id/blocked_numbers_placeholder"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -43,7 +43,7 @@
                 android:gravity="center"
                 android:paddingTop="48dp"
                 android:text="@string/no_blocked_numbers"
-                android:textSize="@dimen/bigger_text_size"
+                android:textSize="@dimen/texto_bigger_text_size"
                 android:visibility="gone" />
 
             <LinearLayout

@@ -164,53 +164,26 @@ detekt {
     allRules = false
 }
 
-// org.fossify:commons pulls in com.github.aritraroy:patternLockView, a 2017 library that
-// still asks for com.android.support:appcompat-v7:25.3.0. androidx.core ships the very same
-// android.support.v4.* compatibility classes (INotificationSideChannel, ResultReceiver and
-// friends), so having both on the classpath fails checkDuplicateClasses. Jetifier -- on, in
-// gradle.properties -- rewrites patternLockView's own references to their androidx
-// equivalents, which leaves the legacy artifacts as pure duplication rather than something
-// anything still loads.
-configurations.configureEach {
-    exclude(group = "com.android.support")
-
-    // Commons drags the whole Compose stack in, and this app has no Compose in it: measured
-    // on the debug APK, 12,778 of the main dex's 16,799 classes were androidx.compose, and
-    // 10,372 of those were material-icons-extended on its own. Commons uses Compose for
-    // screens this app does not open -- its About and FAQ, which the settings sheet stopped
-    // calling when it grew its own -- so none of it is reachable here.
-    //
-    // Excluded rather than shrunk away because R8 only runs on release, so every debug build
-    // and every install was paying for it. This is a stopgap: the dependency itself is on its
-    // way out, and these lines go with it.
-    exclude(group = "androidx.compose.material")
-    exclude(group = "androidx.compose.foundation")
-    exclude(group = "androidx.compose.animation")
-    exclude(group = "androidx.compose.ui")
-    exclude(group = "androidx.compose.runtime")
-    exclude(group = "androidx.activity", module = "activity-compose")
-    exclude(group = "androidx.lifecycle", module = "lifecycle-runtime-compose")
-    exclude(group = "androidx.lifecycle", module = "lifecycle-viewmodel-compose")
-
-    // The app-lock feature's biometric half. Commons offers a pattern/PIN/fingerprint lock;
-    // this app draws its own settings screen and offers no lock, and FossifyApp's
-    // isAppLockFeatureAvailable is read by nothing in commons 6.1.5 -- checked against the
-    // library's own bytecode. The manifest already removes the two permissions this brought.
-    exclude(group = "com.github.tibbi", module = "reprint")
-    exclude(group = "androidx.biometric")
-
-    // Commons' own view pager, for screens this app does not open.
-    exclude(group = "com.github.naveensingh", module = "rtl-viewpager")
-
-    // patternLockView and RecyclerView-FastScroller are *not* excluded, though nothing here
-    // uses either: commons' own resources reference theirs (dimen/corner_radius,
-    // color/colorPrimary), so dropping the artifacts fails resource linking rather than
-    // merely shrinking the build. They come out with commons itself.
-}
-
 dependencies {
-    implementation(libs.fossify.commons)
+    // Pinned directly rather than left to whatever floor the remaining dependencies happen to
+    // need: commons used to pull androidx.core high enough for WindowCompat.enableEdgeToEdge,
+    // among other things, and nothing else in the graph guarantees that version any more.
+    implementation(libs.androidx.core.ktx)
+    // Rode in transitively through org.fossify:commons until now; the app's own Material
+    // widgets (MaterialToolbar, AppBarLayout, MaterialSwitch, TextInputLayout, bottom sheets)
+    // need it declared directly with that gone.
+    implementation(libs.material)
+    implementation(libs.recyclerview.fastscroll)
     implementation(libs.eventbus)
+    // Rode in transitively through org.fossify:commons until now; Converters uses it directly
+    // to serialize attachments and participants into Room.
+    implementation(libs.gson)
+    // Also rode in transitively. Used as the base Glide.with(context) API only -- nothing here
+    // calls the generated GlideApp, so no @GlideModule/KSP processor is needed for it.
+    implementation(libs.glide)
+    // Also transitive until now: every scheduled-time and message-timestamp screen is built
+    // on org.joda.time.DateTime.
+    implementation(libs.joda.time)
     implementation(libs.indicator.fast.scroll)
     implementation(libs.mmslib)
     implementation(libs.androidx.swiperefreshlayout)

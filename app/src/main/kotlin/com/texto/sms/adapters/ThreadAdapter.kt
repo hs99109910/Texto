@@ -302,7 +302,7 @@ class ThreadAdapter(
             SimpleActivity.BubbleAction(
                 R.id.dial_number,
                 "",
-                org.fossify.commons.R.drawable.ic_phone_vector
+                R.drawable.ic_ph_phone
             ),
             SimpleActivity.BubbleAction(R.id.copy_number, "", R.drawable.ic_copy_vector),
             SimpleActivity.BubbleAction(
@@ -349,7 +349,7 @@ class ThreadAdapter(
             items.add(
                 SimpleActivity.BubbleAction(
                     R.id.cab_copy_to_clipboard,
-                    simpleActivity.getString(org.fossify.commons.R.string.copy_to_clipboard),
+                    simpleActivity.getString(R.string.copy_to_clipboard),
                     R.drawable.ic_copy_vector
                 )
             )
@@ -365,7 +365,7 @@ class ThreadAdapter(
             items.add(
                 SimpleActivity.BubbleAction(
                     R.id.cab_save_as,
-                    simpleActivity.getString(org.fossify.commons.R.string.save_as),
+                    simpleActivity.getString(R.string.save_as),
                     R.drawable.ic_download_vector
                 )
             )
@@ -373,7 +373,7 @@ class ThreadAdapter(
         items.add(
             SimpleActivity.BubbleAction(
                 R.id.cab_delete,
-                simpleActivity.getString(org.fossify.commons.R.string.delete),
+                simpleActivity.getString(R.string.delete),
                 R.drawable.ic_delete_vector
             )
         )
@@ -574,7 +574,7 @@ class ThreadAdapter(
 
     private fun askConfirmDelete() {
         val items = getSelectedItems().filterIsInstance<Message>()
-        val baseString = org.fossify.commons.R.string.deletion_confirmation
+        val baseString = R.string.deletion_confirmation
         val question = String.format(resources.getString(baseString), messageCountPhrase(items.size))
         (activity as SimpleActivity).textoConfirmDialog(question, isDestructive = true) {
             deleteMessages(items, false, false)
@@ -992,7 +992,7 @@ class ThreadAdapter(
             }
 
             if (!isReceived && message.isScheduled) {
-                val scheduledDrawable = AppCompatResources.getDrawable(activity, org.fossify.commons.R.drawable.ic_clock_vector)?.apply {
+                val scheduledDrawable = AppCompatResources.getDrawable(activity, R.drawable.ic_ph_clock)?.apply {
                     applyColorFilter(finalTextColor)
                     val size = lineHeight
                     setBounds(0, 0, size, size)
@@ -1200,7 +1200,7 @@ class ThreadAdapter(
 
     private fun setupThreadSuccess(view: View, isDelivered: Boolean) {
         ItemThreadSuccessBinding.bind(view).apply {
-            threadSuccess.setImageResource(if (isDelivered) R.drawable.ic_check_double_vector else org.fossify.commons.R.drawable.ic_check_vector)
+            threadSuccess.setImageResource(if (isDelivered) R.drawable.ic_check_double_vector else R.drawable.ic_ph_check)
             threadSuccess.applyColorFilter(Color.GRAY)
         }
     }

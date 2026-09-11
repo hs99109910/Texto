@@ -60,7 +60,7 @@ abstract class BaseConversationsAdapter(
     private var suppressStateRestoration = false
 
     private var fontSize = activity.getScaledTextSize()
-    private var iconSize = activity.getScaledDimen(org.fossify.commons.R.dimen.list_icon_size_medium)
+    private var iconSize = activity.getScaledDimen(R.dimen.texto_list_icon_size_medium)
 
     private var recyclerViewState: Parcelable? = null
 
@@ -458,7 +458,7 @@ abstract class BaseConversationsAdapter(
         items.add(
             SimpleActivity.BubbleAction(
                 R.id.cab_delete,
-                simpleActivity.getString(org.fossify.commons.R.string.delete),
+                simpleActivity.getString(R.string.delete),
                 R.drawable.ic_delete_vector
             )
         )
@@ -896,9 +896,9 @@ abstract class BaseConversationsAdapter(
                 }
                 true
             }
-            root.minimumHeight = (activity as SimpleActivity).getScaledDimen(org.fossify.commons.R.dimen.two_line_list_item_min_height)
-            val paddingStart = (activity as SimpleActivity).getScaledDimen(org.fossify.commons.R.dimen.activity_margin)
-            val paddingTop = (activity as SimpleActivity).getScaledDimen(org.fossify.commons.R.dimen.medium_margin)
+            root.minimumHeight = (activity as SimpleActivity).getScaledDimen(R.dimen.texto_two_line_list_item_min_height)
+            val paddingStart = (activity as SimpleActivity).getScaledDimen(R.dimen.texto_activity_margin)
+            val paddingTop = (activity as SimpleActivity).getScaledDimen(R.dimen.texto_medium_margin)
             root.setPadding(paddingStart, paddingTop, paddingStart, paddingTop)
             
             val currentMainTextColor = activity.config.mainTextColor
@@ -1027,7 +1027,7 @@ abstract class BaseConversationsAdapter(
 
     fun updateScaling() {
         fontSize = (activity as SimpleActivity).getScaledTextSize()
-        iconSize = (activity as SimpleActivity).getScaledDimen(org.fossify.commons.R.dimen.list_icon_size_medium)
+        iconSize = (activity as SimpleActivity).getScaledDimen(R.dimen.texto_list_icon_size_medium)
         safeNotifyDataSetChanged()
     }
 

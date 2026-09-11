@@ -7,26 +7,26 @@
     android:background="?attr/selectableItemBackground"
     android:clickable="true"
     android:focusable="true"
-    android:foreground="@drawable/selector">
+    android:foreground="@drawable/texto_selector">
 
     <RelativeLayout
         android:id="@+id/item_contact_holder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="@dimen/min_row_height"
-        android:paddingStart="@dimen/medium_margin"
-        android:paddingTop="@dimen/medium_margin"
-        android:paddingEnd="@dimen/tiny_margin"
-        android:paddingBottom="@dimen/medium_margin">
+        android:minHeight="@dimen/texto_min_row_height"
+        android:paddingStart="@dimen/texto_medium_margin"
+        android:paddingTop="@dimen/texto_medium_margin"
+        android:paddingEnd="@dimen/texto_tiny_margin"
+        android:paddingBottom="@dimen/texto_medium_margin">
 
         <ImageView
             android:id="@+id/item_contact_image"
-            android:layout_width="@dimen/list_icon_size_medium"
-            android:layout_height="@dimen/list_icon_size_medium"
+            android:layout_width="@dimen/texto_list_icon_size_medium"
+            android:layout_height="@dimen/texto_list_icon_size_medium"
             android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/small_margin"
-            android:padding="@dimen/tiny_margin"
-            android:src="@drawable/ic_person_vector" />
+            android:layout_marginStart="@dimen/texto_small_margin"
+            android:padding="@dimen/texto_tiny_margin"
+            android:src="@drawable/ic_ph_user_circle" />
 
         <TextView
             android:id="@+id/item_contact_name"
@@ -38,17 +38,17 @@
             android:ellipsize="end"
             android:gravity="center_vertical"
             android:maxLines="1"
-            android:paddingStart="@dimen/medium_margin"
-            android:paddingEnd="@dimen/activity_margin"
-            android:textSize="@dimen/bigger_text_size"
+            android:paddingStart="@dimen/texto_medium_margin"
+            android:paddingEnd="@dimen/texto_activity_margin"
+            android:textSize="@dimen/texto_bigger_text_size"
             tools:text="John Doe" />
 
         <ImageView
             android:id="@+id/expand_collapse_icon"
-            android:layout_width="@dimen/normal_icon_size"
-            android:layout_height="@dimen/normal_icon_size"
+            android:layout_width="@dimen/texto_normal_icon_size"
+            android:layout_height="@dimen/texto_normal_icon_size"
             android:layout_alignParentEnd="true"
-            android:padding="@dimen/normal_margin"
+            android:padding="@dimen/texto_normal_margin"
             android:src="@drawable/ic_expand_down"
             android:visibility="visible" />
 

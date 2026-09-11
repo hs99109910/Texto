@@ -54,7 +54,7 @@ class ImportMessagesDialog(
                         }
 
                         ignoreClicks = true
-                        activity.toast(org.fossify.commons.R.string.importing)
+                        activity.toast(R.string.importing)
                         config.importSms = binding.importSmsCheckbox.isChecked
                         config.importMms = binding.importMmsCheckbox.isChecked
 
@@ -84,10 +84,10 @@ class ImportMessagesDialog(
     private fun handleParseResult(result: ImportResult) {
         activity.toast(
             when (result) {
-                ImportResult.IMPORT_OK -> org.fossify.commons.R.string.importing_successful
-                ImportResult.IMPORT_PARTIAL -> org.fossify.commons.R.string.importing_some_entries_failed
-                ImportResult.IMPORT_FAIL -> org.fossify.commons.R.string.importing_failed
-                else -> org.fossify.commons.R.string.no_items_found
+                ImportResult.IMPORT_OK -> R.string.importing_successful
+                ImportResult.IMPORT_PARTIAL -> R.string.importing_some_entries_failed
+                ImportResult.IMPORT_FAIL -> R.string.importing_failed
+                else -> R.string.no_items_found
             }
         )
     }

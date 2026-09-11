@@ -1,5 +1,7 @@
 package com.texto.sms.receivers
 
+import com.texto.sms.R
+
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -88,7 +90,7 @@ class ScheduledMessageReceiver : BroadcastReceiver() {
         sendFailure?.let { failure ->
             context.showErrorToast(
                 failure.localizedMessage
-                    ?: context.getString(org.fossify.commons.R.string.unknown_error_occurred)
+                    ?: context.getString(R.string.unknown_error_occurred)
             )
             // Left in the database on purpose: the user can still see it and retry.
             return

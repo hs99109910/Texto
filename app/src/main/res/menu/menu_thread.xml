@@ -5,7 +5,7 @@
     tools:ignore="AppCompatResource,AlwaysShowAction">
     <item
         android:id="@+id/dial_number"
-        android:icon="@drawable/ic_phone_vector"
+        android:icon="@drawable/ic_ph_phone"
         android:showAsAction="always"
         android:title="@string/dial_number"
         app:showAsAction="always" />

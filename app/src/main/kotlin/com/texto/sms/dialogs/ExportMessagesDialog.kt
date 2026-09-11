@@ -55,9 +55,9 @@ class ExportMessagesDialog(
                         config.exportMms = binding.exportMmsCheckbox.isChecked
                         val filename = binding.exportMessagesFilename.value
                         when {
-                            filename.isEmpty() -> activity.toast(org.fossify.commons.R.string.empty_name)
+                            filename.isEmpty() -> activity.toast(R.string.empty_name)
                             filename.isAValidFilename() -> callback(filename)
-                            else -> activity.toast(org.fossify.commons.R.string.invalid_name)
+                            else -> activity.toast(R.string.invalid_name)
                         }
                     }
                 }
@@ -95,7 +95,7 @@ class ExportMessagesDialog(
                     getMms = config.exportMms
                 ) { messagesToExport ->
                     if (messagesToExport.isEmpty()) {
-                        activity.toast(org.fossify.commons.R.string.no_entries_for_exporting)
+                        activity.toast(R.string.no_entries_for_exporting)
                         dismiss()
                         return@getMessagesToExport
                     }
@@ -105,7 +105,7 @@ class ExportMessagesDialog(
                             json.encodeToStream(messagesToExport, outputStream)
                         }
                     success = true
-                    activity.toast(org.fossify.commons.R.string.exporting_successful)
+                    activity.toast(R.string.exporting_successful)
                 }
             } catch (e: Throwable) {
                 activity.showErrorToast(e.toString())

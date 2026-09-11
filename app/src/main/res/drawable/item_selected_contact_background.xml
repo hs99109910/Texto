@@ -2,8 +2,8 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/selected_contact_bg">
         <shape android:shape="rectangle">
-            <corners android:radius="@dimen/material_button_corner_radius" />
-            <solid android:color="@color/md_grey_white" />
+            <corners android:radius="@dimen/texto_material_button_corner_radius" />
+            <solid android:color="@color/texto_md_grey_white" />
         </shape>
     </item>
 </layer-list>

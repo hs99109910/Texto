@@ -267,10 +267,12 @@
                             style="@style/SettingsRowSubtitle"
                             android:text="@string/show_contacts_only_filter_sub" />
                     </LinearLayout>
-                    <org.fossify.commons.views.MyMaterialSwitch
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        style="@style/Widget.Material3.CompoundButton.MaterialSwitch"
                         android:id="@+id/settings_contacts_only_filter_switch"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        app:showText="false" />
                 </LinearLayout>
                 <View
                     android:layout_width="match_parent"
@@ -309,10 +311,12 @@
                             style="@style/SettingsRowSubtitle"
                             android:text="@string/show_ads_filter_sub" />
                     </LinearLayout>
-                    <org.fossify.commons.views.MyMaterialSwitch
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        style="@style/Widget.Material3.CompoundButton.MaterialSwitch"
                         android:id="@+id/settings_ads_filter_switch"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        app:showText="false" />
                 </LinearLayout>
                 <View
                     android:layout_width="match_parent"
@@ -398,10 +402,12 @@
                             style="@style/SettingsRowSubtitle"
                             android:text="@string/settings_dark_mode_sub" />
                     </LinearLayout>
-                    <org.fossify.commons.views.MyMaterialSwitch
+                    <com.google.android.material.materialswitch.MaterialSwitch
+                        style="@style/Widget.Material3.CompoundButton.MaterialSwitch"
                         android:id="@+id/settings_dark_mode_switch"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        app:showText="false" />
                 </LinearLayout>
                 <View
                     android:layout_width="match_parent"

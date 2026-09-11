@@ -49,7 +49,7 @@
     </LinearLayout>
 
     <LinearLayout android:id="@+id/picker_contact" style="@style/PickerItemStyle">
-        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_person_vector" android:contentDescription="@string/picker_contact"/>
+        <ImageView style="@style/PickerIconStyle" android:src="@drawable/ic_ph_user_circle" android:contentDescription="@string/picker_contact"/>
         <TextView style="@style/PickerTextStyle" android:text="@string/picker_contact" />
     </LinearLayout>
 

@@ -1,5 +1,7 @@
 package com.texto.sms.extensions
 
+import com.texto.sms.R
+
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -30,7 +32,7 @@ fun SimpleActivity.dialNumber(phoneNumber: String, callback: (() -> Unit)? = nul
                 startActivity(this)
                 callback?.invoke()
             } catch (_: ActivityNotFoundException) {
-                toast(org.fossify.commons.R.string.no_app_found)
+                toast(R.string.no_app_found)
             } catch (e: Exception) {
                 showErrorToast(e)
             }
@@ -52,7 +54,7 @@ fun Activity.launchViewIntent(uri: Uri, mimetype: String, filename: String) {
             if (newMimetype.isNotEmpty() && mimetype != newMimetype) {
                 launchViewIntent(uri, newMimetype, filename)
             } else {
-                toast(org.fossify.commons.R.string.no_app_found)
+                toast(R.string.no_app_found)
             }
         } catch (e: Exception) {
             showErrorToast(e)

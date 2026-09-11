@@ -373,7 +373,7 @@ class NewConversationActivity : SimpleActivity() {
         binding.noContactsPlaceholder.beVisibleIf(!hasContacts)
         binding.noContactsPlaceholder2.beVisibleIf(!hasContacts && !hasPermission(PERMISSION_READ_CONTACTS))
 
-        val placeholderText = if (hasPermission(PERMISSION_READ_CONTACTS)) org.fossify.commons.R.string.no_contacts_found else org.fossify.commons.R.string.no_access_to_contacts
+        val placeholderText = if (hasPermission(PERMISSION_READ_CONTACTS)) R.string.no_contacts_found else R.string.no_access_to_contacts
         binding.noContactsPlaceholder.text = getString(placeholderText)
 
         val currAdapter = binding.contactsList.adapter

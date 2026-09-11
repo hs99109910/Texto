@@ -413,6 +413,7 @@
     <string name="error">خطا: %s</string>
     <string name="value_copied_to_clipboard">در حافظه کپی شد</string>
     <string name="no_app_found">برنامه‌ای برای انجام این کار پیدا نشد</string>
+    <string name="no_sound">بدون صدا</string>
     <string name="share_via">اشتراک‌گذاری با</string>
     <string name="block_confirmation">مطمئنید می‌خواهید «%s» را مسدود کنید؟</string>
     <string name="deletion_confirmation">مطمئنید می‌خواهید %s را حذف کنید؟</string>

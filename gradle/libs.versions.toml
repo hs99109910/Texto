@@ -8,6 +8,8 @@ ksp = "2.3.5"
 detekt = "1.23.8"
 detektCompose = "0.4.28"
 #AndroidX
+material = "1.13.0"
+androidx-core = "1.17.0"
 androidx-constraintlayout = "2.2.1"
 androidx-swiperefreshlayout = "1.2.0"
 androidx-lifecycleprocess = "2.10.0"
@@ -17,9 +19,15 @@ eventbus = "3.3.1"
 #Room
 room = "2.8.4"
 #Fossify
-commons = "6.1.5"
 mmslib = "1.0.0"
 indicator-fast-scroll = "4524cd0b61"
+recyclerview-fastscroll = "5a95285b1f"
+#Gson
+gson = "2.13.2"
+#Glide
+glide = "5.0.5"
+#Joda-Time
+jodaTime = "2.14.0"
 #Gradle
 gradlePlugins-agp = "9.2.1"
 #build
@@ -33,6 +41,8 @@ ez-vcard = "0.12.2"
 webrtc = "1.0.45036"
 [libraries]
 #AndroidX
+material = { module = "com.google.android.material:material", version.ref = "material" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidx-constraintlayout" }
 androidx-lifecycle-process = { module = "androidx.lifecycle:lifecycle-process", version.ref = "androidx-lifecycleprocess" }
 androidx-swiperefreshlayout = { module = "androidx.swiperefreshlayout:swiperefreshlayout", version.ref = "androidx-swiperefreshlayout" }
@@ -44,11 +54,19 @@ androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref =
 #Compose
 compose-detekt = { module = "io.nlopez.compose.rules:detekt", version.ref = "detektCompose" }
 #Fossify
-fossify-commons = { module = "org.fossify:commons", version.ref = "commons" }
 indicator-fast-scroll = { module = "org.fossify:IndicatorFastScroll", version.ref = "indicator-fast-scroll" }
 mmslib = { module = "org.fossify:mmslib", version.ref = "mmslib" }
+#The one library commons pulled in transitively that the conversation list still uses directly
+#(BaseConversationsAdapter's fast-scroll thumb) -- declared here now that commons itself is gone.
+recyclerview-fastscroll = { module = "com.github.tibbi:RecyclerView-FastScroller", version.ref = "recyclerview-fastscroll" }
 #EventBus
 eventbus = { module = "org.greenrobot:eventbus", version.ref = "eventbus" }
+#Gson
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+#Glide
+glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
+#Joda-Time
+joda-time = { module = "joda-time:joda-time", version.ref = "jodaTime" }
 #Helpers
 ez-vcard = { module = "com.googlecode.ez-vcard:ez-vcard", version.ref = "ez-vcard" }
 #Kotlin

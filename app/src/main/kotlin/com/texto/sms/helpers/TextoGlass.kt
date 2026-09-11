@@ -1,5 +1,7 @@
 package com.texto.sms.helpers
 
+import com.texto.sms.R
+
 import android.app.Activity
 import android.graphics.Color
 import android.graphics.RenderEffect

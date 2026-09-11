@@ -23,7 +23,7 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/cab_save_as"
-        android:icon="@drawable/ic_save_vector"
+        android:icon="@drawable/ic_ph_floppy_disk"
         android:showAsAction="ifRoom"
         android:title="@string/save_as"
         app:showAsAction="ifRoom" />
@@ -47,13 +47,13 @@
         app:showAsAction="never" />
     <item
         android:id="@+id/cab_select_all"
-        android:icon="@drawable/ic_select_all_vector"
+        android:icon="@drawable/ic_ph_checks"
         android:showAsAction="never"
         android:title="@string/select_all"
         app:showAsAction="never" />
     <item
         android:id="@+id/cab_properties"
-        android:icon="@drawable/ic_info_vector"
+        android:icon="@drawable/ic_ph_info"
         android:showAsAction="never"
         android:title="@string/properties"
         app:showAsAction="never" />

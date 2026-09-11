@@ -30,7 +30,7 @@
         <item name="android:textColorSecondary">#B3FFFFFF</item>
         <item name="android:textColorAlertDialogListItem">#FFFFFF</item>
         <item name="colorControlNormal">#FFFFFF</item>
-        <item name="colorControlActivated">@color/colorPrimary</item>
+        <item name="colorControlActivated">@color/texto_colorPrimary</item>
         <item name="buttonBarPositiveButtonStyle">@style/TextoDialogButton</item>
         <item name="buttonBarNegativeButtonStyle">@style/TextoDialogButton</item>
         <item name="buttonBarNeutralButtonStyle">@style/TextoDialogButton</item>
@@ -43,7 +43,7 @@
     </style>
 
     <style name="TextoDialogButton" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
-        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:textColor">@color/texto_colorPrimary</item>
         <item name="android:textSize">15sp</item>
     </style>
 
@@ -190,6 +190,20 @@
         <item name="android:singleLine">true</item>
         <item name="android:ellipsize">end</item>
         <item name="android:includeFontPadding">false</item>
+    </style>
+
+    <!-- The manifest's launch theme, for the one frame before the first activity draws.
+         Transparent rather than the app's own background: painting a real colour here raced
+         visibly against the activity's own theme on a cold start. -->
+    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+    </style>
+
+    <!-- Sets the size only; the three toolbars that use this repaint colour and typeface
+         themselves at runtime the way every other screen does. -->
+    <style name="TextoActionBarTitleTextStyle">
+        <item name="android:textSize">@dimen/texto_actionbar_text_size</item>
     </style>
 
 </resources>

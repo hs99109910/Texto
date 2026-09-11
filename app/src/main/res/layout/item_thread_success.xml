@@ -3,14 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="end"
-    android:paddingEnd="@dimen/activity_margin">
+    android:paddingEnd="@dimen/texto_activity_margin">
 
     <ImageView
         android:id="@+id/thread_success"
-        android:layout_width="@dimen/activity_margin"
-        android:layout_height="@dimen/activity_margin"
-        android:layout_marginTop="@dimen/small_margin"
-        android:layout_marginBottom="@dimen/small_margin"
-        android:src="@drawable/ic_check_vector" />
+        android:layout_width="@dimen/texto_activity_margin"
+        android:layout_height="@dimen/texto_activity_margin"
+        android:layout_marginTop="@dimen/texto_small_margin"
+        android:layout_marginBottom="@dimen/texto_small_margin"
+        android:src="@drawable/ic_ph_check" />
 
 </RelativeLayout>

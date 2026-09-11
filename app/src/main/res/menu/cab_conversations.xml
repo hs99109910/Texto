@@ -17,7 +17,7 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/cab_dial_number"
-        android:icon="@drawable/ic_phone_vector"
+        android:icon="@drawable/ic_ph_phone"
         android:showAsAction="always"
         android:title="@string/dial_number"
         app:showAsAction="always" />
@@ -35,7 +35,7 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/cab_select_all"
-        android:icon="@drawable/ic_select_all_vector"
+        android:icon="@drawable/ic_ph_checks"
         android:showAsAction="ifRoom"
         android:title="@string/select_all"
         app:showAsAction="ifRoom" />

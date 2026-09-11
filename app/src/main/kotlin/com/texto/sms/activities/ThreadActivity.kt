@@ -187,7 +187,7 @@ class ThreadActivity : SimpleActivity() {
 
         val extras = intent.extras
         if (extras == null) {
-            toast(org.fossify.commons.R.string.unknown_error_occurred)
+            toast(R.string.unknown_error_occurred)
             finish()
             return
         }
@@ -1101,7 +1101,7 @@ class ThreadActivity : SimpleActivity() {
         }
 
         if (!isRecycleBin) {
-            items.add(R.id.block_number to getString(org.fossify.commons.R.string.block_number))
+            items.add(R.id.block_number to getString(R.string.block_number))
         }
 
         if (isRecycleBin && threadItems.isNotEmpty()) {
@@ -1111,7 +1111,7 @@ class ThreadActivity : SimpleActivity() {
         // Last, and painted in the destructive colour by showModernMenu. It was the first
         // row: the one irreversible action in the list, sitting where the thumb lands.
         if (threadItems.isNotEmpty()) {
-            items.add(R.id.delete to getString(org.fossify.commons.R.string.delete))
+            items.add(R.id.delete to getString(R.string.delete))
         }
 
         // The same Phosphor set the settings rows are drawn from, so the two lists read as
@@ -1183,7 +1183,7 @@ class ThreadActivity : SimpleActivity() {
             findItem(R.id.unarchive)?.isVisible =
                 threadItems.isNotEmpty() && conversation?.isArchived == true && !isRecycleBin && archiveAvailable
             findItem(R.id.conversation_details)?.isVisible = conversation != null && !isRecycleBin
-            findItem(R.id.block_number)?.title = getString(org.fossify.commons.R.string.block_number)
+            findItem(R.id.block_number)?.title = getString(R.string.block_number)
             findItem(R.id.block_number)?.isVisible = !isRecycleBin
             findItem(R.id.dial_number)?.isVisible = canDialCurrentParticipant()
             findItem(R.id.mark_as_read)?.isVisible = threadItems.isNotEmpty() && !isRecycleBin
@@ -1329,7 +1329,7 @@ class ThreadActivity : SimpleActivity() {
         }.filter { it.isNotBlank() }.distinct()
 
         if (numbers.isEmpty()) {
-            toast(org.fossify.commons.R.string.unknown_error_occurred)
+            toast(R.string.unknown_error_occurred)
             return
         }
 
@@ -1564,7 +1564,7 @@ class ThreadActivity : SimpleActivity() {
         if (text.isEmpty() && attachments.isEmpty()) return
 
         if (participants.isEmpty() || threadId == 0L) {
-            toast(org.fossify.commons.R.string.unknown_error_occurred)
+            toast(R.string.unknown_error_occurred)
             return
         }
 
@@ -1809,7 +1809,7 @@ class ThreadActivity : SimpleActivity() {
     private fun tryBlocking() {
         val numbers = participants.getAddresses()
         val numbersString = TextUtils.join(", ", numbers)
-        val question = String.format(resources.getString(org.fossify.commons.R.string.block_confirmation), numbersString)
+        val question = String.format(resources.getString(R.string.block_confirmation), numbersString)
 
         textoConfirmDialog(question, isDestructive = true) {
             ensureBackgroundThread {
@@ -2471,7 +2471,7 @@ class ThreadActivity : SimpleActivity() {
         try {
             startActivityForResult(intent, requestCode)
         } catch (_: Exception) {
-            toast(org.fossify.commons.R.string.no_app_found)
+            toast(R.string.no_app_found)
         }
     }
 
@@ -2490,7 +2490,7 @@ class ThreadActivity : SimpleActivity() {
                     try {
                         startActivityForResult(Intent(MediaStore.ACTION_IMAGE_CAPTURE), CAPTURE_PHOTO_INTENT)
                     } catch (e2: Exception) {
-                        toast(org.fossify.commons.R.string.no_app_found)
+                        toast(R.string.no_app_found)
                     }
                 }
             }
@@ -2503,7 +2503,7 @@ class ThreadActivity : SimpleActivity() {
                 try {
                     startActivityForResult(Intent(MediaStore.ACTION_VIDEO_CAPTURE), CAPTURE_VIDEO_INTENT)
                 } catch (e: Exception) {
-                    toast(org.fossify.commons.R.string.no_app_found)
+                    toast(R.string.no_app_found)
                 }
             }
         }
@@ -2521,7 +2521,7 @@ class ThreadActivity : SimpleActivity() {
                     try {
                         startActivityForResult(systemRecorderIntent, PICK_AUDIO_INTENT)
                     } catch (e2: Exception) {
-                        toast(org.fossify.commons.R.string.no_app_found)
+                        toast(R.string.no_app_found)
                     }
                 }
             }

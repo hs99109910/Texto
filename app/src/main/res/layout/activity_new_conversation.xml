@@ -42,31 +42,31 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <org.fossify.commons.views.MyTextView
+        <TextView
             android:id="@+id/no_contacts_placeholder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:alpha="0.8"
             android:gravity="center"
-            android:paddingStart="@dimen/activity_margin"
-            android:paddingEnd="@dimen/activity_margin"
+            android:paddingStart="@dimen/texto_activity_margin"
+            android:paddingEnd="@dimen/texto_activity_margin"
             android:text="@string/no_access_to_contacts"
-            android:textSize="@dimen/bigger_text_size"
+            android:textSize="@dimen/texto_bigger_text_size"
             android:textStyle="italic"
             android:visibility="gone" />
 
-        <org.fossify.commons.views.MyTextView
+        <TextView
             android:id="@+id/no_contacts_placeholder_2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@+id/no_contacts_placeholder"
             android:layout_centerHorizontal="true"
-            android:background="@drawable/ripple_all_corners"
+            android:background="@drawable/texto_ripple_all_corners"
             android:gravity="center"
-            android:padding="@dimen/activity_margin"
+            android:padding="@dimen/texto_activity_margin"
             android:text="@string/request_the_required_permissions"
-            android:textSize="@dimen/bigger_text_size"
+            android:textSize="@dimen/texto_bigger_text_size"
             android:visibility="gone" />
 
         <com.texto.sms.views.TextoRecyclerView
@@ -74,7 +74,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:layoutAnimation="@anim/layout_animation"
+            android:layoutAnimation="@anim/texto_layout_animation"
             android:overScrollMode="ifContentScrolls"
             android:scrollbars="none"
             android:paddingTop="12dp"
@@ -89,17 +89,17 @@
             android:layout_height="wrap_content"
             android:layout_alignTop="@+id/contacts_list"
             android:layout_alignParentEnd="true"
-            android:paddingTop="@dimen/big_margin"
-            android:paddingBottom="@dimen/big_margin"
+            android:paddingTop="@dimen/texto_big_margin"
+            android:paddingBottom="@dimen/texto_big_margin"
             android:visibility="gone" />
 
         <com.reddit.indicatorfastscroll.FastScrollerThumbView
             android:id="@+id/contacts_letter_fastscroller_thumb"
-            android:layout_width="@dimen/fab_size"
+            android:layout_width="@dimen/texto_fab_size"
             android:layout_height="match_parent"
             android:layout_alignTop="@+id/contacts_letter_fastscroller"
             android:layout_alignBottom="@+id/contacts_letter_fastscroller"
-            android:layout_marginEnd="@dimen/activity_margin"
+            android:layout_marginEnd="@dimen/texto_activity_margin"
             android:layout_toStartOf="@+id/contacts_letter_fastscroller"
             android:visibility="gone" />
 
@@ -127,7 +127,7 @@
             android:alpha="0.7"
             app:tint="@android:color/white" />
 
-        <org.fossify.commons.views.MyEditText
+        <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/new_conversation_address"
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -162,7 +162,7 @@
             android:layout_height="match_parent"
             android:background="?selectableItemBackgroundBorderless"
             android:padding="12dp"
-            android:src="@drawable/ic_check_vector"
+            android:src="@drawable/ic_ph_check"
             android:visibility="gone" />
 
     </LinearLayout>

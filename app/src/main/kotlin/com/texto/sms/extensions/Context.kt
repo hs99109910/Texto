@@ -1114,7 +1114,7 @@ fun Context.removeAllArchivedConversations(callback: (() -> Unit)? = null) {
             toast(R.string.archive_emptied_successfully)
             callback?.invoke()
         } catch (_: Exception) {
-            toast(org.fossify.commons.R.string.unknown_error_occurred)
+            toast(R.string.unknown_error_occurred)
         }
     }
 }
