@@ -173,6 +173,24 @@ detekt {
 // anything still loads.
 configurations.configureEach {
     exclude(group = "com.android.support")
+
+    // Commons drags the whole Compose stack in, and this app has no Compose in it: measured
+    // on the debug APK, 12,778 of the main dex's 16,799 classes were androidx.compose, and
+    // 10,372 of those were material-icons-extended on its own. Commons uses Compose for
+    // screens this app does not open -- its About and FAQ, which the settings sheet stopped
+    // calling when it grew its own -- so none of it is reachable here.
+    //
+    // Excluded rather than shrunk away because R8 only runs on release, so every debug build
+    // and every install was paying for it. This is a stopgap: the dependency itself is on its
+    // way out, and these lines go with it.
+    exclude(group = "androidx.compose.material")
+    exclude(group = "androidx.compose.foundation")
+    exclude(group = "androidx.compose.animation")
+    exclude(group = "androidx.compose.ui")
+    exclude(group = "androidx.compose.runtime")
+    exclude(group = "androidx.activity", module = "activity-compose")
+    exclude(group = "androidx.lifecycle", module = "lifecycle-runtime-compose")
+    exclude(group = "androidx.lifecycle", module = "lifecycle-viewmodel-compose")
 }
 
 dependencies {
