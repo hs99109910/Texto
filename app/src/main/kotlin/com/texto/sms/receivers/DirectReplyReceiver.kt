@@ -7,9 +7,9 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import androidx.core.app.RemoteInput
-import org.fossify.commons.extensions.showErrorToast
+import com.texto.sms.extensions.showErrorToast
 import org.fossify.commons.helpers.SimpleContactsHelper
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.*
 import com.texto.sms.helpers.REPLY
 import com.texto.sms.helpers.THREAD_ID

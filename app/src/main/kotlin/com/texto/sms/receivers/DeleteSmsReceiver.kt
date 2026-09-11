@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import com.texto.sms.extensions.notificationManager
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.config
 import com.texto.sms.extensions.deleteMessage
 import com.texto.sms.extensions.enforceRecycleBinThreadLimit

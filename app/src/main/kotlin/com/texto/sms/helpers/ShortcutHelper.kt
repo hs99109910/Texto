@@ -9,7 +9,7 @@ import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.core.text.isDigitsOnly
 import org.fossify.commons.helpers.SimpleContactsHelper
-import org.fossify.commons.helpers.isOnMainThread
+import com.texto.sms.extensions.isOnMainThread
 import com.texto.sms.activities.ThreadActivity
 import com.texto.sms.extensions.conversationsDB
 import com.texto.sms.extensions.getThreadParticipants

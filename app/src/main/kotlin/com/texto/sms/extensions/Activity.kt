@@ -9,11 +9,11 @@ import org.fossify.commons.activities.BaseSimpleActivity
 import org.fossify.commons.extensions.getMimeType
 import com.texto.sms.extensions.hideKeyboard
 import org.fossify.commons.extensions.launchViewContactIntent
-import org.fossify.commons.extensions.showErrorToast
-import org.fossify.commons.extensions.toast
+import com.texto.sms.extensions.showErrorToast
+import com.texto.sms.extensions.toast
 import org.fossify.commons.helpers.PERMISSION_CALL_PHONE
 import org.fossify.commons.helpers.SimpleContactsHelper
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
 import org.fossify.commons.models.SimpleContact
 import com.texto.sms.activities.ConversationDetailsActivity
 import com.texto.sms.helpers.THREAD_ID

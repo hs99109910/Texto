@@ -39,6 +39,7 @@ import com.texto.sms.extensions.beGone
 import com.texto.sms.extensions.beVisible
 import com.texto.sms.extensions.beGoneIf
 import com.texto.sms.extensions.beVisibleIf
+import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.toast
 import com.texto.sms.extensions.showErrorToast
 
@@ -689,7 +690,7 @@ class SettingsActivity : SimpleActivity() {
         settingsBlockedNumbersHolder.setOnClickListener {
             startActivity(Intent(this@SettingsActivity, BlockedNumbersActivity::class.java))
         }
-        org.fossify.commons.helpers.ensureBackgroundThread {
+        ensureBackgroundThread {
             // Explicit receiver: inside binding.apply the implicit `this` is the binding,
             // not the Context the extension needs.
             val count = with(com.texto.sms.helpers.SystemBlockedNumbers) {

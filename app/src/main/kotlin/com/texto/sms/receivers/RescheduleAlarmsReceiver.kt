@@ -3,7 +3,7 @@ package com.texto.sms.receivers
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.rescheduleAllScheduledMessages
 
 /**

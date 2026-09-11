@@ -14,8 +14,8 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.transition.Transition
-import org.fossify.commons.extensions.toast
-import org.fossify.commons.extensions.viewBinding
+import com.texto.sms.extensions.toast
+import com.texto.sms.extensions.viewBinding
 import com.texto.sms.R
 import com.texto.sms.databinding.ActivityImageCropperBinding
 import com.texto.sms.helpers.*

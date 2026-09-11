@@ -6,8 +6,8 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
-import org.fossify.commons.extensions.showErrorToast
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.showErrorToast
+import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.conversationsDB
 import com.texto.sms.extensions.deleteScheduledMessage
 import com.texto.sms.extensions.getAddresses

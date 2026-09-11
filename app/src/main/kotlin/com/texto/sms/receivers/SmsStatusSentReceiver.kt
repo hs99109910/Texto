@@ -9,7 +9,7 @@ import android.os.Looper
 import android.provider.Telephony.Sms
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.getMessageRecipientAddress
 import com.texto.sms.extensions.getNameFromAddress
 import com.texto.sms.extensions.getThreadId

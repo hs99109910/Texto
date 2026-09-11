@@ -50,21 +50,21 @@ fun android.graphics.drawable.Drawable.applyColorFilter(color: Int) =
  */
 fun Context.toast(id: Int, length: Int = Toast.LENGTH_SHORT) = toast(getString(id), length)
 
-fun Context.toast(message: String, length: Int = Toast.LENGTH_SHORT) {
+fun Context.toast(msg: String, length: Int = Toast.LENGTH_SHORT) {
     try {
         if (isOnMainThread()) {
-            Toast.makeText(this, message, length).show()
+            Toast.makeText(this, msg, length).show()
         } else {
             Handler(Looper.getMainLooper()).post {
-                Toast.makeText(this, message, length).show()
+                Toast.makeText(this, msg, length).show()
             }
         }
     } catch (_: Exception) {
     }
 }
 
-fun Context.showErrorToast(message: String, length: Int = Toast.LENGTH_LONG) {
-    toast(String.format(getString(R.string.error), message), length)
+fun Context.showErrorToast(msg: String, length: Int = Toast.LENGTH_LONG) {
+    toast(String.format(getString(R.string.error), msg), length)
 }
 
 fun Context.showErrorToast(exception: Exception, length: Int = Toast.LENGTH_LONG) {

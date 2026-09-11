@@ -9,7 +9,7 @@ import org.fossify.commons.extensions.baseConfig
 import com.texto.sms.helpers.isNumberBlockedBySystem
 import org.fossify.commons.helpers.ContactLookupResult
 import org.fossify.commons.helpers.SimpleContactsHelper
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
 import org.fossify.commons.models.PhoneNumber
 import org.fossify.commons.models.SimpleContact
 import com.texto.sms.extensions.getConversations

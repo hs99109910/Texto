@@ -7,7 +7,7 @@ import android.graphics.Matrix
 import android.media.ExifInterface
 import android.net.Uri
 import org.fossify.commons.extensions.getMyFileUri
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.extension
 import com.texto.sms.extensions.getFileSizeFromUri
 import com.texto.sms.extensions.isImageMimeType

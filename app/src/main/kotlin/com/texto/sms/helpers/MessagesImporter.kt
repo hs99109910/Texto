@@ -5,10 +5,10 @@ import android.util.Xml
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
-import org.fossify.commons.extensions.showErrorToast
-import org.fossify.commons.extensions.toast
-import org.fossify.commons.helpers.ensureBackgroundThread
-import org.fossify.commons.helpers.isUpsideDownCakePlus
+import com.texto.sms.extensions.showErrorToast
+import com.texto.sms.extensions.toast
+import com.texto.sms.extensions.ensureBackgroundThread
+import com.texto.sms.extensions.isUpsideDownCakePlus
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.dialogs.ImportMessagesDialog
 import com.texto.sms.extensions.config

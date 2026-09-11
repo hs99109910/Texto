@@ -4,11 +4,11 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import org.fossify.commons.extensions.areSystemAnimationsEnabled
-import org.fossify.commons.extensions.beVisibleIf
+import com.texto.sms.extensions.beVisibleIf
 import com.texto.sms.extensions.hideKeyboard
-import org.fossify.commons.extensions.viewBinding
+import com.texto.sms.extensions.viewBinding
 import org.fossify.commons.helpers.NavigationIcon
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.R
 import com.texto.sms.adapters.RecycleBinConversationsAdapter
 import com.texto.sms.databinding.ActivityRecycleBinConversationsBinding

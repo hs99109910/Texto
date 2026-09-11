@@ -3,7 +3,7 @@ package com.texto.sms.helpers
 import android.content.Context
 import android.media.*
 import android.net.Uri
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.getFileSizeFromUri
 import java.io.File
 import java.nio.ByteBuffer

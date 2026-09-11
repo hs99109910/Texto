@@ -6,7 +6,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import org.fossify.commons.extensions.toast
+import com.texto.sms.extensions.toast
 import com.texto.sms.R
 import com.texto.sms.helpers.COPY_CODE
 import com.texto.sms.helpers.MESSAGE_CODE

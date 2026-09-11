@@ -4,7 +4,7 @@ import android.content.Context
 import android.net.Uri
 import ezvcard.Ezvcard
 import ezvcard.VCard
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
 
 fun parseVCardFromUri(context: Context, uri: Uri, callback: (vCards: List<VCard>) -> Unit) {
     ensureBackgroundThread {

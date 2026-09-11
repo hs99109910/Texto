@@ -8,8 +8,8 @@ import android.database.sqlite.SQLiteException
 import android.net.Uri
 import android.provider.Telephony
 import android.widget.Toast
-import org.fossify.commons.extensions.showErrorToast
-import org.fossify.commons.extensions.toast
+import com.texto.sms.extensions.showErrorToast
+import com.texto.sms.extensions.toast
 import com.texto.sms.R
 import com.texto.sms.extensions.deleteMessage
 import com.texto.sms.helpers.refreshConversations

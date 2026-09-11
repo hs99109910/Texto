@@ -6,7 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.provider.Telephony.Sms
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.extensions.messagesDB
 import com.texto.sms.extensions.messagingUtils
 import com.texto.sms.helpers.refreshMessages

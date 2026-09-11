@@ -5,9 +5,9 @@ import android.telephony.SmsMessage
 import android.util.Patterns
 import android.widget.Toast.LENGTH_LONG
 import com.klinker.android.send_message.Settings
-import org.fossify.commons.extensions.showErrorToast
-import org.fossify.commons.extensions.toast
-import org.fossify.commons.helpers.ensureBackgroundThread
+import com.texto.sms.extensions.showErrorToast
+import com.texto.sms.extensions.toast
+import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.R
 import com.texto.sms.extensions.config
 import com.texto.sms.extensions.getThreadId
