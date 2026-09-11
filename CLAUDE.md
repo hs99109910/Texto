@@ -447,6 +447,21 @@ two of them behind an edge with nothing to say the rest were there, on the one s
 job is to show exactly that -- and the colours row carries the actual swatches and the
 sound's name, so "is anything set here" is answerable without opening it.
 
+**`autoMirrored` reads the authored artwork as the left-to-right form.** It mirrors for RTL
+and leaves LTR alone, which is the opposite of what the thread's back button was built on:
+it pointed at `ic_ph_arrow_right` with autoMirrored set, so English kept the arrow pointing
+right -- where it is wrong -- and Persian flipped it left, where it had been right already.
+The button points at `ic_ph_arrow_left` now, which is the same path mirrored by a group's
+`scaleX` rather than re-exported. Both directions were *measured*, by summing the glyph's
+dark pixels per column across the button's own bounds: the head's mass sits on the side the
+arrow faces, and eyeballing a screenshot is what got it backwards the first time.
+
+**The colours sheet leads with a chat, not with five rows.** Two real bubbles on the real
+ground, in the app's own radii and tail corner, repainted on every pick -- five rows each
+naming one colour never answered the question actually being asked, which is what a chat in
+this filter will look like. It earns its place immediately: a blue bubble with orange ink was
+sitting in a filter and nothing said so until the preview drew it.
+
 **A destructive button sitting where Cancel goes needs to ask.** The colours sheet's Clear
 throws away all five colours and the sound at once, and it sits in the footer's first slot,
 which on every other sheet is Cancel. It went off silently, and a single mistaken tap looked

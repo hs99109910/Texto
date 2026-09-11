@@ -1,15 +1,9 @@
-<!--
-    Phosphor "arrow-right", lifted verbatim from the design's icon font. Used as the thread
-    header's back arrow, so it has to point the way the language reads rather than staying
-    fixed: right under the app's Persian locale, and autoMirrored flips it left the one place
-    the app is shown left-to-right.
--->
+<!-- Phosphor "arrow-right", lifted verbatim from the design's icon font. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="1024"
     android:viewportHeight="1024"
-    android:autoMirrored="true"
     android:tint="#FFFFFFFF">
     <group
         android:scaleY="-1"

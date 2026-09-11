@@ -69,7 +69,97 @@ fun SimpleActivity.textoFilterCustomizer(
         }
     )
 
-    val rows = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
+    // ---- the preview -------------------------------------------------------------------------
+    // Leads, the way the colour picker's sample does, and for the same reason: five rows each
+    // naming one colour never answered the only question being asked, which is what a chat in
+    // this filter is going to look like. The two bubbles are the real thing -- the app's own
+    // radii, the app's own tail corner -- painted from the working copy, so every pick lands
+    // here before it lands anywhere else.
+    val preview = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        val pad = 12.getScaledPx()
+        setPadding(pad, pad, pad, pad)
+        outlineProvider = ViewOutlineProvider.BACKGROUND
+        clipToOutline = true
+        layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply { bottomMargin = 18.getScaledPx() }
+    }
+
+    fun bubble(isReceived: Boolean): TextView = TextView(this).apply {
+        text = getString(
+            if (isReceived) R.string.filter_preview_received else R.string.filter_preview_sent
+        )
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.82f))
+        typeface = typefaceFor(Typeface.NORMAL)
+        val padH = 14.getScaledPx()
+        val padV = 9.getScaledPx()
+        setPadding(padH, padV, padH, padV)
+        layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply {
+            gravity = if (isReceived) Gravity.START else Gravity.END
+            topMargin = if (isReceived) 0 else 8.getScaledPx()
+        }
+    }
+
+    val receivedBubble = bubble(isReceived = true)
+    val sentBubble = bubble(isReceived = false)
+    preview.addView(receivedBubble)
+    preview.addView(sentBubble)
+    sheet.addView(preview)
+
+    fun renderPreview() {
+        // The design's two bubble radii: 1.25rem everywhere, 0.35rem on the corner the tail
+        // would be. Same pair the thread itself draws, so this is the bubble, not a swatch.
+        val r20 = 20f * density
+        val r6 = 5.6f * density
+        val ground = working.backgroundColor ?: config.mainBackgroundColor
+        preview.background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = 18 * density
+            setColor(ground)
+            setStroke(1.getScaledPx(), TextoGlass.rimFor(ground, 0.22f))
+        }
+
+        val receivedInk = working.receivedBubbleTextColor ?: config.receivedBubbleTextColor
+        receivedBubble.setTextColor(receivedInk)
+        receivedBubble.background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            // Bottom-start is the tail corner on an incoming bubble; physical order is
+            // TL, TR, BR, BL, so it flips with the layout direction.
+            cornerRadii = if (receivedBubble.layoutDirection == View.LAYOUT_DIRECTION_RTL) {
+                floatArrayOf(r20, r20, r20, r20, r6, r6, r20, r20)
+            } else {
+                floatArrayOf(r20, r20, r20, r20, r20, r20, r6, r6)
+            }
+            setColor(working.receivedBubbleColor ?: config.receivedBubbleColor)
+        }
+
+        val sentInk = working.sentBubbleTextColor ?: config.sentBubbleTextColor
+        sentBubble.setTextColor(sentInk)
+        sentBubble.background = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadii = if (sentBubble.layoutDirection == View.LAYOUT_DIRECTION_RTL) {
+                floatArrayOf(r20, r20, r20, r20, r20, r20, r6, r6)
+            } else {
+                floatArrayOf(r20, r20, r20, r20, r6, r6, r20, r20)
+            }
+            setColor(working.sentBubbleColor ?: config.sentBubbleColor)
+        }
+    }
+
+    // Named sections, the same accent label the filter editor puts over its own two groups,
+    // so a sheet reached from that one is read the same way rather than as five loose rows
+    // and a divider.
+    sheet.addView(sectionLabel(getString(R.string.filter_section_colours)))
+
+    val rows = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        layoutParams = LinearLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+        ).apply { topMargin = 4.getScaledPx() }
+    }
     sheet.addView(rows)
 
     val soundRow = LinearLayout(this).apply {
@@ -157,6 +247,7 @@ fun SimpleActivity.textoFilterCustomizer(
                 // filter on today's theme while the rest of the app follows a later one.
                 working = write(working, if (picked == appDefault()) null else picked)
                 render()
+                renderPreview()
             }
         }
         row.addView(title)
@@ -234,16 +325,13 @@ fun SimpleActivity.textoFilterCustomizer(
         }
     }
     renderSound()
+    renderPreview()
 
     sheet.addView(
-        View(this).apply {
+        sectionLabel(getString(R.string.filter_section_notification)).apply {
             layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, 1.getScaledPx()
-            ).apply {
-                topMargin = 8.getScaledPx()
-                bottomMargin = 4.getScaledPx()
-            }
-            setBackgroundColor(TextoGlass.rimFor(config.recentColor, 0.30f))
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply { topMargin = 18.getScaledPx() }
         }
     )
     sheet.addView(soundRow)

@@ -253,6 +253,10 @@
     <string name="filter_senders_section">فرستنده‌ها</string>
     <string name="filter_customize_title">%s: رنگ‌ها و صدا</string>
     <string name="filter_customize_subtitle">فقط روی گفتگوهای همین فیلتر اعمال می‌شود</string>
+    <string name="filter_preview_received">پیامی که می‌رسد</string>
+    <string name="filter_preview_sent">و پاسخی که می‌فرستید</string>
+    <string name="filter_section_colours">رنگ‌ها</string>
+    <string name="filter_section_notification">اعلان</string>
     <string name="filter_colour_following">برنامه</string>
     <string name="filter_colour_custom">اختصاصی</string>
     <string name="filter_colour_background">پس‌زمینهٔ گفتگو</string>

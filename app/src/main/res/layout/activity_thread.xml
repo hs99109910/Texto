@@ -58,7 +58,7 @@
                     android:contentDescription="@string/back"
                     android:focusable="true"
                     android:padding="9dp"
-                    android:src="@drawable/ic_ph_arrow_right"
+                    android:src="@drawable/ic_ph_arrow_left"
                     app:tint="#FFFFFF" />
 
                 <ImageView
