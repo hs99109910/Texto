@@ -280,6 +280,11 @@ class ThreadActivity : SimpleActivity() {
         // The shape the shadow is cast from, set here because this is where the elevation
         // that casts it is, so the two cannot drift apart. clipToOutline is left alone: only
         // the shadow needs the shape.
+        // Stickers, GIFs and images handed over by the keyboard land in the same place a
+        // picked file does, so one arriving is an MMS attachment like any other -- size
+        // limit, preview row, removal and all -- rather than a second path to keep in step.
+        inputField.onContentReceived = { uri -> runOnUiThread { addAttachment(uri) } }
+
         val capsuleRadius = TextoGlass.COMPOSER_RADIUS_DP * resources.displayMetrics.density
         inputBar.outlineProvider = object : android.view.ViewOutlineProvider() {
             override fun getOutline(view: android.view.View, outline: android.graphics.Outline) {
@@ -768,7 +773,18 @@ class ThreadActivity : SimpleActivity() {
 
             styleComposerDisc(threadAddEmoji, inputBarColor)
             threadAddEmoji.alpha = 1.0f
-            threadAddEmoji.setOnClickListener { showEmojiPicker() }
+            // Opens the keyboard rather than a picker of its own. The emoji, GIFs and
+            // stickers are the keyboard's, reached from its own key: there are thousands of
+            // them, it knows which ones get sent, and several can be sent in a row without
+            // the sheet closing between them. Android exposes no way to open that panel
+            // directly, so this puts the cursor in the field and brings the keyboard up,
+            // which is one tap from it.
+            threadAddEmoji.setOnClickListener {
+                val field = binding.messageHolder.threadTypeMessage
+                if (!field.isFocusable) expandInputBar()
+                field.requestFocus()
+                showKeyboard(field)
+            }
 
             // threadMessagesFastscroller removed
 
@@ -2363,76 +2379,6 @@ class ThreadActivity : SimpleActivity() {
         }
 
         textoCapsuleDialog(getString(R.string.select_sim_card), choices)
-    }
-
-    /**
-     * A short grid of common emoji, inserted at the cursor. Android exposes no intent for
-     * "open the keyboard's emoji panel", so the design's smiley gets its own small picker
-     * rather than a button that does nothing.
-     */
-    private fun showEmojiPicker() {
-        // Faces first, and the ones people actually send: the previous set led with 😀 and
-        // spent a quarter of its slots on ☕, 📞, ❌ and 🤝, which almost never get picked.
-        val emoji = listOf(
-            "🙂", "😊", "😍", "🥰", "😘", "😂",
-            "😅", "😏", "😑", "🫠", "😔", "😭",
-            "😉", "🤔", "😴", "😡", "🙏", "👍",
-            "❤️", "🔥", "🎉", "🌹", "👌", "✅"
-        )
-
-        val popup = android.widget.PopupWindow(this)
-        val columns = 6
-        val cell = 44.getScaledPx()
-        val grid = android.widget.GridLayout(this).apply {
-            columnCount = columns
-            val pad = 10.getScaledPx()
-            setPadding(pad, pad, pad, pad)
-            background = com.texto.sms.helpers.TextoGlass.bar(
-                tint = config.recentColor,
-                cornerRadius = 22 * resources.displayMetrics.density,
-                opacity = 0.98f,
-                strokeWidthPx = 1.getScaledPx()
-            )
-        }
-
-        emoji.forEach { glyph ->
-            val cellView = TextView(this).apply {
-                text = glyph
-                gravity = android.view.Gravity.CENTER
-                setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.4f))
-                layoutParams = android.widget.GridLayout.LayoutParams().apply {
-                    width = cell
-                    height = cell
-                }
-                isClickable = true
-                setBackgroundResource(
-                    org.fossify.commons.R.drawable.ripple_background
-                )
-                setOnClickListener {
-                    val field = binding.messageHolder.threadTypeMessage
-                    val at = field.selectionStart.coerceAtLeast(0)
-                    field.text?.insert(at, glyph)
-                    popup.dismiss()
-                }
-            }
-            grid.addView(cellView)
-        }
-
-        popup.apply {
-            contentView = grid
-            width = android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-            height = android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-            isOutsideTouchable = true
-            isFocusable = true
-            setBackgroundDrawable(android.graphics.Color.TRANSPARENT.toDrawable())
-            elevation = 12 * resources.displayMetrics.density
-            showAsDropDown(
-                binding.messageHolder.threadAddEmoji,
-                0,
-                -(cell * 5),
-                android.view.Gravity.CENTER
-            )
-        }
     }
 
     /**
