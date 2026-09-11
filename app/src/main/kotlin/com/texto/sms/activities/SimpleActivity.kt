@@ -44,6 +44,7 @@ import org.fossify.commons.helpers.isRPlus
 import org.fossify.commons.extensions.getTextSize
 import com.texto.sms.extensions.applyColorFilter
 import com.texto.sms.R
+import com.texto.sms.extensions.asLtrPhone
 import com.texto.sms.extensions.config
 import com.texto.sms.helpers.*
 import java.io.File
@@ -552,6 +553,31 @@ open class SimpleActivity : BaseSimpleActivity() {
                         setColor(inputBgColor)
                     }
                 }
+
+                // The shadow has to be cast by the capsule, not by the view's box. These bars
+                // carry an elevation, and with the default provider the shadow is drawn from
+                // the *rectangular* bounds while the background painted on top of it is
+                // rounded -- so a grey wedge sat in each bottom corner of the composer, in
+                // the gap between the square shadow and the round surface. Measured: the
+                // bar spans x 26..1054 and the wedges ran x 26..69 and 1010..1053, which is
+                // exactly its two corner arcs.
+                //
+                // The radius is stated rather than read back off the background through
+                // ViewOutlineProvider.BACKGROUND: that asks the drawable for its own outline,
+                // and these backgrounds are a LayerDrawable over a *gradient* fill, which is
+                // not obliged to report one. Tried first, and the wedges were still there.
+                //
+                // clipToOutline stays off: it is the shadow that needs the shape, and
+                // clipping would cut the send disc that overhangs the bar's edge.
+                val shadowRadius = if (isNavPill) null else inputRadius
+                inputBar.outlineProvider = object : android.view.ViewOutlineProvider() {
+                    override fun getOutline(view: View, outline: android.graphics.Outline) {
+                        // A nav pill is a true capsule, so its corner follows its height the
+                        // same way the painted one does.
+                        val r = shadowRadius ?: (view.height / 2f)
+                        outline.setRoundRect(0, 0, view.width, view.height, r)
+                    }
+                }
             }
         }
         
@@ -953,6 +979,13 @@ open class SimpleActivity : BaseSimpleActivity() {
         items: List<BubbleAction>,
         reactions: List<String> = emptyList(),
         activeReaction: String? = null,
+        /**
+         * What the menu is about, shown across its top. The number menu is icon-only -- call,
+         * copy, forward and nothing else -- which left it saying what it would do but never
+         * what it would do it *to*, on a bubble that can hold several numbers. Null on menus
+         * whose subject is the thing they are anchored to and already obvious.
+         */
+        header: String? = null,
         onReaction: (String) -> Unit = {},
         callback: (Int) -> Unit,
     ) {
@@ -1015,6 +1048,35 @@ open class SimpleActivity : BaseSimpleActivity() {
         val rippleValue = android.util.TypedValue()
         theme.resolveAttribute(android.R.attr.selectableItemBackground, rippleValue, true)
 
+        // The subject, above everything else. Isolated left-to-right because it is almost
+        // always a phone number, which a right-to-left paragraph would otherwise reorder
+        // around its leading "+".
+        if (!header.isNullOrEmpty()) {
+            container.addView(
+                TextView(this).apply {
+                    text = header.asLtrPhone()
+                    setTextColor(textColor)
+                    setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.82f))
+                    typeface = typefaceFor(android.graphics.Typeface.BOLD)
+                    includeFontPadding = false
+                    maxLines = 1
+                    ellipsize = android.text.TextUtils.TruncateAt.MIDDLE
+                    gravity = android.view.Gravity.CENTER
+                    setPadding(
+                        14.getScaledPx(), 8.getScaledPx(), 14.getScaledPx(), 8.getScaledPx()
+                    )
+                }
+            )
+            container.addView(
+                View(this).apply {
+                    setBackgroundColor(textColor.withAlpha(0.18f))
+                    layoutParams = android.widget.LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, 1
+                    ).apply { bottomMargin = 4.getScaledPx() }
+                }
+            )
+        }
+
         // The reaction strip, above the actions. One tap sends and closes, which is the
         // whole interaction -- there is no second confirmation in either app this follows.
         if (reactions.isNotEmpty()) {
@@ -1061,7 +1123,12 @@ open class SimpleActivity : BaseSimpleActivity() {
             val row = android.widget.LinearLayout(this).apply {
                 orientation = android.widget.LinearLayout.HORIZONTAL
                 gravity = android.view.Gravity.CENTER_VERTICAL
-                setPadding(16.getScaledPx(), 11.getScaledPx(), 20.getScaledPx(), 11.getScaledPx())
+                // A menu row, at a menu row's size. This sat at 16/11/20/11 around a 20dp
+                // icon with bold 0.85 text, which measured a good deal taller and wider than
+                // any menu the platform draws -- the row read as a button rather than as a
+                // line in a list. 14/9/16/9 around an 18dp glyph puts it back on the
+                // platform's own 48dp row without changing anything about how it looks.
+                setPadding(14.getScaledPx(), 9.getScaledPx(), 16.getScaledPx(), 9.getScaledPx())
                 isClickable = true
                 isFocusable = true
                 if (rippleValue.resourceId != 0) setBackgroundResource(rippleValue.resourceId)
@@ -1076,9 +1143,9 @@ open class SimpleActivity : BaseSimpleActivity() {
                     setImageResource(action.iconRes)
                     imageTintList = ColorStateList.valueOf(textColor)
                     layoutParams = android.widget.LinearLayout.LayoutParams(
-                        20.getScaledPx(),
-                        20.getScaledPx()
-                    ).apply { marginEnd = 12.getScaledPx() }
+                        18.getScaledPx(),
+                        18.getScaledPx()
+                    ).apply { marginEnd = if (action.label.isEmpty()) 0 else 12.getScaledPx() }
                 }
             )
 

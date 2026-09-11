@@ -266,8 +266,27 @@ class ThreadActivity : SimpleActivity() {
             weight = 1f
         }
         inputBar.alpha = if (isNewUi) 0.95f else 1f
-        inputBar.elevation = if (isNewUi) 10f * resources.displayMetrics.density else 0f
-        inputBar.translationZ = if (isNewUi) 4f else 0f
+        // 3dp, down from 10 plus a 4px translationZ on top of it.
+        //
+        // The shadow is cast correctly -- it follows the capsule, checked by cropping the
+        // corner rather than by reading this -- but at that height it piles up where the two
+        // edges meet, so the bar read as having a grey smudge stuck to each bottom corner
+        // while its straight edges looked clean. The bar already separates itself from the
+        // page with TextoGlass's own hairline rim; the shadow only has to hint that it
+        // floats, and at 3dp the corners measure clean.
+        inputBar.elevation = if (isNewUi) 3f * resources.displayMetrics.density else 0f
+        inputBar.translationZ = 0f
+
+        // The shape the shadow is cast from, set here because this is where the elevation
+        // that casts it is, so the two cannot drift apart. clipToOutline is left alone: only
+        // the shadow needs the shape.
+        val capsuleRadius = TextoGlass.COMPOSER_RADIUS_DP * resources.displayMetrics.density
+        inputBar.outlineProvider = object : android.view.ViewOutlineProvider() {
+            override fun getOutline(view: android.view.View, outline: android.graphics.Outline) {
+                outline.setRoundRect(0, 0, view.width, view.height, capsuleRadius)
+            }
+        }
+
 
         val startsFocusable = !isNewUi || config.alwaysExpandSearchBar
         inputField.isFocusable = startsFocusable

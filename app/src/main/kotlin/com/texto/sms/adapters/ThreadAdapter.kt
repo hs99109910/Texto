@@ -107,7 +107,17 @@ class ThreadAdapter(
     private val uiScale get() = (activity as SimpleActivity).uiScale
     private val maxChatBubbleWidth = (activity.usableScreenSize.x * 0.75f).toInt()
     private var fontSize = (activity as SimpleActivity).getScaledTextSize()
-    private var lastAnimatedPosition = -1
+    /**
+     * Messages whose entry animation has already played, by id.
+     *
+     * This was a single "highest position animated so far", and a position is the wrong
+     * identity for it: a row is rebound whenever anything about it changes -- and
+     * long-pressing one changes its selection state -- so the bubble replayed a 0.7-to-1
+     * overshoot scale at the exact moment the menu opened over it. The message being acted
+     * on appeared to flinch, which is the one thing it must not do while you are aiming at
+     * a menu beside it. Keyed on the message instead, a bubble animates once, ever.
+     */
+    private val animatedMessageIds = HashSet<Long>()
 
     /**
      * The in-thread search term, highlighted inside each bubble so a long message says which
@@ -322,7 +332,7 @@ class ThreadAdapter(
             )
         )
 
-        simpleActivity.showBubbleMenu(anchor, items) { actionId ->
+        simpleActivity.showBubbleMenu(anchor, items, header = number) { actionId ->
             when (actionId) {
                 // The same helper the thread's own call icon uses, so a number tapped in a
                 // message behaves exactly like calling the person the thread belongs to: it
@@ -490,7 +500,7 @@ class ThreadAdapter(
                 setupView(holder, binding, item)
                 
                 // Bubble Entry Animation
-                if (position > lastAnimatedPosition) {
+                if (animatedMessageIds.add(item.id)) {
                     val isReceived = item.isReceivedMessage()
                     val bodyHolder = if (binding is ItemMessageReceivedBinding) binding.threadMessageBodyHolder else (binding as ItemMessageSentBinding).threadMessageBodyHolder
                     
@@ -502,7 +512,6 @@ class ThreadAdapter(
                     anim.duration = 400
                     anim.interpolator = android.view.animation.OvershootInterpolator(1.2f)
                     bodyHolder.startAnimation(anim)
-                    lastAnimatedPosition = position
                 }
             }
             is ThreadDateTime -> setupDateTime(binding.root, item)
