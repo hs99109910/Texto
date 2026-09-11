@@ -5,6 +5,7 @@
     tools:ignore="AppCompatResource,AlwaysShowAction">
     <item
         android:id="@+id/empty_archive"
+        android:icon="@drawable/ic_ph_trash"
         android:showAsAction="never"
         android:title="@string/empty_archive"
         app:showAsAction="never" />
