@@ -964,10 +964,20 @@ open class SimpleActivity : AppCompatActivity() {
         // layouts that include it, so it cannot drift from the header it sits under.
         (barContainer.layoutParams as? ViewGroup.MarginLayoutParams)?.let { params ->
             val side = (TextoGlass.FLOATING_BAR_INSET_DP * resources.displayMetrics.density).toInt()
-            if (params.marginStart != side || params.topMargin != 8.getScaledPx()) {
+            // Under the header either way. Inside the app bar the toolbar above it supplies
+            // that offset; floating over the content -- which is how the thread carries it,
+            // so that selecting a message cannot resize the list under it -- there is nothing
+            // above it, so the toolbar's own bottom is measured and used instead.
+            val top = if (barContainer.parent is AppBarLayout) {
+                8.getScaledPx()
+            } else {
+                val toolbar = TOOLBAR_IDS.firstNotNullOfOrNull { findViewById<Toolbar>(it) }
+                (toolbar?.bottom ?: 0) + 8.getScaledPx()
+            }
+            if (params.marginStart != side || params.topMargin != top) {
                 params.marginStart = side
                 params.marginEnd = side
-                params.topMargin = 8.getScaledPx()
+                params.topMargin = top
                 barContainer.layoutParams = params
             }
         }
@@ -1000,11 +1010,16 @@ open class SimpleActivity : AppCompatActivity() {
             val baseColor = if (config.topBarColor != 0) config.topBarColor else Color.BLACK
             findViewById<View>(R.id.selection_bar_pill)?.let {
                 if (config.glassTheme) {
+                    // Where the bar floats over the thread rather than sitting in the app bar
+                    // over the page, what shows through it is a message: at .7 the bubble's
+                    // own text read through the count. Frosted either way, just less see
+                    // through where there is something behind it worth not reading.
+                    val overContent = barContainer.parent !is AppBarLayout
                     TextoGlass.applyPanel(
                         view = it,
                         tint = baseColor,
                         cornerRadius = 1000f,
-                        opacity = 0.7f,
+                        opacity = if (overContent) 0.92f else 0.7f,
                         strokeWidthPx = 1.getScaledPx()
                     )
                 } else {
@@ -1199,7 +1214,7 @@ open class SimpleActivity : AppCompatActivity() {
             val strip = android.widget.LinearLayout(this).apply {
                 orientation = android.widget.LinearLayout.HORIZONTAL
                 gravity = android.view.Gravity.CENTER_VERTICAL
-                setPadding(8.getScaledPx(), 4.getScaledPx(), 8.getScaledPx(), 8.getScaledPx())
+                setPadding(4.getScaledPx(), 2.getScaledPx(), 4.getScaledPx(), 4.getScaledPx())
             }
             reactions.forEach { emoji ->
                 strip.addView(
@@ -1211,8 +1226,8 @@ open class SimpleActivity : AppCompatActivity() {
                         // the theme's default text ink is translucent, which washed the whole
                         // strip halfway into the sheet behind it.
                         setTextColor(config.mainTextColor.withAlpha(1f))
-                        setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.25f))
-                        val pad = 7.getScaledPx()
+                        setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.05f))
+                        val pad = 5.getScaledPx()
                         setPadding(pad, pad, pad, pad)
                         isClickable = true
                         // The one already on the message is ringed rather than merely
@@ -1248,7 +1263,7 @@ open class SimpleActivity : AppCompatActivity() {
                 // any menu the platform draws -- the row read as a button rather than as a
                 // line in a list. 14/9/16/9 around an 18dp glyph puts it back on the
                 // platform's own 48dp row without changing anything about how it looks.
-                setPadding(14.getScaledPx(), 9.getScaledPx(), 16.getScaledPx(), 9.getScaledPx())
+                setPadding(12.getScaledPx(), 8.getScaledPx(), 14.getScaledPx(), 8.getScaledPx())
                 isClickable = true
                 isFocusable = true
                 if (rippleValue.resourceId != 0) setBackgroundResource(rippleValue.resourceId)
@@ -1263,9 +1278,9 @@ open class SimpleActivity : AppCompatActivity() {
                     setImageResource(action.iconRes)
                     imageTintList = ColorStateList.valueOf(textColor)
                     layoutParams = android.widget.LinearLayout.LayoutParams(
-                        18.getScaledPx(),
-                        18.getScaledPx()
-                    ).apply { marginEnd = if (action.label.isEmpty()) 0 else 12.getScaledPx() }
+                        17.getScaledPx(),
+                        17.getScaledPx()
+                    ).apply { marginEnd = if (action.label.isEmpty()) 0 else 10.getScaledPx() }
                 }
             )
 
@@ -1276,7 +1291,7 @@ open class SimpleActivity : AppCompatActivity() {
                     TextView(this).apply {
                         text = action.label
                         setTextColor(textColor)
-                        setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.85f))
+                        setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
                         typeface = typefaceFor(android.graphics.Typeface.BOLD)
                         includeFontPadding = false
                     }
@@ -1307,12 +1322,18 @@ open class SimpleActivity : AppCompatActivity() {
             }
         }
 
+        // Measured against a ceiling rather than free: unbounded, the popup came back 320dp
+        // wide -- wider than any menu the platform draws, which stop at 280dp -- and set its
+        // own width from that. The ceiling is what the rows ellipsize against, and the popup
+        // is given the measured width outright so what is shown is what was measured.
+        val menuMaxWidth = 260.getScaledPx()
         container.measure(
-            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(menuMaxWidth, View.MeasureSpec.AT_MOST),
             View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
         )
         val menuWidth = container.measuredWidth
         val menuHeight = container.measuredHeight
+        popup.width = menuWidth
 
         val location = IntArray(2)
         anchor.getLocationOnScreen(location)

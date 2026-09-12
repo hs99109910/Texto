@@ -131,6 +131,13 @@ const val RECENT_EMOJI = "recent_emoji"
 
 /** Three rows of the emoji grid, which is as far as a "recent" list stays useful. */
 const val RECENT_EMOJI_KEPT = 24
+
+/**
+ * The keyboard's own height, last time one was open, so the emoji panel can be exactly as
+ * tall as the thing it replaces. Remembered across runs: the first emoji tap in a session
+ * would otherwise guess, and the composer would jump when the guess was wrong.
+ */
+const val LAST_KEYBOARD_HEIGHT = "last_keyboard_height"
 const val ACTIVE_FILTER_ID = "active_filter_id"
 const val SHOW_CONTACTS_ONLY_FILTER = "show_contacts_only_filter"
 const val SHOW_ADS_FILTER = "show_ads_filter"

@@ -21,6 +21,7 @@ import android.util.TypedValue
 import android.widget.TextView
 import androidx.activity.addCallback
 import androidx.core.graphics.drawable.toDrawable
+import android.view.ViewGroup
 import android.view.KeyEvent
 import android.view.WindowManager
 import android.view.animation.AnimationUtils
@@ -34,6 +35,7 @@ import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.core.widget.addTextChangedListener
 import androidx.documentfile.provider.DocumentFile
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -162,6 +164,9 @@ class ThreadActivity : SimpleActivity() {
     private var scrollOnNextUpdate = false
     private var isSendingMessage = false
     private var wasImeVisible = false
+    private var isEmojiPanelOpen = false
+    private var threadAnchorPosition = RecyclerView.NO_POSITION
+    private var threadAnchorOffset = 0
 
     private val binding by viewBinding(ActivityThreadBinding::inflate)
 
@@ -218,12 +223,25 @@ class ThreadActivity : SimpleActivity() {
         loadConversation()
         setupExpandingInputBar()
         setupThreadSearch()
+        setupThreadScrollAnchoring()
 
         // Keyboard Sync: Shrink input bar when keyboard goes down
         ViewCompat.setOnApplyWindowInsetsListener(binding.threadHolder) { _, insets ->
             val isImeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
             if (wasImeVisible && !isImeVisible && config.useNewUi && binding.messageHolder.threadTypeMessage.text?.isEmpty() == true && !config.alwaysExpandSearchBar) {
                 shrinkInputBar()
+            }
+            // The keyboard's own height, for the emoji panel to match. Taken while it is up,
+            // net of the navigation bar it overlaps, and kept so the first emoji tap of a
+            // session opens at the right height rather than guessing at one.
+            if (isImeVisible) {
+                val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+                val navBottom = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+                val keyboard = imeBottom - navBottom
+                if (keyboard > 0) config.lastKeyboardHeight = keyboard
+                // The keyboard and the panel are two answers to the same question, so the one
+                // coming up puts the other away rather than stacking under it.
+                if (isEmojiPanelOpen) closeEmojiPanel()
             }
             wasImeVisible = isImeVisible
             insets
@@ -239,6 +257,104 @@ class ThreadActivity : SimpleActivity() {
      *
      * [expandInputBar] and [shrinkInputBar] survive as the focus half of that behaviour.
      */
+    /**
+     * Keeps the thread where the reader left it when a bar above it changes height.
+     *
+     * Anything that grows the app bar resizes the list laid out below it, and `stackFromEnd`
+     * then re-anchors what is left to the *newest* message: measured, the bubbles moved 569px
+     * up the viewport and the item animator glided them there, 53px a frame. The selection bar
+     * no longer grows the app bar -- it floats over the thread instead, see activity_thread --
+     * but the search bar still does, and it is the same list underneath.
+     *
+     * The anchor is recorded on every scroll rather than when the bar opens, because by the
+     * time anything here hears about that the re-layout has already happened.
+     */
+    private fun rememberThreadAnchor() {
+        val manager = binding.threadMessagesList.layoutManager as? LinearLayoutManager ?: return
+        val position = manager.findFirstVisibleItemPosition()
+        if (position == RecyclerView.NO_POSITION) return
+        val child = manager.findViewByPosition(position) ?: return
+        threadAnchorPosition = position
+        threadAnchorOffset = child.top - binding.threadMessagesList.paddingTop
+    }
+
+    private fun restoreThreadAnchor() {
+        if (threadAnchorPosition == RecyclerView.NO_POSITION) return
+        val manager = binding.threadMessagesList.layoutManager as? LinearLayoutManager ?: return
+        manager.scrollToPositionWithOffset(threadAnchorPosition, threadAnchorOffset)
+    }
+
+    private fun setupThreadScrollAnchoring() {
+        binding.threadMessagesList.addOnScrollListener(
+            object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    rememberThreadAnchor()
+                }
+            }
+        )
+        binding.threadAppbar.addOnLayoutChangeListener { _, _, _, _, bottom, _, _, _, oldBottom ->
+            if (bottom != oldBottom && oldBottom != 0) {
+                // The list is resized in this same traversal, so the restore waits for the
+                // one after it -- by then the re-anchor it is undoing has happened.
+                binding.threadMessagesList.post { restoreThreadAnchor() }
+            }
+        }
+    }
+
+    /**
+     * Swaps the emoji panel for the keyboard, the way the keyboard's own panel would.
+     *
+     * The panel is a view in the layout under the composer rather than a dialog over it, so
+     * the composer -- and the send button on the end of it -- stays on screen and in the same
+     * place whichever of the two is up. It is sized to the keyboard's last measured height,
+     * so swapping between them moves nothing.
+     */
+    private fun toggleEmojiPanel() {
+        if (isEmojiPanelOpen) {
+            closeEmojiPanel()
+            // The field lost focus when the panel took the keyboard's place, and a show
+            // request against an unfocused field is dropped: focus first, ask on the frame
+            // after, which is the same retry showKeyboard already does for its own reasons.
+            val field = binding.messageHolder.threadTypeMessage
+            field.requestFocus()
+            field.post { showKeyboard(field) }
+        } else {
+            openEmojiPanel()
+        }
+    }
+
+    private fun openEmojiPanel() {
+        val panel = binding.emojiPanel
+        // A keyboard this app has never seen leaves nothing to match, so fall back to a
+        // height in the range every soft keyboard lands in rather than to none at all.
+        val height = config.lastKeyboardHeight.takeIf { it > 0 } ?: 280.getScaledPx()
+        panel.updateLayoutParams { this.height = height }
+        buildTextoEmojiPanel(panel) { glyph ->
+            val field = binding.messageHolder.threadTypeMessage
+            val at = field.selectionStart.coerceAtLeast(0)
+            field.text?.insert(at, glyph)
+        }
+        // The list is padded clear of the floating composer; with the panel under it, that
+        // clearance has to cover both or the newest message sits behind them.
+        binding.threadMessagesList.updatePadding(bottom = threadListBottomPadding + height)
+        panel.beVisible()
+        isEmojiPanelOpen = true
+        // The field keeps the caret -- an emoji is inserted where you were typing -- but the
+        // keyboard itself has to go, or the panel would open underneath it.
+        hideKeyboard()
+    }
+
+    private fun closeEmojiPanel() {
+        if (!isEmojiPanelOpen) return
+        binding.emojiPanel.beGone()
+        binding.emojiPanel.removeAllViews()
+        binding.threadMessagesList.updatePadding(bottom = threadListBottomPadding)
+        isEmojiPanelOpen = false
+    }
+
+    /** The list's own clearance for the floating composer, as the layout declares it. */
+    private val threadListBottomPadding by lazy { binding.threadMessagesList.paddingBottom }
+
     private fun setupExpandingInputBar() {
         val inputBar = binding.messageHolder.textoMessageInputBar
         val inputField = binding.messageHolder.threadTypeMessage
@@ -757,13 +873,7 @@ class ThreadActivity : SimpleActivity() {
             // WhatsApp and Telegram all draw their own for the same reason. Stickers and
             // GIFs still come from the keyboard, through the composer field's accepted
             // content types; this covers what that route cannot.
-            threadAddEmoji.setOnClickListener {
-                textoEmojiPicker { glyph ->
-                    val field = binding.messageHolder.threadTypeMessage
-                    val at = field.selectionStart.coerceAtLeast(0)
-                    field.text?.insert(at, glyph)
-                }
-            }
+            threadAddEmoji.setOnClickListener { toggleEmojiPanel() }
 
             // threadMessagesFastscroller removed
 
@@ -2198,7 +2308,11 @@ class ThreadActivity : SimpleActivity() {
         }
 
         onBackPressedDispatcher.addCallback(this) {
-            if (binding.threadSearchBar.isVisible()) {
+            if (isEmojiPanelOpen) {
+                // Back closes the panel before it closes the thread, for the same reason it
+                // closes the keyboard first: it is the thing that just opened.
+                closeEmojiPanel()
+            } else if (binding.threadSearchBar.isVisible()) {
                 closeThreadSearch()
             } else {
                 isEnabled = false

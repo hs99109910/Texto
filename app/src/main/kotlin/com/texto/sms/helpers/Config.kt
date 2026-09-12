@@ -503,6 +503,11 @@ class Config(val context: Context) {
         recentEmoji = listOf(emoji) + recentEmoji.filter { it != emoji }
     }
 
+    /** 0 until a keyboard has been seen; the emoji panel falls back to its own default then. */
+    var lastKeyboardHeight: Int
+        get() = prefs.getInt(LAST_KEYBOARD_HEIGHT, 0)
+        set(height) = prefs.edit().putInt(LAST_KEYBOARD_HEIGHT, height).apply()
+
     /** User-defined filter chips, serialized as JSON. */
     var customFilters: List<MessageFilter>
         get() = FilterStore.decode(prefs.getString(CUSTOM_FILTERS, "")!!)

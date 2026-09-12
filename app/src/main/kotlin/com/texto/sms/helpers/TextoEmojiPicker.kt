@@ -1,8 +1,5 @@
 package com.texto.sms.helpers
 
-import android.graphics.Color
-import android.graphics.Typeface
-import android.graphics.drawable.ColorDrawable
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -13,14 +10,12 @@ import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
-import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.extensions.config
 import com.texto.sms.extensions.withAlpha
 
 /**
- * The app's emoji sheet: categories across the top, a scrolling grid under them, and the most
+ * The app's emoji panel: categories across the top, a scrolling grid under them, and the most
  * recently used first.
  *
  * It exists because Android offers no way to open the keyboard's emoji panel. There is no
@@ -29,35 +24,52 @@ import com.texto.sms.extensions.withAlpha
  * The keyboard still supplies the *stickers and GIFs*, through the composer field's accepted
  * content types; this covers the one thing that route cannot.
  *
- * What it replaced was twenty-four emoji in a popup with no categories, no search order and no
- * memory, so the same faces had to be hunted for every time.
+ * It fills a container the caller sizes and places, rather than opening a dialog of its own.
+ * A centred dialog covered the composer, so the send button was behind the sheet you had just
+ * picked an emoji in: every pick meant closing the sheet to reach it. Sitting where the
+ * keyboard sits leaves the composer above it, which is the arrangement every other messaging
+ * app uses and the reason the keyboard's own panel feels like part of the composer.
  *
- * The sheet stays open on a pick. Emoji are sent in runs -- three of them, or one repeated --
- * and a sheet that closed after each would make the second one cost as much as the first.
+ * The panel stays open on a pick. Emoji are sent in runs -- three of them, or one repeated --
+ * and a panel that closed after each would make the second one cost as much as the first.
  */
-fun SimpleActivity.textoEmojiPicker(onPick: (String) -> Unit) {
+fun SimpleActivity.buildTextoEmojiPanel(host: ViewGroup, onPick: (String) -> Unit) {
     val density = resources.displayMetrics.density
-    var dialog: AlertDialog? = null
+    host.removeAllViews()
 
     val sheet = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
-        val pad = 14.getScaledPx()
+        val pad = 10.getScaledPx()
         setPadding(pad, pad, pad, pad)
-        background = pickerCard()
-        outlineProvider = ViewOutlineProvider.BACKGROUND
-        clipToOutline = true
+        // Opaque, and the app's own ground rather than glass: this stands in for the keyboard,
+        // which is a solid surface, and a translucent one here would leave the thread legible
+        // through the emoji sitting on top of it.
+        background = android.graphics.drawable.GradientDrawable().apply {
+            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+            setColor(
+                config.mainBackgroundColor.takeIf { it != 0 } ?: android.graphics.Color.BLACK
+            )
+            // A hairline along the top edge, the one line that separates it from the composer.
+            setStroke(1.getScaledPx(), config.mainTextColor.withAlpha(0.12f))
+        }
+        layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+        )
     }
 
     val grid = GridLayout(this).apply {
         columnCount = EMOJI_COLUMNS
     }
+    // The grid takes whatever height the host has left under the tabs, rather than a fixed
+    // 260dp: the host is sized to the keyboard it replaces, and a fixed grid inside it would
+    // either scroll while empty space sat below or spill past the panel's own edge.
     val scroller = ScrollView(this).apply {
         overScrollMode = View.OVER_SCROLL_NEVER
         isVerticalScrollBarEnabled = false
         addView(grid)
         layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, 260.getScaledPx()
-        ).apply { topMargin = 10.getScaledPx() }
+            ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f
+        ).apply { topMargin = 6.getScaledPx() }
     }
 
     val cell = 42.getScaledPx()
@@ -69,8 +81,8 @@ fun SimpleActivity.textoEmojiPicker(onPick: (String) -> Unit) {
         // A colour emoji is drawn at its paint's *alpha*, and a TextView that never sets a
         // colour inherits the theme's default text ink, which is translucent. Measured on
         // device: the faces came out #fde6c0 against a real #fcc21b and the eyes #d2c8c3
-        // against near-black -- every emoji in this sheet washed halfway into the card behind
-        // it. Nothing here wants that ink for its own sake, only its opacity.
+        // against near-black -- every emoji here washed halfway into the panel behind it.
+        // Nothing here wants that ink for its own sake, only its opacity.
         setTextColor(config.mainTextColor.withAlpha(1f))
         setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.35f))
         layoutParams = GridLayout.LayoutParams().apply {
@@ -78,7 +90,7 @@ fun SimpleActivity.textoEmojiPicker(onPick: (String) -> Unit) {
             height = cell
         }
         isClickable = true
-        val ripple = android.util.TypedValue()
+        val ripple = TypedValue()
         theme.resolveAttribute(android.R.attr.selectableItemBackgroundBorderless, ripple, true)
         if (ripple.resourceId != 0) setBackgroundResource(ripple.resourceId)
         setOnClickListener {
@@ -162,27 +174,7 @@ fun SimpleActivity.textoEmojiPicker(onPick: (String) -> Unit) {
     showCategory(allTabs.first().second)
     paintTabs(0)
 
-    sheet.addView(
-        pickerButton(getString(R.string.action_close), filled = false) {
-            dialog?.dismiss()
-        }.apply {
-            // pickerButton is built for a footer *row*, where it shares the width with a
-            // sibling: it comes back 0dp wide on a weight. This sheet's footer is one button
-            // in a vertical column, so it has to take the width outright or it measures to
-            // nothing and never appears.
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = 10.getScaledPx() }
-        }
-    )
-
-    dialog = AlertDialog.Builder(this)
-        .setView(sheet)
-        .create()
-        .apply {
-            window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-            show()
-        }
+    host.addView(sheet)
 }
 
 /** Eight across fits a 42dp cell on the narrowest phone this app supports without scrolling sideways. */

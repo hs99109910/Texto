@@ -196,12 +196,6 @@
 
         </LinearLayout>
 
-        <include
-            android:id="@+id/selection_bar"
-            layout="@layout/layout_selection_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
     </com.texto.sms.views.TextoAppBarLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -354,9 +348,44 @@
             layout="@layout/layout_thread_send_message_holder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@id/emoji_panel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!--
+            The emoji panel sits where the keyboard sits, so the composer rides above it and
+            the send button stays reachable while you pick. Height is set at runtime from the
+            keyboard's own measured height, so the two swap without the composer moving.
+            While it is gone ConstraintLayout collapses it against the bottom edge, which is
+            where the composer then lands: the normal state needs no second constraint.
+        -->
+        <FrameLayout
+            android:id="@+id/emoji_panel"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!--
+        The contextual selection bar floats over the thread rather than sitting inside the app
+        bar, which is where it used to be: as a second child it grew the app bar by its own
+        height the instant a long-press selected a message, and the message list, laid out
+        below the app bar, was resized in the same pass. `stackFromEnd` then re-anchored the
+        thread to its newest message and the item animator glided it there, 53px a frame,
+        measured: that was the jump you saw before the menu appeared. Over the list instead of
+        above it, nothing is resized and nothing moves. Its top margin is set from the
+        toolbar's own bottom, so it still lands exactly where it did.
+    -->
+    <include
+        android:id="@+id/selection_bar"
+        layout="@layout/layout_selection_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:elevation="14dp" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
