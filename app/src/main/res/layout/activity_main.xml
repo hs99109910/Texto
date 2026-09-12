@@ -112,18 +112,23 @@
                     app:showDelay="250"
                     tools:visibility="visible" />
 
+                <!--
+                    Start-aligned like every other row on the screen (the conversation cards,
+                    the search screen's own filter row), not centred: centring a two-or-three
+                    chip row inside the full screen width left a fifth of the screen empty on
+                    each side, out of proportion with the 16-20dp inset everything else here
+                    uses. Matches TextoGlass.FLOATING_BAR_INSET_DP.
+                -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/filter_bar"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentTop="true"
-                    android:layout_centerHorizontal="true"
-                    android:layout_marginHorizontal="12dp"
                     android:elevation="10dp"
                     android:clipChildren="false"
                     android:clipToPadding="false"
                     android:overScrollMode="never"
-                    android:paddingHorizontal="12dp"
+                    android:paddingHorizontal="16dp"
                     android:paddingTop="4dp"
                     android:paddingBottom="3dp"
                     android:scrollbars="none" />
@@ -337,7 +342,10 @@
     <!--
         NAVIGATION / SEARCH BAR. The design's floating pill: three places you browse, in
         locale order, with the compose action kept out of it as its own disc. 5dp of padding
-        and 3dp between tabs, matching the mockup.
+        and 3dp between tabs, matching the mockup. Its clearance above the system gesture bar
+        matches FLOATING_BAR_INSET_DP (16dp), the same figure as its own side margins, rather
+        than the 22dp it measured at before: an inconsistent, more-generous number nothing
+        else on the bar used.
     -->
     <FrameLayout
         android:id="@+id/texto_nav_container"
@@ -345,7 +353,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginBottom="22dp"
+        android:layout_marginBottom="16dp"
         android:background="@drawable/texto_searchbar_bg"
         android:elevation="10dp"
         android:padding="6dp">

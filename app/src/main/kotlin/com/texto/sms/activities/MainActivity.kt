@@ -1016,36 +1016,6 @@ class MainActivity : SimpleActivity() {
         }
 
         filterChipsAdapter?.submitFilters(filters, activeFilter.id, filterCounts(filters))
-        centerFilterChips()
-    }
-
-    /**
-     * Keeps the chip row visually centred instead of hugging one edge. A horizontal
-     * LinearLayoutManager always packs its children against the start, so with only a few
-     * chips the row sat off to one side; padding the leftover space equally on both sides
-     * centres them while still letting the row scroll normally once they overflow.
-     */
-    private fun centerFilterChips() {
-        val bar = binding.filterBar
-        bar.post {
-            if (isFinishing || isDestroyed) return@post
-            val manager = bar.layoutManager ?: return@post
-            var content = 0
-            for (i in 0 until manager.childCount) {
-                val child = manager.getChildAt(i) ?: continue
-                val params = child.layoutParams as ViewGroup.MarginLayoutParams
-                content += child.measuredWidth + params.marginStart + params.marginEnd
-            }
-
-            val base = 12.getScaledPx()
-            val available = bar.width - base * 2
-            // Overflowing chips leave no slack, so this collapses to the base padding and
-            // the row simply scrolls.
-            val sidePadding = base + ((available - content) / 2).coerceAtLeast(0)
-            if (bar.paddingLeft != sidePadding || bar.paddingRight != sidePadding) {
-                bar.setPadding(sidePadding, bar.paddingTop, sidePadding, bar.paddingBottom)
-            }
-        }
     }
 
     private fun editFilter(existing: MessageFilter?) {
@@ -1814,7 +1784,7 @@ class MainActivity : SimpleActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val bottomInset = if (imeInsets.bottom > 0) imeInsets.bottom else systemBars.bottom
             binding.textoNavContainer.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
-                bottomMargin = bottomInset + 22.getScaledPx()
+                bottomMargin = bottomInset + 16.getScaledPx()
             }
             insets
         }
