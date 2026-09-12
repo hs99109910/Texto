@@ -1607,7 +1607,7 @@ class ThreadActivity : SimpleActivity() {
         }
 
         appearanceCancel.setOnClickListener { closeAppearanceEditor(keep = false) }
-        appearanceBackgroundBtn.setOnClickListener { showBackgroundAppearanceSheet() }
+        appearanceBackgroundBtn.setOnClickListener { showBackgroundAppearanceBars() }
         appearanceDone.setOnClickListener { askAppearanceScope() }
     }
 
@@ -1695,6 +1695,19 @@ class ThreadActivity : SimpleActivity() {
                     refreshThreadColours()
                 }
             },
+            onReset = {
+                val working = editingAppearance
+                if (working != null) {
+                    editingAppearance = if (isReceived) {
+                        working.copy(receivedBubbleTextColor = null)
+                    } else {
+                        working.copy(sentBubbleTextColor = null)
+                    }
+                    applyThreadAppearance()
+                    refreshThreadColours()
+                    hideAppearanceOverlay()
+                }
+            },
         )
         showAppearanceBarsAround(anchor, above = bubbleBars, below = textBars)
     }
@@ -1731,68 +1744,15 @@ class ThreadActivity : SimpleActivity() {
         refreshThreadColours()
     }
 
-    /**
-     * Places [above] and [below] against [anchor], falling back to whichever side has room.
-     *
-     * Positions are in the overlay's own coordinates, which is why the anchor's screen
-     * position is taken net of the overlay's: the overlay is the whole screen, the anchor is
-     * a row in a list that has been scrolled.
-     */
-    private fun showAppearanceBarsAround(anchor: View, above: View, below: View) {
-        val overlay = binding.appearanceOverlay
-        overlay.removeAllViews()
-        val anchorPos = IntArray(2).also { anchor.getLocationOnScreen(it) }
-        val overlayPos = IntArray(2).also { overlay.getLocationOnScreen(it) }
-        val anchorTop = anchorPos[1] - overlayPos[1]
-        val anchorBottom = anchorTop + anchor.height
-        val side = 12.getScaledPx()
-
-        listOf(above, below).forEach { bars ->
-            overlay.addView(
-                bars,
-                FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-                ).apply {
-                    marginStart = side
-                    marginEnd = side
-                }
-            )
-        }
-
-        overlay.beVisible()
-        overlay.setOnClickListener { hideAppearanceOverlay() }
-        overlay.doOnLayout {
-            val gap = 8.getScaledPx()
-            val room = overlay.height
-            // The editor's own bar is the ceiling, not the top of the screen: a pair placed
-            // against a bubble near the top would otherwise slide under it and lose its label.
-            val ceiling = binding.appearanceBar.bottom + gap
-            val aboveH = above.height
-            val belowH = below.height
-            var aboveTop = anchorTop - gap - aboveH
-            var belowTop = anchorBottom + gap
-            // Preferred side first, then whichever way round actually fits: at the top of a
-            // thread there is nothing above the bubble, at the bottom nothing below it.
-            if (aboveTop < ceiling) {
-                aboveTop = (anchorBottom + gap).coerceAtMost(room - aboveH - gap)
-            }
-            if (belowTop + belowH > room - gap) {
-                belowTop = (anchorTop - gap - belowH).coerceAtLeast(ceiling)
-            }
-            // Both forced to the same side: stack them rather than let one cover the other.
-            if (aboveTop < belowTop + belowH && belowTop < aboveTop + aboveH) {
-                belowTop = (aboveTop + aboveH + gap).coerceAtMost(room - belowH - gap)
-            }
-            above.updateLayoutParams<FrameLayout.LayoutParams> {
-                topMargin = aboveTop.coerceAtLeast(ceiling)
-            }
-            below.updateLayoutParams<FrameLayout.LayoutParams> {
-                topMargin = belowTop.coerceAtLeast(ceiling)
-            }
-            above.animateInlineIn(fromBelow = false)
-            below.animateInlineIn(fromBelow = true)
-        }
+    /** Shared placement, with this screen's editor bar as the ceiling. */
+    private fun showAppearanceBarsAround(anchor: View, above: View, below: View?) {
+        showInlineBarsAround(
+            overlay = binding.appearanceOverlay,
+            anchor = anchor,
+            above = above,
+            below = below,
+            ceiling = { binding.appearanceBar.bottom + 8.getScaledPx() },
+        )
     }
 
     /**
@@ -1811,30 +1771,54 @@ class ThreadActivity : SimpleActivity() {
                 config.setSimColor(slot, picked)
                 setupSIMSelector()
             },
+            onReset = {
+                // The slot's own factory colour, which is what Config falls back to when
+                // nothing has been stored for it.
+                config.setSimColor(slot, Config.DEFAULT_SIM_COLORS.getOrElse(slot) {
+                    Config.DEFAULT_SIM_COLORS[0]
+                })
+                setupSIMSelector()
+                hideAppearanceOverlay()
+            },
         )
-        val spacer = View(this)
-        showAppearanceBarsAround(anchor, above = bars, below = spacer)
+        showAppearanceBarsAround(anchor, above = bars, below = null)
     }
 
     private fun hideAppearanceOverlay() {
-        binding.appearanceOverlay.removeAllViews()
-        binding.appearanceOverlay.beGone()
+        binding.appearanceOverlay.hideInlineBars()
     }
 
-    private fun showBackgroundAppearanceSheet() {
-        val working = editingAppearance ?: return
+    /**
+     * The thread's own ground, on the same two strips as everything else here.
+     *
+     * Anchored to the middle of the list rather than to a view, because the thing being
+     * recoloured is what is behind all of them.
+     */
+    private fun showBackgroundAppearanceBars() {
         val appDefault = config.mainBackgroundColor
-        textoColorPicker(
-            title = getString(R.string.filter_colour_background),
-            current = working.backgroundColor ?: appDefault,
-            defaultColour = appDefault,
-            contrastAgainst = config.mainTextColor,
-            compact = true,
-        ) { picked ->
-            editingAppearance = working.copy(backgroundColor = picked.takeIf { it != appDefault })
-            applyThreadAppearance()
-            refreshThreadColours()
-        }
+        val bars = inlineColourBars(
+            label = getString(R.string.filter_colour_background),
+            read = { editingAppearance?.backgroundColor ?: appDefault },
+            write = { picked ->
+                val working = editingAppearance
+                if (working != null) {
+                    editingAppearance =
+                        working.copy(backgroundColor = picked.takeIf { it != appDefault })
+                    applyThreadAppearance()
+                    refreshThreadColours()
+                }
+            },
+            onReset = {
+                val working = editingAppearance
+                if (working != null) {
+                    editingAppearance = working.copy(backgroundColor = null)
+                    applyThreadAppearance()
+                    refreshThreadColours()
+                }
+                hideAppearanceOverlay()
+            },
+        )
+        showAppearanceBarsAround(binding.threadMessagesList, above = bars, below = null)
     }
 
     /**

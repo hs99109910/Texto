@@ -358,6 +358,13 @@
         </RelativeLayout>
     </RelativeLayout>
 
+    <!-- Where the inline colour bars land, against the bar or card being recoloured. -->
+    <FrameLayout
+        android:id="@+id/appearance_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
     <!--
         The appearance editor's bar, floating over the list for the same reason the selection
         bar does: what is behind it is what you are restyling, so it must not move. Positioned

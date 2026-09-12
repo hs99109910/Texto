@@ -52,7 +52,7 @@ abstract class BaseConversationsAdapter(
      * Set while the appearance editor is open: a tap on a card then opens its colour instead
      * of the conversation. Null the rest of the time, which is what the rows check.
      */
-    var onEditAppearanceElement: (() -> Unit)? = null
+    var onEditAppearanceElement: ((anchor: View) -> Unit)? = null
     private var lastDragTime = 0L
     private var drafts = HashMap<Long, String>()
 
@@ -777,7 +777,7 @@ abstract class BaseConversationsAdapter(
                 if (System.currentTimeMillis() - lastDragTime < 500) return@setOnClickListener
                 onEditAppearanceElement?.let { edit ->
                     // In the appearance editor a card is a swatch, not a way into a thread.
-                    edit()
+                    edit(recentFrame)
                     return@setOnClickListener
                 }
 

@@ -38,7 +38,11 @@ import com.texto.sms.extensions.*
 import com.texto.sms.dialogs.EditFilterDialog
 import com.texto.sms.helpers.CapsuleChoice
 import com.texto.sms.helpers.MessageFilter
+import com.texto.sms.helpers.AppThemes
 import com.texto.sms.helpers.TextoEditPulse
+import com.texto.sms.helpers.hideInlineBars
+import com.texto.sms.helpers.inlineColourBars
+import com.texto.sms.helpers.showInlineBarsAround
 import com.texto.sms.helpers.TextoGlass
 import com.texto.sms.helpers.textoCapsuleDialog
 import com.texto.sms.helpers.textoColorPicker
@@ -1989,6 +1993,7 @@ class MainActivity : SimpleActivity() {
         appearanceSnapshot = null
         isEditingAppearance = false
         editPulse.stop()
+        binding.appearanceOverlay.hideInlineBars()
         binding.appearanceBar.beGone()
         setHomeFunctionsEnabled(true)
         repaintHome()
@@ -2019,7 +2024,7 @@ class MainActivity : SimpleActivity() {
                 it.isClickable = enabled
             }
         (conversationsList.adapter as? ConversationsAdapter)?.onEditAppearanceElement =
-            if (enabled) null else { -> showCardAppearanceSheet() }
+            if (enabled) null else { anchor -> showCardAppearanceBars(anchor) }
     }
 
     private fun styleAppearanceBar() = binding.apply {
@@ -2062,77 +2067,85 @@ class MainActivity : SimpleActivity() {
         // The two capsules are one material and take one colour, so either of them opens the
         // same picker rather than pretending they can differ.
         listOf<View>(mainToolbar, textoHeaderRow, textoNavContainer).forEach { bar ->
-            bar.setOnClickListener { if (isEditingAppearance) showBarAppearanceSheet() }
+            bar.setOnClickListener { if (isEditingAppearance) showBarAppearanceBars(bar) }
             bar.isClickable = true
         }
     }
 
-    private fun showBarAppearanceSheet() {
-        textoCapsuleDialog(
-            getString(R.string.appearance_element_bars),
-            listOf(
-                CapsuleChoice(
-                    label = getString(R.string.settings_top_bar_background),
-                    subtitle = getString(R.string.appearance_applies_everywhere),
-                    swatch = config.topBarColor,
-                    onPick = {
-                        pickAppColour(
-                            title = getString(R.string.settings_top_bar_background),
-                            current = config.topBarColor,
-                            contrastAgainst = config.topBarTextColor,
-                        ) { picked ->
-                            config.topBarColor = picked
-                            // The composer and the nav pill are painted from the same tint, so
-                            // they move together or the three stop reading as one material.
-                            config.inputBarBackgroundColor = picked
-                        }
-                    },
-                ),
-                CapsuleChoice(
-                    label = getString(R.string.settings_top_bar_text),
-                    swatch = config.topBarTextColor,
-                    onPick = {
-                        pickAppColour(
-                            title = getString(R.string.settings_top_bar_text),
-                            current = config.topBarTextColor,
-                            contrastAgainst = config.topBarColor,
-                        ) { picked -> config.topBarTextColor = picked }
-                    },
-                ),
-            )
+    /**
+     * The capsules' own colours, on the same two strips a bubble is recoloured with.
+     *
+     * The bar's colour above whatever was tapped and its ink below, exactly as a bubble gets
+     * its colour above and its text below: the two capsules and a bubble are the same kind of
+     * thing to restyle, so they are restyled the same way.
+     *
+     * Both capsules take one colour, because they are painted from one: giving them separate
+     * pickers would offer a choice the app cannot honour.
+     */
+    private fun showBarAppearanceBars(anchor: View) {
+        val barBars = inlineColourBars(
+            label = getString(R.string.appearance_element_bars),
+            read = { if (config.topBarColor == 0) Color.BLACK else config.topBarColor },
+            write = { picked ->
+                config.topBarColor = picked
+                // The composer and the nav pill are painted from the same tint, so they move
+                // together or the three stop reading as one material.
+                config.inputBarBackgroundColor = picked
+                repaintHome()
+            },
+            onReset = {
+                config.topBarColor = skin.topBarColor
+                config.inputBarBackgroundColor = skin.topBarColor
+                repaintHome()
+                binding.appearanceOverlay.hideInlineBars()
+            },
+        )
+        val inkBars = inlineColourBars(
+            label = getString(R.string.settings_top_bar_text),
+            read = { config.topBarTextColor },
+            write = { picked ->
+                config.topBarTextColor = picked
+                repaintHome()
+            },
+            onReset = {
+                config.topBarTextColor = skin.topBarTextColor
+                repaintHome()
+                binding.appearanceOverlay.hideInlineBars()
+            },
+        )
+        showInlineBarsAround(
+            overlay = binding.appearanceOverlay,
+            anchor = anchor,
+            above = barBars,
+            below = inkBars,
+            ceiling = { binding.appearanceBar.bottom + 8.getScaledPx() },
         )
     }
 
-    private fun showCardAppearanceSheet() {
-        pickAppColour(
-            title = getString(R.string.appearance_element_card),
-            current = config.recentColor,
-            contrastAgainst = config.mainTextColor,
-        ) { picked -> config.recentColor = picked }
+    /** One card colour, one pair of strips, and the way back to the skin's own. */
+    private fun showCardAppearanceBars(anchor: View) {
+        val bars = inlineColourBars(
+            label = getString(R.string.appearance_element_card),
+            read = { config.recentColor },
+            write = { picked ->
+                config.recentColor = picked
+                repaintHome()
+            },
+            onReset = {
+                config.recentColor = skin.cardColor
+                repaintHome()
+                binding.appearanceOverlay.hideInlineBars()
+            },
+        )
+        showInlineBarsAround(
+            overlay = binding.appearanceOverlay,
+            anchor = anchor,
+            above = bars,
+            below = null,
+            ceiling = { binding.appearanceBar.bottom + 8.getScaledPx() },
+        )
     }
 
-    /**
-     * One colour of the app's own, picked on the screen it paints.
-     *
-     * [write] is called for every intermediate colour, which is what makes the screen behind
-     * the sheet the preview -- and on dismiss without saving the picker calls it once more
-     * with the original, so a cancelled look-around leaves nothing behind.
-     */
-    private fun pickAppColour(
-        title: String,
-        current: Int,
-        contrastAgainst: Int,
-        write: (Int) -> Unit,
-    ) {
-        textoColorPicker(
-            title = title,
-            current = current,
-            defaultColour = current,
-            contrastAgainst = contrastAgainst,
-            compact = true,
-        ) { picked ->
-            write(picked)
-            repaintHome()
-        }
-    }
+    /** The skin the app is on, which is what "default" means for any one of its colours. */
+    private val skin get() = AppThemes.byId(config.appTheme)
 }

@@ -15,6 +15,8 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.children
+import androidx.core.view.doOnLayout
+import androidx.core.view.updateLayoutParams
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.extensions.config
@@ -188,6 +190,83 @@ fun SimpleActivity.inlineColourBars(
     group.addView(familyStrip)
     group.addView(shadeStrip)
     return group
+}
+
+/**
+ * Puts [above] and [below] against [anchor] inside [overlay], on whichever sides have room.
+ *
+ * Shared by both editors so a bar, a card and a bubble are all restyled the same way: the
+ * thing you tapped stays on screen with its controls against it. [ceiling] is the lowest y a
+ * pair may take, which is the editor's own bar -- a pair placed against something near the top
+ * would otherwise slide under it and lose its label.
+ */
+fun SimpleActivity.showInlineBarsAround(
+    overlay: FrameLayout,
+    anchor: View,
+    above: View,
+    below: View?,
+    ceiling: () -> Int,
+) {
+    overlay.removeAllViews()
+    val anchorPos = IntArray(2).also { anchor.getLocationOnScreen(it) }
+    val overlayPos = IntArray(2).also { overlay.getLocationOnScreen(it) }
+    val anchorTop = anchorPos[1] - overlayPos[1]
+    val anchorBottom = anchorTop + anchor.height
+    val side = 12.getScaledPx()
+
+    listOfNotNull(above, below).forEach { bars ->
+        overlay.addView(
+            bars,
+            FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            ).apply {
+                marginStart = side
+                marginEnd = side
+            }
+        )
+    }
+
+    overlay.visibility = View.VISIBLE
+    overlay.setOnClickListener { overlay.hideInlineBars() }
+    overlay.doOnLayout {
+        val gap = 8.getScaledPx()
+        val room = overlay.height
+        val top = ceiling()
+        // Measured rather than read off the views: they have been added but not laid out at
+        // their final margins yet, so `height` is still whatever the first pass gave them --
+        // which put the second pair on top of the first.
+        val widthSpec = View.MeasureSpec.makeMeasureSpec(
+            (overlay.width - side * 2).coerceAtLeast(0), View.MeasureSpec.EXACTLY
+        )
+        val heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        above.measure(widthSpec, heightSpec)
+        below?.measure(widthSpec, heightSpec)
+        val aboveH = above.measuredHeight
+        val belowH = below?.measuredHeight ?: 0
+        var aboveTop = anchorTop - gap - aboveH
+        var belowTop = anchorBottom + gap
+        if (aboveTop < top) aboveTop = (anchorBottom + gap).coerceAtMost(room - aboveH - gap)
+        if (belowTop + belowH > room - gap) {
+            belowTop = (anchorTop - gap - belowH).coerceAtLeast(top)
+        }
+        // Both forced to the same side: stack them rather than let one cover the other.
+        if (below != null && aboveTop < belowTop + belowH && belowTop < aboveTop + aboveH) {
+            belowTop = (aboveTop + aboveH + gap).coerceAtMost(room - belowH - gap)
+        }
+        above.updateLayoutParams<FrameLayout.LayoutParams> {
+            topMargin = aboveTop.coerceAtLeast(top)
+        }
+        below?.updateLayoutParams<FrameLayout.LayoutParams> {
+            topMargin = belowTop.coerceAtLeast(top)
+        }
+        above.animateInlineIn(fromBelow = false)
+        below?.animateInlineIn(fromBelow = true)
+    }
+}
+
+fun FrameLayout.hideInlineBars() {
+    removeAllViews()
+    visibility = View.GONE
 }
 
 /**
