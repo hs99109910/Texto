@@ -126,7 +126,7 @@ class ThreadAdapter(
      * the context menu are all off for the duration -- in edit mode a bubble is a swatch, and
      * leaving both meanings live on one gesture would make every tap a guess.
      */
-    var onEditAppearanceElement: ((isReceived: Boolean) -> Unit)? = null
+    var onEditAppearanceElement: ((anchor: View, isReceived: Boolean) -> Unit)? = null
         set(value) {
             if (field == value) return
             field = value
@@ -907,7 +907,7 @@ class ThreadAdapter(
 
             setOnLongClickListener {
                 onEditAppearanceElement?.let { edit ->
-                    edit(message.isReceivedMessage())
+                    edit(this, message.isReceivedMessage())
                     return@setOnLongClickListener true
                 }
                 val wasSelecting = isSelectionModeActive()
@@ -924,7 +924,7 @@ class ThreadAdapter(
 
             setOnClickListener {
                 onEditAppearanceElement?.let { edit ->
-                    edit(message.isReceivedMessage())
+                    edit(this, message.isReceivedMessage())
                     return@setOnClickListener
                 }
                 // Two taps on the same bubble inside the platform's double-tap window open

@@ -287,6 +287,7 @@
     <string name="appearance_edit_hint_home">روی نوار یا کارت بزنید تا رنگش عوض شود</string>
     <string name="appearance_element_bars">نوارهای بالا و پایین</string>
     <string name="appearance_element_card">کارت گفتگو</string>
+    <string name="appearance_element_sim">رنگ سیم‌کارت</string>
     <string name="appearance_save">ذخیره</string>
     <string name="appearance_applies_everywhere">این‌ها روی همهٔ صفحه‌ها اعمال می‌شوند</string>
     <string name="filter_sound">صدای اعلان</string>

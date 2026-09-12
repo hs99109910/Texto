@@ -124,6 +124,23 @@
                     android:src="@drawable/ic_ph_magnifying_glass"
                     app:tint="#FFFFFF" />
 
+                <!--
+                    The live editor's own way in, next to the two controls it sits between,
+                    because a colour you pick here is a colour you are looking at. The same
+                    palette glyph marks it on the conversation list.
+                -->
+                <ImageView
+                    android:id="@+id/thread_appearance_btn"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_marginStart="6dp"
+                    android:clickable="true"
+                    android:contentDescription="@string/appearance_edit"
+                    android:focusable="true"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_ph_palette"
+                    app:tint="#FFFFFF" />
+
                 <ImageView
                     android:id="@+id/thread_menu_btn"
                     android:layout_width="38dp"
@@ -387,6 +404,17 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top"
         android:elevation="14dp" />
+
+    <!--
+        Where the inline colour bars are put, so they can be placed against the bubble being
+        recoloured rather than in a sheet over it. Full screen and untouchable until the
+        editor puts something in it; a tap on the empty part puts the bars away again.
+    -->
+    <FrameLayout
+        android:id="@+id/appearance_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
 
     <!--
         The appearance editor's bar, floating over the thread for the same reason the

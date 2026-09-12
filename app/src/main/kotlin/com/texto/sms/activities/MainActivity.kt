@@ -23,6 +23,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.children
 import androidx.core.view.doOnLayout
 import androidx.core.view.updateLayoutParams
 import android.widget.RelativeLayout
@@ -37,6 +38,7 @@ import com.texto.sms.extensions.*
 import com.texto.sms.dialogs.EditFilterDialog
 import com.texto.sms.helpers.CapsuleChoice
 import com.texto.sms.helpers.MessageFilter
+import com.texto.sms.helpers.TextoEditPulse
 import com.texto.sms.helpers.TextoGlass
 import com.texto.sms.helpers.textoCapsuleDialog
 import com.texto.sms.helpers.textoColorPicker
@@ -1386,6 +1388,7 @@ class MainActivity : SimpleActivity() {
         binding.textoMenuBtn.setOnClickListener {
             startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
         }
+        binding.textoAppearanceBtn.setOnClickListener { openAppearanceEditor() }
         buildFilterChips()
 
         // Once the user scrolls themselves, the remembered position is stale.
@@ -1958,7 +1961,20 @@ class MainActivity : SimpleActivity() {
         styleAppearanceBar()
         binding.appearanceBar.beVisible()
         setHomeFunctionsEnabled(false)
+        // The same breathing ring the thread's editor puts on its bubbles, on the three things
+        // this screen can recolour: the header, the pill, and the cards on screen right now.
+        editPulse.start {
+            buildList {
+                add(binding.mainToolbar)
+                add(binding.textoNavContainer)
+                binding.conversationsList.children.forEach { row ->
+                    row.findViewById<View>(R.id.recent_frame)?.let { add(it) }
+                }
+            }
+        }
     }
+
+    private val editPulse by lazy { TextoEditPulse(this) }
 
     private fun closeAppearanceEditor(keep: Boolean) {
         if (!isEditingAppearance) return
@@ -1972,6 +1988,7 @@ class MainActivity : SimpleActivity() {
         }
         appearanceSnapshot = null
         isEditingAppearance = false
+        editPulse.stop()
         binding.appearanceBar.beGone()
         setHomeFunctionsEnabled(true)
         repaintHome()
@@ -1993,7 +2010,10 @@ class MainActivity : SimpleActivity() {
      * editor into settings.
      */
     private fun setHomeFunctionsEnabled(enabled: Boolean) = binding.apply {
-        listOf<View>(textoMenuBtn, navAddBtn, navHomeBtn, navSearchContainer, filterBar)
+        listOf<View>(
+            textoMenuBtn, textoAppearanceBtn, navAddBtn, navHomeBtn, navSearchContainer,
+            filterBar
+        )
             .forEach {
                 it.isEnabled = enabled
                 it.isClickable = enabled

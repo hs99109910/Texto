@@ -57,6 +57,25 @@
                     from settings now: archived conversations under their own heading, and
                     "about" as the last card, so a second button had nothing left to open.
                 -->
+                <!--
+                    The live editor, beside the gear rather than inside it: what it edits is
+                    this screen, so the way in belongs on this screen. Same palette glyph the
+                    thread's own header carries.
+                -->
+                <ImageView
+                    android:id="@+id/texto_appearance_btn"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/texto_header_tile_bg"
+                    android:clickable="true"
+                    android:contentDescription="@string/appearance_edit"
+                    android:focusable="true"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_ph_palette"
+                    app:tint="@android:color/white" />
+
                 <ImageView
                     android:id="@+id/texto_menu_btn"
                     android:layout_width="38dp"

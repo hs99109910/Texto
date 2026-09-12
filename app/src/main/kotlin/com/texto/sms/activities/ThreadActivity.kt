@@ -31,6 +31,7 @@ import android.view.animation.AnimationUtils
 import android.view.animation.OvershootInterpolator
 import android.view.inputmethod.EditorInfo
 import android.webkit.MimeTypeMap
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
@@ -39,6 +40,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
+import androidx.core.view.children
+import androidx.core.view.doOnLayout
 import androidx.core.widget.addTextChangedListener
 import androidx.documentfile.provider.DocumentFile
 import androidx.recyclerview.widget.DefaultItemAnimator
@@ -183,6 +186,17 @@ class ThreadActivity : SimpleActivity() {
 
     /** What the thread had when the editor opened, for the cancel path to put back. */
     private var appearanceBefore: ThreadAppearance? = null
+
+    private val editPulse by lazy { TextoEditPulse(this) }
+
+    /**
+     * The SIM badge's colour when the editor opened.
+     *
+     * It is the one thing here that is written as it is picked -- it belongs to the slot, not
+     * to this conversation, so there is no working copy to hold it -- and discard still has to
+     * mean discard, so the old value is kept to put back.
+     */
+    private var simColourBefore: Int? = null
 
     private val binding by viewBinding(ActivityThreadBinding::inflate)
 
@@ -1122,6 +1136,7 @@ class ThreadActivity : SimpleActivity() {
      */
     private fun setupOptionsMenu() {
         binding.threadMenuBtn.setOnClickListener { showThreadModernMenu(it) }
+        binding.threadAppearanceBtn.setOnClickListener { openAppearanceEditor() }
         binding.threadBackBtn.setOnClickListener { finish() }
         styleThreadHeader()
     }
@@ -1156,6 +1171,7 @@ class ThreadActivity : SimpleActivity() {
 
         tile(binding.threadBackBtn, 40)
         tile(binding.threadSearchBtn, 38)
+        tile(binding.threadAppearanceBtn, 38)
         tile(binding.threadMenuBtn, 38)
 
         // The design's header avatar is 42dp on a 16dp radius, and carries the accent
@@ -1384,13 +1400,26 @@ class ThreadActivity : SimpleActivity() {
     private fun openAppearanceEditor() {
         if (editingAppearance != null) return
         appearanceBefore = config.threadAppearance(threadId)
+        simColourBefore = config.getSimColor(currentSIMCardIndex)
         editingAppearance = appearanceBefore ?: ThreadAppearance()
-        getOrCreateThreadAdapter().onEditAppearanceElement = { isReceived ->
-            showBubbleAppearanceSheet(isReceived)
+        getOrCreateThreadAdapter().onEditAppearanceElement = { anchor, isReceived ->
+            showBubbleAppearanceBars(anchor, isReceived)
         }
         styleAppearanceBar()
         binding.appearanceBar.beVisible()
         setThreadFunctionsEnabled(false)
+        // What you can recolour, said by the thing itself rather than by a legend: every
+        // bubble on screen breathes an accent ring, and so does the SIM disc.
+        editPulse.start {
+            buildList {
+                binding.threadMessagesList.children.forEach { row ->
+                    row.findViewById<View>(R.id.thread_message_body_holder)?.let { add(it) }
+                }
+                if (binding.messageHolder.threadSelectSimIcon.isVisible()) {
+                    add(binding.messageHolder.threadSelectSimIcon)
+                }
+            }
+        }
         applyThreadAppearance()
         refreshThreadColours()
     }
@@ -1411,7 +1440,8 @@ class ThreadActivity : SimpleActivity() {
             view.isLongClickable = enabled
         }
         listOf(
-            threadBackBtn, threadSearchBtn, threadMenuBtn, threadHeaderAvatar, scrollToBottomFab
+            threadBackBtn, threadSearchBtn, threadMenuBtn, threadAppearanceBtn,
+            threadHeaderAvatar, scrollToBottomFab
         ).forEach { lock(it) }
         listOf(
             messageHolder.threadSendMessage,
@@ -1423,6 +1453,18 @@ class ThreadActivity : SimpleActivity() {
         messageHolder.threadTypeMessage.isFocusable = enabled
         messageHolder.threadTypeMessage.isFocusableInTouchMode = enabled
         messageHolder.root.alpha = if (enabled) 1f else 0.55f
+        // The one control that stays live while editing, because it is itself editable: the
+        // SIM badge is a colour, and the colour is what identifies the slot.
+        messageHolder.threadSelectSimIcon.apply {
+            isEnabled = true
+            isClickable = true
+            alpha = 1f
+            if (enabled) {
+                setupSIMSelector()
+            } else {
+                setOnClickListener { showSimAppearanceBars(this) }
+            }
+        }
         if (!enabled) hideKeyboard()
     }
 
@@ -1501,14 +1543,20 @@ class ThreadActivity : SimpleActivity() {
         editingAppearance = null
         getOrCreateThreadAdapter().onEditAppearanceElement = null
         binding.appearanceBar.beGone()
+        editPulse.stop()
+        hideAppearanceOverlay()
         setThreadFunctionsEnabled(true)
         if (!keep) {
             // Nothing was written while the editor was open, so putting the thread back is
-            // simply painting it from storage again.
+            // simply painting it from storage again -- except the SIM badge, which is
+            // written as it is picked and so has to be put back by hand.
+            simColourBefore?.let { config.setSimColor(currentSIMCardIndex, it) }
             applyThreadAppearance()
             refreshThreadColours()
         }
+        setupSIMSelector()
         appearanceBefore = null
+        simColourBefore = null
     }
 
     /**
@@ -1570,123 +1618,207 @@ class ThreadActivity : SimpleActivity() {
      * on its own, because "readable" and "what I wanted" are not the same thing and the
      * automatic answer has to be overridable.
      */
-    private fun showBubbleAppearanceSheet(isReceived: Boolean) {
-        val working = editingAppearance ?: return
-        val titleRes = if (isReceived) {
-            R.string.appearance_element_received
-        } else {
-            R.string.appearance_element_sent
-        }
-        val bubble = (if (isReceived) working.receivedBubbleColor else working.sentBubbleColor)
-            ?: if (isReceived) config.receivedBubbleColor else config.sentBubbleColor
-        val ink = (if (isReceived) working.receivedBubbleTextColor else working.sentBubbleTextColor)
-            ?: if (isReceived) config.receivedBubbleTextColor else config.sentBubbleTextColor
-        textoCapsuleDialog(
-            getString(titleRes),
-            listOf(
-                CapsuleChoice(
-                    label = getString(R.string.appearance_bubble_colour),
-                    swatch = bubble,
-                    onPick = { pickBubbleColour(isReceived) },
-                ),
-                CapsuleChoice(
-                    label = getString(R.string.appearance_text_colour),
-                    swatch = ink,
-                    onPick = { pickBubbleTextColour(isReceived) },
-                ),
-                CapsuleChoice(
-                    label = getString(R.string.appearance_reset_element),
-                    icon = R.drawable.ic_ph_arrow_u_up_left,
-                    onPick = {
-                        editingAppearance = if (isReceived) {
-                            working.copy(
-                                receivedBubbleColor = null,
-                                receivedBubbleTextColor = null
-                            )
-                        } else {
-                            working.copy(sentBubbleColor = null, sentBubbleTextColor = null)
-                        }
-                        applyThreadAppearance()
-                        refreshThreadColours()
-                    },
-                ),
-            )
+    /**
+     * The bubble's own two controls, put where the bubble is.
+     *
+     * A colour bar pair above it for the bubble, another below it for the ink -- so the thing
+     * being changed sits between the two things changing it, and every pick repaints it in
+     * place. A sheet could not do that: whatever it covered was usually the bubble.
+     *
+     * Which side each pair lands on is decided by the room actually available, because a
+     * bubble at the top of the screen has nothing above it and one at the bottom nothing
+     * below.
+     */
+    private fun showBubbleAppearanceBars(anchor: View, isReceived: Boolean) {
+        val bubbleBars = inlineColourBars(
+            label = getString(
+                if (isReceived) {
+                    R.string.appearance_element_received
+                } else {
+                    R.string.appearance_element_sent
+                }
+            ),
+            read = {
+                val working = editingAppearance
+                (if (isReceived) working?.receivedBubbleColor else working?.sentBubbleColor)
+                    ?: if (isReceived) config.receivedBubbleColor else config.sentBubbleColor
+            },
+            write = { picked -> writeBubbleColour(isReceived, picked) },
+            onReset = {
+                val working = editingAppearance
+                if (working != null) {
+                    editingAppearance = if (isReceived) {
+                        working.copy(
+                            receivedBubbleColor = null,
+                            receivedBubbleTextColor = null
+                        )
+                    } else {
+                        working.copy(sentBubbleColor = null, sentBubbleTextColor = null)
+                    }
+                    applyThreadAppearance()
+                    refreshThreadColours()
+                }
+                hideAppearanceOverlay()
+            },
         )
+        val textBars = inlineColourBars(
+            label = getString(R.string.appearance_text_colour),
+            read = {
+                val working = editingAppearance
+                (
+                    if (isReceived) {
+                        working?.receivedBubbleTextColor
+                    } else {
+                        working?.sentBubbleTextColor
+                    }
+                    ) ?: if (isReceived) {
+                    config.receivedBubbleTextColor
+                } else {
+                    config.sentBubbleTextColor
+                }
+            },
+            write = { picked ->
+                val working = editingAppearance
+                if (working != null) {
+                    val appDefault = if (isReceived) {
+                        config.receivedBubbleTextColor
+                    } else {
+                        config.sentBubbleTextColor
+                    }
+                    val override = picked.takeIf { it != appDefault }
+                    editingAppearance = if (isReceived) {
+                        working.copy(receivedBubbleTextColor = override)
+                    } else {
+                        working.copy(sentBubbleTextColor = override)
+                    }
+                    applyThreadAppearance()
+                    refreshThreadColours()
+                }
+            },
+        )
+        showAppearanceBarsAround(anchor, above = bubbleBars, below = textBars)
     }
 
-    private fun pickBubbleColour(isReceived: Boolean) {
+    /**
+     * Writes a bubble colour, and its ink with it when the ink would stop being readable.
+     *
+     * The ink only moves when what was there fails 4.5:1 against the new ground, so a colour
+     * somebody chose on purpose survives and an inherited one is rescued.
+     */
+    private fun writeBubbleColour(isReceived: Boolean, picked: Int) {
         val working = editingAppearance ?: return
         val appDefault = if (isReceived) config.receivedBubbleColor else config.sentBubbleColor
-        val current = (if (isReceived) working.receivedBubbleColor else working.sentBubbleColor)
-            ?: appDefault
         val inkDefault = if (isReceived) {
             config.receivedBubbleTextColor
         } else {
             config.sentBubbleTextColor
         }
-        val ink = (if (isReceived) working.receivedBubbleTextColor else working.sentBubbleTextColor)
-            ?: inkDefault
-        textoColorPicker(
-            title = getString(R.string.appearance_bubble_colour),
-            current = current,
-            defaultColour = appDefault,
-            contrastAgainst = ink,
-            compact = true,
-        ) { picked ->
-            val override = picked.takeIf { it != appDefault }
-            // Smart contrast: the ink only moves when the colour that was there would be hard
-            // to read on the new ground, so a deliberately chosen ink is left alone and an
-            // inherited one is rescued. getContrastColor answers black or white for a given
-            // background, which is the same test the rest of the app uses to stay legible.
-            val readableInk = picked.getContrastColor()
-            val inkNeedsHelp = !isReadableOn(ink, picked)
-            val inkOverride = when {
-                !inkNeedsHelp -> if (isReceived) {
-                    working.receivedBubbleTextColor
-                } else {
-                    working.sentBubbleTextColor
+        val ink = (
+            if (isReceived) working.receivedBubbleTextColor else working.sentBubbleTextColor
+            ) ?: inkDefault
+        val override = picked.takeIf { it != appDefault }
+        val inkOverride = if (TextoPalette.isReadable(picked, ink)) {
+            if (isReceived) working.receivedBubbleTextColor else working.sentBubbleTextColor
+        } else {
+            picked.getContrastColor().takeIf { it != inkDefault }
+        }
+        editingAppearance = if (isReceived) {
+            working.copy(receivedBubbleColor = override, receivedBubbleTextColor = inkOverride)
+        } else {
+            working.copy(sentBubbleColor = override, sentBubbleTextColor = inkOverride)
+        }
+        applyThreadAppearance()
+        refreshThreadColours()
+    }
+
+    /**
+     * Places [above] and [below] against [anchor], falling back to whichever side has room.
+     *
+     * Positions are in the overlay's own coordinates, which is why the anchor's screen
+     * position is taken net of the overlay's: the overlay is the whole screen, the anchor is
+     * a row in a list that has been scrolled.
+     */
+    private fun showAppearanceBarsAround(anchor: View, above: View, below: View) {
+        val overlay = binding.appearanceOverlay
+        overlay.removeAllViews()
+        val anchorPos = IntArray(2).also { anchor.getLocationOnScreen(it) }
+        val overlayPos = IntArray(2).also { overlay.getLocationOnScreen(it) }
+        val anchorTop = anchorPos[1] - overlayPos[1]
+        val anchorBottom = anchorTop + anchor.height
+        val side = 12.getScaledPx()
+
+        listOf(above, below).forEach { bars ->
+            overlay.addView(
+                bars,
+                FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    marginStart = side
+                    marginEnd = side
                 }
-                readableInk == inkDefault -> null
-                else -> readableInk
+            )
+        }
+
+        overlay.beVisible()
+        overlay.setOnClickListener { hideAppearanceOverlay() }
+        overlay.doOnLayout {
+            val gap = 8.getScaledPx()
+            val room = overlay.height
+            // The editor's own bar is the ceiling, not the top of the screen: a pair placed
+            // against a bubble near the top would otherwise slide under it and lose its label.
+            val ceiling = binding.appearanceBar.bottom + gap
+            val aboveH = above.height
+            val belowH = below.height
+            var aboveTop = anchorTop - gap - aboveH
+            var belowTop = anchorBottom + gap
+            // Preferred side first, then whichever way round actually fits: at the top of a
+            // thread there is nothing above the bubble, at the bottom nothing below it.
+            if (aboveTop < ceiling) {
+                aboveTop = (anchorBottom + gap).coerceAtMost(room - aboveH - gap)
             }
-            editingAppearance = if (isReceived) {
-                working.copy(receivedBubbleColor = override, receivedBubbleTextColor = inkOverride)
-            } else {
-                working.copy(sentBubbleColor = override, sentBubbleTextColor = inkOverride)
+            if (belowTop + belowH > room - gap) {
+                belowTop = (anchorTop - gap - belowH).coerceAtLeast(ceiling)
             }
-            applyThreadAppearance()
-            refreshThreadColours()
+            // Both forced to the same side: stack them rather than let one cover the other.
+            if (aboveTop < belowTop + belowH && belowTop < aboveTop + aboveH) {
+                belowTop = (aboveTop + aboveH + gap).coerceAtMost(room - belowH - gap)
+            }
+            above.updateLayoutParams<FrameLayout.LayoutParams> {
+                topMargin = aboveTop.coerceAtLeast(ceiling)
+            }
+            below.updateLayoutParams<FrameLayout.LayoutParams> {
+                topMargin = belowTop.coerceAtLeast(ceiling)
+            }
+            above.animateInlineIn(fromBelow = false)
+            below.animateInlineIn(fromBelow = true)
         }
     }
 
-    private fun pickBubbleTextColour(isReceived: Boolean) {
-        val working = editingAppearance ?: return
-        val appDefault = if (isReceived) {
-            config.receivedBubbleTextColor
-        } else {
-            config.sentBubbleTextColor
-        }
-        val current = (
-            if (isReceived) working.receivedBubbleTextColor else working.sentBubbleTextColor
-            ) ?: appDefault
-        val ground = (if (isReceived) working.receivedBubbleColor else working.sentBubbleColor)
-            ?: if (isReceived) config.receivedBubbleColor else config.sentBubbleColor
-        textoColorPicker(
-            title = getString(R.string.appearance_text_colour),
-            current = current,
-            defaultColour = appDefault,
-            contrastAgainst = ground,
-            compact = true,
-        ) { picked ->
-            val override = picked.takeIf { it != appDefault }
-            editingAppearance = if (isReceived) {
-                working.copy(receivedBubbleTextColor = override)
-            } else {
-                working.copy(sentBubbleTextColor = override)
-            }
-            applyThreadAppearance()
-            refreshThreadColours()
-        }
+    /**
+     * The SIM disc's own colour, edited where it sits.
+     *
+     * It belongs to the slot rather than to this conversation -- the badge means "this SIM"
+     * everywhere it appears -- so this one writes straight through to the app's own setting,
+     * and the scope question at the end has nothing to say about it.
+     */
+    private fun showSimAppearanceBars(anchor: View) {
+        val slot = currentSIMCardIndex
+        val bars = inlineColourBars(
+            label = getString(R.string.appearance_element_sim),
+            read = { config.getSimColor(slot) },
+            write = { picked ->
+                config.setSimColor(slot, picked)
+                setupSIMSelector()
+            },
+        )
+        val spacer = View(this)
+        showAppearanceBarsAround(anchor, above = bars, below = spacer)
+    }
+
+    private fun hideAppearanceOverlay() {
+        binding.appearanceOverlay.removeAllViews()
+        binding.appearanceOverlay.beGone()
     }
 
     private fun showBackgroundAppearanceSheet() {
@@ -1703,26 +1835,6 @@ class ThreadActivity : SimpleActivity() {
             applyThreadAppearance()
             refreshThreadColours()
         }
-    }
-
-    /**
-     * Whether [ink] can be read on [ground], by the WCAG contrast ratio the rest of the app's
-     * colour work is measured against. 4.5:1 is the body-text threshold; a bubble is body text.
-     */
-    private fun isReadableOn(ink: Int, ground: Int): Boolean {
-        fun channel(value: Int): Double {
-            val c = value / 255.0
-            return if (c <= 0.03928) c / 12.92 else Math.pow((c + 0.055) / 1.055, 2.4)
-        }
-
-        fun luminance(color: Int): Double = 0.2126 * channel(Color.red(color)) +
-            0.7152 * channel(Color.green(color)) +
-            0.0722 * channel(Color.blue(color))
-
-        val a = luminance(ink)
-        val b = luminance(ground)
-        val ratio = (maxOf(a, b) + 0.05) / (minOf(a, b) + 0.05)
-        return ratio >= 4.5
     }
 
     /**

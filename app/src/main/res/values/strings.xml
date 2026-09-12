@@ -293,6 +293,7 @@
     <string name="appearance_edit_hint_home">Tap a bar or a card to restyle it</string>
     <string name="appearance_element_bars">Top and bottom bars</string>
     <string name="appearance_element_card">Conversation card</string>
+    <string name="appearance_element_sim">SIM colour</string>
     <string name="appearance_save">Save</string>
     <string name="appearance_applies_everywhere">These apply to every screen</string>
     <string name="filter_sound">Notification sound</string>
