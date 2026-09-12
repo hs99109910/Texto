@@ -2,6 +2,7 @@ package com.texto.sms.helpers
 
 import android.content.Context
 import android.graphics.Typeface
+import com.texto.sms.extensions.isQPlus
 
 /**
  * Persian typefaces bundled as assets instead of res/font, so a missing file degrades
@@ -123,7 +124,7 @@ object TextoFonts {
             null
         } else {
             try {
-                Typeface.createFromAsset(context.assets, "$ASSET_DIR/$fileName")
+                loadWithEmojiFallback(context, "$ASSET_DIR/$fileName")
             } catch (_: Exception) {
                 null
             }
@@ -131,6 +132,31 @@ object TextoFonts {
 
         cache[cacheKey] = typeface
         return typeface
+    }
+
+    /**
+     * `Typeface.createFromAsset` returns a typeface with no fallback chain of its own: any
+     * character the font's glyph table doesn't cover -- every emoji, since none of these
+     * Persian TTFs embed one -- has nothing to fall back to. Measured on a Samsung device: an
+     * emoji typed into the composer with Vazirmatn as the app's chosen font rendered as a
+     * flat, faded glyph instead of full colour, while the same emoji in a plain system-font
+     * TextView (the emoji picker's own cells) rendered normally. `CustomFallbackBuilder`
+     * (Q+) is the API built for exactly this -- pairing a custom font with an explicit
+     * fallback family -- and chaining it to "sans-serif-emoji" put the colour back. Below Q
+     * there is no such builder, so those OS versions keep the old behaviour; nothing here
+     * regresses on them, since createFromAsset is what they were already getting.
+     */
+    private fun loadWithEmojiFallback(context: Context, assetPath: String): Typeface? {
+        if (!isQPlus()) return Typeface.createFromAsset(context.assets, assetPath)
+        return try {
+            val font = android.graphics.fonts.Font.Builder(context.assets, assetPath).build()
+            val family = android.graphics.fonts.FontFamily.Builder(font).build()
+            Typeface.CustomFallbackBuilder(family)
+                .setSystemFallback("sans-serif-emoji")
+                .build()
+        } catch (_: Exception) {
+            Typeface.createFromAsset(context.assets, assetPath)
+        }
     }
 
     fun isInstalled(context: Context, id: Int) = getTypeface(context, id) != null
