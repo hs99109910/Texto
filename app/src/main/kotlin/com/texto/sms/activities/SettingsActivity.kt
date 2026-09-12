@@ -607,6 +607,14 @@ class SettingsActivity : SimpleActivity() {
         settingsAppTheme.text =
             getString(com.texto.sms.helpers.AppThemes.familyOf(config.appTheme).labelRes)
 
+        // Hands the job back to the screen the colours are actually on: settings closes, the
+        // conversation list comes back with its editor open. One-shot flag rather than a
+        // result, because the list is not always the caller -- it is simply where this ends up.
+        settingsLiveEditorHolder.setOnClickListener {
+            config.startAppearanceEditor = true
+            finish()
+        }
+
         settingsAppThemeHolder.setOnClickListener {
             val isDark = com.texto.sms.helpers.AppThemes.isDarkVariant(config.appTheme)
             // The same capsule rows the SIM chooser uses, each carrying the skin's own accent

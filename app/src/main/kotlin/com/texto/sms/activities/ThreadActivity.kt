@@ -8,6 +8,8 @@ import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
 import android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.Typeface
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
@@ -21,6 +23,7 @@ import android.util.TypedValue
 import android.widget.TextView
 import androidx.activity.addCallback
 import androidx.core.graphics.drawable.toDrawable
+import android.view.View
 import android.view.ViewGroup
 import android.view.KeyEvent
 import android.view.WindowManager
@@ -167,6 +170,19 @@ class ThreadActivity : SimpleActivity() {
     private var isEmojiPanelOpen = false
     private var threadAnchorPosition = RecyclerView.NO_POSITION
     private var threadAnchorOffset = 0
+
+    /**
+     * The appearance editor's working copy, or null when the editor is closed.
+     *
+     * Edits are painted from here rather than written straight to storage, so the screen
+     * previews live while nothing is committed until the scope has been chosen -- and leaving
+     * without choosing puts the thread back exactly as it was found. Same rule the colour
+     * picker itself already follows for a single colour, applied to the whole session.
+     */
+    private var editingAppearance: ThreadAppearance? = null
+
+    /** What the thread had when the editor opened, for the cancel path to put back. */
+    private var appearanceBefore: ThreadAppearance? = null
 
     private val binding by viewBinding(ActivityThreadBinding::inflate)
 
@@ -495,7 +511,7 @@ class ThreadActivity : SimpleActivity() {
         styleThreadHeader()
         // Also after it: applyCustomColors paints the window from the app's own background,
         // so a filter's own ground has to be laid over the top of that rather than under it.
-        applyFilterAppearance()
+        applyThreadAppearance()
 
         if (isFirstResume && config.useNewUi) {
             isFirstResume = false
@@ -1210,6 +1226,12 @@ class ThreadActivity : SimpleActivity() {
             items.add(R.id.rename_conversation to getString(R.string.rename_conversation))
         }
 
+        // Restyling a thread is only meaningful with the thread on screen behind it, which is
+        // the whole point of editing in place, so it is offered here rather than in settings.
+        if (!isRecycleBin) {
+            items.add(R.id.edit_appearance to getString(R.string.appearance_edit))
+        }
+
         if (!isRecycleBin) {
             items.add(R.id.block_number to getString(R.string.block_number))
         }
@@ -1235,6 +1257,7 @@ class ThreadActivity : SimpleActivity() {
             R.id.add_number_to_contact to R.drawable.ic_ph_user_plus,
             R.id.conversation_details to R.drawable.ic_ph_info,
             R.id.rename_conversation to R.drawable.ic_ph_text_aa,
+            R.id.edit_appearance to R.drawable.ic_ph_palette,
             R.id.block_number to R.drawable.ic_ph_prohibit,
             R.id.restore to R.drawable.ic_ph_arrow_u_up_left,
             R.id.delete to R.drawable.ic_ph_trash,
@@ -1249,6 +1272,7 @@ class ThreadActivity : SimpleActivity() {
                 R.id.copy_number -> copyNumberToClipboard()
                 R.id.rename_conversation -> renameConversation()
                 R.id.conversation_details -> launchConversationDetails(threadId)
+                R.id.edit_appearance -> openAppearanceEditor()
                 R.id.mark_as_read -> markAsRead()
                 R.id.block_number -> tryBlocking()
                 R.id.delete -> askConfirmDelete()
@@ -1344,30 +1368,417 @@ class ThreadActivity : SimpleActivity() {
                 refreshMessages()
                 // The participants are what decide which filter this thread belongs to, so
                 // this is the first moment the answer is known.
-                applyFilterAppearance()
+                applyThreadAppearance()
             }
         }
     }
 
     /**
-     * A filter's own colours, for the threads that filter covers.
+     * Opens the in-place appearance editor: the thread stays on screen and a tap on it picks
+     * what to restyle, instead of the settings screen's list of names for things you cannot
+     * see while you are choosing.
      *
-     * Only a one-to-one thread takes them: a filter covers senders, and a group thread has
-     * several, so "which filter is this" has no single answer there and the app's own colours
-     * stay. The adapter repaints its bubbles from [ThreadAdapter.filterOverride]; the ground
-     * behind them is the window's, which is painted here because applyCustomColors -- shared
-     * by every screen -- knows nothing about filters.
+     * The working copy starts from whatever this thread already has, so reopening the editor
+     * continues from the last state rather than from the app's defaults.
      */
-    private fun applyFilterAppearance() {
+    private fun openAppearanceEditor() {
+        if (editingAppearance != null) return
+        appearanceBefore = config.threadAppearance(threadId)
+        editingAppearance = appearanceBefore ?: ThreadAppearance()
+        getOrCreateThreadAdapter().onEditAppearanceElement = { isReceived ->
+            showBubbleAppearanceSheet(isReceived)
+        }
+        styleAppearanceBar()
+        binding.appearanceBar.beVisible()
+        setThreadFunctionsEnabled(false)
+        applyThreadAppearance()
+        refreshThreadColours()
+    }
+
+    /**
+     * Turns the thread's own controls off while the editor is open, and back on after.
+     *
+     * In edit mode every surface on this screen is a swatch: the composer is something you are
+     * recolouring, not something you are typing in, and a tap that sent a message or opened
+     * the menu from here would be a tap that missed. The composer is dimmed as well as
+     * disabled, so that it reads as out of service rather than as broken.
+     */
+    private fun setThreadFunctionsEnabled(enabled: Boolean) = binding.apply {
+        fun lock(view: View?) {
+            view ?: return
+            view.isEnabled = enabled
+            view.isClickable = enabled
+            view.isLongClickable = enabled
+        }
+        listOf(
+            threadBackBtn, threadSearchBtn, threadMenuBtn, threadHeaderAvatar, scrollToBottomFab
+        ).forEach { lock(it) }
+        listOf(
+            messageHolder.threadSendMessage,
+            messageHolder.threadAddAttachment,
+            messageHolder.threadAddEmoji,
+            messageHolder.threadTypeMessage,
+            messageHolder.threadSelectSimIcon,
+        ).forEach { lock(it) }
+        messageHolder.threadTypeMessage.isFocusable = enabled
+        messageHolder.threadTypeMessage.isFocusableInTouchMode = enabled
+        messageHolder.root.alpha = if (enabled) 1f else 0.55f
+        if (!enabled) hideKeyboard()
+    }
+
+    /**
+     * Where the session's changes land, asked once on the way out rather than on every pick.
+     *
+     * Asking per change would tax the thing this feature exists to make cheap -- you try a
+     * colour, then another, then the ink -- so the question is put where it is actually being
+     * answered: at the point of keeping them. "Discard" is the third answer, and the reason
+     * nothing has been written until now.
+     */
+    private fun askAppearanceScope() {
+        val working = editingAppearance ?: return
+        if (working == (appearanceBefore ?: ThreadAppearance())) {
+            // Nothing was changed, so there is nothing to decide about.
+            closeAppearanceEditor(keep = false)
+            return
+        }
+        textoCapsuleDialog(
+            getString(R.string.appearance_scope_title),
+            listOf(
+                CapsuleChoice(
+                    label = getString(R.string.appearance_scope_thread),
+                    icon = R.drawable.ic_ph_chat_teardrop_text,
+                    onPick = {
+                        config.setThreadAppearance(threadId, working)
+                        closeAppearanceEditor(keep = true)
+                        applyThreadAppearance()
+                        refreshThreadColours()
+                    },
+                ),
+                CapsuleChoice(
+                    label = getString(R.string.appearance_scope_all),
+                    icon = R.drawable.ic_ph_palette,
+                    onPick = {
+                        applyAppearanceToEveryThread(working)
+                        closeAppearanceEditor(keep = true)
+                        applyThreadAppearance()
+                        refreshThreadColours()
+                    },
+                ),
+                CapsuleChoice(
+                    label = getString(R.string.appearance_discard),
+                    isDestructive = true,
+                    onPick = { closeAppearanceEditor(keep = false) },
+                ),
+            )
+        )
+    }
+
+    /**
+     * Commits the session to the app's own colours, which is what the settings screen reads
+     * and writes, so the two stay one setting rather than two that have to be kept in step.
+     *
+     * This thread's own overrides are dropped in the same breath: it is the thread you were
+     * looking at while choosing, and leaving an override behind would hide the very change
+     * you just asked every conversation to take.
+     */
+    private fun applyAppearanceToEveryThread(appearance: ThreadAppearance) {
+        appearance.sentBubbleColor?.let { config.sentBubbleColor = it }
+        appearance.sentBubbleTextColor?.let { config.sentBubbleTextColor = it }
+        appearance.receivedBubbleColor?.let {
+            config.receivedBubbleColor = it
+            // The accent gradient is painted over the received bubble, so a chosen colour has
+            // to turn it off or the choice would be the one thing you could not see.
+            config.receivedBubbleColorSet = true
+        }
+        appearance.receivedBubbleTextColor?.let { config.receivedBubbleTextColor = it }
+        appearance.backgroundColor?.let { config.mainBackgroundColor = it }
+        config.setThreadAppearance(threadId, null)
+    }
+
+    /** Leaves the editor, keeping [keep] or putting back what the thread was found with. */
+    private fun closeAppearanceEditor(keep: Boolean) {
+        if (editingAppearance == null) return
+        editingAppearance = null
+        getOrCreateThreadAdapter().onEditAppearanceElement = null
+        binding.appearanceBar.beGone()
+        setThreadFunctionsEnabled(true)
+        if (!keep) {
+            // Nothing was written while the editor was open, so putting the thread back is
+            // simply painting it from storage again.
+            applyThreadAppearance()
+            refreshThreadColours()
+        }
+        appearanceBefore = null
+    }
+
+    /**
+     * Paints the editor's bar and wires it, the way every floating bar in this app is painted:
+     * from the live theme, at the UI scale, under the header rather than inside it.
+     */
+    private fun styleAppearanceBar() = binding.apply {
+        val ink = config.topBarTextColor
+        val inset = (TextoGlass.FLOATING_BAR_INSET_DP * resources.displayMetrics.density).toInt()
+        appearanceBar.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
+            marginStart = inset
+            marginEnd = inset
+            topMargin = threadToolbar.bottom + 8.getScaledPx()
+        }
+        val padH = 8.getScaledPx()
+        appearanceBar.setPadding(padH, 0, padH, 0)
+        TextoGlass.applyPanel(
+            view = appearanceBar,
+            tint = if (config.topBarColor != 0) config.topBarColor else Color.BLACK,
+            cornerRadius = 1000f,
+            // As opaque as the selection bar is where it floats, and for the same reason:
+            // what is behind this one is the conversation being restyled.
+            opacity = 0.92f,
+            strokeWidthPx = 1.getScaledPx()
+        )
+        appearanceCancel.applyColorFilter(ink)
+        appearanceHint.setTextColor(ink.withAlpha(0.75f))
+        appearanceHint.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
+        appearanceHint.typeface = typefaceFor(Typeface.NORMAL)
+
+        // The two actions read as buttons rather than labels: one opens the ground's own
+        // picker, the other closes the editor, and neither is a place you land by accident.
+        listOf(appearanceBackgroundBtn to false, appearanceDone to true).forEach { (view, isDone) ->
+            view.setTextColor(if (isDone) config.mainBackgroundColor else ink)
+            view.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
+            view.typeface = typefaceFor(Typeface.BOLD)
+            val innerH = 12.getScaledPx()
+            val innerV = 7.getScaledPx()
+            view.setPadding(innerH, innerV, innerH, innerV)
+            view.background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = 100f * resources.displayMetrics.density
+                setColor(if (isDone) config.accentGradientStart else ink.withAlpha(0.12f))
+            }
+            view.updateLayoutParams<LinearLayout.LayoutParams> {
+                marginStart = 6.getScaledPx()
+            }
+        }
+
+        appearanceCancel.setOnClickListener { closeAppearanceEditor(keep = false) }
+        appearanceBackgroundBtn.setOnClickListener { showBackgroundAppearanceSheet() }
+        appearanceDone.setOnClickListener { askAppearanceScope() }
+    }
+
+    /**
+     * The sheet for one bubble: its colour, its ink, and a way back to the app's own.
+     *
+     * Both rows are offered even though picking a bubble colour already sets a readable ink
+     * on its own, because "readable" and "what I wanted" are not the same thing and the
+     * automatic answer has to be overridable.
+     */
+    private fun showBubbleAppearanceSheet(isReceived: Boolean) {
+        val working = editingAppearance ?: return
+        val titleRes = if (isReceived) {
+            R.string.appearance_element_received
+        } else {
+            R.string.appearance_element_sent
+        }
+        val bubble = (if (isReceived) working.receivedBubbleColor else working.sentBubbleColor)
+            ?: if (isReceived) config.receivedBubbleColor else config.sentBubbleColor
+        val ink = (if (isReceived) working.receivedBubbleTextColor else working.sentBubbleTextColor)
+            ?: if (isReceived) config.receivedBubbleTextColor else config.sentBubbleTextColor
+        textoCapsuleDialog(
+            getString(titleRes),
+            listOf(
+                CapsuleChoice(
+                    label = getString(R.string.appearance_bubble_colour),
+                    swatch = bubble,
+                    onPick = { pickBubbleColour(isReceived) },
+                ),
+                CapsuleChoice(
+                    label = getString(R.string.appearance_text_colour),
+                    swatch = ink,
+                    onPick = { pickBubbleTextColour(isReceived) },
+                ),
+                CapsuleChoice(
+                    label = getString(R.string.appearance_reset_element),
+                    icon = R.drawable.ic_ph_arrow_u_up_left,
+                    onPick = {
+                        editingAppearance = if (isReceived) {
+                            working.copy(
+                                receivedBubbleColor = null,
+                                receivedBubbleTextColor = null
+                            )
+                        } else {
+                            working.copy(sentBubbleColor = null, sentBubbleTextColor = null)
+                        }
+                        applyThreadAppearance()
+                        refreshThreadColours()
+                    },
+                ),
+            )
+        )
+    }
+
+    private fun pickBubbleColour(isReceived: Boolean) {
+        val working = editingAppearance ?: return
+        val appDefault = if (isReceived) config.receivedBubbleColor else config.sentBubbleColor
+        val current = (if (isReceived) working.receivedBubbleColor else working.sentBubbleColor)
+            ?: appDefault
+        val inkDefault = if (isReceived) {
+            config.receivedBubbleTextColor
+        } else {
+            config.sentBubbleTextColor
+        }
+        val ink = (if (isReceived) working.receivedBubbleTextColor else working.sentBubbleTextColor)
+            ?: inkDefault
+        textoColorPicker(
+            title = getString(R.string.appearance_bubble_colour),
+            current = current,
+            defaultColour = appDefault,
+            contrastAgainst = ink,
+            compact = true,
+        ) { picked ->
+            val override = picked.takeIf { it != appDefault }
+            // Smart contrast: the ink only moves when the colour that was there would be hard
+            // to read on the new ground, so a deliberately chosen ink is left alone and an
+            // inherited one is rescued. getContrastColor answers black or white for a given
+            // background, which is the same test the rest of the app uses to stay legible.
+            val readableInk = picked.getContrastColor()
+            val inkNeedsHelp = !isReadableOn(ink, picked)
+            val inkOverride = when {
+                !inkNeedsHelp -> if (isReceived) {
+                    working.receivedBubbleTextColor
+                } else {
+                    working.sentBubbleTextColor
+                }
+                readableInk == inkDefault -> null
+                else -> readableInk
+            }
+            editingAppearance = if (isReceived) {
+                working.copy(receivedBubbleColor = override, receivedBubbleTextColor = inkOverride)
+            } else {
+                working.copy(sentBubbleColor = override, sentBubbleTextColor = inkOverride)
+            }
+            applyThreadAppearance()
+            refreshThreadColours()
+        }
+    }
+
+    private fun pickBubbleTextColour(isReceived: Boolean) {
+        val working = editingAppearance ?: return
+        val appDefault = if (isReceived) {
+            config.receivedBubbleTextColor
+        } else {
+            config.sentBubbleTextColor
+        }
+        val current = (
+            if (isReceived) working.receivedBubbleTextColor else working.sentBubbleTextColor
+            ) ?: appDefault
+        val ground = (if (isReceived) working.receivedBubbleColor else working.sentBubbleColor)
+            ?: if (isReceived) config.receivedBubbleColor else config.sentBubbleColor
+        textoColorPicker(
+            title = getString(R.string.appearance_text_colour),
+            current = current,
+            defaultColour = appDefault,
+            contrastAgainst = ground,
+            compact = true,
+        ) { picked ->
+            val override = picked.takeIf { it != appDefault }
+            editingAppearance = if (isReceived) {
+                working.copy(receivedBubbleTextColor = override)
+            } else {
+                working.copy(sentBubbleTextColor = override)
+            }
+            applyThreadAppearance()
+            refreshThreadColours()
+        }
+    }
+
+    private fun showBackgroundAppearanceSheet() {
+        val working = editingAppearance ?: return
+        val appDefault = config.mainBackgroundColor
+        textoColorPicker(
+            title = getString(R.string.filter_colour_background),
+            current = working.backgroundColor ?: appDefault,
+            defaultColour = appDefault,
+            contrastAgainst = config.mainTextColor,
+            compact = true,
+        ) { picked ->
+            editingAppearance = working.copy(backgroundColor = picked.takeIf { it != appDefault })
+            applyThreadAppearance()
+            refreshThreadColours()
+        }
+    }
+
+    /**
+     * Whether [ink] can be read on [ground], by the WCAG contrast ratio the rest of the app's
+     * colour work is measured against. 4.5:1 is the body-text threshold; a bubble is body text.
+     */
+    private fun isReadableOn(ink: Int, ground: Int): Boolean {
+        fun channel(value: Int): Double {
+            val c = value / 255.0
+            return if (c <= 0.03928) c / 12.92 else Math.pow((c + 0.055) / 1.055, 2.4)
+        }
+
+        fun luminance(color: Int): Double = 0.2126 * channel(Color.red(color)) +
+            0.7152 * channel(Color.green(color)) +
+            0.0722 * channel(Color.blue(color))
+
+        val a = luminance(ink)
+        val b = luminance(ground)
+        val ratio = (maxOf(a, b) + 0.05) / (minOf(a, b) + 0.05)
+        return ratio >= 4.5
+    }
+
+    /**
+     * Repaints the bubbles and the ground under them from the current override.
+     *
+     * A chosen ground is painted flat, because that is what choosing one means. With no
+     * chosen ground the app's own is put back by the shared painter rather than by filling the
+     * window with mainBackgroundColor: on every skin but the plainest that colour is not what
+     * the window wears -- a halo drawable or a gradient is -- so flattening it there replaced
+     * the whole theme with a colour nothing had been drawing. Measured: an amber window where
+     * the ground had been a dark violet.
+     */
+    private fun refreshThreadColours() {
+        getOrCreateThreadAdapter().notifyDataSetChanged()
+        val background = ThreadThemeStore
+            .merge(getOrCreateThreadAdapter().filterOverride, currentThreadAppearance())
+            ?.backgroundColor
+        if (background != null) {
+            window.decorView.setBackgroundColor(background)
+        } else {
+            applyCustomColors()
+        }
+    }
+
+    /**
+     * What this thread is drawn in: its own overrides over its filter's over the app's.
+     *
+     * A filter covers senders, so only a one-to-one thread takes a filter's colours -- a group
+     * has several senders and "which filter is this" has no single answer there. A thread's
+     * *own* overrides have no such problem and apply to any thread, group included, which is
+     * why they are merged on top rather than instead.
+     *
+     * The adapter repaints its bubbles from [ThreadAdapter.filterOverride]; the ground behind
+     * them is the window's, which is painted here because applyCustomColors -- shared by every
+     * screen -- knows nothing about either layer.
+     */
+    private fun applyThreadAppearance() {
         val number = participants.singleOrNull()?.phoneNumbers?.firstOrNull()?.value
-        val override = number?.let {
+        val filterOverride = number?.let {
             FilterStore.customisedFilterFor(config.customFilters, it) { filter ->
                 filter.hasAppearanceOverride
             }
         }
+        val override = ThreadThemeStore.merge(filterOverride, currentThreadAppearance())
         getOrCreateThreadAdapter().filterOverride = override
         override?.backgroundColor?.let { window.decorView.setBackgroundColor(it) }
     }
+
+    /**
+     * The thread's overrides as they should look *right now*: the working copy while the
+     * appearance editor is open, the stored one otherwise. One accessor so that every repaint
+     * goes through the same answer and a live edit cannot disagree with what a later refresh
+     * would draw.
+     */
+    private fun currentThreadAppearance(): ThreadAppearance? =
+        editingAppearance ?: config.threadAppearance(threadId)
 
     private fun showSelectedContacts() {
         binding.selectedContacts.removeAllViews()
@@ -2308,7 +2719,12 @@ class ThreadActivity : SimpleActivity() {
         }
 
         onBackPressedDispatcher.addCallback(this) {
-            if (isEmojiPanelOpen) {
+            if (editingAppearance != null) {
+                // Back out of the editor, not out of the thread you are restyling. It asks
+                // rather than discarding: the changes are on screen and losing them silently
+                // to a habitual back press is the one outcome nobody wants.
+                askAppearanceScope()
+            } else if (isEmojiPanelOpen) {
                 // Back closes the panel before it closes the thread, for the same reason it
                 // closes the keyboard first: it is the thing that just opened.
                 closeEmojiPanel()

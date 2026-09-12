@@ -47,6 +47,12 @@ abstract class BaseConversationsAdapter(
 ),
     RecyclerViewFastScroller.OnPopupTextUpdate {
     var itemTouchHelper: androidx.recyclerview.widget.ItemTouchHelper? = null
+
+    /**
+     * Set while the appearance editor is open: a tap on a card then opens its colour instead
+     * of the conversation. Null the rest of the time, which is what the rows check.
+     */
+    var onEditAppearanceElement: (() -> Unit)? = null
     private var lastDragTime = 0L
     private var drafts = HashMap<Long, String>()
 
@@ -769,6 +775,11 @@ abstract class BaseConversationsAdapter(
 
             recentFrame.setOnClickListener {
                 if (System.currentTimeMillis() - lastDragTime < 500) return@setOnClickListener
+                onEditAppearanceElement?.let { edit ->
+                    // In the appearance editor a card is a swatch, not a way into a thread.
+                    edit()
+                    return@setOnClickListener
+                }
 
                 // viewClicked opens the thread when idle and toggles just this one card
                 // while selecting. viewLongClicked would instead select the whole range

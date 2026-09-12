@@ -508,6 +508,32 @@ class Config(val context: Context) {
         get() = prefs.getInt(LAST_KEYBOARD_HEIGHT, 0)
         set(height) = prefs.edit().putInt(LAST_KEYBOARD_HEIGHT, height).apply()
 
+    /** Per-conversation colour overrides, keyed by thread id. Absent means "follow the app". */
+    var threadAppearances: Map<Long, ThreadAppearance>
+        get() = ThreadThemeStore.decode(prefs.getString(THREAD_APPEARANCES, "")!!)
+        set(appearances) = prefs.edit()
+            .putString(THREAD_APPEARANCES, ThreadThemeStore.encode(appearances))
+            .apply()
+
+    /** Read and cleared by the conversation list on the way back from settings. */
+    var startAppearanceEditor: Boolean
+        get() = prefs.getBoolean(START_APPEARANCE_EDITOR, false)
+        set(start) = prefs.edit().putBoolean(START_APPEARANCE_EDITOR, start).apply()
+
+    /** The one thread's overrides, or null when it has none. */
+    fun threadAppearance(threadId: Long): ThreadAppearance? = threadAppearances[threadId]
+
+    /** Stores [appearance] for [threadId], dropping the entry once it overrides nothing. */
+    fun setThreadAppearance(threadId: Long, appearance: ThreadAppearance?) {
+        val updated = threadAppearances.toMutableMap()
+        if (appearance == null || appearance.isEmpty) {
+            updated.remove(threadId)
+        } else {
+            updated[threadId] = appearance
+        }
+        threadAppearances = updated
+    }
+
     /** User-defined filter chips, serialized as JSON. */
     var customFilters: List<MessageFilter>
         get() = FilterStore.decode(prefs.getString(CUSTOM_FILTERS, "")!!)

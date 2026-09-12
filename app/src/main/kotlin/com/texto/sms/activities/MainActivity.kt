@@ -35,7 +35,11 @@ import com.texto.sms.adapters.SearchResultsAdapter
 import com.texto.sms.databinding.ActivityMainBinding
 import com.texto.sms.extensions.*
 import com.texto.sms.dialogs.EditFilterDialog
+import com.texto.sms.helpers.CapsuleChoice
 import com.texto.sms.helpers.MessageFilter
+import com.texto.sms.helpers.TextoGlass
+import com.texto.sms.helpers.textoCapsuleDialog
+import com.texto.sms.helpers.textoColorPicker
 import com.texto.sms.helpers.NAV_ICON_DP
 import com.texto.sms.helpers.SEARCHED_MESSAGE_ID
 import com.texto.sms.helpers.THREAD_ID
@@ -213,6 +217,11 @@ class MainActivity : SimpleActivity() {
         super.onResume()
         isActivityVisible = true
         applyOutlines()
+
+        if (config.startAppearanceEditor) {
+            config.startAppearanceEditor = false
+            binding.conversationsList.post { openAppearanceEditor() }
+        }
 
         // Belt-and-suspenders alongside the refreshConversations() subscriber: if a
         // RefreshConversations event was ever missed while this activity wasn't visible,
@@ -1914,4 +1923,196 @@ class MainActivity : SimpleActivity() {
         }
     }
 
+    // ---- the live appearance editor ----------------------------------------------------------
+
+    /** True while the editor is open, which is also what the list's rows check before acting. */
+    private var isEditingAppearance = false
+
+    /**
+     * The app's own colours as they were when the editor opened, to put back on discard.
+     *
+     * Every pick writes straight to config so the screen previews itself, which is the same
+     * trick the colour picker already plays for a single row -- so "discard" has to mean
+     * putting these four back, not undoing a list of edits.
+     */
+    private var appearanceSnapshot: IntArray? = null
+
+    /**
+     * Editing the app's chrome where it lives: the capsule at the top, the pill at the bottom
+     * and a conversation card are all tapped on the screen they are part of, rather than named
+     * in a settings list that cannot show them.
+     *
+     * Everything here is app-wide by nature -- one bar, one card style, every screen -- so this
+     * editor has no per-conversation scope to ask about. That question belongs to the thread's
+     * own editor, where the thing being restyled is one conversation.
+     */
+    private fun openAppearanceEditor() {
+        if (isEditingAppearance) return
+        isEditingAppearance = true
+        appearanceSnapshot = intArrayOf(
+            config.topBarColor,
+            config.topBarTextColor,
+            config.recentColor,
+            config.inputBarBackgroundColor,
+        )
+        styleAppearanceBar()
+        binding.appearanceBar.beVisible()
+        setHomeFunctionsEnabled(false)
+    }
+
+    private fun closeAppearanceEditor(keep: Boolean) {
+        if (!isEditingAppearance) return
+        if (!keep) {
+            appearanceSnapshot?.let { (bar, barInk, card, inputBar) ->
+                config.topBarColor = bar
+                config.topBarTextColor = barInk
+                config.recentColor = card
+                config.inputBarBackgroundColor = inputBar
+            }
+        }
+        appearanceSnapshot = null
+        isEditingAppearance = false
+        binding.appearanceBar.beGone()
+        setHomeFunctionsEnabled(true)
+        repaintHome()
+    }
+
+    /** Repaints every surface this editor can touch, so a pick shows up immediately. */
+    private fun repaintHome() {
+        applyCustomColors()
+        setupOverlayBars()
+        setupTextoNavBar()
+        updateAppFonts(binding.root)
+        binding.conversationsList.adapter?.notifyDataSetChanged()
+        if (isEditingAppearance) styleAppearanceBar()
+    }
+
+    /**
+     * Turns the list's own behaviour off while the editor is open. A tap on a card here picks
+     * a colour; it must not also open the conversation, and the gear must not walk out of the
+     * editor into settings.
+     */
+    private fun setHomeFunctionsEnabled(enabled: Boolean) = binding.apply {
+        listOf<View>(textoMenuBtn, navAddBtn, navHomeBtn, navSearchContainer, filterBar)
+            .forEach {
+                it.isEnabled = enabled
+                it.isClickable = enabled
+            }
+        (conversationsList.adapter as? ConversationsAdapter)?.onEditAppearanceElement =
+            if (enabled) null else { -> showCardAppearanceSheet() }
+    }
+
+    private fun styleAppearanceBar() = binding.apply {
+        val ink = config.topBarTextColor
+        val inset = (TextoGlass.FLOATING_BAR_INSET_DP * resources.displayMetrics.density).toInt()
+        // CoordinatorLayout's own params, not FrameLayout's: they are not the same class and
+        // the cast is unchecked until it runs.
+        appearanceBar.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
+            marginStart = inset
+            marginEnd = inset
+            topMargin = mainToolbar.bottom + 8.getScaledPx()
+        }
+        val padH = 8.getScaledPx()
+        appearanceBar.setPadding(padH, 0, padH, 0)
+        TextoGlass.applyPanel(
+            view = appearanceBar,
+            tint = if (config.topBarColor != 0) config.topBarColor else Color.BLACK,
+            cornerRadius = 1000f,
+            opacity = 0.92f,
+            strokeWidthPx = 1.getScaledPx()
+        )
+        appearanceCancel.applyColorFilter(ink)
+        appearanceHint.setTextColor(ink.withAlpha(0.75f))
+        appearanceHint.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
+        appearanceHint.typeface = typefaceFor(android.graphics.Typeface.NORMAL)
+        appearanceDone.setTextColor(config.mainBackgroundColor)
+        appearanceDone.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
+        appearanceDone.typeface = typefaceFor(android.graphics.Typeface.BOLD)
+        val innerH = 12.getScaledPx()
+        val innerV = 7.getScaledPx()
+        appearanceDone.setPadding(innerH, innerV, innerH, innerV)
+        appearanceDone.background = android.graphics.drawable.GradientDrawable().apply {
+            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+            cornerRadius = 100f * resources.displayMetrics.density
+            setColor(config.accentGradientStart)
+        }
+
+        appearanceCancel.setOnClickListener { closeAppearanceEditor(keep = false) }
+        appearanceDone.setOnClickListener { closeAppearanceEditor(keep = true) }
+        // The two capsules are one material and take one colour, so either of them opens the
+        // same picker rather than pretending they can differ.
+        listOf<View>(mainToolbar, textoHeaderRow, textoNavContainer).forEach { bar ->
+            bar.setOnClickListener { if (isEditingAppearance) showBarAppearanceSheet() }
+            bar.isClickable = true
+        }
+    }
+
+    private fun showBarAppearanceSheet() {
+        textoCapsuleDialog(
+            getString(R.string.appearance_element_bars),
+            listOf(
+                CapsuleChoice(
+                    label = getString(R.string.settings_top_bar_background),
+                    subtitle = getString(R.string.appearance_applies_everywhere),
+                    swatch = config.topBarColor,
+                    onPick = {
+                        pickAppColour(
+                            title = getString(R.string.settings_top_bar_background),
+                            current = config.topBarColor,
+                            contrastAgainst = config.topBarTextColor,
+                        ) { picked ->
+                            config.topBarColor = picked
+                            // The composer and the nav pill are painted from the same tint, so
+                            // they move together or the three stop reading as one material.
+                            config.inputBarBackgroundColor = picked
+                        }
+                    },
+                ),
+                CapsuleChoice(
+                    label = getString(R.string.settings_top_bar_text),
+                    swatch = config.topBarTextColor,
+                    onPick = {
+                        pickAppColour(
+                            title = getString(R.string.settings_top_bar_text),
+                            current = config.topBarTextColor,
+                            contrastAgainst = config.topBarColor,
+                        ) { picked -> config.topBarTextColor = picked }
+                    },
+                ),
+            )
+        )
+    }
+
+    private fun showCardAppearanceSheet() {
+        pickAppColour(
+            title = getString(R.string.appearance_element_card),
+            current = config.recentColor,
+            contrastAgainst = config.mainTextColor,
+        ) { picked -> config.recentColor = picked }
+    }
+
+    /**
+     * One colour of the app's own, picked on the screen it paints.
+     *
+     * [write] is called for every intermediate colour, which is what makes the screen behind
+     * the sheet the preview -- and on dismiss without saving the picker calls it once more
+     * with the original, so a cancelled look-around leaves nothing behind.
+     */
+    private fun pickAppColour(
+        title: String,
+        current: Int,
+        contrastAgainst: Int,
+        write: (Int) -> Unit,
+    ) {
+        textoColorPicker(
+            title = title,
+            current = current,
+            defaultColour = current,
+            contrastAgainst = contrastAgainst,
+            compact = true,
+        ) { picked ->
+            write(picked)
+            repaintHome()
+        }
+    }
 }

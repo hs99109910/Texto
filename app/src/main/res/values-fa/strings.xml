@@ -270,6 +270,25 @@
     <string name="filter_colour_following">برنامه</string>
     <string name="filter_colour_custom">اختصاصی</string>
     <string name="filter_colour_background">پس‌زمینهٔ گفتگو</string>
+
+    <!-- The in-place appearance editor, opened from a thread's own menu. -->
+    <string name="appearance_edit">ویرایش ظاهر</string>
+    <string name="appearance_edit_hint">روی یک حباب بزنید تا رنگش عوض شود</string>
+    <string name="appearance_edit_done">تمام</string>
+    <string name="appearance_element_sent">حباب ارسالی</string>
+    <string name="appearance_element_received">حباب دریافتی</string>
+    <string name="appearance_bubble_colour">رنگ حباب</string>
+    <string name="appearance_text_colour">رنگ متن</string>
+    <string name="appearance_reset_element">بازگشت به پیش‌فرض</string>
+    <string name="appearance_scope_title">این تغییرات کجا اعمال شود؟</string>
+    <string name="appearance_scope_thread">فقط همین گفتگو</string>
+    <string name="appearance_scope_all">همهٔ گفتگوها</string>
+    <string name="appearance_discard">انصراف از تغییرات</string>
+    <string name="appearance_edit_hint_home">روی نوار یا کارت بزنید تا رنگش عوض شود</string>
+    <string name="appearance_element_bars">نوارهای بالا و پایین</string>
+    <string name="appearance_element_card">کارت گفتگو</string>
+    <string name="appearance_save">ذخیره</string>
+    <string name="appearance_applies_everywhere">این‌ها روی همهٔ صفحه‌ها اعمال می‌شوند</string>
     <string name="filter_sound">صدای اعلان</string>
     <string name="filter_sound_following">پیش‌فرض برنامه</string>
     <string name="filter_clear_customization">پاک کردن</string>

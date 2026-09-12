@@ -9,6 +9,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -48,6 +49,15 @@ fun SimpleActivity.textoColorPicker(
     current: Int,
     defaultColour: Int? = null,
     contrastAgainst: Int? = null,
+    /**
+     * Opens against the bottom edge, at a capped height and with nothing dimmed behind it.
+     *
+     * For the in-place editor, where the thing being recoloured is the screen itself: every
+     * pick already repaints it live, so a sheet that covers or dims that screen hides the one
+     * answer the picker exists to give. Off everywhere else, where the row being edited is in
+     * a list the sheet is allowed to sit over.
+     */
+    compact: Boolean = false,
     onPick: (Int) -> Unit,
 ): AlertDialog? {
     val density = resources.displayMetrics.density
@@ -65,7 +75,15 @@ fun SimpleActivity.textoColorPicker(
         orientation = LinearLayout.VERTICAL
         val pad = 20.getScaledPx()
         setPadding(pad, pad, pad, pad)
-        background = pickerCard()
+        // Glass rather than a solid card: this is the app's own material, and on the in-place
+        // editor it matters twice over -- the screen being recoloured carries on showing
+        // faintly through the sheet that is recolouring it.
+        background = TextoGlass.panel(
+            tint = config.recentColor,
+            cornerRadius = 26 * density,
+            opacity = (config.glassOpacity / 100f).coerceIn(0.82f, 0.96f),
+            strokeWidthPx = 1.getScaledPx()
+        )
         outlineProvider = ViewOutlineProvider.BACKGROUND
         clipToOutline = true
     }
@@ -92,6 +110,11 @@ fun SimpleActivity.textoColorPicker(
         )
         outlineProvider = ViewOutlineProvider.BACKGROUND
         clipToOutline = true
+        // In compact mode the screen behind the sheet is the preview -- a real bubble on the
+        // real ground, repainted on every pick -- so a sample of the same colour inside the
+        // sheet is a second answer to a question already answered, and it costs the height
+        // the footer needs.
+        visibility = if (compact) View.GONE else View.VISIBLE
     }
     sheet.addView(preview)
 
@@ -296,6 +319,18 @@ fun SimpleActivity.textoColorPicker(
                 if (!saved) onPick(current)
             }
             show()
+            if (compact) {
+                window?.apply {
+                    clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                    setGravity(Gravity.BOTTOM)
+                    // As tall as its own content and no taller: a fixed fraction cut the
+                    // footer -- and with it Save and Default -- off the bottom of the screen.
+                    setLayout(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                    )
+                }
+            }
         }
 
     return dialog
@@ -418,7 +453,15 @@ fun SimpleActivity.textoTonalityPicker(
         orientation = LinearLayout.VERTICAL
         val pad = 20.getScaledPx()
         setPadding(pad, pad, pad, pad)
-        background = pickerCard()
+        // Glass rather than a solid card: this is the app's own material, and on the in-place
+        // editor it matters twice over -- the screen being recoloured carries on showing
+        // faintly through the sheet that is recolouring it.
+        background = TextoGlass.panel(
+            tint = config.recentColor,
+            cornerRadius = 26 * density,
+            opacity = (config.glassOpacity / 100f).coerceIn(0.82f, 0.96f),
+            strokeWidthPx = 1.getScaledPx()
+        )
         outlineProvider = ViewOutlineProvider.BACKGROUND
         clipToOutline = true
     }

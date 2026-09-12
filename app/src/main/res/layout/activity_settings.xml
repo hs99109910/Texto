@@ -452,6 +452,44 @@
                         style="@style/SettingsRowValue" />
                 </LinearLayout>
                 <!--
+                    The same colours as the rows below, chosen on the screens they belong to
+                    rather than here. It closes settings on the way, because the point of it
+                    is that you are looking at the thing you are recolouring.
+                -->
+                <LinearLayout
+                    android:id="@+id/settings_live_editor_holder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="15dp">
+
+                    <ImageView
+                        android:id="@+id/settings_live_editor_icon"
+                        android:layout_width="19dp"
+                        android:layout_height="19dp"
+                        android:layout_marginEnd="13dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_ph_paint_brush" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <TextView
+                            style="@style/SettingsRowTitle"
+                            android:text="@string/appearance_edit" />
+                        <TextView
+                            style="@style/SettingsRowSubtitle"
+                            android:text="@string/appearance_edit_hint_home" />
+                    </LinearLayout>
+                </LinearLayout>
+                <!--
                     The tonality strip, directly under the theme it modifies because it is not
                     a setting of its own : it is a dial on the row above. Rotating rather than
                     replacing keeps the skin's three stop accent ramp intact, so every surface

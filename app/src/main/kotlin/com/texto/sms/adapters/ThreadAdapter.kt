@@ -119,6 +119,14 @@ class ThreadAdapter(
      * rather than staying on the app's colours until it is reopened.
      */
     var filterOverride: MessageFilter? = null
+
+    /**
+     * Set while the appearance editor is open: a tap or a long-press on a bubble then names
+     * the element being restyled instead of acting on the message. Selecting, reacting and
+     * the context menu are all off for the duration -- in edit mode a bubble is a swatch, and
+     * leaving both meanings live on one gesture would make every tap a guess.
+     */
+    var onEditAppearanceElement: ((isReceived: Boolean) -> Unit)? = null
         set(value) {
             if (field == value) return
             field = value
@@ -898,6 +906,10 @@ class ThreadAdapter(
             }
 
             setOnLongClickListener {
+                onEditAppearanceElement?.let { edit ->
+                    edit(message.isReceivedMessage())
+                    return@setOnLongClickListener true
+                }
                 val wasSelecting = isSelectionModeActive()
                 if (wasSelecting) holder.viewClicked(message) else holder.viewLongClicked()
                 notifyItemChanged(holder.bindingAdapterPosition)
@@ -911,6 +923,10 @@ class ThreadAdapter(
             }
 
             setOnClickListener {
+                onEditAppearanceElement?.let { edit ->
+                    edit(message.isReceivedMessage())
+                    return@setOnClickListener
+                }
                 // Two taps on the same bubble inside the platform's double-tap window open
                 // the reaction strip. Counted here rather than through a GestureDetector on
                 // a touch listener: the detector never saw the events on this view, while

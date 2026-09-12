@@ -276,6 +276,25 @@
     <string name="filter_colour_following">App</string>
     <string name="filter_colour_custom">Custom</string>
     <string name="filter_colour_background">Chat background</string>
+
+    <!-- The in-place appearance editor, opened from a thread's own menu. -->
+    <string name="appearance_edit">Edit appearance</string>
+    <string name="appearance_edit_hint">Tap a bubble to restyle it</string>
+    <string name="appearance_edit_done">Done</string>
+    <string name="appearance_element_sent">Sent bubble</string>
+    <string name="appearance_element_received">Received bubble</string>
+    <string name="appearance_bubble_colour">Bubble colour</string>
+    <string name="appearance_text_colour">Text colour</string>
+    <string name="appearance_reset_element">Reset to default</string>
+    <string name="appearance_scope_title">Where should these changes apply?</string>
+    <string name="appearance_scope_thread">This conversation only</string>
+    <string name="appearance_scope_all">All conversations</string>
+    <string name="appearance_discard">Discard changes</string>
+    <string name="appearance_edit_hint_home">Tap a bar or a card to restyle it</string>
+    <string name="appearance_element_bars">Top and bottom bars</string>
+    <string name="appearance_element_card">Conversation card</string>
+    <string name="appearance_save">Save</string>
+    <string name="appearance_applies_everywhere">These apply to every screen</string>
     <string name="filter_sound">Notification sound</string>
     <string name="filter_sound_following">App default</string>
     <string name="filter_clear_customization">Clear</string>

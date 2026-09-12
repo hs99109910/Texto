@@ -138,6 +138,8 @@ const val RECENT_EMOJI_KEPT = 24
  * would otherwise guess, and the composer would jump when the guess was wrong.
  */
 const val LAST_KEYBOARD_HEIGHT = "last_keyboard_height"
+/** Per-conversation colour overrides, as one JSON object keyed by thread id. */
+const val THREAD_APPEARANCES = "thread_appearances"
 const val ACTIVE_FILTER_ID = "active_filter_id"
 const val SHOW_CONTACTS_ONLY_FILTER = "show_contacts_only_filter"
 const val SHOW_ADS_FILTER = "show_ads_filter"
@@ -339,3 +341,6 @@ fun generateStableId(type: Int, key: Long): Long {
     require(type in 0 until (1 shl THREAD_TYPE_BITS))
     return (type.toLong() shl THREAD_TYPE_SHIFT) or (key and THREAD_KEY_MASK)
 }
+
+/** One-shot: settings sets it on the way out so the conversation list opens its live editor. */
+const val START_APPEARANCE_EDITOR = "start_appearance_editor"
