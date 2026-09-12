@@ -142,7 +142,7 @@ class SimpleContactsHelper(private val context: Context) {
             "${ContactsContract.Data.RAW_CONTACT_ID} = ?",
             arrayOf(contactId),
         ) { cursor ->
-            if (key.isEmpty()) key = cursor.getStringValue(ContactsContract.Data.LOOKUP_KEY)
+            if (key.isEmpty()) key = cursor.getStringValue(ContactsContract.Data.LOOKUP_KEY).orEmpty()
         }
         return key
     }

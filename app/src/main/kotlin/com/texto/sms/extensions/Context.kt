@@ -150,7 +150,7 @@ fun Context.getMessages(
         }
 
         val id = cursor.getLongValue(Sms._ID)
-        val body = cursor.getStringValue(Sms.BODY)
+        val body = cursor.getStringValue(Sms.BODY).orEmpty()
         val type = cursor.getIntValue(Sms.TYPE)
         val namePhoto = getNameAndPhotoFromPhoneNumber(senderNumber)
         val senderName = namePhoto.name
@@ -316,7 +316,7 @@ fun Context.getMMSSender(msgId: Long): String {
         val cursor = contentResolver.query(uri, projection, selection, selectionArgs, null)
         cursor?.use {
             if (it.moveToFirst()) {
-                return it.getStringValue(Mms.Addr.ADDRESS)
+                return it.getStringValue(Mms.Addr.ADDRESS).orEmpty()
             }
         }
     } catch (_: Exception) {
@@ -406,7 +406,7 @@ fun Context.getConversations(threadId: Long? = null): ArrayList<Conversation> {
                 date /= 1000
             }
 
-            val rawIds = cursor.getStringValue(Threads.RECIPIENT_IDS)
+            val rawIds = cursor.getStringValue(Threads.RECIPIENT_IDS).orEmpty()
             val recipientIds =
                 rawIds.split(" ").filter { it.areDigitsOnly() }.map { it.toInt() }
             val read = cursor.getIntValue(Threads.READ) == 1
@@ -528,10 +528,10 @@ fun Context.getMmsAttachment(id: Long): MessageAttachment {
     var attachmentCount = 0
     queryCursor(uri, projection, selection, selectionArgs, showErrors = true) { cursor ->
         val partId = cursor.getLongValue(Mms._ID)
-        val mimetype = cursor.getStringValue(Mms.Part.CONTENT_TYPE)
+        val mimetype = cursor.getStringValue(Mms.Part.CONTENT_TYPE).orEmpty()
         if (mimetype == "text/plain") {
             messageAttachment.text = cursor
-                .getStringValue(Mms.Part.TEXT)
+                .getStringValue(Mms.Part.TEXT).orEmpty()
                 ?.take(MAX_MESSAGE_LENGTH)
                 .orEmpty()
         } else if (mimetype.startsWith("image/") || mimetype.startsWith("video/")) {
@@ -561,7 +561,7 @@ fun Context.getMmsAttachment(id: Long): MessageAttachment {
             messageAttachment.attachments.add(attachment)
             attachmentCount++
         } else {
-            val text = cursor.getStringValue(Mms.Part.TEXT)
+            val text = cursor.getStringValue(Mms.Part.TEXT).orEmpty()
             attachmentNames = try {
                 parseAttachmentNames(text)
             } catch (e: XmlPullParserException) {
@@ -627,7 +627,7 @@ fun Context.getMessageRecipientAddress(messageId: Long): String {
         val cursor = contentResolver.query(uri, projection, selection, selectionArgs, null)
         cursor?.use {
             if (cursor.moveToFirst()) {
-                return cursor.getStringValue(Sms.ADDRESS)
+                return cursor.getStringValue(Sms.ADDRESS).orEmpty()
             }
         }
     } catch (_: Exception) {
@@ -661,7 +661,7 @@ fun Context.getThreadParticipants(
         val cursor = contentResolver.query(uri, projection, selection, selectionArgs, null)
         cursor?.use {
             if (cursor.moveToFirst()) {
-                val address = cursor.getStringValue(ThreadsColumns.RECIPIENT_IDS)
+                val address = cursor.getStringValue(ThreadsColumns.RECIPIENT_IDS).orEmpty()
                 address.split(" ").filter { it.areDigitsOnly() }.forEach {
                     val addressId = it.toInt()
                     if (contactsMap?.containsKey(addressId) == true) {
@@ -754,7 +754,7 @@ fun Context.getPhoneNumberFromAddressId(canonicalAddressId: Int): String {
         val cursor = contentResolver.query(uri, projection, selection, selectionArgs, null)
         cursor?.use {
             if (cursor.moveToFirst()) {
-                return cursor.getStringValue(Mms.Addr.ADDRESS)
+                return cursor.getStringValue(Mms.Addr.ADDRESS).orEmpty()
             }
         }
     } catch (e: Exception) {
@@ -1060,13 +1060,10 @@ fun Context.getNameAndPhotoFromPhoneNumber(number: String): NamePhoto {
         val cursor = contentResolver.query(uri, projection, null, null, null)
         cursor.use {
             if (cursor?.moveToFirst() == true) {
-                val name = cursor.getStringValue(PhoneLookup.DISPLAY_NAME)
-                // PHOTO_URI is genuinely null for any contact with no picture set -- most of
-                // them -- and getStringValue()'s non-null return turned that into an NPE that
-                // this function's own catch swallowed, silently falling back to the raw number
-                // for every photo-less contact. Measured on device: a saved contact
-                // (+989050579640) showed as its own number until this was null-safe.
-                val photoUri = cursor.getStringValueOrNull(PhoneLookup.PHOTO_URI)
+                // A lookup that matched but holds no display name is the number itself, which
+                // is what this function answers for a number that matched nothing at all.
+                val name = cursor.getStringValue(PhoneLookup.DISPLAY_NAME) ?: number
+                val photoUri = cursor.getStringValue(PhoneLookup.PHOTO_URI)
                 NamePhoto(name, photoUri)
             } else {
                 NamePhoto(number, null)

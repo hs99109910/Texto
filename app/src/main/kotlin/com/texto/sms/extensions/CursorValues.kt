@@ -14,9 +14,20 @@ import android.os.Bundle
  * queries with a projection it wrote itself, so a miss is a bug rather than a condition to
  * handle.
  */
-fun Cursor.getStringValue(key: String): String = getString(getColumnIndexOrThrow(key))
-
-fun Cursor.getStringValueOrNull(key: String): String? = getString(getColumnIndexOrThrow(key))
+/**
+ * Nullable on purpose, because the columns are.
+ *
+ * This was declared as returning `String`, which is not what `Cursor.getString` promises: a
+ * column holding SQL NULL comes back null, and Kotlin's implicit check then threw
+ * `NullPointerException: getString(...) must not be null` from inside the accessor. Several
+ * callers had already written `?: ""` after it, which never ran -- the throw happened first.
+ * It cost two real bugs: every photo-less contact showing as its own phone number, and an
+ * error toast repeating over the conversation list.
+ *
+ * The missing-column case is still a throw, from `getColumnIndexOrThrow`: a column that is not
+ * in the projection is a mistake in the query, not a value to handle.
+ */
+fun Cursor.getStringValue(key: String): String? = getString(getColumnIndexOrThrow(key))
 
 fun Cursor.getIntValue(key: String): Int = getInt(getColumnIndexOrThrow(key))
 

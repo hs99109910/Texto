@@ -9,7 +9,7 @@ import android.util.Base64
 import com.texto.sms.extensions.getIntValue
 import com.texto.sms.extensions.getLongValue
 import com.texto.sms.extensions.getStringValue
-import com.texto.sms.extensions.getStringValueOrNull
+import com.texto.sms.extensions.getStringValue
 import com.texto.sms.extensions.queryCursor
 import com.texto.sms.extensions.isQPlus
 import com.texto.sms.extensions.isRPlus
@@ -66,16 +66,16 @@ class MessagesReader(private val context: Context) {
                 selectionArgs = arrayOf(threadId)
             ) { cursor ->
                 val subscriptionId = cursor.getLongValue(Sms.SUBSCRIPTION_ID)
-                val address = cursor.getStringValue(Sms.ADDRESS)
-                val body = cursor.getStringValueOrNull(Sms.BODY)
+                val address = cursor.getStringValue(Sms.ADDRESS).orEmpty()
+                val body = cursor.getStringValue(Sms.BODY)
                 val date = cursor.getLongValue(Sms.DATE)
                 val dateSent = cursor.getLongValue(Sms.DATE_SENT)
                 val locked = cursor.getIntValue(Sms.LOCKED)
-                val protocol = cursor.getStringValueOrNull(Sms.PROTOCOL)
+                val protocol = cursor.getStringValue(Sms.PROTOCOL)
                 val read = cursor.getIntValue(Sms.READ)
                 val status = cursor.getIntValue(Sms.STATUS)
                 val type = cursor.getIntValue(Sms.TYPE)
-                val serviceCenter = cursor.getStringValueOrNull(Sms.SERVICE_CENTER)
+                val serviceCenter = cursor.getStringValue(Sms.SERVICE_CENTER)
                 smsList.add(
                     SmsBackup(
                         subscriptionId = subscriptionId,
@@ -135,8 +135,8 @@ class MessagesReader(private val context: Context) {
             }
             context.queryCursor(Mms.CONTENT_URI, projection, selection, selectionArgs) { cursor ->
                 val mmsId = cursor.getLongValue(Mms._ID)
-                val creator = cursor.getStringValueOrNull(Mms.CREATOR)
-                val contentType = cursor.getStringValueOrNull(Mms.CONTENT_TYPE)
+                val creator = cursor.getStringValue(Mms.CREATOR)
+                val contentType = cursor.getStringValue(Mms.CONTENT_TYPE)
                 val deliveryReport = cursor.getIntValue(Mms.DELIVERY_REPORT)
                 val date = cursor.getLongValue(Mms.DATE)
                 val dateSent = cursor.getLongValue(Mms.DATE_SENT)
@@ -147,11 +147,11 @@ class MessagesReader(private val context: Context) {
                 val readReport = cursor.getIntValue(Mms.READ_REPORT)
                 val seen = cursor.getIntValue(Mms.SEEN)
                 val textOnly = cursor.getIntValue(Mms.TEXT_ONLY)
-                val status = cursor.getStringValueOrNull(Mms.STATUS)
-                val subject = cursor.getStringValueOrNull(Mms.SUBJECT)
-                val subjectCharSet = cursor.getStringValueOrNull(Mms.SUBJECT_CHARSET)
+                val status = cursor.getStringValue(Mms.STATUS)
+                val subject = cursor.getStringValue(Mms.SUBJECT)
+                val subjectCharSet = cursor.getStringValue(Mms.SUBJECT_CHARSET)
                 val subscriptionId = cursor.getLongValue(Mms.SUBSCRIPTION_ID)
-                val transactionId = cursor.getStringValueOrNull(Mms.TRANSACTION_ID)
+                val transactionId = cursor.getStringValue(Mms.TRANSACTION_ID)
 
                 val parts = getParts(mmsId)
                 val addresses = getMmsAddresses(mmsId)
@@ -206,17 +206,17 @@ class MessagesReader(private val context: Context) {
         val selectionArgs = arrayOf(mmsId.toString())
         context.queryCursor(uri, projection, selection, selectionArgs) { cursor ->
             val partId = cursor.getLongValue(Mms.Part._ID)
-            val contentDisposition = cursor.getStringValueOrNull(Mms.Part.CONTENT_DISPOSITION)
-            val charset = cursor.getStringValueOrNull(Mms.Part.CHARSET)
-            val contentId = cursor.getStringValueOrNull(Mms.Part.CONTENT_ID)
-            val contentLocation = cursor.getStringValueOrNull(Mms.Part.CONTENT_LOCATION)
-            val contentType = cursor.getStringValue(Mms.Part.CONTENT_TYPE)
-            val ctStart = cursor.getStringValueOrNull(Mms.Part.CT_START)
-            val ctType = cursor.getStringValueOrNull(Mms.Part.CT_TYPE)
-            val filename = cursor.getStringValueOrNull(Mms.Part.FILENAME)
-            val name = cursor.getStringValueOrNull(Mms.Part.NAME)
+            val contentDisposition = cursor.getStringValue(Mms.Part.CONTENT_DISPOSITION)
+            val charset = cursor.getStringValue(Mms.Part.CHARSET)
+            val contentId = cursor.getStringValue(Mms.Part.CONTENT_ID)
+            val contentLocation = cursor.getStringValue(Mms.Part.CONTENT_LOCATION)
+            val contentType = cursor.getStringValue(Mms.Part.CONTENT_TYPE).orEmpty()
+            val ctStart = cursor.getStringValue(Mms.Part.CT_START)
+            val ctType = cursor.getStringValue(Mms.Part.CT_TYPE)
+            val filename = cursor.getStringValue(Mms.Part.FILENAME)
+            val name = cursor.getStringValue(Mms.Part.NAME)
             val sequenceOrder = cursor.getIntValue(Mms.Part.SEQ)
-            val text = cursor.getStringValueOrNull(Mms.Part.TEXT)
+            val text = cursor.getStringValue(Mms.Part.TEXT)
             val data = when {
                 contentType.startsWith("text/") -> {
                     usePart(partId) { stream ->
@@ -281,7 +281,7 @@ class MessagesReader(private val context: Context) {
         val selection = "${Mms.Addr.MSG_ID}= ?"
         val selectionArgs = arrayOf(messageId.toString())
         context.queryCursor(uri, projection, selection, selectionArgs) { cursor ->
-            val address = cursor.getStringValue(Mms.Addr.ADDRESS)
+            val address = cursor.getStringValue(Mms.Addr.ADDRESS).orEmpty()
             val type = cursor.getIntValue(Mms.Addr.TYPE)
             val charset = cursor.getIntValue(Mms.Addr.CHARSET)
             addresses.add(MmsAddress(address, type, charset))
