@@ -746,6 +746,10 @@ class ThreadAdapter(
         } else {
             reactionView.beVisible()
             reactionView.text = reaction
+            // Opaque: a colour emoji is drawn at its paint's alpha, and the badge carries no
+            // ink of its own, so it would otherwise inherit the theme's translucent default
+            // and wash into the pill behind it.
+            reactionView.setTextColor(activity.config.mainTextColor.withAlpha(1f))
             reactionView.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.85f)
             // The badge sits half off the bubble, so it needs a ground of its own to stay
             // readable over both the bubble above it and the thread behind it.

@@ -17,6 +17,7 @@ import androidx.appcompat.app.AlertDialog
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
 import com.texto.sms.extensions.config
+import com.texto.sms.extensions.withAlpha
 
 /**
  * The app's emoji sheet: categories across the top, a scrolling grid under them, and the most
@@ -65,6 +66,12 @@ fun SimpleActivity.textoEmojiPicker(onPick: (String) -> Unit) {
         text = glyph
         gravity = Gravity.CENTER
         includeFontPadding = false
+        // A colour emoji is drawn at its paint's *alpha*, and a TextView that never sets a
+        // colour inherits the theme's default text ink, which is translucent. Measured on
+        // device: the faces came out #fde6c0 against a real #fcc21b and the eyes #d2c8c3
+        // against near-black -- every emoji in this sheet washed halfway into the card behind
+        // it. Nothing here wants that ink for its own sake, only its opacity.
+        setTextColor(config.mainTextColor.withAlpha(1f))
         setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.35f))
         layoutParams = GridLayout.LayoutParams().apply {
             width = cell
@@ -132,6 +139,8 @@ fun SimpleActivity.textoEmojiPicker(onPick: (String) -> Unit) {
             text = icon
             gravity = Gravity.CENTER
             includeFontPadding = false
+            // Opaque for the same reason the cells are: the category icons are emoji too.
+            setTextColor(config.mainTextColor.withAlpha(1f))
             setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.05f))
             val padH = 10.getScaledPx()
             val padV = 7.getScaledPx()

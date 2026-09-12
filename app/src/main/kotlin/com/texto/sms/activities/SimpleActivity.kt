@@ -1207,6 +1207,10 @@ open class SimpleActivity : AppCompatActivity() {
                         text = emoji
                         gravity = android.view.Gravity.CENTER
                         includeFontPadding = false
+                        // Opaque on purpose: a colour emoji is drawn at its paint's alpha, and
+                        // the theme's default text ink is translucent, which washed the whole
+                        // strip halfway into the sheet behind it.
+                        setTextColor(config.mainTextColor.withAlpha(1f))
                         setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.25f))
                         val pad = 7.getScaledPx()
                         setPadding(pad, pad, pad, pad)
