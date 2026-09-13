@@ -68,6 +68,7 @@ class MessageDetailsDialog(val activity: SimpleActivity, val message: Message) {
             text = activity.getString(labelRes)
             setTextColor(activity.config.mainTextColor.withAlpha(0.6f))
             setTextSize(TypedValue.COMPLEX_UNIT_PX, activity.getScaledTextSize(0.85f))
+            typeface = activity.typefaceFor(android.graphics.Typeface.NORMAL)
             gravity = Gravity.START
             setPadding(px(4), px(16), px(4), 0)
         }
@@ -75,6 +76,7 @@ class MessageDetailsDialog(val activity: SimpleActivity, val message: Message) {
             text = value
             setTextColor(activity.config.mainTextColor)
             setTextSize(TypedValue.COMPLEX_UNIT_PX, activity.getScaledTextSize(1.05f))
+            typeface = activity.typefaceFor(android.graphics.Typeface.BOLD)
             gravity = Gravity.START
             setPadding(px(4), px(2), px(4), px(4))
         }

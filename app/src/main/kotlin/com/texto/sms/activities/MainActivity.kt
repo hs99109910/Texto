@@ -331,7 +331,16 @@ class MainActivity : SimpleActivity() {
      * hairline, carrying a `--muted` glyph. Same recipe as the thread header's action tiles
      * and the composer's clip and SIM discs, which is what ties the three bars together.
      */
-    private fun styleHeaderGear() = binding.textoMenuBtn.apply {
+    private fun styleHeaderGear() {
+        // Both tiles on this row, not just the gear. The live editor's palette was left on
+        // the layout's placeholder -- a dark rounded square with a white glyph -- sitting
+        // directly beside a light 40dp disc with a dark one: two materials on one row, on the
+        // one row the design means to read as a single control set.
+        styleHeaderTile(binding.textoAppearanceBtn)
+        styleHeaderTile(binding.textoMenuBtn)
+    }
+
+    private fun styleHeaderTile(tile: android.widget.ImageView) = tile.apply {
         val density = resources.displayMetrics.density
         val size = 40.getScaledPx()
         updateLayoutParams<LinearLayout.LayoutParams> {
@@ -359,6 +368,10 @@ class MainActivity : SimpleActivity() {
         // floor. The hit rect is padded out to it instead: the gear looks the same and the
         // area you can actually hit grows. Posted because getHitRect() is only meaningful
         // once the row has been laid out.
+        //
+        // A view carries one delegate, so the row keeps the last tile painted, which is the
+        // gear: the palette beside it is the same 40dp and would want the same, and two rects
+        // on one parent is not something TouchDelegate offers.
         post {
             val target = MIN_TOUCH_TARGET_DP.getScaledPx()
             val grow = ((target - height) / 2).coerceAtLeast(0)

@@ -135,10 +135,46 @@ open class SimpleActivity : AppCompatActivity() {
             val side = 22.getScaledPx()
             toolbar.setPadding(side, 0, side, 0)
         }
-        // A logo sits directly against the title otherwise, and the two read as one word. The
-        // gap is carried inside the drawable rather than as a title margin, which a toolbar
-        // applies to the title's own slot and not to the space after a logo.
-        screenIcon?.let { toolbar.logo = headerLogo(it) }
+        screenGlyph = screenIcon
+        applyScreenGlyph(toolbar)
+    }
+
+    /**
+     * Puts the screen's glyph on the title itself, ahead of the first word.
+     *
+     * It went through `Toolbar.logo` first, which is what a toolbar offers for exactly this,
+     * and the toolbar measured it into a slot of its own choosing: the glyph came back 14.5dp
+     * against the 20dp it was built at, and the gap after it landed on the *physical* right,
+     * which under Persian is the side away from the title -- so the glyph and the first letter
+     * touched. A compound drawable is measured by nobody else: the bounds are the size, and
+     * `Relative` puts the padding on whichever side the text actually starts.
+     */
+    private fun applyScreenGlyph(toolbar: androidx.appcompat.widget.Toolbar) {
+        val title = titleViewIn(toolbar) ?: return
+        val glyphRes = screenGlyph
+        if (glyphRes == null) {
+            title.setCompoundDrawablesRelative(null, null, null, null)
+            return
+        }
+        val size = 22.getScaledPx()
+        val glyph = headerGlyph(glyphRes).apply { setBounds(0, 0, size, size) }
+        title.setCompoundDrawablesRelative(glyph, null, null, null)
+        title.compoundDrawablePadding = 9.getScaledPx()
+    }
+
+    /**
+     * The TextView carrying this toolbar's title, whichever of the two it is: the one a
+     * Toolbar makes for `title`, or the one a layout puts inside it.
+     */
+    private fun titleViewIn(toolbar: androidx.appcompat.widget.Toolbar): TextView? {
+        val heading = toolbar.title?.toString()
+        var fallback: TextView? = null
+        for (i in 0 until toolbar.childCount) {
+            val child = toolbar.getChildAt(i) as? TextView ?: continue
+            if (!heading.isNullOrEmpty() && child.text?.toString() == heading) return child
+            if (fallback == null) fallback = child
+        }
+        return fallback
     }
 
     /**
@@ -153,6 +189,9 @@ open class SimpleActivity : AppCompatActivity() {
     /** The glyph this screen's back control carries, or null where it has none. */
     private var navigationTile: Int? = null
 
+    /** The glyph this screen carries ahead of its title, or null where it has none. */
+    private var screenGlyph: Int? = null
+
     private fun headerTile(@DrawableRes glyphRes: Int): Drawable {
         val side = 40.getScaledPx()
         val inset = 11.getScaledPx()
@@ -165,16 +204,6 @@ open class SimpleActivity : AppCompatActivity() {
             setLayerInset(1, inset, inset, inset, inset)
         }
         return sized(tile, side)
-    }
-
-    /** The screen's own glyph, with the space after it that separates it from the title. */
-    private fun headerLogo(@DrawableRes glyphRes: Int): Drawable {
-        val size = 20.getScaledPx()
-        val gap = 10.getScaledPx()
-        return object : LayerDrawable(arrayOf(headerGlyph(glyphRes))) {
-            override fun getIntrinsicWidth() = size + gap
-            override fun getIntrinsicHeight() = size
-        }.apply { setLayerInset(0, 0, 0, gap, 0) }
     }
 
     private fun headerGlyph(@DrawableRes glyphRes: Int): Drawable {
@@ -631,7 +660,9 @@ open class SimpleActivity : AppCompatActivity() {
                     topBarColor, android.graphics.PorterDuff.Mode.SRC_IN
                 )
             }
-            toolbar.logo?.setTint(topBarColor.withAlpha(0.68f))
+            // Rebuilt rather than recoloured, for the reason above: it is painted from the
+            // live theme where it is built.
+            applyScreenGlyph(toolbar)
 
             toolbar.overflowIcon?.setColorFilter(topBarColor, android.graphics.PorterDuff.Mode.SRC_IN)
             

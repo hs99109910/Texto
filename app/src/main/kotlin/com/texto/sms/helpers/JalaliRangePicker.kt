@@ -158,6 +158,7 @@ class JalaliRangePicker(private val activity: SimpleActivity) {
                     gravity = Gravity.CENTER
                     setTextColor(config.mainTextColor.withAlpha(0.5f))
                     setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.72f))
+                    typeface = typefaceFor(Typeface.NORMAL)
                     layoutParams =
                         LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
                 }
@@ -177,6 +178,7 @@ class JalaliRangePicker(private val activity: SimpleActivity) {
             gravity = Gravity.CENTER
             setTextColor(config.mainTextColor.withAlpha(0.68f))
             setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
+            typeface = typefaceFor(Typeface.NORMAL)
             setPadding(0, 12.getScaledPx(), 0, 10.getScaledPx())
         }
         sheet.addView(rangeLabel)

@@ -136,21 +136,49 @@ fun SimpleActivity.inlineColourBars(
             layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
         }
     )
+    // Named rather than drawn: a bare arrow in the corner is a control you have to already
+    // know about, and this is the one an unsure user needs to *find* -- it is what makes
+    // trying a colour safe. It reads "Reset to default" beside the glyph, in a pill of its
+    // own so it looks like something you press.
     onReset?.let { reset ->
-        header.addView(
+        val chip = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = Gravity.CENTER_VERTICAL
+            val padH = 9.getScaledPx()
+            val padV = 4.getScaledPx()
+            setPadding(padH, padV, padH, padV)
+            background = TextoGlass.bar(
+                tint = config.mainTextColor,
+                cornerRadius = 999f,
+                opacity = 0.10f,
+                strokeWidthPx = 1.getScaledPx(),
+                rimAlpha = 0.22f,
+            )
+            isClickable = true
+            setOnClickListener { reset() }
+        }
+        chip.addView(
             ImageView(this).apply {
                 setImageResource(R.drawable.ic_ph_arrow_u_up_left)
                 imageTintList = android.content.res.ColorStateList.valueOf(
-                    config.mainTextColor.withAlpha(0.7f)
+                    config.mainTextColor.withAlpha(0.85f)
                 )
-                contentDescription = getString(R.string.appearance_reset_element)
-                val pad = 5.getScaledPx()
-                setPadding(pad, pad, pad, pad)
-                isClickable = true
-                layoutParams = LinearLayout.LayoutParams(26.getScaledPx(), 26.getScaledPx())
-                setOnClickListener { reset() }
+                layoutParams = LinearLayout.LayoutParams(16.getScaledPx(), 16.getScaledPx())
             }
         )
+        chip.addView(
+            TextView(this).apply {
+                text = getString(R.string.appearance_reset_element)
+                setTextColor(config.mainTextColor.withAlpha(0.85f))
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.68f))
+                typeface = typefaceFor(Typeface.NORMAL)
+                includeFontPadding = false
+                layoutParams = LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply { marginStart = 5.getScaledPx() }
+            }
+        )
+        header.addView(chip)
     }
     group.addView(header)
 

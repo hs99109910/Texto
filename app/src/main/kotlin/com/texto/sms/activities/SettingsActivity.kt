@@ -950,6 +950,7 @@ class SettingsActivity : SimpleActivity() {
             setText(body)
             setTextColor(config.mainTextColor)
             setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.84f))
+            typeface = typefaceFor(android.graphics.Typeface.NORMAL)
             setLineSpacing(0f, 1.25f)
             setPadding(pad, pad, pad, pad)
             setTextIsSelectable(true)
@@ -1032,6 +1033,7 @@ class SettingsActivity : SimpleActivity() {
                 gravity = android.view.Gravity.CENTER
                 setTextColor(config.mainTextColor.withAlpha(0.58f))
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.8f))
+                typeface = typefaceFor(android.graphics.Typeface.NORMAL)
                 layoutParams = android.widget.LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
                 ).apply { topMargin = 14.getScaledPx() }

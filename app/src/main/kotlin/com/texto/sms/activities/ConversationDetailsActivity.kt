@@ -11,6 +11,7 @@ import android.media.RingtoneManager
 import android.os.Bundle
 import android.provider.Settings
 
+import com.texto.sms.R
 import com.texto.sms.helpers.NavigationIcon
 import com.texto.sms.helpers.SimpleContactsHelper
 import com.texto.sms.extensions.ensureBackgroundThread
@@ -76,8 +77,16 @@ class ConversationDetailsActivity : SimpleActivity() {
 
     override fun onResume() {
         super.onResume()
-        setupTextoTopAppBar(binding.conversationDetailsAppbar, NavigationIcon.Arrow)
+        setupTextoTopAppBar(
+            binding.conversationDetailsAppbar,
+            NavigationIcon.Arrow,
+            screenIcon = R.drawable.ic_ph_info,
+        )
         applyCustomColors()
+        // This screen never ran the sweep, so its rows kept the platform face while the rest
+        // of the app wore the chosen one. Two of its ids are already listed in that pass's
+        // exclusions, which is what it looks like when a screen was meant to be in it.
+        updateAppFonts(binding.root)
         styleDetails()
     }
 
