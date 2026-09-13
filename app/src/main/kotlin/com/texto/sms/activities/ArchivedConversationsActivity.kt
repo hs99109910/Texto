@@ -41,7 +41,11 @@ class ArchivedConversationsActivity : SimpleActivity() {
 
     override fun onResume() {
         super.onResume()
-        setupTextoTopAppBar(binding.archiveAppbar, NavigationIcon.Arrow)
+        setupTextoTopAppBar(
+            binding.archiveAppbar,
+            NavigationIcon.Arrow,
+            screenIcon = R.drawable.ic_ph_archive_box,
+        )
         loadArchivedConversations()
         applyCustomColors()
         updateAppFonts(binding.root)

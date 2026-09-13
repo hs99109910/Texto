@@ -42,7 +42,11 @@ class RecycleBinConversationsActivity : SimpleActivity() {
 
     override fun onResume() {
         super.onResume()
-        setupTextoTopAppBar(binding.recycleBinAppbar, NavigationIcon.Arrow)
+        setupTextoTopAppBar(
+            binding.recycleBinAppbar,
+            NavigationIcon.Arrow,
+            screenIcon = R.drawable.ic_ph_trash,
+        )
         loadRecycleBinConversations()
         applyCustomColors()
         updateAppFonts(binding.root)

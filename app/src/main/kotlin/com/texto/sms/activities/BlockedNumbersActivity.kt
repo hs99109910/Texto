@@ -33,13 +33,21 @@ class BlockedNumbersActivity : SimpleActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        setupTextoTopAppBar(binding.blockedNumbersAppbar, NavigationIcon.Arrow)
+        setupTextoTopAppBar(
+            binding.blockedNumbersAppbar,
+            NavigationIcon.Arrow,
+            screenIcon = R.drawable.ic_ph_prohibit,
+        )
         binding.blockedNumbersToolbar.setNavigationOnClickListener { finish() }
     }
 
     override fun onResume() {
         super.onResume()
-        setupTextoTopAppBar(binding.blockedNumbersAppbar, NavigationIcon.Arrow)
+        setupTextoTopAppBar(
+            binding.blockedNumbersAppbar,
+            NavigationIcon.Arrow,
+            screenIcon = R.drawable.ic_ph_prohibit,
+        )
         reload()
         applyCustomColors()
         updateAppFonts(binding.root)

@@ -44,7 +44,11 @@ class VCardViewerActivity : SimpleActivity() {
 
     override fun onResume() {
         super.onResume()
-        setupTextoTopAppBar(binding.vcardAppbar, NavigationIcon.Arrow)
+        setupTextoTopAppBar(
+            binding.vcardAppbar,
+            NavigationIcon.Arrow,
+            screenIcon = R.drawable.ic_ph_user_plus,
+        )
         applyCustomColors()
         updateAppFonts(binding.root)
     }

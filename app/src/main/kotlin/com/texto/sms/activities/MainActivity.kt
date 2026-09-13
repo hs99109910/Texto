@@ -506,8 +506,19 @@ class MainActivity : SimpleActivity() {
                 height = glyph
             }
         }
-        listOf(navHomeLabel, navAddLabel, navSearchLabel).forEach { label ->
+        // Weight as well as colour, which is the rule the filter chips already follow: the
+        // chosen chip is bold and the rest are not. The capsule marked its current tab in
+        // colour alone, so the two selection markers -- meant to read as one idea at opposite
+        // ends of the same screen -- said it two different ways.
+        listOf(
+            navHomeLabel to (!searchIsActive),
+            navSearchLabel to searchIsActive,
+            navAddLabel to false,
+        ).forEach { (label, isActive) ->
             label.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
+            label.typeface = typefaceFor(
+                if (isActive) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL
+            )
         }
     }
 

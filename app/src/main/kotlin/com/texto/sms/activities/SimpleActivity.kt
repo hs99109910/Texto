@@ -20,6 +20,9 @@ import android.widget.TextView
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.LayerDrawable
+import androidx.annotation.DrawableRes
+import androidx.appcompat.content.res.AppCompatResources
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
@@ -106,17 +109,108 @@ open class SimpleActivity : AppCompatActivity() {
         appBar: com.google.android.material.appbar.AppBarLayout,
         navigationIcon: NavigationIcon = NavigationIcon.None,
         @Suppress("UNUSED_PARAMETER") backgroundColor: Int = 0,
+        /**
+         * The screen's own glyph, shown ahead of its title.
+         *
+         * Settings names these screens with an icon each -- an archive box, a bin, a
+         * prohibition sign -- and then opened them with a title and nothing else, so the row
+         * you tapped and the screen it opened did not look like the same thing.
+         */
+        @DrawableRes screenIcon: Int? = null,
     ) {
         val toolbar = findToolbarIn(appBar) ?: return
-        when (navigationIcon) {
-            NavigationIcon.Arrow -> toolbar.setNavigationIcon(R.drawable.ic_ph_arrow_left)
-            NavigationIcon.Cross -> toolbar.setNavigationIcon(R.drawable.ic_ph_x)
-            NavigationIcon.None -> toolbar.navigationIcon = null
+        navigationTile = when (navigationIcon) {
+            NavigationIcon.Arrow -> R.drawable.ic_ph_arrow_left
+            NavigationIcon.Cross -> R.drawable.ic_ph_x
+            NavigationIcon.None -> null
         }
+        toolbar.navigationIcon = navigationTile?.let { headerTile(it) }
         if (navigationIcon != NavigationIcon.None) {
             toolbar.setNavigationContentDescription(R.string.back)
             toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
+            // Past the capsule's own inset, not past the screen: the bar painted behind this
+            // toolbar starts 16dp in, so a tile placed at the toolbar's own edge hangs off it.
+            // The same 22dp the thread's header row uses, which is that inset plus room to
+            // clear the corner.
+            val side = 22.getScaledPx()
+            toolbar.setPadding(side, 0, side, 0)
         }
+        // A logo sits directly against the title otherwise, and the two read as one word. The
+        // gap is carried inside the drawable rather than as a title margin, which a toolbar
+        // applies to the title's own slot and not to the space after a logo.
+        screenIcon?.let { toolbar.logo = headerLogo(it) }
+    }
+
+    /**
+     * A header control as this app draws one: the glyph on a filled disc behind a hairline.
+     *
+     * The thread's own back button and the conversation list's gear were built this way in
+     * their layouts, while every other screen's back arrow was the bare glyph a Toolbar puts
+     * there by default -- the same control drawn two ways depending on which screen you were
+     * on. Built as a drawable rather than a view so the Toolbar's own navigation slot can
+     * carry it, unchanged everywhere.
+     */
+    /** The glyph this screen's back control carries, or null where it has none. */
+    private var navigationTile: Int? = null
+
+    private fun headerTile(@DrawableRes glyphRes: Int): Drawable {
+        val side = 40.getScaledPx()
+        val inset = 11.getScaledPx()
+        val disc = GradientDrawable().apply {
+            shape = GradientDrawable.OVAL
+            setColor(config.mainBackgroundColor.withAlpha(0.55f))
+            setStroke(1.getScaledPx(), TextoGlass.rimFor(config.recentColor, 0.22f))
+        }
+        val tile = LayerDrawable(arrayOf(disc, headerGlyph(glyphRes))).apply {
+            setLayerInset(1, inset, inset, inset, inset)
+        }
+        return sized(tile, side)
+    }
+
+    /** The screen's own glyph, with the space after it that separates it from the title. */
+    private fun headerLogo(@DrawableRes glyphRes: Int): Drawable {
+        val size = 20.getScaledPx()
+        val gap = 10.getScaledPx()
+        return object : LayerDrawable(arrayOf(headerGlyph(glyphRes))) {
+            override fun getIntrinsicWidth() = size + gap
+            override fun getIntrinsicHeight() = size
+        }.apply { setLayerInset(0, 0, 0, gap, 0) }
+    }
+
+    private fun headerGlyph(@DrawableRes glyphRes: Int): Drawable {
+        val glyph = AppCompatResources.getDrawable(this, glyphRes)!!.mutate()
+        glyph.setTint(config.topBarTextColor.withAlpha(0.68f))
+        return glyph
+    }
+
+    /**
+     * [drawable] at a size of its own, whatever its artwork says.
+     *
+     * A toolbar measures the slot it puts a drawable in from that drawable's *intrinsic* size,
+     * and a LayerDrawable's intrinsic size is its largest layer's -- the 24dp glyph, not the
+     * 40dp disc it is meant to sit on. Setting bounds does not help: bounds are where it is
+     * drawn, which the toolbar overwrites. Answering the intrinsic size directly is what the
+     * toolbar actually asks.
+     */
+    private fun sized(drawable: Drawable, size: Int): Drawable = object : LayerDrawable(
+        arrayOf(drawable)
+    ) {
+        override fun getIntrinsicWidth() = size
+        override fun getIntrinsicHeight() = size
+
+        /**
+         * Refuses an outside tint, because it is already painted from the theme.
+         *
+         * MaterialToolbar tints its navigation icon from its own style, which flattened the
+         * disc and the glyph into one colour -- measured, the disc came back filled with the
+         * ink. Only the screens whose toolbar happened to be a MaterialToolbar were affected,
+         * which is why the same control looked right on one screen and wrong on the next.
+         */
+        override fun setTintList(tint: android.content.res.ColorStateList?) = Unit
+
+        override fun setTint(tintColor: Int) = Unit
+
+        override fun setColorFilter(colorFilter: android.graphics.ColorFilter?) = Unit
     }
 
     private fun findToolbarIn(parent: android.view.ViewGroup): androidx.appcompat.widget.Toolbar? {
@@ -519,12 +613,26 @@ open class SimpleActivity : AppCompatActivity() {
             val topBarColor = config.topBarTextColor
             toolbar.setTitleTextColor(topBarColor)
             
-            // Use specific MaterialToolbar method for navigation icon
-            if (toolbar is com.google.android.material.appbar.MaterialToolbar) {
-                toolbar.setNavigationIconTint(topBarColor)
+            // The back control is a tile -- a glyph on a filled disc -- and tinting the whole
+            // drawable flattens it into one solid colour: measured, the disc came back filled
+            // with the ink instead of the ground. It is painted from the live theme where it
+            // is built, so it is rebuilt here rather than recoloured.
+            //
+            // Tracked in a field rather than by testing the drawable's type, because
+            // MaterialToolbar hands back a tint-aware wrapper rather than what was set, so the
+            // type test passed on one screen and failed on the next.
+            if (navigationTile != null) {
+                toolbar.navigationIcon = headerTile(navigationTile!!)
+            } else {
+                if (toolbar is com.google.android.material.appbar.MaterialToolbar) {
+                    toolbar.setNavigationIconTint(topBarColor)
+                }
+                toolbar.navigationIcon?.setColorFilter(
+                    topBarColor, android.graphics.PorterDuff.Mode.SRC_IN
+                )
             }
-            toolbar.navigationIcon?.setColorFilter(topBarColor, android.graphics.PorterDuff.Mode.SRC_IN)
-            
+            toolbar.logo?.setTint(topBarColor.withAlpha(0.68f))
+
             toolbar.overflowIcon?.setColorFilter(topBarColor, android.graphics.PorterDuff.Mode.SRC_IN)
             
             // Also tint menu items if they exist

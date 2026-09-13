@@ -52,11 +52,15 @@ class SettingsActivity : SimpleActivity() {
         setContentView(binding.root)
 
         setupEdgeToEdge(padBottomImeAndSystem = listOf(binding.settingsNestedScrollview))
-        setupTextoTopAppBar(binding.settingsAppbar, NavigationIcon.Arrow, Color.TRANSPARENT)
+        setupTextoTopAppBar(
+            binding.settingsAppbar,
+            NavigationIcon.Arrow,
+            Color.TRANSPARENT,
+            screenIcon = R.drawable.ic_ph_gear_six,
+        )
 
         (binding.settingsAppbar as? TextoAppBarLayout)?.let { appBar ->
             appBar.setBackgroundColor(Color.TRANSPARENT)
-            binding.settingsToolbar.navigationIcon?.setTint(config.topBarTextColor)
             binding.settingsToolbar.setNavigationOnClickListener { finish() }
         }
 
