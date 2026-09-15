@@ -521,4 +521,7 @@
     <string name="contacts_empty_body">Type a number above to message someone who isn\'t in your contacts.</string>
     <string name="contacts_empty_body_pick">Nobody in your contacts matches that.</string>
     <string name="contacts_permission_body">Allow access to your contacts to find people by name. You can still type a number above.</string>
+    <string name="theme_radiant">Radiant</string>
+    <string name="nav_archive">Archive</string>
+    <string name="nav_messages">Messages</string>
 </resources>

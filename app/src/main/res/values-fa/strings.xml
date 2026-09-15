@@ -516,4 +516,7 @@
     <string name="contacts_empty_body">برای پیام به کسی که در مخاطبین نیست، شماره‌اش را در بالا بنویسید.</string>
     <string name="contacts_empty_body_pick">در مخاطبین کسی با این مشخصات نیست.</string>
     <string name="contacts_permission_body">برای پیداکردن افراد با نام، دسترسی به مخاطبین را بدهید. نوشتن شماره در بالا همچنان کار می‌کند.</string>
+    <string name="theme_radiant">رادیانت</string>
+    <string name="nav_archive">آرشیو</string>
+    <string name="nav_messages">پیام‌ها</string>
 </resources>

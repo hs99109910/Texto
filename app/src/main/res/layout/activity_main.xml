@@ -470,6 +470,44 @@
     </LinearLayout>
 
 
+    <!-- Radiant-only Telegram-style navigation. MainActivity keeps it gone for every other skin. -->
+    <LinearLayout
+        android:id="@+id/radiant_nav_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
+        android:elevation="16dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="6dp"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <LinearLayout android:id="@+id/radiant_messages_btn" android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:paddingHorizontal="4dp">
+            <ImageView android:id="@+id/radiant_messages_icon" android:layout_width="22dp" android:layout_height="22dp" android:importantForAccessibility="no" android:src="@drawable/ic_ph_chat_teardrop_text" />
+            <TextView android:id="@+id/radiant_messages_label" style="@style/NavBarLabel" android:text="@string/nav_messages" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/radiant_contacts_btn" android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:paddingHorizontal="4dp">
+            <ImageView android:id="@+id/radiant_contacts_icon" android:layout_width="22dp" android:layout_height="22dp" android:importantForAccessibility="no" android:src="@drawable/ic_ph_users" />
+            <TextView android:id="@+id/radiant_contacts_label" style="@style/NavBarLabel" android:text="@string/nav_contacts" />
+        </LinearLayout>
+        <LinearLayout android:id="@+id/radiant_archive_btn" android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:paddingHorizontal="4dp">
+            <ImageView android:id="@+id/radiant_archive_icon" android:layout_width="22dp" android:layout_height="22dp" android:importantForAccessibility="no" android:src="@drawable/ic_ph_archive_box" />
+            <TextView android:id="@+id/radiant_archive_label" style="@style/NavBarLabel" android:text="@string/nav_archive" />
+        </LinearLayout>
+        <ImageView
+            android:id="@+id/radiant_compose_btn"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:layout_marginStart="4dp"
+            android:contentDescription="@string/nav_new_message"
+            android:elevation="6dp"
+            android:padding="14dp"
+            android:src="@drawable/ic_ph_pencil" />
+    </LinearLayout>
+
     <!--
         Start chat. Anchored to the bottom end corner: bottom right under English, bottom left
         under Persian, where the thumb already is. It shrinks to a plain disc while the list

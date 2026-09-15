@@ -439,9 +439,11 @@ class MainActivity : SimpleActivity() {
      * all of it on every resume for something nobody could see.
      */
     private fun setupHomeActions() = binding.apply {
+        val radiant = AppThemes.isRadiant(config.appTheme)
         styleFab()
         textoFab.setOnClickListener { launchNewConversation() }
-        textoFab.beVisibleIf(!isSearchExpanded)
+        textoFab.beVisibleIf(!radiant && !isSearchExpanded)
+        setupRadiantNavigation(radiant)
         textoHeaderSearch.setOnClickListener {
             if (!isSearchExpanded) expandSearchBar()
         }
@@ -460,6 +462,58 @@ class MainActivity : SimpleActivity() {
                 // Nothing typed, so the X is the way out of search rather than a no-op.
                 shrinkSearchBar()
             }
+        }
+    }
+
+    /** The Radiant skin replaces the lone FAB with a persistent Telegram-style capsule. */
+    private fun setupRadiantNavigation(visible: Boolean) = binding.apply {
+        radiantNavContainer.beVisibleIf(visible)
+        if (!visible) return@apply
+
+        val density = resources.displayMetrics.density
+        TextoGlass.applyPanel(
+            view = radiantNavContainer,
+            tint = config.topBarColor,
+            cornerRadius = 32f * density,
+            opacity = 0.94f,
+            strokeWidthPx = density.toInt().coerceAtLeast(1),
+            rimAlpha = 0.12f,
+            sheenAlpha = 0.04f,
+        )
+
+        val active = android.graphics.drawable.GradientDrawable(
+            android.graphics.drawable.GradientDrawable.Orientation.LEFT_RIGHT,
+            intArrayOf(config.accentGradientStart, config.accentGradientEnd)
+        ).apply { cornerRadius = 24f * density }
+        radiantMessagesBtn.background = active
+
+        val muted = config.mainTextColor.withAlpha(0.66f)
+        val activeInk = config.accentInkColor
+        radiantMessagesIcon.applyColorFilter(activeInk)
+        radiantMessagesLabel.setTextColor(activeInk)
+        listOf(radiantContactsIcon, radiantArchiveIcon).forEach { it.applyColorFilter(muted) }
+        listOf(radiantContactsLabel, radiantArchiveLabel).forEach { it.setTextColor(muted) }
+
+        radiantComposeBtn.background = android.graphics.drawable.GradientDrawable(
+            android.graphics.drawable.GradientDrawable.Orientation.TL_BR,
+            intArrayOf(config.accentGradientStart, config.accentGradientEnd)
+        ).apply {
+            shape = android.graphics.drawable.GradientDrawable.OVAL
+        }
+        radiantComposeBtn.applyColorFilter(activeInk)
+
+        radiantMessagesBtn.setOnClickListener {
+            if (isSearchExpanded) shrinkSearchBar() else conversationsList.smoothScrollToPosition(0)
+        }
+        radiantContactsBtn.setOnClickListener { launchNewConversation() }
+        radiantArchiveBtn.setOnClickListener {
+            startActivity(Intent(this@MainActivity, ArchivedConversationsActivity::class.java))
+        }
+        radiantComposeBtn.setOnClickListener { launchNewConversation() }
+
+        listOf(radiantMessagesBtn, radiantContactsBtn, radiantArchiveBtn, radiantComposeBtn).forEach {
+            it.isClickable = true
+            it.isFocusable = true
         }
     }
 
@@ -587,6 +641,7 @@ class MainActivity : SimpleActivity() {
         // against the fill and put the bars below whatever the slider said, which is part of
         // why its top end never looked opaque.
         listOf<View>(mainAppbar, filterBar, textoFab).forEach { bar ->
+            if (bar === textoFab && AppThemes.isRadiant(config.appTheme)) return@forEach
             bar.beVisible()
             bar.animate()
                 .alpha(1f)
@@ -1902,7 +1957,8 @@ class MainActivity : SimpleActivity() {
         // the layout, so nothing reserves its height: without this the last conversation
         // could not be scrolled clear of it. (It was the nav pill's height before the pill was
         // retired; measured then, the bottom card sat permanently half under it.)
-        binding.textoFab.doOnLayout { pill ->
+        val bottomControl = if (AppThemes.isRadiant(config.appTheme)) binding.radiantNavContainer else binding.textoFab
+        bottomControl.doOnLayout { pill ->
             if (isFinishing || isDestroyed) return@doOnLayout
             val margin = (pill.layoutParams as? ViewGroup.MarginLayoutParams)?.bottomMargin ?: 0
             // The pill's own bottom margin already clears the gesture bar, so the system inset
@@ -2120,7 +2176,7 @@ class MainActivity : SimpleActivity() {
      */
     private fun setHomeFunctionsEnabled(enabled: Boolean) = binding.apply {
         listOf<View>(
-            textoMenuBtn, textoFab, textoHeaderSearch,
+            textoMenuBtn, textoFab, textoHeaderSearch, radiantNavContainer,
             filterBar
         )
             .forEach {

@@ -62,6 +62,8 @@ object AppThemes {
     const val NOCTURNE_LIGHT = 4
     const val NEON = 5
     const val NEON_LIGHT = 6
+    const val RADIANT = 7
+    const val RADIANT_DARK = 8
 
     /**
      * What a fresh install opens on, what "Reset to defaults" returns to, and what an
@@ -280,7 +282,56 @@ object AppThemes {
         glass = true
     )
 
-    val all = listOf(classic, nocturne, nocturneLight, neon, neonLight)
+    /**
+     * Radiant follows the approved RTL home concept: an airy blue-white surface, crisp white
+     * cards and Telegram-blue emphasis. The dark partner keeps the same cyan-blue identity
+     * without forcing a light screen when the user enables dark mode.
+     */
+    private val radiant = AppTheme(
+        id = RADIANT,
+        label = "رادیانت",
+        topBarColor = Color.parseColor("#F8FBFF"),
+        topBarTextColor = Color.parseColor("#172033"),
+        mainTextColor = Color.parseColor("#172033"),
+        mainBackgroundColor = Color.parseColor("#EAF2FF"),
+        backgroundGradient = Color.parseColor("#F5F9FF") to Color.parseColor("#E4EEFC"),
+        cardColor = Color.parseColor("#F8FBFF"),
+        inputBarTextColor = Color.parseColor("#172033"),
+        accentGradient = Color.parseColor("#1687F8") to Color.parseColor("#0868E8"),
+        auroraAccent = Color.parseColor("#1DBEA5"),
+        haloColors = Triple(Color.parseColor("#B7E5FF"), Color.parseColor("#C8D8FF"), Color.parseColor("#BFEFE5")),
+        haloOpacity = 0.36f,
+        sentBubbleTextColor = Color.WHITE,
+        receivedBubbleColor = Color.parseColor("#FFFFFF"),
+        receivedBubbleTextColor = Color.parseColor("#172033"),
+        cardCornerRadiusDp = 18,
+        glass = true
+    )
+
+    private val radiantDark = AppTheme(
+        id = RADIANT_DARK,
+        label = "رادیانت تاریک",
+        topBarColor = Color.parseColor("#16243A"),
+        topBarTextColor = Color.parseColor("#F4F8FF"),
+        mainTextColor = Color.parseColor("#F4F8FF"),
+        mainBackgroundColor = Color.parseColor("#0C1728"),
+        backgroundGradient = Color.parseColor("#0C1728") to Color.parseColor("#142C46"),
+        cardColor = Color.parseColor("#172A42"),
+        inputBarTextColor = Color.parseColor("#F4F8FF"),
+        accentGradient = Color.parseColor("#27A3FF") to Color.parseColor("#0879ED"),
+        auroraAccent = Color.parseColor("#22C8A9"),
+        haloColors = Triple(Color.parseColor("#075A87"), Color.parseColor("#194B91"), Color.parseColor("#126B62")),
+        haloOpacity = 0.5f,
+        sentBubbleTextColor = Color.WHITE,
+        receivedBubbleColor = Color.parseColor("#20364F"),
+        receivedBubbleTextColor = Color.parseColor("#F4F8FF"),
+        cardCornerRadiusDp = 18,
+        glass = true
+    )
+
+    fun isRadiant(themeId: Int) = themeId == RADIANT || themeId == RADIANT_DARK
+
+    val all = listOf(classic, nocturne, nocturneLight, neon, neonLight, radiant, radiantDark)
 
     /**
      * A theme picked from the settings swatch row is really a choice of two things at once --
@@ -303,6 +354,7 @@ object AppThemes {
         ThemeFamily(R.string.theme_classic, classic, classic),
         ThemeFamily(R.string.theme_nocturne, nocturne, nocturneLight),
         ThemeFamily(R.string.theme_neon, neon, neonLight),
+        ThemeFamily(R.string.theme_radiant, radiantDark, radiant),
     )
 
     /**
