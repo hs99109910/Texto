@@ -10,6 +10,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
+import androidx.core.view.doOnLayout
 import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -121,6 +122,18 @@ class SettingsActivity : SimpleActivity() {
             listOf(navHomeLabel, navSearchLabel, navAddLabel).forEach { it.alpha = 1f }
 
             styleNavTabs()
+
+            // The pill floats over the list rather than sitting in the layout, so nothing
+            // reserved its height and the last settings row was cut off behind it -- the same
+            // gap the home list had. Measured after: the scroll view now ends above the pill.
+            textoNavContainer.doOnLayout { pill ->
+                if (isFinishing || isDestroyed) return@doOnLayout
+                val margin = (pill.layoutParams as? ViewGroup.MarginLayoutParams)?.bottomMargin ?: 0
+                val systemBottom = androidx.core.view.ViewCompat.getRootWindowInsets(pill)
+                    ?.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())?.bottom ?: 0
+                val room = (pill.height + margin + 8.getScaledPx() - systemBottom).coerceAtLeast(0)
+                binding.settingsNestedScrollview.setBaseBottomPadding(room)
+            }
 
             navHomeBtn.setOnClickListener {
                 finish() // Go back to main

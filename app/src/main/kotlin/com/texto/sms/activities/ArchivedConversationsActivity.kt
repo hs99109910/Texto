@@ -18,6 +18,8 @@ import com.texto.sms.extensions.removeAllArchivedConversations
 import com.texto.sms.helpers.THREAD_ID
 import com.texto.sms.helpers.THREAD_TITLE
 import com.texto.sms.helpers.textoConfirmDialog
+import com.texto.sms.helpers.emptyStateFor
+import com.texto.sms.extensions.beGone
 import com.texto.sms.models.Conversation
 import com.texto.sms.models.Events
 import org.greenrobot.eventbus.EventBus
@@ -141,9 +143,15 @@ class ArchivedConversationsActivity : SimpleActivity() {
     }
 
     private fun showOrHidePlaceholder(show: Boolean) {
-        binding.noConversationsPlaceholder.beVisibleIf(show)
-        binding.noConversationsPlaceholder.setTextColor(config.mainTextColor)
-        binding.noConversationsPlaceholder.text = getString(R.string.no_archived_conversations)
+        binding.noConversationsPlaceholder.beGone()
+        emptyStateFor(
+            placeholder = binding.noConversationsPlaceholder,
+            icon = R.drawable.ic_ph_archive_box,
+            title = getString(R.string.empty_archive_title),
+            body = getString(R.string.empty_archive_body),
+            actionLabel = getString(R.string.empty_back_to_conversations),
+            onAction = { finish() },
+        ).beVisibleIf(show)
     }
 
     @SuppressLint("NotifyDataSetChanged")

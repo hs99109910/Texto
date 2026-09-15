@@ -20,6 +20,10 @@ import com.texto.sms.extensions.config
 import com.texto.sms.helpers.TextoGlass
 import com.texto.sms.helpers.allBlockedNumbers
 import com.texto.sms.helpers.unblockNumber
+import com.texto.sms.helpers.emptyStateFor
+import com.texto.sms.helpers.pickerButton
+import com.texto.sms.helpers.textoConfirmDialog
+import com.texto.sms.extensions.beGone
 
 /**
  * The phone's own block list — the same one the stock messaging app writes to. Rows are
@@ -65,8 +69,13 @@ class BlockedNumbersActivity : SimpleActivity() {
 
     private fun render(numbers: List<String>) {
         binding.blockedNumbersList.removeAllViews()
-        binding.blockedNumbersPlaceholder.beVisibleIf(numbers.isEmpty())
-        binding.blockedNumbersPlaceholder.setTextColor(config.mainTextColor)
+        binding.blockedNumbersPlaceholder.beGone()
+        emptyStateFor(
+            placeholder = binding.blockedNumbersPlaceholder,
+            icon = R.drawable.ic_ph_prohibit,
+            title = getString(R.string.empty_blocked_title),
+            body = getString(R.string.empty_blocked_body),
+        ).beVisibleIf(numbers.isEmpty())
 
         val density = resources.displayMetrics.density
         numbers.forEach { number ->
@@ -105,15 +114,24 @@ class BlockedNumbersActivity : SimpleActivity() {
             LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
         )
 
+        // A word, not a bare x. An x at the end of a row says "remove", and on this screen that
+        // could as easily mean deleting the entry as letting the number's messages back in --
+        // which is the one that actually happens. It asks first, because undoing it means
+        // typing the number out again.
         row.addView(
-            ImageView(this).apply {
-                setImageResource(R.drawable.ic_ph_x)
-                imageTintList = android.content.res.ColorStateList.valueOf(config.topBarTextColor)
-                contentDescription = getString(R.string.unblock)
-                setPadding(10.getScaledPx(), 10.getScaledPx(), 10.getScaledPx(), 10.getScaledPx())
-                setOnClickListener { unblock(number) }
+            pickerButton(getString(R.string.unblock), filled = false) {
+                textoConfirmDialog(
+                    message = getString(R.string.unblock_confirmation, number.asLtrPhone()),
+                    positiveLabel = getString(R.string.unblock),
+                ) { unblock(number) }
+            }.apply {
+                val padH = 16.getScaledPx()
+                setPadding(padH, paddingTop, padH, paddingBottom)
+                minHeight = com.texto.sms.helpers.MIN_TOUCH_TARGET_DP.getScaledPx()
             },
-            LinearLayout.LayoutParams(40.getScaledPx(), 40.getScaledPx())
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            )
         )
 
         return row

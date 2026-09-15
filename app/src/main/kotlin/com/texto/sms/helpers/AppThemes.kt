@@ -166,8 +166,10 @@ object AppThemes {
         backgroundGradient = Color.parseColor("#0B1026") to Color.parseColor("#3D2260"),
         cardColor = Color.parseColor("#1B2136"),
         inputBarTextColor = Color.parseColor("#F2F3F8"),
-        // The mockup's own sent-bubble gradient, light stop first.
-        accentGradient = Color.parseColor("#4A80FF") to Color.parseColor("#2F6BFF"),
+        // The mockup's own blue, deepened so white ink clears WCAG AA on both stops: the
+        // mockup's #4A80FF measured 3.61:1 and #2F6BFF 4.50:1, which the colour picker's own
+        // 4.5 gate rejected on a fresh install. #3366EE is 4.91:1, #2B5FE6 5.41:1.
+        accentGradient = Color.parseColor("#3366EE") to Color.parseColor("#2B5FE6"),
         auroraAccent = Color.parseColor("#9184D9"),
         // Unlike the cyan themes, this accent is a deep blue, so its text is white.
         sentBubbleTextColor = Color.WHITE,
@@ -198,7 +200,8 @@ object AppThemes {
         backgroundGradient = Color.parseColor("#F6F7FC") to Color.parseColor("#E6E1F7"),
         cardColor = Color.WHITE,
         inputBarTextColor = Color.parseColor("#14172B"),
-        accentGradient = Color.parseColor("#4A80FF") to Color.parseColor("#2F6BFF"),
+        // Same deepened blue as Nocturne; see there for the measured contrast.
+        accentGradient = Color.parseColor("#3366EE") to Color.parseColor("#2B5FE6"),
         auroraAccent = Color.parseColor("#5B4FC4"),
         sentBubbleTextColor = Color.WHITE,
         receivedBubbleColor = Color.WHITE,

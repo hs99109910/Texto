@@ -126,6 +126,8 @@ class App : Application() {
             config.auroraRetired = true
         }
 
+        config.migrateNocturneAccentContrast()
+
         if (config.customFilters.isNotEmpty()) {
             config.customFilters = config.customFilters
         }

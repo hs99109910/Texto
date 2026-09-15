@@ -251,11 +251,14 @@ object TextoGlass {
         sheenAlpha: Float = 0.14f,
         outlineColor: Int? = null,
         outlineWidthPx: Int = 0,
+        /** Per-corner radii (TL, TR, BR, BL pairs); overrides [cornerRadius] when given. */
+        cornerRadii: FloatArray? = null,
     ) {
         view.background = panel(
             tint = tint,
             tintEnd = tintEnd,
             cornerRadius = cornerRadius,
+            cornerRadii = cornerRadii,
             opacity = opacity,
             strokeWidthPx = strokeWidthPx,
             rimAlpha = rimAlpha,

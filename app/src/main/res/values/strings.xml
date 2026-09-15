@@ -59,6 +59,13 @@
     <string name="new_conversation">New conversation</string>
     <!-- The compose tab caption in the bottom capsule; kept short so it fits a quarter of it. -->
     <string name="nav_new_message">New</string>
+    <string name="home_search_hint">Search messages &amp; contacts</string>
+    <string name="start_chat">Start chat</string>
+    <string name="create_group">Create group</string>
+    <string name="new_group">New group</string>
+    <string name="group_create_action">Create (%s)</string>
+    <string name="group_pick_hint">Pick at least two people</string>
+    <string name="copy_verification_code">Copy verification code</string>
     <string name="add_contact_or_number">Add a contact or a number…</string>
     <string name="suggestions">Suggestions</string>
     <!-- Group conversation -->
@@ -497,4 +504,18 @@
     <!-- Day labels and list punctuation, which are not the same character in the two languages. -->
     <string name="yesterday">Yesterday</string>
     <string name="list_separator">", "</string>
+    <string name="empty_archive_title">Nothing archived yet</string>
+    <string name="empty_archive_body">Archiving moves a conversation off your main list. It waits here until you need it.</string>
+    <string name="empty_recycle_title">The recycle bin is empty</string>
+    <string name="empty_recycle_body">Deleted conversations stay here until you restore them or empty the bin.</string>
+    <string name="empty_blocked_title">No blocked numbers</string>
+    <string name="empty_blocked_body">Messages from a blocked number no longer reach you. You can block one from a conversation\'s menu.</string>
+    <string name="empty_back_to_conversations">Back to conversations</string>
+    <string name="unblock_confirmation">Unblock %s? Their messages will reach you again.</string>
+    <string name="colour_contrast_save_blocked">Choose a lighter or darker shade to save.</string>
+    <string name="pick_a_contact">Choose a contact</string>
+    <string name="send_to_number">Message %s</string>
+    <string name="contacts_empty_body">Type a number above to message someone who isn\'t in your contacts.</string>
+    <string name="contacts_empty_body_pick">Nobody in your contacts matches that.</string>
+    <string name="contacts_permission_body">Allow access to your contacts to find people by name. You can still type a number above.</string>
 </resources>

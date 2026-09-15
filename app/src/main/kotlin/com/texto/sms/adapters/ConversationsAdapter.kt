@@ -88,11 +88,14 @@ class ConversationsAdapter(
         val selected = getSelectedItems()
         val anyUnpinned = selected.any { !pinned.contains(it.threadId.toString()) }
 
+        // The bar replaces the header now, so it carries what a contextual action bar does:
+        // pin, read state, archive and delete. Read and unread are alternatives for the same
+        // reason pin and unpin are. Select-all left to keep the count legible beside them.
         return listOfNotNull(
-            R.id.cab_select_all,
-            R.id.cab_delete,
+            if (anyUnpinned) R.id.cab_pin_conversation else R.id.cab_unpin_conversation,
+            if (selected.any { !it.read }) R.id.cab_mark_as_read else R.id.cab_mark_as_unread,
             R.id.cab_archive,
-            if (anyUnpinned) R.id.cab_pin_conversation else R.id.cab_unpin_conversation
+            R.id.cab_delete,
         )
     }
 

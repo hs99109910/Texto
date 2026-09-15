@@ -61,11 +61,29 @@
             app:layout_constraintTop_toTopOf="@id/recent_image"
             tools:visibility="visible" />
 
+        <!--
+            The pin leads the name rather than trailing the preview, so it explains why the
+            row is at the top from the first thing the eye reads, and never competes with the
+            unread badge at the far end.
+        -->
+        <ImageView
+            android:id="@+id/recent_pin_indicator"
+            android:layout_width="14dp"
+            android:layout_height="14dp"
+            android:layout_marginStart="12dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_ph_push_pin"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/recent_address"
+            app:layout_constraintStart_toEndOf="@id/recent_image"
+            app:layout_constraintTop_toTopOf="@id/recent_address"
+            tools:visibility="visible" />
+
         <TextView
             android:id="@+id/recent_address"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="4dp"
             android:layout_marginEnd="8dp"
             android:ellipsize="end"
             android:letterSpacing="-0.01"
@@ -73,12 +91,12 @@
             android:textAlignment="viewStart"
             android:textDirection="locale"
             android:textSize="15sp"
-            android:textColor="#F2F3F8"
             app:layout_constraintBottom_toTopOf="@id/recent_body"
             app:layout_constraintEnd_toStartOf="@id/recent_date"
-            app:layout_constraintStart_toEndOf="@id/recent_image"
+            app:layout_constraintStart_toEndOf="@id/recent_pin_indicator"
             app:layout_constraintTop_toTopOf="@id/recent_image"
             app:layout_constraintVertical_chainStyle="packed"
+            app:layout_goneMarginStart="12dp"
             tools:text="+1765001009" />
 
         <TextView
@@ -93,9 +111,8 @@
             android:textAlignment="viewStart"
             android:textDirection="locale"
             android:textSize="13sp"
-            android:textColor="#94F2F3F8"
             app:layout_constraintBottom_toBottomOf="@id/recent_image"
-            app:layout_constraintEnd_toStartOf="@id/recent_pin_indicator"
+            app:layout_constraintEnd_toStartOf="@id/recent_unread_badge"
             app:layout_constraintStart_toEndOf="@id/recent_image"
             app:layout_constraintTop_toBottomOf="@id/recent_address"
             tools:text="Is this Gary?" />
@@ -105,22 +122,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="11sp"
-            android:textColor="#5CF2F3F8"
             app:layout_constraintBaseline_toBaselineOf="@id/recent_address"
             app:layout_constraintEnd_toEndOf="parent"
             tools:text="6 May" />
-
-        <ImageView
-            android:id="@+id/recent_pin_indicator"
-            android:layout_width="14dp"
-            android:layout_height="14dp"
-            android:layout_marginEnd="8dp"
-            android:src="@drawable/ic_ph_push_pin"
-            android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@id/recent_body"
-            app:layout_constraintEnd_toStartOf="@id/recent_unread_badge"
-            app:layout_constraintTop_toTopOf="@id/recent_body"
-            tools:visibility="visible" />
 
         <TextView
             android:id="@+id/recent_unread_badge"

@@ -119,6 +119,9 @@ class ConversationDetailsActivity : SimpleActivity() {
 
         detailsHeroName.setTextColor(ink)
         detailsHeroName.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.3f))
+        // After updateAppFonts, which would otherwise put it back at full ink.
+        detailsHeroNumber.setTextColor(ink.withAlpha(0.72f))
+        detailsHeroNumber.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.92f))
         TextoAvatars.clipToSquircle(detailsHeroImage)
 
         // The rows are the same glass capsule the filter chips and the composer are.
@@ -172,9 +175,86 @@ class ConversationDetailsActivity : SimpleActivity() {
     private fun setupHeroSection() {
         val title = conversation?.title ?: participants.getThreadTitle()
         binding.detailsHeroName.text = title
-        
+
         TextoAvatars.clipToSquircle(binding.detailsHeroImage)
         TextoAvatars.loadInto(this, binding.detailsHeroImage, participants.firstOrNull()?.photoUri ?: "", TextoAvatars.letterAvatar(this, title))
+
+        // One-to-one only. A group has several numbers and no single one to call, and its
+        // members are listed below with their own rows.
+        val number = participants.singleOrNull()?.phoneNumbers?.firstOrNull()?.value
+        binding.detailsHeroNumber.apply {
+            // Shown under the name only when the name is not already the number.
+            val show = number != null && number != title
+            beVisibleIf(show)
+            if (show) text = number!!.asLtrPhone()
+        }
+        binding.detailsQuickActions.apply {
+            removeAllViews()
+            beVisibleIf(number != null)
+            if (number == null) return@apply
+            addView(quickAction(R.drawable.ic_ph_phone, getString(R.string.dial_number)) {
+                try {
+                    startActivity(Intent(Intent.ACTION_DIAL, android.net.Uri.fromParts("tel", number, null)))
+                } catch (e: Exception) {
+                    showErrorToast(e)
+                }
+            })
+            addView(quickAction(null, getString(R.string.copy_number_to_clipboard)) {
+                copyToClipboard(number)
+            }.apply {
+                (layoutParams as android.widget.LinearLayout.LayoutParams).marginStart = 8.getScaledPx()
+            })
+        }
+    }
+
+    /**
+     * A capsule in the same glass as the rows below it, at the platform's 48dp touch floor.
+     *
+     * The screen had nowhere to act on the person it describes: calling them or taking their
+     * number meant backing out to the thread and opening its menu.
+     */
+    private fun quickAction(icon: Int?, label: String, onTap: () -> Unit): View {
+        val density = resources.displayMetrics.density
+        val ink = config.mainTextColor
+        return android.widget.LinearLayout(this).apply {
+            orientation = android.widget.LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER
+            minimumHeight = com.texto.sms.helpers.MIN_TOUCH_TARGET_DP.getScaledPx()
+            setPadding(18.getScaledPx(), 0, 18.getScaledPx(), 0)
+            background = TextoGlass.bar(
+                tint = config.recentColor,
+                cornerRadius = 100f * density,
+                opacity = 0.5f,
+                strokeWidthPx = 1.getScaledPx(),
+                rimAlpha = 0.18f
+            )
+            isClickable = true
+            isFocusable = true
+            contentDescription = label
+            setOnClickListener { onTap() }
+            if (icon != null) {
+                addView(
+                    android.widget.ImageView(this@ConversationDetailsActivity).apply {
+                        setImageResource(icon)
+                        imageTintList = android.content.res.ColorStateList.valueOf(ink.withAlpha(0.8f))
+                        importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                    },
+                    android.widget.LinearLayout.LayoutParams(20.getScaledPx(), 20.getScaledPx()).apply {
+                        marginEnd = 8.getScaledPx()
+                    }
+                )
+            }
+            addView(android.widget.TextView(this@ConversationDetailsActivity).apply {
+                text = label
+                setTextColor(ink)
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.88f))
+                typeface = typefaceFor(android.graphics.Typeface.NORMAL)
+            })
+            layoutParams = android.widget.LinearLayout.LayoutParams(
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+                android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
     }
 
     private fun setupRenaming() {

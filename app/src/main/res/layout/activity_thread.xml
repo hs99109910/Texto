@@ -139,7 +139,26 @@
                     android:focusable="true"
                     android:padding="9dp"
                     android:src="@drawable/ic_ph_palette"
+                    android:visibility="gone"
                     app:tint="#FFFFFF" />
+
+                <!--
+                    Call, directly in the header. The editor's palette left this row; it is
+                    still one tap away in the overflow menu, where it no longer competes with
+                    the two things people come to a conversation header for.
+                -->
+                <ImageView
+                    android:id="@+id/thread_call_btn"
+                    android:layout_width="38dp"
+                    android:layout_height="38dp"
+                    android:layout_marginStart="6dp"
+                    android:clickable="true"
+                    android:contentDescription="@string/dial_number"
+                    android:focusable="true"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_ph_phone"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
 
                 <ImageView
                     android:id="@+id/thread_menu_btn"
@@ -223,83 +242,89 @@
         android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <RelativeLayout
+        <!--
+            The recipients, as one card under the header: the people already added wrap as
+            chips, and the field to add another sits on the line below them. It replaces a flat
+            strip of full-width rows between two grey hairlines with a tick at the end that
+            said nothing about what it would do. Painted in ThreadActivity.showSelectedContacts.
+        -->
+        <LinearLayout
             android:id="@+id/thread_add_contacts"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="8dp"
             android:visibility="gone"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:visibility="visible">
 
-            <LinearLayout
+            <com.texto.sms.helpers.TextoFlowLayout
                 android:id="@+id/selected_contacts"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="@dimen/texto_activity_margin"
-                android:orientation="vertical" />
-
-            <ImageView
-                android:id="@+id/confirm_manage_contacts"
-                android:layout_width="@dimen/texto_normal_icon_size"
-                android:layout_height="@dimen/texto_normal_icon_size"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="@dimen/texto_medium_margin"
-                android:layout_marginTop="@dimen/texto_normal_margin"
-                android:layout_marginEnd="@dimen/texto_medium_margin"
-                android:background="?selectableItemBackgroundBorderless"
-                android:padding="@dimen/texto_small_margin"
-                android:src="@drawable/ic_ph_check" />
+                android:layout_height="wrap_content" />
 
             <View
                 android:id="@+id/message_divider_one"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/texto_divider_height"
-                android:layout_below="@+id/selected_contacts"
-                android:background="@color/texto_divider_grey"
-                android:importantForAccessibility="no" />
-
-            <android.widget.AutoCompleteTextView
-                android:id="@+id/add_contact_or_number"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/texto_normal_icon_size"
-                android:layout_below="@+id/message_divider_one"
-                android:layout_marginStart="@dimen/texto_activity_margin"
-                android:layout_marginEnd="@dimen/texto_activity_margin"
-                android:layout_toStartOf="@+id/confirm_inserted_number"
-                android:background="@android:color/transparent"
-                android:completionThreshold="2"
-                android:gravity="center_vertical"
-                android:hint="@string/add_contact_or_number"
-                android:inputType="textCapWords"
-                android:textSize="@dimen/texto_big_text_size" />
-
-            <ImageView
-                android:id="@+id/confirm_inserted_number"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:layout_alignTop="@+id/add_contact_or_number"
-                android:layout_alignBottom="@+id/add_contact_or_number"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="@dimen/texto_medium_margin"
-                android:layout_marginEnd="@dimen/texto_medium_margin"
-                android:background="?selectableItemBackgroundBorderless"
-                android:contentDescription="@string/confirm_selection"
-                android:paddingStart="@dimen/texto_medium_margin"
-                android:paddingEnd="@dimen/texto_medium_margin"
-                android:src="@drawable/ic_ph_check"
+                android:layout_height="0dp"
+                android:importantForAccessibility="no"
                 android:visibility="gone" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <android.widget.AutoCompleteTextView
+                    android:id="@+id/add_contact_or_number"
+                    android:layout_width="0dp"
+                    android:layout_height="44dp"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:completionThreshold="2"
+                    android:gravity="center_vertical|start"
+                    android:hint="@string/add_contact_or_number"
+                    android:inputType="textCapWords"
+                    android:paddingHorizontal="4dp"
+                    android:textAlignment="viewStart" />
+
+                <ImageView
+                    android:id="@+id/confirm_inserted_number"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/confirm_selection"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_ph_check"
+                    android:visibility="gone" />
+
+                <!-- Applies an edited member list to an existing group; hidden on a new thread. -->
+                <ImageView
+                    android:id="@+id/confirm_manage_contacts"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/confirm_selection"
+                    android:padding="9dp"
+                    android:src="@drawable/ic_ph_check"
+                    android:visibility="gone" />
+
+            </LinearLayout>
 
             <View
                 android:id="@+id/message_divider_two"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/texto_divider_height"
-                android:layout_below="@+id/add_contact_or_number"
-                android:background="@color/texto_divider_grey"
-                android:importantForAccessibility="no" />
+                android:layout_height="0dp"
+                android:importantForAccessibility="no"
+                android:visibility="gone" />
 
-        </RelativeLayout>
+        </LinearLayout>
 
         <com.texto.sms.views.TextoRecyclerView
             android:id="@+id/thread_messages_list"
@@ -346,6 +371,7 @@
             android:background="@android:color/transparent"
             android:clickable="true"
             android:focusable="true"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@id/message_holder" />
 
@@ -384,6 +410,23 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
+
+        <!--
+            Up only while the appearance editor is open. It takes every touch on the thread and
+            the composer, so nothing on them works except choosing what to recolour; drags are
+            handed to the list so it still scrolls. Wired in ThreadActivity.
+        -->
+        <View
+            android:id="@+id/appearance_touch_shield"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:clickable="true"
+            android:focusable="false"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

@@ -87,6 +87,26 @@
                     android:visibility="gone" />
 
                 <ImageView
+                    android:id="@+id/action_mark_read"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/mark_as_read"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_ph_checks"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/action_mark_unread"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="?selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/mark_as_unread"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_ph_eye"
+                    android:visibility="gone" />
+
+                <ImageView
                     android:id="@+id/action_archive"
                     android:layout_width="44dp"
                     android:layout_height="44dp"

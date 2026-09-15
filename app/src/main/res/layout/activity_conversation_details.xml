@@ -51,29 +51,39 @@
             android:paddingBottom="40dp">
 
             <!-- Hero Profile Section -->
+            <!--
+                As tall as what it holds. It was a fixed 240dp around a 100dp avatar and one
+                line of name, so most of the first screen was an empty card. It now also
+                carries the number and the two things people open this screen to do.
+            -->
             <RelativeLayout
                 android:id="@+id/details_hero_section"
                 android:layout_width="match_parent"
-                android:layout_height="240dp"
+                android:layout_height="wrap_content"
                 android:layout_margin="16dp">
 
                 <!-- Painted in onResume from the live theme; see ConversationDetailsActivity. -->
                 <View
                     android:id="@+id/details_hero_gradient"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="0dp"
+                    android:layout_alignTop="@+id/details_hero_content"
+                    android:layout_alignBottom="@+id/details_hero_content" />
 
                 <LinearLayout
+                    android:id="@+id/details_hero_content"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    android:paddingTop="20dp"
+                    android:paddingBottom="16dp">
 
                     <ImageView
                         android:id="@+id/details_hero_image"
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:layout_marginBottom="16dp"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:layout_marginBottom="12dp"
                         android:scaleType="centerCrop"
                         tools:src="@mipmap/ic_launcher" />
 
@@ -85,6 +95,26 @@
                         android:gravity="center"
                         android:paddingHorizontal="24dp"
                         tools:text="Contact Name" />
+
+                    <TextView
+                        android:id="@+id/details_hero_number"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:gravity="center"
+                        android:visibility="gone"
+                        tools:text="+98 912 000 0000"
+                        tools:visibility="visible" />
+
+                    <LinearLayout
+                        android:id="@+id/details_quick_actions"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:visibility="gone"
+                        tools:visibility="visible" />
                 </LinearLayout>
             </RelativeLayout>
 

@@ -27,6 +27,15 @@ object NumberSpans {
     private val numberPattern = Regex("""\d+(?:[ ,]\d+)*""")
 
     /**
+     * What gets isolated for display, which is wider than what gets made tappable: a code
+     * written `12-34`, a time `19:53`, a date `1405/5/15` or a prefixed `+98 912` has to keep
+     * its punctuation between its own digits. Left outside an isolate, the dash, colon or slash
+     * resolves against the Persian sentence and lands on the wrong side of the figure. Two
+     * digits is enough to be worth isolating; tappable spans still want four.
+     */
+    private val isolationPattern = Regex("""\+?\d+(?:[ ,:./\-]\d+)*""")
+
+    /**
      * Web addresses, with or without a scheme. `www.example.com` and bare `example.ir` are
      * both linked; the trailing-character class deliberately excludes `.`, `,`, `)` and the
      * Persian comma so a URL at the end of a sentence does not swallow its punctuation.
@@ -40,6 +49,55 @@ object NumberSpans {
             """(?<![@\w.])[\w-]+(?:\.[\w-]+)*\.(?:com|net|org|ir|info|io|me|co|dev|app|xyz|biz|shop|site|online|gov|edu)(?::\d+)?(?:/[^\s<>"'،؛]*)?""",
         RegexOption.IGNORE_CASE
     )
+
+    /**
+     * [text] with each web address and figure wrapped in a left-to-right isolate, when the
+     * message is written in a right-to-left script.
+     *
+     * A carrier SMS is Persian with an account number, a short code and a link dropped into
+     * the middle of it. Without isolates the bidi algorithm resolves the neutrals around each
+     * Latin run against the Persian paragraph, so "http://i3l.ir/aSQUL" wrapped with its
+     * slashes on the wrong end and "(09377071000)" came out with its brackets reversed. Inside
+     * an isolate the run lays out on its own terms and the sentence around it is untouched,
+     * which a bare LRM or a view-wide text direction would not manage.
+     *
+     * A message with no right-to-left letters in it is returned as is: its own direction is
+     * already left to right. Display only -- the marks are real characters, so copy, search
+     * and reply keep reading `message.body`.
+     */
+    fun isolateLtrRuns(text: String): String {
+        if (text.none { isRtlLetter(it) }) return text
+        val urls = findUrls(text).map { it.range }
+        val figures = isolationPattern.findAll(text)
+            .filter { cleanNumber(it.value).length >= 2 }
+            .map { it.range }
+            .toList()
+        val runs = (urls + figures.filterNot { n ->
+            urls.any { n.first >= it.first && n.last <= it.last }
+        }).sortedBy { it.first }
+        if (runs.isEmpty()) return text
+
+        val out = StringBuilder(text.length + runs.size * 2)
+        var cursor = 0
+        for (run in runs) {
+            // A leading "+" belongs to the number: left outside, it resolves right to left
+            // and lands at the far end, which is the "98912...+" this was meant to stop.
+            val start = if (run.first > 0 && text[run.first - 1] == '+') run.first - 1 else run.first
+            if (start < cursor) continue
+            out.append(text, cursor, start).append(LRI).append(text, start, run.last + 1).append(PDI)
+            cursor = run.last + 1
+        }
+        return out.append(text, cursor, text.length).toString()
+    }
+
+    private fun isRtlLetter(c: Char): Boolean {
+        val d = Character.getDirectionality(c)
+        return d == Character.DIRECTIONALITY_RIGHT_TO_LEFT ||
+            d == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC
+    }
+
+    private const val LRI = '⁦'
+    private const val PDI = '⁩'
 
     /** Digits only, which is what you actually want on the clipboard. */
     fun cleanNumber(raw: String) = raw.filter { it.isDigit() }

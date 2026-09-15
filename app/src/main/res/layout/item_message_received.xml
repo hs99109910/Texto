@@ -54,7 +54,7 @@
             Same body + meta stack as the sent bubble, minus the delivery ticks: an incoming
             message has no delivery state of its own to report.
         -->
-        <LinearLayout
+        <com.texto.sms.helpers.TextoBubbleLayout
             android:id="@+id/thread_message_body_holder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -64,7 +64,6 @@
             android:background="@drawable/item_received_background"
             android:clickable="true"
             android:focusable="true"
-            android:orientation="vertical"
             android:paddingHorizontal="14dp"
             android:paddingTop="10dp"
             android:paddingBottom="8dp">
@@ -89,7 +88,7 @@
                 android:textSize="10sp"
                 tools:ignore="SmallSp"
                 tools:text="10:12" />
-        </LinearLayout>
+        </com.texto.sms.helpers.TextoBubbleLayout>
 
         <TextView
             android:id="@+id/thread_message_carrier_warning"
@@ -101,6 +100,27 @@
             android:paddingHorizontal="4dp"
             android:text="Some carriers may limit this to 3MB or less"
             android:textSize="10sp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <!--
+            One tap to copy a verification code, under the message that carries it. Shown only
+            when MessageClassifier recognises the message as a code; painted in ThreadAdapter.
+        -->
+        <TextView
+            android:id="@+id/thread_message_otp_copy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/thread_message_body_holder"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="6dp"
+            android:clickable="true"
+            android:drawablePadding="6dp"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:text="@string/copy_verification_code"
             android:visibility="gone"
             tools:visibility="visible" />
 

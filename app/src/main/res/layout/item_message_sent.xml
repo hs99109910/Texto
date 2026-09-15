@@ -51,11 +51,11 @@
             tools:ignore="ContentDescription" />
 
         <!--
-            The design puts the time and the delivery ticks INSIDE the bubble, on their own
-            line under the text, rather than on a separate row between bubbles. That is what
-            the meta row below is: a vertical stack of body + meta inside the bubble's fill.
+            Telegram's bubble: the time and the delivery ticks sit in the bottom corner of the
+            last line when it has room, else on a line of their own. TextoBubbleLayout decides;
+            padding and the tailed background are set in ThreadAdapter.
         -->
-        <LinearLayout
+        <com.texto.sms.helpers.TextoBubbleLayout
             android:id="@+id/thread_message_body_holder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -65,7 +65,6 @@
             android:background="@drawable/item_sent_background"
             android:clickable="true"
             android:focusable="true"
-            android:orientation="vertical"
             android:paddingHorizontal="14dp"
             android:paddingTop="10dp"
             android:paddingBottom="8dp">
@@ -114,7 +113,7 @@
                     tools:visibility="visible" />
 
             </LinearLayout>
-        </LinearLayout>
+        </com.texto.sms.helpers.TextoBubbleLayout>
 
         <TextView
             android:id="@+id/thread_message_carrier_warning"

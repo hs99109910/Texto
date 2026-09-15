@@ -19,6 +19,8 @@ import com.texto.sms.helpers.IS_RECYCLE_BIN
 import com.texto.sms.helpers.THREAD_ID
 import com.texto.sms.helpers.THREAD_TITLE
 import com.texto.sms.helpers.textoConfirmDialog
+import com.texto.sms.helpers.emptyStateFor
+import com.texto.sms.extensions.beGone
 import com.texto.sms.models.Conversation
 import com.texto.sms.models.Events
 import org.greenrobot.eventbus.EventBus
@@ -144,9 +146,15 @@ class RecycleBinConversationsActivity : SimpleActivity() {
     }
 
     private fun showOrHidePlaceholder(show: Boolean) {
-        binding.noConversationsPlaceholder.beVisibleIf(show)
-        binding.noConversationsPlaceholder.setTextColor(config.mainTextColor)
-        binding.noConversationsPlaceholder.text = getString(R.string.no_conversations_found)
+        binding.noConversationsPlaceholder.beGone()
+        emptyStateFor(
+            placeholder = binding.noConversationsPlaceholder,
+            icon = R.drawable.ic_ph_trash,
+            title = getString(R.string.empty_recycle_title),
+            body = getString(R.string.empty_recycle_body),
+            actionLabel = getString(R.string.empty_back_to_conversations),
+            onAction = { finish() },
+        ).beVisibleIf(show)
     }
 
     @SuppressLint("NotifyDataSetChanged")

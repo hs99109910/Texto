@@ -219,7 +219,7 @@ abstract class BaseConversationsAdapter(
             val isSelected = selectedKeys.contains(conversation.hashCode())
             val isHoverTarget = hoveredPosition == position
             recentSelectionGlow.beVisibleIf(isSelected || isHoverTarget)
-            recentSelectionGlow.background?.applyColorFilter(properPrimaryColor)
+            recentSelectionGlow.background?.applyColorFilter(activity.config.accentGradientStart)
             recentSelectionGlow.alpha = if (isHoverTarget) 0.5f else 1.0f
             recentSelectionCheck.beVisibleIf(isSelected)
         }
@@ -630,6 +630,7 @@ abstract class BaseConversationsAdapter(
                 val padH = ROW_PADDING_H_DP.getScaledPxIn(a)
                 val padV = ROW_PADDING_V_DP.getScaledPxIn(a)
                 recentFrame.setPadding(padH, padV, padH, padV)
+                // Separate cards, but packed close: half the gap on each side of every card.
                 recentFrame.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
                     topMargin = ROW_GAP_DP.getScaledPxIn(a)
                     bottomMargin = ROW_GAP_DP.getScaledPxIn(a)
@@ -637,8 +638,18 @@ abstract class BaseConversationsAdapter(
 
                 val avatarGap = AVATAR_TEXT_GAP_DP.getScaledPxIn(a)
                 val endGap = TEXT_END_GAP_DP.getScaledPxIn(a)
-                recentAddress.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
+                // The pin leads the name. With no pin, the name takes the avatar gap itself
+                // through goneStartMargin, so pinned and unpinned names do not start at the
+                // same x only by accident.
+                recentPinIndicator.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
+                    width = PIN_DP.getScaledPxIn(a)
+                    height = PIN_DP.getScaledPxIn(a)
                     marginStart = avatarGap
+                    marginEnd = 0
+                }
+                recentAddress.updateLayoutParams<androidx.constraintlayout.widget.ConstraintLayout.LayoutParams> {
+                    marginStart = PIN_NAME_GAP_DP.getScaledPxIn(a)
+                    goneStartMargin = avatarGap
                     // The date is always there, so the name always clears it.
                     marginEnd = endGap
                 }
@@ -648,13 +659,6 @@ abstract class BaseConversationsAdapter(
                     // Only when there is something at the end of this line to clear. See
                     // TEXT_END_GAP_DP: left on unconditionally, it holds a gap against a
                     // GONE badge and leaves the preview short of the date's right edge.
-                    marginEnd = if (recentUnreadBadge.isVisible || recentPinIndicator.isVisible) {
-                        endGap
-                    } else {
-                        0
-                    }
-                }
-                recentPinIndicator.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
                     marginEnd = if (recentUnreadBadge.isVisible) endGap else 0
                 }
             }
@@ -666,7 +670,7 @@ abstract class BaseConversationsAdapter(
             val isSelected = selectedKeys.contains(conversation.hashCode())
             val cardColor = activity.config.recentColor
             val baseColor = if (isSelected) {
-                blendColors(cardColor, properPrimaryColor, 0.45f)
+                blendColors(cardColor, activity.config.accentGradientStart, 0.45f)
             } else {
                 cardColor
             }
@@ -767,7 +771,7 @@ abstract class BaseConversationsAdapter(
             // Selection / drag-target Glow
             val isHoverTarget = hoveredPosition == position
             recentSelectionGlow.beVisibleIf(isSelected || isHoverTarget)
-            recentSelectionGlow.background?.applyColorFilter(properPrimaryColor)
+            recentSelectionGlow.background?.applyColorFilter(activity.config.accentGradientStart)
             recentSelectionGlow.alpha = if (isHoverTarget) 0.5f else 1.0f
 
             recentSelectionCheck.beVisibleIf(isSelected)
@@ -1091,7 +1095,10 @@ abstract class BaseConversationsAdapter(
         private const val AVATAR_DP = 48
         private const val ROW_PADDING_H_DP = 16
         private const val ROW_PADDING_V_DP = 4
-        private const val ROW_GAP_DP = 4
+        /** Each side of a card, so two cards sit 2dp apart (was 4 + 4). */
+        private const val ROW_GAP_DP = 1
+        private const val PIN_DP = 14
+        private const val PIN_NAME_GAP_DP = 4
 
         /** Avatar to the name and the preview, and the name to the preview below it. */
         private const val AVATAR_TEXT_GAP_DP = 12

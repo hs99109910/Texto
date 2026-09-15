@@ -47,6 +47,7 @@ import com.texto.sms.helpers.TextoGlass
 import com.texto.sms.helpers.textoCapsuleDialog
 import com.texto.sms.helpers.textoColorPicker
 import com.texto.sms.helpers.NAV_ICON_DP
+import com.texto.sms.helpers.expandTouchTarget
 import com.texto.sms.helpers.SEARCHED_MESSAGE_ID
 import com.texto.sms.helpers.THREAD_ID
 import com.texto.sms.helpers.THREAD_TITLE
@@ -98,7 +99,7 @@ class MainActivity : SimpleActivity() {
         const val PICK_FILTER_SOUND_REQUEST = 1201
 
         /** The design's wordmark: 20% up from the 34dp it shipped at, then 10% back down. */
-        const val LOGO_HEIGHT_DP = 37
+        const val LOGO_HEIGHT_DP = 34
 
         /**
          * The home header, 12dp shorter than the 70dp every other bar uses.
@@ -110,13 +111,6 @@ class MainActivity : SimpleActivity() {
          * conversation row's worth of screen, and the list starts that much higher.
          */
         const val HEADER_HEIGHT_DP = 58
-
-        /**
-         * The gear's own disc stays at the design's 40dp; this is the touch target laid over
-         * it. The platform's floor is 48dp and a 40dp disc is under it, so the header row
-         * carries a TouchDelegate that pads the hit rect out to this on every side.
-         */
-        const val MIN_TOUCH_TARGET_DP = 48
 
         /** Matches the other panel transitions in the app. */
         const val SEARCH_ANIM_MILLIS = 260L
@@ -336,8 +330,24 @@ class MainActivity : SimpleActivity() {
         // the layout's placeholder -- a dark rounded square with a white glyph -- sitting
         // directly beside a light 40dp disc with a dark one: two materials on one row, on the
         // one row the design means to read as a single control set.
-        styleHeaderTile(binding.textoAppearanceBtn)
         styleHeaderTile(binding.textoMenuBtn)
+        binding.textoAppearanceBtn.beGone()
+
+        // The capsule's middle is the search field's placeholder: the bar's own ink at the
+        // idle 58%, with the magnifier at the 68% every header glyph carries.
+        val ink = config.topBarTextColor
+        binding.textoHeaderSearchIcon.apply {
+            updateLayoutParams<LinearLayout.LayoutParams> {
+                width = 20.getScaledPx()
+                height = 20.getScaledPx()
+            }
+            applyColorFilter(ink.withAlpha(0.68f))
+        }
+        binding.textoHeaderSearchLabel.apply {
+            setTextColor(ink.withAlpha(0.58f))
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.0f))
+            typeface = typefaceFor(android.graphics.Typeface.NORMAL)
+        }
     }
 
     private fun styleHeaderTile(tile: android.widget.ImageView) = tile.apply {
@@ -365,86 +375,69 @@ class MainActivity : SimpleActivity() {
 
         // The disc is 40dp because the design draws it at 40dp, and the header is now 58dp
         // rather than 70dp, so neither can be leaned on to reach the platform's 48dp touch
-        // floor. The hit rect is padded out to it instead: the gear looks the same and the
-        // area you can actually hit grows. Posted because getHitRect() is only meaningful
-        // once the row has been laid out.
+        // floor. The hit rect is padded out to it instead: the tile looks the same and the
+        // area you can actually hit grows.
         //
-        // A view carries one delegate, so the row keeps the last tile painted, which is the
-        // gear: the palette beside it is the same 40dp and would want the same, and two rects
-        // on one parent is not something TouchDelegate offers.
-        post {
-            val target = MIN_TOUCH_TARGET_DP.getScaledPx()
-            val grow = ((target - height) / 2).coerceAtLeast(0)
-            if (grow == 0) return@post
-            val parentRow = parent as? View ?: return@post
-            val rect = android.graphics.Rect()
-            getHitRect(rect)
-            rect.inset(-grow, -grow)
-            parentRow.touchDelegate = android.view.TouchDelegate(rect, this)
+        // Both tiles get it. This used to assign `touchDelegate` directly, and a View carries
+        // exactly one, so the row kept whichever was painted last -- the gear -- and the
+        // palette next to it stayed at 40dp in the corner of the screen where the thumb is
+        // least accurate. TextoTouchDelegate holds a rect per view instead.
+        expandTouchTarget()
+    }
+
+    /**
+     * The home screen's two ways out: search, from the capsule that is the header, and a new
+     * conversation, from the extended FAB. The three-tab floating pill that used to carry both
+     * is retired -- its "Conversations" tab only ever pointed at the screen it sat on -- and its
+     * views stay in the layout, gone, for the painters that still reach into them by id.
+     */
+    private fun setupTextoNavBar() = binding.apply {
+        textoNavContainer.beGone()
+        styleFab()
+        textoFab.setOnClickListener { launchNewConversation() }
+        textoFab.beVisibleIf(!isSearchExpanded)
+        textoHeaderSearch.setOnClickListener {
+            if (!isSearchExpanded) expandSearchBar()
+        }
+
+        if (textoSearchInput.tag != "text_watcher_attached") {
+            textoSearchInput.addTextChangedListener { text ->
+                searchTextChanged(text?.toString() ?: "")
+            }
+            textoSearchInput.tag = "text_watcher_attached"
+        }
+
+        textoSearchClear.setOnClickListener {
+            if (textoSearchInput.text?.isNotEmpty() == true) {
+                textoSearchInput.setText("")
+            } else {
+                // Nothing typed, so the X is the way out of search rather than a no-op.
+                shrinkSearchBar()
+            }
         }
     }
 
-    private fun setupTextoNavBar() = binding.apply {
-        if (config.useNewUi) {
-            textoNavContainer.beVisible()
-
-            // The capsule spans the width now that compose lives inside it: four equal
-            // slots, sized up about a third from the mockup's so the labels sit comfortably.
-            textoNavContainer.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
-                width = ViewGroup.LayoutParams.MATCH_PARENT
-                gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
-            }
-
-            // Every tab draws at full opacity: styleNavTabs separates the current one from
-            // the rest with the design's own `--primary`/`--muted` pair, and dimming on top
-            // of that would take the idle tabs well below the contrast the design gives them.
-            listOf(navHomeIcon, navAddIcon, textoSearchIcon).forEach { it.alpha = 1f }
-            listOf(navHomeLabel, navAddLabel, navSearchLabel).forEach { it.alpha = 1f }
-
-            styleNavTabs()
-
-            navSearchContainer.setOnClickListener {
-                if (!isSearchExpanded) expandSearchBar()
-            }
-
-            navAddBtn.setOnClickListener { launchNewConversation() }
-
-            navHomeBtn.setOnClickListener {
-                // While searching, this tab is the way back to the list rather than a
-                // scroll-to-top on a list that is not on screen.
-                if (isSearchExpanded) {
-                    shrinkSearchBar()
-                } else {
-                    clearPendingScroll()
-                    binding.conversationsList.smoothScrollToPosition(0)
-                }
-            }
-
-            if (textoSearchInput.tag != "text_watcher_attached") {
-                textoSearchInput.addTextChangedListener { text ->
-                    searchTextChanged(text?.toString() ?: "")
-                }
-                textoSearchInput.tag = "text_watcher_attached"
-            }
-
-            textoSearchClear.setOnClickListener {
-                if (textoSearchInput.text?.isNotEmpty() == true) {
-                    textoSearchInput.setText("")
-                } else {
-                    // Nothing typed, so the X is the way out of search rather than a no-op.
-                    shrinkSearchBar()
-                }
-            }
-
-            // Set initial state
-            if (!isSearchExpanded) {
-                navHomeBtn.beVisible()
-                navAddBtn.beVisible()
-                navSearchLabel.beVisible()
-                navSearchContainer.gravity = android.view.Gravity.CENTER
-            }
-        } else {
-            textoNavContainer.beGone()
+    /**
+     * The FAB in the theme's own accent and on-accent ink, at the UI scale, with Material 3's
+     * 16dp corner rather than a full pill so it reads as the one primary action on the screen.
+     */
+    private fun styleFab() = binding.textoFab.apply {
+        val accent = config.accentGradientStart
+        val ink = config.accentInkColor
+        backgroundTintList = android.content.res.ColorStateList.valueOf(accent)
+        setTextColor(ink)
+        iconTint = android.content.res.ColorStateList.valueOf(ink)
+        rippleColor = android.content.res.ColorStateList.valueOf(ink.withAlpha(0.20f))
+        iconSize = 22.getScaledPx()
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.95f))
+        typeface = typefaceFor(android.graphics.Typeface.BOLD)
+        // Material's button style shouts the label in English; the design writes it as a sentence.
+        isAllCaps = false
+        minHeight = 56.getScaledPx()
+        shapeAppearanceModel = shapeAppearanceModel.withCornerSize(16f * resources.displayMetrics.density)
+        updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
+            marginStart = 16.getScaledPx()
+            marginEnd = 16.getScaledPx()
         }
     }
 
@@ -550,6 +543,9 @@ class MainActivity : SimpleActivity() {
         // its chips behind the wordmark; search gets the top of the screen to itself.
         mainAppbar.beGone()
         filterBar.beGone()
+        // Starting a conversation is not what the search screen is for, and the FAB would sit
+        // on top of the results and the keyboard.
+        textoFab.beGone()
 
         buildSearchFilterChips()
         buildSearchDateChips()
@@ -619,6 +615,8 @@ class MainActivity : SimpleActivity() {
 
         mainAppbar.beVisible()
         filterBar.beVisible()
+        textoFab.beVisible()
+        textoFab.extend()
         // Full view alpha: how see-through these are is the glass setting's job alone. A
         // 0.92 here multiplied against the fill and put the bars below whatever the slider
         // said, which is part of why its top end never looked opaque.
@@ -1195,26 +1193,17 @@ class MainActivity : SimpleActivity() {
      * were already clamped there. It is a brightness change, not a hue change -- the mark
      * stays on-brand, it is only exposed differently for the ground it sits on.
      */
+    /**
+     * The brand mark leading the search capsule: the launcher badge itself, so the header and
+     * the home-screen icon are one mark. It needs no brightness lift on the dark skins the
+     * wordmark did, because the badge carries its own blue ground.
+     */
     private fun styleAppTitle() = binding.textoTitle.apply {
         updateLayoutParams<LinearLayout.LayoutParams> {
+            width = LOGO_HEIGHT_DP.getScaledPx()
             height = LOGO_HEIGHT_DP.getScaledPx()
         }
-
-        colorFilter = if (com.texto.sms.helpers.TextoGlass.isDark(config.mainBackgroundColor)) {
-            val lift = 2.05f
-            android.graphics.ColorMatrixColorFilter(
-                android.graphics.ColorMatrix(
-                    floatArrayOf(
-                        lift, 0f, 0f, 0f, 12f,
-                        0f, lift, 0f, 0f, 12f,
-                        0f, 0f, lift, 0f, 12f,
-                        0f, 0f, 0f, 1f, 0f
-                    )
-                )
-            )
-        } else {
-            null
-        }
+        colorFilter = null
     }
 
     /**
@@ -1430,11 +1419,25 @@ class MainActivity : SimpleActivity() {
                         clearPendingScroll()
                     }
                 }
+
+                // The FAB gives the list its width back while you read down it, and offers
+                // its label again the moment you turn back towards the top.
+                override fun onScrolled(
+                    recyclerView: androidx.recyclerview.widget.RecyclerView,
+                    dx: Int,
+                    dy: Int,
+                ) {
+                    if (dy > 0 && binding.textoFab.isExtended) {
+                        binding.textoFab.shrink()
+                    } else if (dy < 0 && !binding.textoFab.isExtended) {
+                        binding.textoFab.extend()
+                    }
+                }
             }
         )
 
         val searchAnim = AnimationUtils.loadAnimation(this, R.anim.slide_in_bottom)
-        binding.textoNavContainer.startAnimation(searchAnim)
+        binding.textoFab.startAnimation(searchAnim)
 
         binding.textoSearchInput.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize())
     }
@@ -1816,6 +1819,23 @@ class MainActivity : SimpleActivity() {
                 // so it follows the bar without any extra offset here.
             }
         }
+
+        // The same idea at the other end. The FAB floats over the list rather than sitting in
+        // the layout, so nothing reserves its height: without this the last conversation
+        // could not be scrolled clear of it. (It was the nav pill's height before the pill was
+        // retired; measured then, the bottom card sat permanently half under it.)
+        binding.textoFab.doOnLayout { pill ->
+            if (isFinishing || isDestroyed) return@doOnLayout
+            val margin = (pill.layoutParams as? ViewGroup.MarginLayoutParams)?.bottomMargin ?: 0
+            // The pill's own bottom margin already clears the gesture bar, so the system inset
+            // that setupEdgeToEdge adds on top of this would be counted twice: take the
+            // margin's own share back out of it.
+            val systemBottom = ViewCompat.getRootWindowInsets(pill)
+                ?.getInsets(WindowInsetsCompat.Type.systemBars())?.bottom ?: 0
+            val room = (pill.height + margin + 5.getScaledPx() - systemBottom).coerceAtLeast(0)
+            binding.conversationsList.setBaseBottomPadding(room)
+            binding.searchResultsList.setBaseBottomPadding(room)
+        }
     }
 
     private fun setupSearchEdgeToEdge() {
@@ -1823,7 +1843,7 @@ class MainActivity : SimpleActivity() {
             val imeInsets = insets.getInsets(WindowInsetsCompat.Type.ime())
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val bottomInset = if (imeInsets.bottom > 0) imeInsets.bottom else systemBars.bottom
-            binding.textoNavContainer.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
+            binding.textoFab.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
                 bottomMargin = bottomInset + 16.getScaledPx()
             }
             insets
@@ -2040,7 +2060,7 @@ class MainActivity : SimpleActivity() {
      */
     private fun setHomeFunctionsEnabled(enabled: Boolean) = binding.apply {
         listOf<View>(
-            textoMenuBtn, textoAppearanceBtn, navAddBtn, navHomeBtn, navSearchContainer,
+            textoMenuBtn, textoAppearanceBtn, textoFab, textoHeaderSearch,
             filterBar
         )
             .forEach {

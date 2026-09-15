@@ -2,6 +2,12 @@
 <resources>
     <item name="texto_dialog_title" type="id" />
     <item name="texto_tag_base_padding" type="id" />
+    <!-- Tag key holding the composite touch delegate a row has already been given. -->
+    <item name="texto_tag_touch_delegate" type="id" />
+    <!-- Hands back the list padding an appearance sheet borrowed, when the sheet is dismissed. -->
+    <item name="texto_tag_sheet_restore" type="id" />
+    <!-- Tag key holding the empty-state block built beside a placeholder. -->
+    <item name="texto_tag_empty_state" type="id" />
     <item name="more_options" type="id" />
     <item name="dial_number" type="id" />
     <item name="archive" type="id" />

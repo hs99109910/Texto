@@ -22,45 +22,67 @@
             app:popupTheme="@style/TextoPopupTheme">
 
             <!--
-                The design's header, pinned to left-to-right on purpose: the wordmark sits in
-                the top-left corner and the gear in the top-right, whichever way the rest of
-                the app reads. Everything below this row still follows the locale.
+                The home header is a search capsule, the way Google Messages draws it: the
+                brand mark leads, the whole middle is a tappable "search" field, and the gear
+                trails. It follows the locale, so under Persian the mark sits on the right.
+                The field is not a real EditText: tapping it opens the search panel, which
+                owns the input, the date range and the filter chips.
             -->
             <LinearLayout
                 android:id="@+id/texto_header_row"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
-                android:layoutDirection="ltr"
                 android:orientation="horizontal"
                 android:paddingStart="22dp"
                 android:paddingEnd="22dp">
 
-                <!--
-                    The wordmark, taken as the design's own logo image (its neon-outline
-                    "Texto" mark) rather than redrawn as styled text. It keeps its own
-                    direction whichever locale is running, same as the text it replaces did.
-                -->
                 <ImageView
                     android:id="@+id/texto_title"
-                    android:layout_width="0dp"
-                    android:layout_height="37dp"
-                    android:layout_weight="1"
-                    android:layoutDirection="ltr"
-                    android:adjustViewBounds="true"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
                     android:contentDescription="@string/app_launcher_name"
-                    android:scaleType="fitStart"
-                    android:src="@drawable/img_texto_wordmark" />
+                    android:scaleType="fitCenter"
+                    android:src="@mipmap/ic_launcher_round" />
+
+                <LinearLayout
+                    android:id="@+id/texto_header_search"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_weight="1"
+                    android:clickable="true"
+                    android:contentDescription="@string/home_search_hint"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/texto_header_search_icon"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_ph_magnifying_glass" />
+
+                    <TextView
+                        android:id="@+id/texto_header_search_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:importantForAccessibility="no"
+                        android:maxLines="1"
+                        android:text="@string/home_search_hint"
+                        android:textAlignment="viewStart" />
+
+                </LinearLayout>
 
                 <!--
-                    The one header control. Everything the old overflow offered is reachable
-                    from settings now: archived conversations under their own heading, and
-                    "about" as the last card, so a second button had nothing left to open.
-                -->
-                <!--
-                    The live editor, beside the gear rather than inside it: what it edits is
-                    this screen, so the way in belongs on this screen. Same palette glyph the
-                    thread's own header carries.
+                    The live editor's old way in. Kept as a view so the editor code that
+                    locks it keeps compiling, but never shown: the editor is opened from
+                    Settings, which keeps the header down to one control besides search.
                 -->
                 <ImageView
                     android:id="@+id/texto_appearance_btn"
@@ -74,6 +96,7 @@
                     android:focusable="true"
                     android:padding="10dp"
                     android:src="@drawable/ic_ph_palette"
+                    android:visibility="gone"
                     app:tint="@android:color/white" />
 
                 <ImageView
@@ -418,6 +441,10 @@
         than the 22dp it measured at before: an inconsistent, more-generous number nothing
         else on the bar used.
     -->
+    <!--
+        Retired in favour of the extended FAB below and the search capsule in the header. The
+        views stay, gone, because several painters still reach into them by id.
+    -->
     <FrameLayout
         android:id="@+id/texto_nav_container"
         android:layout_width="match_parent"
@@ -427,7 +454,8 @@
         android:layout_marginBottom="16dp"
         android:background="@drawable/texto_searchbar_bg"
         android:elevation="10dp"
-        android:padding="6dp">
+        android:padding="6dp"
+        android:visibility="gone">
 
         <!--
             The halo behind the current tab. A view of its own rather than a background on
@@ -534,5 +562,20 @@
         </LinearLayout>
 
     </FrameLayout>
+
+    <!--
+        Start chat. Anchored to the bottom end corner: bottom right under English, bottom left
+        under Persian, where the thumb already is. It shrinks to a plain disc while the list
+        scrolls down and stretches back out on the way up. Colours are set in MainActivity.
+    -->
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/texto_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:contentDescription="@string/start_chat"
+        android:text="@string/start_chat"
+        app:icon="@drawable/ic_ph_chat_circle_text" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

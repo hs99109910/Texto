@@ -16,6 +16,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.view.children
 import androidx.core.view.doOnLayout
+import androidx.core.view.doOnNextLayout
 import androidx.core.view.updateLayoutParams
 import com.texto.sms.R
 import com.texto.sms.activities.SimpleActivity
@@ -104,7 +105,6 @@ fun SimpleActivity.inlineColourBars(
     onReset: (() -> Unit)? = null,
 ): LinearLayout {
     val density = resources.displayMetrics.density
-    var (familyIndex, shadeIndex) = TextoPalette.locate(read() or 0xFF000000.toInt())
 
     val group = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
@@ -182,52 +182,32 @@ fun SimpleActivity.inlineColourBars(
     }
     group.addView(header)
 
-    val familyStrip = TextoHueStrip(this).apply {
+    // One bar: hue along it, lightness down it, greys at its start edge.
+    val spectrum = TextoSpectrumBar(this).apply {
         layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, 34.getScaledPx()
-        ).apply { topMargin = 8.getScaledPx() }
+            ViewGroup.LayoutParams.MATCH_PARENT, 64.getScaledPx()
+        ).apply { topMargin = 10.getScaledPx() }
+        setColourSilently(read())
+        onPicked = { picked -> write(picked) }
     }
-    val shadeStrip = TextoHueStrip(this).apply {
-        layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, 34.getScaledPx()
-        ).apply { topMargin = 6.getScaledPx() }
-    }
-
-    fun renderShades() {
-        shadeStrip.submit(TextoPalette.families[familyIndex].toList(), shadeIndex)
-    }
-
-    // The family band shows each family's middle rung, which is what it looks like before you
-    // choose how light you want it.
-    familyStrip.submit(
-        List(TextoPalette.families.size) { TextoPalette.faceOf(it) },
-        familyIndex
-    )
-    renderShades()
-
-    familyStrip.onPicked = { index ->
-        familyIndex = index
-        renderShades()
-        write(TextoPalette.families[familyIndex][shadeIndex])
-    }
-    shadeStrip.onPicked = { index ->
-        shadeIndex = index
-        write(TextoPalette.families[familyIndex][shadeIndex])
-    }
-
-    group.addView(familyStrip)
-    group.addView(shadeStrip)
+    group.addView(spectrum)
     return group
 }
 
 /**
- * Puts [above] and [below] against [anchor] inside [overlay], on whichever sides have room.
+ * Shows [above] and [below] -- the colour and, where there is one, its ink -- in a sheet
+ * docked to the bottom of [overlay], and keeps [anchor] in view above it.
  *
- * Shared by both editors so a bar, a card and a bubble are all restyled the same way: the
- * thing you tapped stays on screen with its controls against it. [ceiling] is the lowest y a
- * pair may take, which is the editor's own bar -- a pair placed against something near the top
- * would otherwise slide under it and lose its label.
+ * Both editors share it, so a bar, a card and a bubble are restyled the same way. The strips
+ * used to float against the element itself, one pair above it and one below, which put a
+ * panel directly over the message text next to the bubble being recoloured. In a sheet the
+ * controls sit in one predictable place and the thread stays readable above them: the list the
+ * anchor lives in is padded by the sheet's height and scrolled so the anchor clears it, and
+ * that padding is handed back when the sheet goes.
+ *
+ * [ceiling] is kept for the callers' sake; a docked sheet has no top edge to respect.
  */
+@Suppress("UNUSED_PARAMETER")
 fun SimpleActivity.showInlineBarsAround(
     overlay: FrameLayout,
     anchor: View,
@@ -235,64 +215,107 @@ fun SimpleActivity.showInlineBarsAround(
     below: View?,
     ceiling: () -> Int,
 ) {
-    overlay.removeAllViews()
-    val anchorPos = IntArray(2).also { anchor.getLocationOnScreen(it) }
-    val overlayPos = IntArray(2).also { overlay.getLocationOnScreen(it) }
-    val anchorTop = anchorPos[1] - overlayPos[1]
-    val anchorBottom = anchorTop + anchor.height
-    val side = 12.getScaledPx()
+    overlay.hideInlineBars()
+    val density = resources.displayMetrics.density
+    val navInset = androidx.core.view.ViewCompat.getRootWindowInsets(overlay)
+        ?.getInsets(androidx.core.view.WindowInsetsCompat.Type.systemBars())?.bottom ?: 0
 
-    listOfNotNull(above, below).forEach { bars ->
-        overlay.addView(
-            bars,
-            FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply {
-                marginStart = side
-                marginEnd = side
+    val radius = 28f * density
+    val sheet = LinearLayout(this).apply {
+        orientation = LinearLayout.VERTICAL
+        setPadding(16.getScaledPx(), 10.getScaledPx(), 16.getScaledPx(), 16.getScaledPx() + navInset)
+        background = TextoGlass.panel(
+            tint = config.recentColor,
+            cornerRadii = floatArrayOf(radius, radius, radius, radius, 0f, 0f, 0f, 0f),
+            opacity = 0.97f,
+            strokeWidthPx = 1.getScaledPx(),
+        )
+        elevation = 16 * density
+        // A tap on the sheet itself is not a tap outside it.
+        isClickable = true
+    }
+    sheet.addView(
+        View(this).apply {
+            background = GradientDrawable().apply {
+                cornerRadius = 100f * density
+                setColor(config.mainTextColor.withAlpha(0.25f))
             }
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+        },
+        LinearLayout.LayoutParams(36.getScaledPx(), 4.getScaledPx()).apply {
+            gravity = Gravity.CENTER_HORIZONTAL
+            bottomMargin = 12.getScaledPx()
+        }
+    )
+    listOfNotNull(above, below).forEachIndexed { index, group ->
+        // The sheet is the surface now, so each group loses its own floating card.
+        group.background = null
+        group.elevation = 0f
+        group.clipToOutline = false
+        group.setPadding(0, if (index == 0) 0 else 14.getScaledPx(), 0, 0)
+        sheet.addView(
+            group,
+            LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
+            )
         )
     }
-
+    overlay.addView(
+        sheet,
+        FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.BOTTOM
+        )
+    )
     overlay.visibility = View.VISIBLE
     overlay.setOnClickListener { overlay.hideInlineBars() }
-    overlay.doOnLayout {
-        val gap = 8.getScaledPx()
-        val room = overlay.height
-        val top = ceiling()
-        // Measured rather than read off the views: they have been added but not laid out at
-        // their final margins yet, so `height` is still whatever the first pass gave them --
-        // which put the second pair on top of the first.
-        val widthSpec = View.MeasureSpec.makeMeasureSpec(
-            (overlay.width - side * 2).coerceAtLeast(0), View.MeasureSpec.EXACTLY
-        )
-        val heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-        above.measure(widthSpec, heightSpec)
-        below?.measure(widthSpec, heightSpec)
-        val aboveH = above.measuredHeight
-        val belowH = below?.measuredHeight ?: 0
-        var aboveTop = anchorTop - gap - aboveH
-        var belowTop = anchorBottom + gap
-        if (aboveTop < top) aboveTop = (anchorBottom + gap).coerceAtMost(room - aboveH - gap)
-        if (belowTop + belowH > room - gap) {
-            belowTop = (anchorTop - gap - belowH).coerceAtLeast(top)
+
+    sheet.doOnLayout {
+        sheet.translationY = sheet.height.toFloat()
+        sheet.animate()
+            .translationY(0f)
+            .setDuration(220)
+            .setInterpolator(android.view.animation.DecelerateInterpolator())
+            .start()
+
+        val list = anchor.ancestorRecyclerView() ?: return@doOnLayout
+        val originalPadding = list.paddingBottom
+        list.setPadding(list.paddingLeft, list.paddingTop, list.paddingRight, originalPadding + sheet.height)
+        overlay.setTag(R.id.texto_tag_sheet_restore, Runnable {
+            list.setPadding(list.paddingLeft, list.paddingTop, list.paddingRight, originalPadding)
+        })
+        // After the padding has been laid out, not before: a list anchored to its end (the
+        // thread) moves its content up by the padding it just gained, which on device carried
+        // the tapped bubble straight up under the header. So the anchor is placed where it ends
+        // up rather than where it was -- just above the sheet, moving the list either way.
+        fun placeAnchor() {
+            if (!anchor.isAttachedToWindow || overlay.visibility != View.VISIBLE) return
+            val sheetTop = IntArray(2).also { sheet.getLocationOnScreen(it) }[1]
+            val anchorBottom = IntArray(2).also { anchor.getLocationOnScreen(it) }[1] + anchor.height
+            val offset = anchorBottom - (sheetTop - 16.getScaledPx())
+            if (kotlin.math.abs(offset) > 4.getScaledPx()) list.smoothScrollBy(0, offset)
         }
-        // Both forced to the same side: stack them rather than let one cover the other.
-        if (below != null && aboveTop < belowTop + belowH && belowTop < aboveTop + aboveH) {
-            belowTop = (aboveTop + aboveH + gap).coerceAtMost(room - belowH - gap)
+        // Twice: once the padding is laid out, and again once that first scroll and the sheet's
+        // own slide-in have settled. Measured on device, a single pass left the last bubble of
+        // a thread half behind the sheet, because the list was still moving when it measured.
+        list.doOnNextLayout {
+            list.post { placeAnchor() }
+            list.postDelayed({ placeAnchor() }, 400)
         }
-        above.updateLayoutParams<FrameLayout.LayoutParams> {
-            topMargin = aboveTop.coerceAtLeast(top)
-        }
-        below?.updateLayoutParams<FrameLayout.LayoutParams> {
-            topMargin = belowTop.coerceAtLeast(top)
-        }
-        above.animateInlineIn(fromBelow = false)
-        below?.animateInlineIn(fromBelow = true)
     }
 }
 
+private fun View.ancestorRecyclerView(): androidx.recyclerview.widget.RecyclerView? {
+    var parent = parent
+    while (parent is View) {
+        if (parent is androidx.recyclerview.widget.RecyclerView) return parent
+        parent = parent.parent
+    }
+    return null
+}
+
 fun FrameLayout.hideInlineBars() {
+    (getTag(R.id.texto_tag_sheet_restore) as? Runnable)?.run()
+    setTag(R.id.texto_tag_sheet_restore, null)
     removeAllViews()
     visibility = View.GONE
 }

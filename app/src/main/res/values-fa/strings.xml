@@ -48,6 +48,13 @@
     <string name="new_conversation">گفتگوی جدید</string>
     <!-- The compose tab caption in the bottom capsule; kept short so it fits a quarter of it. -->
     <string name="nav_new_message">پیام جدید</string>
+    <string name="home_search_hint">جستجو در پیام‌ها و مخاطبین</string>
+    <string name="start_chat">پیام جدید</string>
+    <string name="create_group">ایجاد گروه</string>
+    <string name="new_group">گروه جدید</string>
+    <string name="group_create_action">ایجاد (%s)</string>
+    <string name="group_pick_hint">دست‌کم دو نفر را انتخاب کنید</string>
+    <string name="copy_verification_code">کپی کد تایید</string>
     <string name="add_contact_or_number">افزودن مخاطب یا شماره…</string>
     <string name="suggestions">پیشنهادها</string>
     <!-- Group conversation -->
@@ -313,9 +320,9 @@
     <string name="already_in_filter">از قبل در این فیلتر هست</string>
     <string name="copy_code">کپی کد</string>
     <string name="code_copied">کد کپی شد</string>
-    <string name="blocked_numbers">شماره‌های بلاک‌شده</string>
-    <string name="no_blocked_numbers">هیچ شماره‌ای بلاک نشده</string>
-    <string name="unblock">رفع بلاک</string>
+    <string name="blocked_numbers">شماره‌های مسدودشده</string>
+    <string name="no_blocked_numbers">هیچ شماره‌ای مسدود نشده</string>
+    <string name="unblock">رفع مسدودی</string>
     <string name="copy_number_value">کپی عدد</string>
     <string name="forward_number_value">فوروارد عدد</string>
     <string name="app_theme">تم</string>
@@ -492,4 +499,18 @@
     <!-- Day labels and list punctuation, which are not the same character in the two languages. -->
     <string name="yesterday">دیروز</string>
     <string name="list_separator">"، "</string>
+    <string name="empty_archive_title">هنوز گفتگویی بایگانی نکرده‌اید</string>
+    <string name="empty_archive_body">بایگانی، گفتگو را از فهرست اصلی کنار می‌گذارد و تا وقتی لازمش داشته باشید اینجا می‌ماند.</string>
+    <string name="empty_recycle_title">سطل بازیافت خالی است</string>
+    <string name="empty_recycle_body">گفتگوهای حذف‌شده تا وقتی بازگردانی‌شان کنید یا سطل را خالی کنید، اینجا می‌مانند.</string>
+    <string name="empty_blocked_title">هیچ شماره‌ای مسدود نشده</string>
+    <string name="empty_blocked_body">پیام شماره‌های مسدودشده دیگر به شما نمی‌رسد. از منوی هر گفتگو می‌توانید شماره‌اش را مسدود کنید.</string>
+    <string name="empty_back_to_conversations">بازگشت به گفتگوها</string>
+    <string name="unblock_confirmation">مسدودی %s برداشته شود؟ پیام‌هایش دوباره به شما می‌رسد.</string>
+    <string name="colour_contrast_save_blocked">برای ذخیره، سایهٔ روشن‌تر یا تیره‌تری انتخاب کنید.</string>
+    <string name="pick_a_contact">انتخاب مخاطب</string>
+    <string name="send_to_number">پیام به %s</string>
+    <string name="contacts_empty_body">برای پیام به کسی که در مخاطبین نیست، شماره‌اش را در بالا بنویسید.</string>
+    <string name="contacts_empty_body_pick">در مخاطبین کسی با این مشخصات نیست.</string>
+    <string name="contacts_permission_body">برای پیداکردن افراد با نام، دسترسی به مخاطبین را بدهید. نوشتن شماره در بالا همچنان کار می‌کند.</string>
 </resources>

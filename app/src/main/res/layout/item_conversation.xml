@@ -18,11 +18,17 @@
         android:id="@+id/conversation_image"
         android:layout_width="@dimen/texto_list_icon_size_medium"
         android:layout_height="@dimen/texto_list_icon_size_medium"
-        app:layout_constraintBottom_toBottomOf="@id/conversation_body_short"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@id/conversation_address"
+        app:layout_constraintTop_toTopOf="parent"
         tools:src="@mipmap/ic_launcher" />
 
+    <!--
+        The avatar is centred on the row and the two text lines form one packed chain, so a
+        contact with only a name has that name centred too. The avatar used to span from the
+        name's top to the number's bottom: with the number gone it hung below a top-aligned
+        name and held a two-line height open under it.
+    -->
     <TextView
         android:id="@+id/conversation_address"
         android:layout_width="0dp"
@@ -37,6 +43,7 @@
         app:layout_constraintEnd_toStartOf="@id/conversation_date"
         app:layout_constraintStart_toEndOf="@id/conversation_image"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
         tools:text="John" />
 
     <TextView

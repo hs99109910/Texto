@@ -134,9 +134,44 @@ open class SimpleActivity : AppCompatActivity() {
             // clear the corner.
             val side = 22.getScaledPx()
             toolbar.setPadding(side, 0, side, 0)
+            centreNavigationTile(toolbar)
         }
         screenGlyph = screenIcon
         applyScreenGlyph(toolbar)
+    }
+
+    /**
+     * Places the back disc where the thread header's own back disc sits.
+     *
+     * A Toolbar pins its navigation button to the top of the bar, and the button is 56dp wide
+     * around a 40dp disc. So the disc sat above the capsule's middle line, and 8dp further in
+     * from the edge than the thread's back button. Moved by translation after every layout,
+     * rather than through the button's layout params, so the Toolbar's own measuring is left
+     * exactly as it was.
+     */
+    private var navCentredToolbar: Toolbar? = null
+
+    private fun centreNavigationTile(toolbar: Toolbar) {
+        // Once per toolbar: this runs on every setup call, and listeners would pile up.
+        if (navCentredToolbar === toolbar) {
+            toolbar.requestLayout()
+            return
+        }
+        navCentredToolbar = toolbar
+        toolbar.addOnLayoutChangeListener { bar, _, _, _, _, _, _, _, _ ->
+            val tb = bar as Toolbar
+            val nav = (0 until tb.childCount).map { tb.getChildAt(it) }
+                .firstOrNull { it is android.widget.ImageButton && it.drawable === tb.navigationIcon }
+                ?: return@addOnLayoutChangeListener
+            // The painted capsule's own band: below the status bar, down to the bar's bottom.
+            val bandTop = tb.paddingTop
+            val bandCentre = (bandTop + tb.height) / 2f
+            nav.translationY = bandCentre - (nav.top + nav.height / 2f)
+            val slack = (nav.width - 40.getScaledPx()) / 2f
+            val isRtl = tb.layoutDirection == View.LAYOUT_DIRECTION_RTL
+            nav.translationX = if (isRtl) slack else -slack
+        }
+        toolbar.requestLayout()
     }
 
     /**
@@ -386,6 +421,13 @@ open class SimpleActivity : AppCompatActivity() {
                 R.id.nav_search_icon,
                 R.id.nav_add_icon,
                 R.id.texto_search_icon,
+                // Painted from the accent and the bar ink by their own screens, after this pass.
+                R.id.texto_fab,
+                R.id.texto_header_search_label,
+                R.id.thread_message_otp_copy,
+                R.id.new_conversation_group_label,
+                R.id.new_conversation_group_hint,
+                R.id.new_conversation_group_done,
                 // The two slider read-outs carry the accent, and this pass would otherwise
                 // put them straight back to the plain text colour on every resume.
                 R.id.settings_ui_scale_value,
@@ -971,6 +1013,28 @@ open class SimpleActivity : AppCompatActivity() {
      * [TextoAppBarLayout] does for the app bar itself -- an inset callback fires more than
      * once, and must not keep stacking a growing padding on top of its own previous result.
      */
+    /**
+     * Sets the bottom padding a view is treated as having been laid out with, so the window
+     * insets land on top of it rather than wiping it out.
+     *
+     * A list that scrolls under a floating bar needs room for that bar at the end of its
+     * content, and the bar's height is only known after layout -- but [setupEdgeToEdge] has by
+     * then already cached the view's original padding and re-applies `base + inset` on every
+     * inset pass, so a plain `setPadding` from a `doOnLayout` survives exactly until the next
+     * one. This moves the base instead.
+     */
+    fun View.setBaseBottomPadding(px: Int) {
+        val tagKey = R.id.texto_tag_base_padding
+        val base = (getTag(tagKey) as? IntArray)
+            ?: intArrayOf(paddingLeft, paddingTop, paddingRight, paddingBottom).also {
+                setTag(tagKey, it)
+            }
+        if (base[3] == px) return
+        val added = paddingBottom - base[3]
+        base[3] = px
+        setPadding(paddingLeft, paddingTop, paddingRight, px + added)
+    }
+
     private fun View.updateBasePadding(top: Int? = null, bottom: Int? = null) {
         val tagKey = R.id.texto_tag_base_padding
         var base = getTag(tagKey) as? IntArray
@@ -1121,6 +1185,16 @@ open class SimpleActivity : AppCompatActivity() {
             }
         }
 
+        // Where the bar lives inside the app bar (the conversation list), it takes the header's
+        // place rather than stacking under it, the way a contextual action bar does: the
+        // toolbar steps out and the header's glass is hidden so only one capsule is drawn.
+        if (barContainer.parent is AppBarLayout) {
+            val appBar = barContainer.parent as View
+            TOOLBAR_IDS.firstNotNullOfOrNull { appBar.findViewById<Toolbar>(it) }?.visibility =
+                if (show) View.GONE else View.VISIBLE
+            appBar.background?.alpha = if (show) 0 else 255
+        }
+
         val newVisibility = if (show) View.VISIBLE else View.GONE
         if (barContainer.visibility != newVisibility) {
             barContainer.visibility = newVisibility
@@ -1181,7 +1255,9 @@ open class SimpleActivity : AppCompatActivity() {
                 R.id.action_download to R.id.cab_save_as,
                 R.id.action_archive to R.id.cab_archive,
                 R.id.action_pin to R.id.cab_pin_conversation,
-                R.id.action_unpin to R.id.cab_unpin_conversation
+                R.id.action_unpin to R.id.cab_unpin_conversation,
+                R.id.action_mark_read to R.id.cab_mark_as_read,
+                R.id.action_mark_unread to R.id.cab_mark_as_unread
             )
 
             actionMap.forEach { (viewId, cabIds) ->

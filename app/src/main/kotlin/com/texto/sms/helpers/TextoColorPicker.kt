@@ -64,7 +64,6 @@ fun SimpleActivity.textoColorPicker(
     var dialog: AlertDialog? = null
 
     val opaqueCurrent = current or 0xFF000000.toInt()
-    var (familyIndex, shadeIndex) = TextoPalette.locate(opaqueCurrent)
     var chosen = opaqueCurrent
     // Only a tap on Save keeps the choice. Everything else -- back, the scrim, Default
     // followed by back -- has to leave the row exactly as it was found, because the preview
@@ -129,50 +128,15 @@ fun SimpleActivity.textoColorPicker(
     }
     sheet.addView(verdict)
 
-    // ---- 1: the family band ----------------------------------------------------------------
-    sheet.addView(
-        sectionLabel(getString(R.string.colour_family)).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-            ).apply { topMargin = 20.getScaledPx() }
-        }
-    )
-    val familyStrip = TextoHueStrip(this).apply {
+    // ---- the colour bar --------------------------------------------------------------------
+    // One field: hue along it, lightness down it, greys at its start edge.
+    val spectrum = TextoSpectrumBar(this).apply {
         layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, 56.getScaledPx()
-        ).apply { topMargin = 8.getScaledPx() }
+            ViewGroup.LayoutParams.MATCH_PARENT, 112.getScaledPx()
+        ).apply { topMargin = 20.getScaledPx() }
+        setColourSilently(opaqueCurrent)
     }
-    sheet.addView(familyStrip)
-
-    // ---- 2: the ladder ---------------------------------------------------------------------
-    val shadeHeader = LinearLayout(this).apply {
-        orientation = LinearLayout.HORIZONTAL
-        gravity = Gravity.CENTER_VERTICAL
-        layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT
-        ).apply { topMargin = 18.getScaledPx() }
-    }
-    shadeHeader.addView(
-        sectionLabel(getString(R.string.colour_lightness)).apply {
-            layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
-        }
-    )
-    shadeHeader.addView(
-        TextView(this).apply {
-            text = getString(R.string.colour_dark_to_light)
-            setTextColor(config.mainTextColor.withAlpha(0.58f))
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.74f))
-            typeface = typefaceFor(Typeface.NORMAL)
-        }
-    )
-    sheet.addView(shadeHeader)
-
-    val shadeStrip = TextoHueStrip(this).apply {
-        layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.MATCH_PARENT, 56.getScaledPx()
-        ).apply { topMargin = 8.getScaledPx() }
-    }
-    sheet.addView(shadeStrip)
+    sheet.addView(spectrum)
 
     // ---- recents ---------------------------------------------------------------------------
     val recentRow = LinearLayout(this).apply {
@@ -185,6 +149,11 @@ fun SimpleActivity.textoColorPicker(
     sheet.addView(recentRow)
 
     // ---- wiring ----------------------------------------------------------------------------
+    // Set once the footer exists. The verdict used to be advice only: "Text will be hard to
+    // read on this colour" sat directly above a Save that still worked, so the one check that
+    // could stop an unreadable pair reaching every bubble in the app only described it.
+    var saveButton: TextView? = null
+
     fun renderPreview() {
         preview.background = GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
@@ -195,6 +164,7 @@ fun SimpleActivity.textoColorPicker(
         val ink = contrastAgainst
         if (ink == null) {
             preview.text = ""
+            saveButton?.apply { isEnabled = true; alpha = 1f }
             return
         }
         // The sample is set in the very ink that will sit on this colour, so the preview is
@@ -212,10 +182,14 @@ fun SimpleActivity.textoColorPicker(
         verdict.setTextColor(
             if (ok) config.mainTextColor.withAlpha(0.72f) else 0xFFF54651.toInt()
         )
-    }
-
-    fun renderShadeStrip() {
-        shadeStrip.submit(TextoPalette.families[familyIndex].toList(), shadeIndex)
+        // Saying why Save stopped working is the difference between a rule and a bug. Default
+        // stays live whatever is chosen, so there is always one way out of the sheet that
+        // keeps a colour.
+        if (!ok) verdict.append("\n" + getString(R.string.colour_contrast_save_blocked))
+        saveButton?.apply {
+            isEnabled = ok
+            alpha = if (ok) 1f else 0.4f
+        }
     }
 
     fun renderRecents() {
@@ -237,12 +211,8 @@ fun SimpleActivity.textoColorPicker(
         recents.forEach { colour ->
             recentRow.addView(
                 recentTile(colour, TextoPalette.sameColour(colour, chosen)) {
-                    val (family, shade) = TextoPalette.locate(colour)
-                    familyIndex = family
-                    shadeIndex = shade
                     chosen = colour or 0xFF000000.toInt()
-                    familyStrip.setSelectedSilently(family)
-                    renderShadeStrip()
+                    spectrum.setColourSilently(chosen)
                     onPick(chosen)
                     renderPreview()
                     renderRecents()
@@ -251,21 +221,11 @@ fun SimpleActivity.textoColorPicker(
         }
     }
 
-    familyStrip.submit(TextoPalette.families.indices.map { TextoPalette.faceOf(it) }, familyIndex)
-    familyStrip.onPicked = { index ->
-        familyIndex = index
-        chosen = TextoPalette.families[index][shadeIndex]
-        renderShadeStrip()
+    spectrum.onPicked = { picked ->
+        chosen = picked
         onPick(chosen)
         renderPreview()
     }
-    shadeStrip.onPicked = { index ->
-        shadeIndex = index
-        chosen = TextoPalette.families[familyIndex][index]
-        onPick(chosen)
-        renderPreview()
-    }
-    renderShadeStrip()
     renderRecents()
     renderPreview()
 
@@ -280,12 +240,8 @@ fun SimpleActivity.textoColorPicker(
     defaultColour?.let { fallback ->
         footer.addView(
             pickerButton(getString(R.string.colour_default), filled = false) {
-                val (family, shade) = TextoPalette.locate(fallback)
-                familyIndex = family
-                shadeIndex = shade
                 chosen = fallback or 0xFF000000.toInt()
-                familyStrip.setSelectedSilently(family)
-                renderShadeStrip()
+                spectrum.setColourSilently(chosen)
                 onPick(chosen)
                 renderPreview()
                 renderRecents()
@@ -297,9 +253,11 @@ fun SimpleActivity.textoColorPicker(
             saved = true
             config.rememberColour(chosen)
             dialog?.dismiss()
-        }
+        }.also { saveButton = it }
     )
     sheet.addView(footer)
+    // Once more now that there is a Save to gate: the first pass ran before the footer did.
+    renderPreview()
 
     val scroller = android.widget.ScrollView(this).apply {
         isFillViewport = true

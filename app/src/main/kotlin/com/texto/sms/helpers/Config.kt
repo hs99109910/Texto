@@ -340,6 +340,39 @@ class Config(val context: Context) {
         get() = prefs.getBoolean(AURORA_RETIRED, false)
         set(applied) = prefs.edit().putBoolean(AURORA_RETIRED, applied).apply()
 
+    var nocturneAccentContrastFixed: Boolean
+        get() = prefs.getBoolean(NOCTURNE_ACCENT_CONTRAST_FIXED, false)
+        set(applied) = prefs.edit().putBoolean(NOCTURNE_ACCENT_CONTRAST_FIXED, applied).apply()
+
+    /**
+     * Moves an install still wearing Nocturne's original blue onto the deepened one in
+     * AppThemes, once. White ink on the old pair measured 3.61:1 and 4.50:1, so the received
+     * bubble's own colour sheet refused to save the theme's default.
+     *
+     * Read and written through the raw keys, not the getters: those rotate the accent by the
+     * tonality setting on the way out, so a shifted install would never compare equal. Only an
+     * untouched pair is replaced, which leaves a colour anybody picked by hand alone.
+     */
+    fun migrateNocturneAccentContrast() {
+        if (nocturneAccentContrastFixed) return
+        val oldStart = 0xFF4A80FF.toInt()
+        val oldEnd = 0xFF2F6BFF.toInt()
+        val newStart = 0xFF3366EE.toInt()
+        val newEnd = 0xFF2B5FE6.toInt()
+        if (prefs.getInt(ACCENT_GRADIENT_START, 0) == oldStart &&
+            prefs.getInt(ACCENT_GRADIENT_END, 0) == oldEnd
+        ) {
+            val edit = prefs.edit()
+                .putInt(ACCENT_GRADIENT_START, newStart)
+                .putInt(ACCENT_GRADIENT_END, newEnd)
+            if (prefs.getInt(RECEIVED_BUBBLE_COLOR, 0) == oldEnd) {
+                edit.putInt(RECEIVED_BUBBLE_COLOR, newEnd)
+            }
+            edit.apply()
+        }
+        nocturneAccentContrastFixed = true
+    }
+
     /**
      * Set once the two bubble colours have been written the new way round.
      *

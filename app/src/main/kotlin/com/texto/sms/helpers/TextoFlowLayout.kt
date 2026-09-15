@@ -15,7 +15,13 @@ import android.view.ViewGroup
  *
  * Margins are honoured, so a chip's own spacing works here exactly as it does in a row.
  */
-class TextoFlowLayout(context: Context) : ViewGroup(context) {
+// The attributes go to ViewGroup rather than being dropped: a view built from XML takes its
+// id from them, and without it view binding cannot find the recipient chips and the activity
+// fails to start.
+class TextoFlowLayout @JvmOverloads constructor(
+    context: Context,
+    attrs: android.util.AttributeSet? = null,
+) : ViewGroup(context, attrs) {
 
     /** Vertical gap between wrapped lines, in pixels. Horizontal spacing is the child's margin. */
     var lineSpacing = 0

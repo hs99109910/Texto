@@ -61,6 +61,7 @@ import com.texto.sms.dialogs.RenameConversationDialog
 import com.texto.sms.dialogs.ScheduleMessageDialog
 import com.texto.sms.extensions.*
 import com.texto.sms.helpers.CapsuleChoice
+import com.texto.sms.helpers.expandTouchTarget
 import com.texto.sms.helpers.textoCapsuleDialog
 import com.texto.sms.helpers.textoConfirmDialog
 import com.texto.sms.helpers.*
@@ -196,7 +197,8 @@ class ThreadActivity : SimpleActivity() {
      * to this conversation, so there is no working copy to hold it -- and discard still has to
      * mean discard, so the old value is kept to put back.
      */
-    private var simColourBefore: Int? = null
+    /** Each SIM slot's colour as the editor found it, recorded the first time that slot is edited. */
+    private val simColoursBefore = HashMap<Int, Int>()
 
     private val binding by viewBinding(ActivityThreadBinding::inflate)
 
@@ -590,7 +592,7 @@ class ThreadActivity : SimpleActivity() {
                     }
                 }
 
-                PICK_CONTACT_INTENT -> data?.let { addContactAttachment(it) }
+                PICK_CONTACT_INTENT -> addContactAttachment(resultData)
                 PICK_SAVE_FILE_INTENT -> saveAttachments(resultData!!)
                 PICK_SAVE_DIR_INTENT -> saveAttachments(resultData!!)
             }
@@ -1137,6 +1139,7 @@ class ThreadActivity : SimpleActivity() {
     private fun setupOptionsMenu() {
         binding.threadMenuBtn.setOnClickListener { showThreadModernMenu(it) }
         binding.threadAppearanceBtn.setOnClickListener { openAppearanceEditor() }
+        binding.threadCallBtn.setOnClickListener { dialNumber() }
         binding.threadBackBtn.setOnClickListener { finish() }
         styleThreadHeader()
     }
@@ -1167,11 +1170,15 @@ class ThreadActivity : SimpleActivity() {
             }
             view.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
             view.imageTintList = android.content.res.ColorStateList.valueOf(glyph)
+            // Drawn at 38 and 40dp, which is what the design asks for and under the
+            // platform's 48dp floor; the hit rect grows to it while the disc stays put.
+            view.expandTouchTarget()
         }
 
         tile(binding.threadBackBtn, 40)
         tile(binding.threadSearchBtn, 38)
         tile(binding.threadAppearanceBtn, 38)
+        tile(binding.threadCallBtn, 38)
         tile(binding.threadMenuBtn, 38)
 
         // The design's header avatar is 42dp on a 16dp radius, and carries the accent
@@ -1375,6 +1382,14 @@ class ThreadActivity : SimpleActivity() {
     private fun setupParticipants() {
         ensureBackgroundThread {
             participants = getThreadParticipants(threadId, null)
+            if (participants.isEmpty()) {
+                participants = participantsFromIntent()
+                // Same reason: a provider that hides the empty thread can also have answered
+                // the id lookup with nothing, and Send refuses a thread id of 0 as well.
+                if (threadId == 0L && participants.isNotEmpty()) {
+                    threadId = getThreadId(participants.map { it.phoneNumbers.first().normalizedNumber }.toSet())
+                }
+            }
             runOnUiThread {
                 if (isFinishing || isDestroyed) return@runOnUiThread
                 showSelectedContacts()
@@ -1400,7 +1415,7 @@ class ThreadActivity : SimpleActivity() {
     private fun openAppearanceEditor() {
         if (editingAppearance != null) return
         appearanceBefore = config.threadAppearance(threadId)
-        simColourBefore = config.getSimColor(currentSIMCardIndex)
+        simColoursBefore.clear()
         editingAppearance = appearanceBefore ?: ThreadAppearance()
         getOrCreateThreadAdapter().onEditAppearanceElement = { anchor, isReceived ->
             showBubbleAppearanceBars(anchor, isReceived)
@@ -1408,12 +1423,14 @@ class ThreadActivity : SimpleActivity() {
         styleAppearanceBar()
         binding.appearanceBar.beVisible()
         setThreadFunctionsEnabled(false)
+        showAppearanceShield(true)
         // What you can recolour, said by the thing itself rather than by a legend: every
-        // bubble on screen breathes an accent ring, and so does the SIM disc.
+        // bubble on screen breathes an accent ring, and so does every SIM disc.
         editPulse.start {
             buildList {
                 binding.threadMessagesList.children.forEach { row ->
                     row.findViewById<View>(R.id.thread_message_body_holder)?.let { add(it) }
+                    row.findViewById<View>(R.id.thread_sim_icon)?.takeIf { it.isShown }?.let { add(it) }
                 }
                 if (binding.messageHolder.threadSelectSimIcon.isVisible()) {
                     add(binding.messageHolder.threadSelectSimIcon)
@@ -1440,7 +1457,7 @@ class ThreadActivity : SimpleActivity() {
             view.isLongClickable = enabled
         }
         listOf(
-            threadBackBtn, threadSearchBtn, threadMenuBtn, threadAppearanceBtn,
+            threadBackBtn, threadSearchBtn, threadMenuBtn, threadAppearanceBtn, threadCallBtn,
             threadHeaderAvatar, scrollToBottomFab
         ).forEach { lock(it) }
         listOf(
@@ -1533,7 +1550,12 @@ class ThreadActivity : SimpleActivity() {
             config.receivedBubbleColorSet = true
         }
         appearance.receivedBubbleTextColor?.let { config.receivedBubbleTextColor = it }
-        appearance.backgroundColor?.let { config.mainBackgroundColor = it }
+        appearance.backgroundColor?.let {
+            config.mainBackgroundColor = it
+            // A picked colour is a flat ground. Left on a gradient or halo mode, the window
+            // keeps drawing that and the colour just chosen is never seen anywhere.
+            config.mainBgMode = BG_MODE_COLOR
+        }
         config.setThreadAppearance(threadId, null)
     }
 
@@ -1545,18 +1567,19 @@ class ThreadActivity : SimpleActivity() {
         binding.appearanceBar.beGone()
         editPulse.stop()
         hideAppearanceOverlay()
+        showAppearanceShield(false)
         setThreadFunctionsEnabled(true)
         if (!keep) {
             // Nothing was written while the editor was open, so putting the thread back is
-            // simply painting it from storage again -- except the SIM badge, which is
-            // written as it is picked and so has to be put back by hand.
-            simColourBefore?.let { config.setSimColor(currentSIMCardIndex, it) }
+            // simply painting it from storage again -- except the SIM badges, which are
+            // written as they are picked and so have to be put back by hand.
+            simColoursBefore.forEach { (slot, colour) -> config.setSimColor(slot, colour) }
             applyThreadAppearance()
             refreshThreadColours()
         }
         setupSIMSelector()
         appearanceBefore = null
-        simColourBefore = null
+        simColoursBefore.clear()
     }
 
     /**
@@ -1762,14 +1785,16 @@ class ThreadActivity : SimpleActivity() {
      * everywhere it appears -- so this one writes straight through to the app's own setting,
      * and the scope question at the end has nothing to say about it.
      */
-    private fun showSimAppearanceBars(anchor: View) {
-        val slot = currentSIMCardIndex
+    private fun showSimAppearanceBars(anchor: View, slot: Int = currentSIMCardIndex) {
+        simColoursBefore.getOrPut(slot) { config.getSimColor(slot) }
         val bars = inlineColourBars(
             label = getString(R.string.appearance_element_sim),
             read = { config.getSimColor(slot) },
             write = { picked ->
                 config.setSimColor(slot, picked)
                 setupSIMSelector()
+                // The day markers in the thread wear the same slot colour.
+                refreshThreadColours()
             },
             onReset = {
                 // The slot's own factory colour, which is what Config falls back to when
@@ -1778,10 +1803,121 @@ class ThreadActivity : SimpleActivity() {
                     Config.DEFAULT_SIM_COLORS[0]
                 })
                 setupSIMSelector()
+                refreshThreadColours()
                 hideAppearanceOverlay()
             },
         )
         showAppearanceBarsAround(anchor, above = bars, below = null)
+    }
+
+    /**
+     * While the editor is open, one view over the thread and the composer takes every touch,
+     * so no link, number, reaction, attachment, retry or composer control can fire. Drags
+     * still scroll the list; a tap is resolved to what is under it -- a SIM disc, a bubble, or
+     * the ground -- and opens that element's colour bar and nothing else.
+     */
+    private fun showAppearanceShield(show: Boolean) {
+        val shield = binding.appearanceTouchShield
+        if (!show) {
+            shield.setOnTouchListener(null)
+            shield.beGone()
+            return
+        }
+        val list = binding.threadMessagesList
+        val detector = android.view.GestureDetector(
+            this,
+            object : android.view.GestureDetector.SimpleOnGestureListener() {
+                override fun onDown(e: android.view.MotionEvent) = true
+
+                override fun onScroll(
+                    e1: android.view.MotionEvent?,
+                    e2: android.view.MotionEvent,
+                    distanceX: Float,
+                    distanceY: Float,
+                ): Boolean {
+                    list.scrollBy(0, distanceY.toInt())
+                    return true
+                }
+
+                override fun onFling(
+                    e1: android.view.MotionEvent?,
+                    e2: android.view.MotionEvent,
+                    velocityX: Float,
+                    velocityY: Float,
+                ): Boolean {
+                    list.fling(0, (-velocityY).toInt())
+                    return true
+                }
+
+                override fun onSingleTapUp(e: android.view.MotionEvent): Boolean {
+                    onAppearanceTap(e.rawX, e.rawY)
+                    return true
+                }
+            }
+        )
+        shield.setOnTouchListener { _, event ->
+            if (event.actionMasked == android.view.MotionEvent.ACTION_DOWN) list.stopScroll()
+            detector.onTouchEvent(event)
+            true
+        }
+        shield.beVisible()
+    }
+
+    private fun onAppearanceTap(rawX: Float, rawY: Float) {
+        fun View.hit(slop: Int = 0): Boolean {
+            if (!isShown) return false
+            val at = IntArray(2).also { getLocationOnScreen(it) }
+            return rawX >= at[0] - slop && rawX < at[0] + width + slop &&
+                rawY >= at[1] - slop && rawY < at[1] + height + slop
+        }
+        // The SIM markers are drawn at text size, far below a fingertip, so a tap anywhere
+        // within a generous ring around one still counts as that marker.
+        val simSlop = SIM_TAP_SLOP_DP.getScaledPx()
+
+        val composerSim = binding.messageHolder.threadSelectSimIcon
+        if (composerSim.hit(simSlop)) {
+            showSimAppearanceBars(composerSim)
+            return
+        }
+        // The rest of the composer is out of service while editing.
+        if (binding.messageHolder.root.hit()) return
+
+        val list = binding.threadMessagesList
+        val listAt = IntArray(2).also { list.getLocationOnScreen(it) }
+        val row = list.findChildViewUnder(rawX - listAt[0], rawY - listAt[1])
+        // Checked across every visible day marker rather than only the row under the finger,
+        // so the ring around a marker still works where it spills into the row beside it.
+        val simRow = list.children.firstOrNull { child ->
+            child.findViewById<View>(R.id.thread_sim_icon)?.hit(simSlop) == true
+        }
+        if (simRow != null) {
+            val simIcon = simRow.findViewById<View>(R.id.thread_sim_icon)
+            val item = getOrCreateThreadAdapter().currentList
+                .getOrNull(list.getChildAdapterPosition(simRow)) as? ThreadDateTime
+            // The same slot the adapter paints this marker with.
+            val slot = item?.simID?.toIntOrNull()?.minus(1)?.coerceAtLeast(0) ?: 0
+            showSimAppearanceBars(simIcon, slot)
+            return
+        }
+        if (row != null) {
+            val simIcon = row.findViewById<View>(R.id.thread_sim_icon)
+            if (simIcon != null && simIcon.hit()) {
+                val item = getOrCreateThreadAdapter().currentList
+                    .getOrNull(list.getChildAdapterPosition(row)) as? ThreadDateTime
+                // The same slot the adapter paints this marker with.
+                val slot = item?.simID?.toIntOrNull()?.minus(1)?.coerceAtLeast(0) ?: 0
+                showSimAppearanceBars(simIcon, slot)
+                return
+            }
+            val bubble = row.findViewById<View>(R.id.thread_message_body_holder)
+            val attachments = row.findViewById<View>(R.id.thread_message_attachments_holder)
+            if (bubble != null && (bubble.hit() || attachments?.hit() == true)) {
+                // In edit mode the bubble's own click opens its colour bar and does nothing else.
+                bubble.performClick()
+                return
+            }
+        }
+        showBackgroundAppearanceBars()
     }
 
     private fun hideAppearanceOverlay() {
@@ -1876,34 +2012,90 @@ class ThreadActivity : SimpleActivity() {
     private fun currentThreadAppearance(): ThreadAppearance? =
         editingAppearance ?: config.threadAppearance(threadId)
 
+    /**
+     * The recipients card: each person a chip that wraps onto the next line, and the field to
+     * add another under them, on one glass card the width of the header.
+     *
+     * The X on a chip removes the person. A tap on the chip itself takes them out and puts
+     * their number back in the field, so a mistyped number is corrected rather than retyped.
+     */
     private fun showSelectedContacts() {
+        val density = resources.displayMetrics.density
+        val ink = config.mainTextColor
+        val accent = config.accentGradientStart
+
         binding.selectedContacts.removeAllViews()
+        binding.selectedContacts.lineSpacing = 6.getScaledPx()
         participants.forEach { contact ->
             val contactBinding = ItemSelectedContactBinding.inflate(layoutInflater, binding.selectedContacts, false)
-            // The row ships with a fixed near-white name, which is invisible on the light
-            // skins. Painted at inflation rather than left to the resume sweep, so a row
-            // added between two resumes is readable straight away.
-            contactBinding.selectedContactName.setTextColor(config.mainTextColor)
-            contactBinding.selectedContactRemove.applyColorFilter(
-                config.mainTextColor.withAlpha(0.6f)
-            )
-            contactBinding.selectedContactName.text = contact.name.asLtrPhone()
-            contactBinding.selectedContactRemove.setOnClickListener {
-                participants.remove(contact)
-                updateParticipants()
+            contactBinding.selectedContactName.apply {
+                text = contact.name.asLtrPhone()
+                setTextColor(ink)
+                setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.9f))
+                typeface = typefaceFor(Typeface.NORMAL)
+                setPaddingRelative(12.getScaledPx(), 7.getScaledPx(), 0, 7.getScaledPx())
             }
-            binding.selectedContacts.addView(contactBinding.root)
+            contactBinding.selectedContactRemove.apply {
+                applyColorFilter(ink.withAlpha(0.6f))
+                setPaddingRelative(8.getScaledPx(), 0, 10.getScaledPx(), 0)
+                contentDescription = getString(R.string.delete)
+                setOnClickListener {
+                    participants.remove(contact)
+                    updateParticipants()
+                }
+            }
+            contactBinding.root.apply {
+                background = TextoGlass.bar(
+                    tint = accent,
+                    cornerRadius = 100f * density,
+                    opacity = 0.12f,
+                    strokeWidthPx = 1.getScaledPx(),
+                    rimAlpha = 0.28f
+                )
+                isClickable = true
+                setOnClickListener {
+                    val number = contact.phoneNumbers.firstOrNull()?.normalizedNumber.orEmpty()
+                    participants.remove(contact)
+                    updateParticipants()
+                    binding.addContactOrNumber.setText(number)
+                    binding.addContactOrNumber.setSelection(number.length)
+                    binding.addContactOrNumber.requestFocus()
+                    showKeyboard(binding.addContactOrNumber)
+                }
+            }
+            binding.selectedContacts.addView(
+                contactBinding.root,
+                ViewGroup.MarginLayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    leftMargin = 3.getScaledPx()
+                    rightMargin = 3.getScaledPx()
+                }
+            )
         }
+        binding.selectedContacts.beVisibleIf(participants.isNotEmpty())
 
-        // The two hairlines around the recipient field carried commons' light-theme grey,
-        // which reads as a bright line on the dark skins and as nothing on the light ones.
-        val rim = TextoGlass.rimFor(config.recentColor, 0.30f)
-        binding.messageDividerOne.setBackgroundColor(rim)
-        binding.messageDividerTwo.setBackgroundColor(rim)
-        binding.addContactOrNumber.setTextColor(config.mainTextColor)
-        binding.addContactOrNumber.setHintTextColor(config.mainTextColor.withAlpha(0.5f))
-        binding.confirmManageContacts.applyColorFilter(config.mainTextColor)
-        binding.confirmInsertedNumber.applyColorFilter(config.mainTextColor)
+        TextoGlass.applyPanel(
+            view = binding.threadAddContacts,
+            tint = config.recentColor,
+            cornerRadius = config.cardCornerRadiusDp * density,
+            opacity = 0.82f,
+            strokeWidthPx = 1.getScaledPx(),
+            rimAlpha = 0.14f,
+            sheenAlpha = 0f
+        )
+        binding.addContactOrNumber.apply {
+            setTextColor(ink)
+            setHintTextColor(ink.withAlpha(0.5f))
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.0f))
+            typeface = typefaceFor(Typeface.NORMAL)
+        }
+        binding.confirmManageContacts.applyColorFilter(accent)
+        binding.confirmInsertedNumber.applyColorFilter(accent)
+        // The tick applies an edited member list to a group that already exists. On a brand
+        // new thread there is nothing to apply it to -- sending is what creates the thread --
+        // so it only said "done" to a field that needed no confirming.
+        binding.confirmManageContacts.beVisibleIf(conversation != null)
 
         binding.threadAddContacts.beVisibleIf(participants.size > 1 || conversation == null)
     }
@@ -1934,6 +2126,9 @@ class ThreadActivity : SimpleActivity() {
         }
         binding.threadHeaderStatus.text = status
         binding.threadHeaderStatus.beVisibleIf(status.isNotEmpty())
+        // Only where there is one number to call: a group has none, and neither does an
+        // alphanumeric sender or a thread in the recycle bin.
+        binding.threadCallBtn.beVisibleIf(canDialCurrentParticipant())
 
         binding.threadHeaderAvatar.beVisible()
         val placeholder = com.texto.sms.helpers.TextoAvatars.letterAvatar(this, finalTitle)
@@ -2462,7 +2657,75 @@ class ThreadActivity : SimpleActivity() {
             }
         }
     }
-    private fun addContactAttachment(data: Uri) {}
+    /**
+     * Attaches the contact the in-app picker handed back, as a vCard.
+     *
+     * This was an empty function. The attach-contact option opened the system picker, took
+     * its answer, and did nothing with it, so choosing someone closed the picker and left the
+     * composer exactly as it was.
+     */
+    private fun addContactAttachment(result: Intent?) {
+        val name = result?.getStringExtra(com.texto.sms.helpers.PICK_CONTACT_RESULT_NAME).orEmpty()
+        val numbers = result?.getStringArrayListExtra(com.texto.sms.helpers.PICK_CONTACT_RESULT_NUMBERS)
+            .orEmpty().filter { it.isNotBlank() }
+        if (numbers.isEmpty()) return
+
+        ensureBackgroundThread {
+            try {
+                val display = name.ifBlank { numbers.first() }
+                fun escape(value: String) = value
+                    .replace("\\", "\\\\").replace(",", "\\,").replace(";", "\\;")
+                val card = buildString {
+                    append("BEGIN:VCARD\r\nVERSION:3.0\r\n")
+                    append("FN:").append(escape(display)).append("\r\n")
+                    append("N:").append(escape(display)).append(";;;;\r\n")
+                    numbers.forEach { append("TEL;TYPE=CELL:").append(it).append("\r\n") }
+                    append("END:VCARD\r\n")
+                }
+                // Named after the person so the attachment chip says who it is. Anything a file
+                // system might object to is replaced, and letters in any script are kept.
+                val safeName = display.replace(Regex("""[^\p{L}\p{N}+ _-]"""), "_")
+                    .trim().take(40).ifBlank { "contact" }
+                val dir = java.io.File(cacheDir, "shared_contacts").apply { mkdirs() }
+                val file = java.io.File(dir, "$safeName.vcf")
+                file.writeText(card, Charsets.UTF_8)
+                val uri = getMyFileUri(file)
+                runOnUiThread {
+                    if (isFinishing || isDestroyed) return@runOnUiThread
+                    addAttachment(uri)
+                    checkSendMessageAvailability()
+                }
+            } catch (e: Exception) {
+                runOnUiThread { showErrorToast(e) }
+            }
+        }
+    }
+
+    /**
+     * The recipients this conversation was opened for, read straight off the intent.
+     *
+     * A brand-new conversation had no other source. Its participants came only from the
+     * provider's thread row, and MIUI's provider does not list a thread that has no messages
+     * in it yet -- so on a Xiaomi phone a new conversation opened with nobody in it, and Send
+     * stayed disabled however much was typed, because it waits for a recipient. The number
+     * was on the intent the whole time; nothing read it.
+     */
+    private fun participantsFromIntent(): ArrayList<SimpleContact> {
+        val raw = intent.getStringExtra(com.texto.sms.helpers.THREAD_NUMBER).orEmpty()
+        return raw.split(";").map { it.trim() }.filter { it.isNotEmpty() }.distinct()
+            .mapTo(ArrayList()) { number ->
+                val namePhoto = getNameAndPhotoFromPhoneNumber(number)
+                SimpleContact(
+                    rawId = number.hashCode(),
+                    contactId = number.hashCode(),
+                    name = namePhoto.name.ifBlank { number },
+                    photoUri = namePhoto.photoUri ?: "",
+                    phoneNumbers = arrayListOf(com.texto.sms.models.PhoneNumber(number, 0, "", number)),
+                    birthdays = ArrayList(),
+                    anniversaries = ArrayList()
+                )
+            }
+    }
 
     /**
      * Slot number of the SIM a message went through, for the date separator's SIM badge.
@@ -3154,9 +3417,16 @@ class ThreadActivity : SimpleActivity() {
         }
     }
 
+    /**
+     * The app's own contact list, in pick mode, rather than the system picker: that one arrived
+     * unthemed and in English whatever language the app was in, halfway through a flow that
+     * had been Persian and skinned until then.
+     */
     private fun launchPickContactIntent() {
-        val intent = Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI)
-        startActivityForResult(intent, PICK_CONTACT_INTENT)
+        Intent(this, NewConversationActivity::class.java).apply {
+            putExtra(com.texto.sms.helpers.PICK_CONTACT_MODE, true)
+            startActivityForResult(this, PICK_CONTACT_INTENT)
+        }
     }
 
     private fun applyOutlines() = binding.apply {
@@ -3196,6 +3466,9 @@ class ThreadActivity : SimpleActivity() {
     companion object {
         /** Breathing room above the first bubble; the app bar's own offset is separate. */
         private const val TOP_GAP_DP = 12
+
+        /** How far around a SIM marker a tap still picks it in the appearance editor. */
+        private const val SIM_TAP_SLOP_DP = 28
 
         var currentThreadId = 0L
         private const val MIN_DATE_TIME_DIFF_SECS = 300

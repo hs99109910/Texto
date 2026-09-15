@@ -107,6 +107,7 @@ const val CLASSIC_DEFAULT_APPLIED = "classic_default_applied"
 const val NEON_LIGHT_RESTORED = "neon_light_restored"
 const val BUBBLE_SIDES_SWAPPED = "bubble_sides_swapped"
 const val AURORA_RETIRED = "aurora_retired"
+const val NOCTURNE_ACCENT_CONTRAST_FIXED = "nocturne_accent_contrast_fixed"
 
 /**
  * Floor of the glass slider. Below this the bars stop reading as surfaces at all, so the
@@ -309,6 +310,15 @@ const val CAPTURE_AUDIO_INTENT = 46
 const val PICK_AUDIO_INTENT = 51
 const val PICK_DOCUMENT_INTENT = 47
 const val PICK_CONTACT_INTENT = 48
+
+/**
+ * Opens NewConversationActivity to hand one contact back rather than start a thread with it.
+ * The attach-contact option used to open the system picker -- an unthemed screen, in English
+ * whatever the app's language -- and then drop what it returned on the floor.
+ */
+const val PICK_CONTACT_MODE = "pick_contact_mode"
+const val PICK_CONTACT_RESULT_NAME = "pick_contact_result_name"
+const val PICK_CONTACT_RESULT_NUMBERS = "pick_contact_result_numbers"
 const val PICK_SAVE_DIR_INTENT = 50
 const val PICK_TOP_BAR_IMAGE_INTENT = 2001
 const val PICK_MAIN_BG_IMAGE_INTENT = 2002

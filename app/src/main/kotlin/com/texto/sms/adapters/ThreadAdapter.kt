@@ -177,6 +177,23 @@ class ThreadAdapter(
         val REACTION_EMOJI = listOf("❤️", "👍", "😘", "😂", "😮", "😢")
 
         private const val MAX_MEDIA_HEIGHT_RATIO = 2
+
+        /** Space above a bubble that starts a run, and above one that continues it. */
+        private const val MESSAGE_GAP_DP = 8
+        private const val RUN_GAP_DP = 2
+        private const val BUBBLE_RADIUS_DP = 17
+        private const val BUBBLE_JOIN_RADIUS_DP = 6
+        private const val BUBBLE_TAIL_W_DP = 7
+        private const val BUBBLE_TAIL_H_DP = 14
+        private const val BUBBLE_PAD_H_DP = 11
+        private const val BUBBLE_PAD_TOP_DP = 7
+        private const val BUBBLE_PAD_BOTTOM_DP = 6
+
+        /** Messages further apart than this start a new run even from the same sender. */
+        private const val RUN_WINDOW_SECONDS = 5 * 60
+
+        /** Rebinds a bubble in place when its neighbours, and so its corners, change. */
+        private const val RUN_PAYLOAD = "run_payload"
         private const val SIM_BITS = 10
         private const val SIM_MASK = (1L shl SIM_BITS) - 1
     }
@@ -475,6 +492,54 @@ class ThreadAdapter(
         return ThreadViewHolder(binding)
     }
 
+    /**
+     * Whether [message] and the item at [neighbourPosition] belong to one run: both messages,
+     * from the same side and -- for incoming ones -- the same sender, within a few minutes of
+     * each other. A reaction badge hangs below its bubble, so a run is broken under one rather
+     * than letting the next bubble sit on top of the badge.
+     */
+    private fun continuesRun(message: Message, neighbourPosition: Int, neighbourIsNext: Boolean): Boolean {
+        val other = currentList.getOrNull(neighbourPosition) as? Message ?: return false
+        if (other.isReceivedMessage() != message.isReceivedMessage()) return false
+        if (message.isReceivedMessage() && other.senderPhoneNumber != message.senderPhoneNumber) {
+            return false
+        }
+        val upper = if (neighbourIsNext) message else other
+        if (!upper.reaction.isNullOrEmpty()) return false
+        return kotlin.math.abs(other.date - message.date) <= RUN_WINDOW_SECONDS
+    }
+
+    /**
+     * A bubble's corners depend on its neighbours, and DiffUtil only rebinds the rows whose own
+     * content changed. So when a message arrives, the one above it -- unchanged itself -- would
+     * keep the rounded bottom it had as the last of its run. Every message whose neighbours are
+     * not the ones it had before is rebound here, with a payload so it is redrawn in place.
+     */
+    override fun onCurrentListChanged(
+        previousList: MutableList<ThreadItem>,
+        currentList: MutableList<ThreadItem>
+    ) {
+        super.onCurrentListChanged(previousList, currentList)
+        if (previousList.isEmpty()) return
+        val oldIds = previousList.map { getItemIdForRawItem(it) }
+        val oldIndex = HashMap<Long, Int>(oldIds.size)
+        oldIds.forEachIndexed { index, id -> oldIndex[id] = index }
+        val stale = ArrayList<Int>()
+        currentList.forEachIndexed { index, item ->
+            if (item !is Message) return@forEachIndexed
+            val was = oldIndex[getItemIdForRawItem(item)] ?: return@forEachIndexed
+            val before = currentList.getOrNull(index - 1)?.let { getItemIdForRawItem(it) }
+            val after = currentList.getOrNull(index + 1)?.let { getItemIdForRawItem(it) }
+            if (before != oldIds.getOrNull(was - 1) || after != oldIds.getOrNull(was + 1)) {
+                stale.add(index)
+            }
+        }
+        if (stale.isEmpty()) return
+        recyclerView.post {
+            stale.forEach { if (it < itemCount) notifyItemChanged(it, RUN_PAYLOAD) }
+        }
+    }
+
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = currentList[position]
         val binding = (holder as ThreadViewHolder).binding
@@ -702,6 +767,16 @@ class ThreadAdapter(
         holderView.visibility = View.VISIBLE
         wrapper.visibility = View.VISIBLE
 
+        // Consecutive messages from the same side read as one run: they sit closer together,
+        // and the corners they share on the screen-edge side flatten (see the radii below).
+        val adapterPosition = holder.bindingAdapterPosition
+        val joinsPrevious = continuesRun(message, adapterPosition - 1, neighbourIsNext = false)
+        val joinsNext = continuesRun(message, adapterPosition + 1, neighbourIsNext = true)
+        holderView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            topMargin = (if (joinsPrevious) RUN_GAP_DP else MESSAGE_GAP_DP)
+                .getScaledPxIn(activity as SimpleActivity)
+        }
+
         // The design carries each message's own clock time inside its bubble. The row between
         // bubbles is now only a date separator, so this is the only place a time is shown.
         val timeView = if (binding is ItemMessageReceivedBinding) {
@@ -774,6 +849,58 @@ class ThreadAdapter(
             reactionView.elevation = 4 * resources.displayMetrics.density
         }
 
+        // A verification code gets a one-tap copy under its message, the same code the
+        // notification's own action copies, so it is reachable after the notification is gone.
+        if (binding is ItemMessageReceivedBinding) {
+            val body = message.body
+            val code = if (!message.isMMS && MessageClassifier.isOtpMessage(body)) {
+                MessageClassifier.extractCode(body)
+            } else {
+                null
+            }
+            binding.threadMessageOtpCopy.apply {
+                beVisibleIf(code != null)
+                if (code != null) {
+                    val simpleActivity = activity as SimpleActivity
+                    val config = simpleActivity.config
+                    val accent = config.accentGradientStart
+                    val density = resources.displayMetrics.density
+                    // The code in an isolate, so it keeps its own order inside a Persian label.
+                    text = "${simpleActivity.getString(R.string.copy_verification_code)}  ⁦$code⁩"
+                    setTextColor(config.mainTextColor)
+                    setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.8f)
+                    typeface = simpleActivity.typefaceFor(Typeface.BOLD)
+                    val padH = 12.getScaledPxIn(simpleActivity)
+                    val padV = 8.getScaledPxIn(simpleActivity)
+                    setPaddingRelative(padH, padV, padH, padV)
+                    background = TextoGlass.bar(
+                        tint = accent,
+                        cornerRadius = 100f * density,
+                        opacity = 0.14f,
+                        strokeWidthPx = 1.getScaledPxIn(simpleActivity),
+                        rimAlpha = 0.30f
+                    )
+                    val icon = AppCompatResources.getDrawable(simpleActivity, R.drawable.ic_copy_vector)
+                        ?.mutate()
+                        ?.apply {
+                            val size = 16.getScaledPxIn(simpleActivity)
+                            setBounds(0, 0, size, size)
+                            setTint(accent)
+                        }
+                    setCompoundDrawablesRelative(icon, null, null, null)
+                    updateLayoutParams<RelativeLayout.LayoutParams> {
+                        // Clear of the reaction badge, which hangs off the bubble's bottom edge.
+                        topMargin = (if (reactionView.visibility == View.VISIBLE) 16 else 6)
+                            .getScaledPxIn(simpleActivity)
+                    }
+                    setOnClickListener {
+                        if (onEditAppearanceElement != null) return@setOnClickListener
+                        simpleActivity.copyToClipboard(code)
+                    }
+                }
+            }
+        }
+
         // Selection Overlay Logic (Theme Perfect)
         overlay.beVisibleIf(isSelected)
         selectionCheck.beVisibleIf(isSelected)
@@ -797,6 +924,8 @@ class ThreadAdapter(
         // NO LayoutParams logic here anymore! Alignment is handled by distinct XML files.
 
         bodyHolder.apply {
+            // A recycled bubble can still wear the editor's pulse ring from before it scrolled away.
+            if (onEditAppearanceElement == null) foreground = null
             val config = activity.config
             val bgColor = if (isReceived) receivedBubbleColor else sentBubbleColor
             
@@ -805,27 +934,28 @@ class ThreadAdapter(
             
             if (isNewUi) {
                 val density = resources.displayMetrics.density
-                // `1.25rem` and `0.35rem`, the design's two bubble radii.
-                val r20 = 20f * density
-                val r6 = 5.6f * density
+                val scaled = activity as SimpleActivity
+                // Telegram's two radii: a large one all round, a small one where a bubble
+                // meets its neighbour on the screen-edge side.
+                val r20 = BUBBLE_RADIUS_DP.getScaledPxIn(scaled).toFloat()
+                val r6 = BUBBLE_JOIN_RADIUS_DP.getScaledPxIn(scaled).toFloat()
+                val tailWidth = BUBBLE_TAIL_W_DP.getScaledPxIn(scaled)
 
-                // The design tucks the tail into each bubble's *inner* bottom corner -- the
-                // one facing the middle of the thread, not the screen edge:
-                //   mine:   border-radius: 1.25rem 1.25rem 0.35rem 1.25rem  (short bottom-right)
-                //   theirs: border-radius: 1.25rem 1.25rem 1.25rem 0.35rem  (short bottom-left)
-                // cornerRadii is in physical corners (TL, TR, BR, BL) and is not flipped for
-                // us, so which corner is the inner one depends on which way the layout
-                // runs. Under RTL the sent column sits on the left and its short corner
-                // points right; under LTR -- the English UI -- the two columns swap and so
-                // do the corners. Reading it off the configuration rather than assuming
-                // Persian is what keeps the tails pointing inwards in both languages.
+                // Telegram's pattern: the corners a bubble shares with its neighbours in a run
+                // drop to the small radius on the screen-edge side, and the last bubble of the
+                // run grows a tail out of that side's bottom corner. Radii are physical (TL,
+                // TR, BR, BL) and not flipped for us, so the screen-edge side is read off the
+                // layout direction: under RTL the received column sits on the right.
                 val isRtl = resources.configuration.layoutDirection ==
                     View.LAYOUT_DIRECTION_RTL
-                val shortIsBottomLeft = isReceived == isRtl
-                val baseRadii = if (shortIsBottomLeft) {
-                    floatArrayOf(r20, r20, r20, r20, r20, r20, r6, r6)
+                val onRight = isReceived == isRtl
+                val edgeTop = if (joinsPrevious) r6 else r20
+                val edgeBottom = if (joinsNext) r6 else r20
+                // Physical corners, TL TR BR BL.
+                val baseRadii = if (onRight) {
+                    floatArrayOf(r20, r20, edgeTop, edgeTop, edgeBottom, edgeBottom, r20, r20)
                 } else {
-                    floatArrayOf(r20, r20, r20, r20, r6, r6, r20, r20)
+                    floatArrayOf(edgeTop, edgeTop, r20, r20, r20, r20, edgeBottom, edgeBottom)
                 }
 
                 val outlineOn =
@@ -861,40 +991,39 @@ class ThreadAdapter(
                 // `background: var(--grad)`, with no transparency at all. Drawing the
                 // received one at 70% let the background halos through it, so its colour
                 // drifted with whatever was behind it instead of staying --bubble-in.
-                background = com.texto.sms.helpers.TextoGlass.panel(
-                    tint = if (hasAccent) config.accentGradientStart else bgColor,
-                    tintEnd = tintEnd,
-                    tintMid = tintMid,
-                    cornerRadii = baseRadii,
-                    opacity = 1f,
-                    strokeWidthPx = density.toInt().coerceAtLeast(1),
-                    rimAlpha = 0f,
-                    sheenAlpha = 0f,
-                    outlineColor = outlineColor,
-                    outlineWidthPx = outlineWidth
+                // Telegram's tail: a hook out of the screen-edge bottom corner, on the last
+                // bubble of a run only. Every bubble keeps the tail's width free on that side
+                // so a run lines up on one edge.
+                val colors = when {
+                    tintEnd == null -> intArrayOf(bgColor)
+                    tintMid == null -> intArrayOf(config.accentGradientStart, tintEnd)
+                    else -> intArrayOf(config.accentGradientStart, tintMid, tintEnd)
+                }
+                background = com.texto.sms.helpers.TextoBubbleDrawable(
+                    colors = colors,
+                    radii = baseRadii,
+                    tailOnRight = onRight,
+                    showTail = !joinsNext,
+                    tailWidth = tailWidth.toFloat(),
+                    tailHeight = BUBBLE_TAIL_H_DP.getScaledPxIn(scaled).toFloat(),
+                    strokeColor = outlineColor,
+                    strokeWidth = outlineWidth.toFloat()
+                )
+                val padInner = BUBBLE_PAD_H_DP.getScaledPxIn(scaled)
+                val padOuter = padInner + tailWidth
+                setPadding(
+                    if (onRight) padInner else padOuter,
+                    BUBBLE_PAD_TOP_DP.getScaledPxIn(scaled),
+                    if (onRight) padOuter else padInner,
+                    BUBBLE_PAD_BOTTOM_DP.getScaledPxIn(scaled)
                 )
 
                 // Both bubbles sit flush. The design gives the sent one only `var(--soft)`,
                 // a shadow tuned almost to nothing; a real 4dp lift instead put a visible
                 // edge under it and made it read as raised against a flat mockup.
                 elevation = 0f
-                clipToOutline = false 
-                outlineProvider = object : android.view.ViewOutlineProvider() {
-                    override fun getOutline(view: View, outline: android.graphics.Outline) {
-                        val path = android.graphics.Path()
-                        // Use baseRadii for clipping to ensure content matches the visual interior
-                        path.addRoundRect(
-                            0f, 0f, view.width.toFloat(), view.height.toFloat(),
-                            baseRadii, android.graphics.Path.Direction.CW
-                        )
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                            outline.setPath(path)
-                        } else {
-                            @Suppress("DEPRECATION")
-                            outline.setConvexPath(path)
-                        }
-                    }
-                }
+                clipToOutline = false
+                outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
             } else {
                 if (backgroundDrawable is GradientDrawable) {
                     backgroundDrawable.setColor(bgColor)
@@ -982,13 +1111,18 @@ class ThreadAdapter(
             // open in the phone's browser.
             com.texto.sms.helpers.NumberSpans.apply(
                 textView = this,
-                text = message.body,
+                // Isolated so a link or a number inside a Persian sentence keeps its own
+                // direction; the spans are found on the same string they are laid on.
+                text = com.texto.sms.helpers.NumberSpans.isolateLtrRuns(message.body),
                 onNumberTapped = { number -> showNumberActions(this, number) },
                 onUrlTapped = { url -> openMessageLink(url) }
             )
             // Layered over whatever spans NumberSpans just installed rather than replacing
             // the text, so a number inside a search hit stays tappable.
-            highlightSearchTerm(this, message.body, finalTextColor)
+            // Against the text on screen rather than message.body: the isolates added above
+            // shift every offset after the first link, and a highlight computed on the raw
+            // body would land a few characters early.
+            highlightSearchTerm(this, text.toString(), finalTextColor)
             visibility = if (message.body.isNotEmpty()) View.VISIBLE else View.GONE
             setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize)
             
@@ -1201,6 +1335,8 @@ class ThreadAdapter(
             // Phosphor outline it used to be: at this size an outline collapses into a
             // smudge, and the colour is the whole of what the marker says.
             threadSimNumber.beGone()
+            // A recycled marker can still wear the editor's pulse ring from before it scrolled away.
+            if (onEditAppearanceElement == null) threadSimIcon.foreground = null
             threadSimIcon.beVisibleIf(hasMultipleSIMCards)
             if (hasMultipleSIMCards) {
                 val slot = dateTime.simID.toIntOrNull()?.minus(1)?.coerceAtLeast(0) ?: 0

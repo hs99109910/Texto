@@ -50,8 +50,11 @@ class ContactsAdapter(
         const val VIEW_TYPE_CONTACT = 2
         const val VIEW_TYPE_MODERN_PILL = 3
 
-        /** The list avatar, in dp before the UI:scale setting. Matches the conversations list. */
-        private const val AVATAR_DP = 46
+        /** The list avatar, in dp before the UI:scale setting: fits a 56dp row with air. */
+        private const val AVATAR_DP = 40
+
+        private const val ONE_LINE_ROW_DP = 56
+        private const val TWO_LINE_ROW_DP = 68
     }
 
     init {
@@ -193,9 +196,15 @@ class ContactsAdapter(
             // a pale skin left the rows all but invisible against the screen behind them.
             val density = resources.displayMetrics.density
             val padH = 16.getScaledPxIn(texto)
-            val padV = 10.getScaledPxIn(texto)
+            val padV = 6.getScaledPxIn(texto)
             conversationFrame.setPadding(padH, padV, padH, padV)
-            conversationFrame.minimumHeight = 0
+            // Material's list heights: 56dp for a name alone, 68dp for a name over a number.
+            // Both floors are set, because ConstraintLayout keeps its own: View.minimumHeight
+            // is not the field `android:minHeight` sets on it.
+            val rowHeight = (if (subtitle.isEmpty()) ONE_LINE_ROW_DP else TWO_LINE_ROW_DP)
+                .getScaledPxIn(texto)
+            conversationFrame.minimumHeight = rowHeight
+            conversationFrame.minHeight = rowHeight
             TextoGlass.applyPanel(
                 view = conversationFrame,
                 tint = activity.config.recentColor,
