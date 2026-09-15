@@ -392,6 +392,41 @@ class MainActivity : SimpleActivity() {
             setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.0f))
             typeface = typefaceFor(android.graphics.Typeface.NORMAL)
         }
+
+        // Radiant draws the search field as its own capsule inside the header bar, the way
+        // the reference does: a sunken pill of the page ground behind the bar's hairline.
+        // Every other skin leaves the middle of the header bare, which is why Radiant read
+        // as "a label floating in a bar" rather than as a field.
+        if (AppThemes.isRadiant(config.appTheme)) {
+            val density = resources.displayMetrics.density
+            binding.textoHeaderSearch.apply {
+                background = android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                    cornerRadius = 999f
+                    setColor(config.mainBackgroundColor)
+                    setStroke(
+                        density.toInt().coerceAtLeast(1),
+                        com.texto.sms.helpers.TextoGlass.rimFor(config.recentColor, 0.30f)
+                    )
+                }
+                val padH = 14.getScaledPx()
+                setPadding(padH, 0, padH, 0)
+                updateLayoutParams<LinearLayout.LayoutParams> {
+                    topMargin = 8.getScaledPx()
+                    bottomMargin = 8.getScaledPx()
+                }
+                outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+            }
+        } else {
+            binding.textoHeaderSearch.apply {
+                background = null
+                setPadding(0, 0, 0, 0)
+                updateLayoutParams<LinearLayout.LayoutParams> {
+                    topMargin = 0
+                    bottomMargin = 0
+                }
+            }
+        }
     }
 
     private fun styleHeaderTile(tile: android.widget.ImageView) = tile.apply {
@@ -481,14 +516,19 @@ class MainActivity : SimpleActivity() {
             sheenAlpha = 0.04f,
         )
 
-        val active = android.graphics.drawable.GradientDrawable(
-            android.graphics.drawable.GradientDrawable.Orientation.LEFT_RIGHT,
-            intArrayOf(config.accentGradientStart, config.accentGradientEnd)
-        ).apply { cornerRadius = 24f * density }
-        radiantMessagesBtn.background = active
+        // The reference marks the open tab with a soft brand wash carrying brand ink, not a
+        // saturated gradient block: the gradient made the bar read as one big button and
+        // fought the round compose disc beside it, which is the screen's real primary action.
+        val accent = config.accentGradientStart
+        radiantMessagesBtn.background = android.graphics.drawable.GradientDrawable().apply {
+            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+            cornerRadius = 24f * density
+            setColor(accent.withAlpha(0.14f))
+            setStroke(density.toInt().coerceAtLeast(1), accent.withAlpha(0.24f))
+        }
 
-        val muted = config.mainTextColor.withAlpha(0.66f)
-        val activeInk = config.accentInkColor
+        val muted = config.mainTextColor.withAlpha(0.60f)
+        val activeInk = accent
         radiantMessagesIcon.applyColorFilter(activeInk)
         radiantMessagesLabel.setTextColor(activeInk)
         listOf(radiantContactsIcon, radiantArchiveIcon).forEach { it.applyColorFilter(muted) }
@@ -500,7 +540,8 @@ class MainActivity : SimpleActivity() {
         ).apply {
             shape = android.graphics.drawable.GradientDrawable.OVAL
         }
-        radiantComposeBtn.applyColorFilter(activeInk)
+        radiantComposeBtn.applyColorFilter(config.accentInkColor)
+        radiantComposeBtn.elevation = 8f * density
 
         radiantMessagesBtn.setOnClickListener {
             if (isSearchExpanded) shrinkSearchBar() else conversationsList.smoothScrollToPosition(0)
@@ -1279,6 +1320,12 @@ class MainActivity : SimpleActivity() {
             parent: androidx.recyclerview.widget.RecyclerView,
             state: androidx.recyclerview.widget.RecyclerView.State,
         ) {
+            // Radiant marks the chosen chip with its own brand hairline, so a second
+            // selector drawn over the top only muddied it.
+            if (AppThemes.isRadiant(config.appTheme)) {
+                halo?.hide()
+                return
+            }
             val position = activePosition()
             val paint = halo ?: com.texto.sms.helpers.TextoHalo(parent).also { halo = it }
 
@@ -1364,13 +1411,33 @@ class MainActivity : SimpleActivity() {
         // not glass and the only one the transparency slider did nothing to: measured, its
         // neighbours were the header's own #171B22 while it was bare accent wash over the
         // page. The halo marks it instead, drawn over the glass rather than under it.
-        chip.background = com.texto.sms.helpers.TextoGlass.bar(
-            tint = if (config.topBarColor != 0) config.topBarColor else Color.BLACK,
-            cornerRadius = chipRadius,
-            opacity = config.glassOpacity / 100f,
-            strokeWidthPx = stroke,
-            rimAlpha = 0.20f
-        )
+        val radiant = AppThemes.isRadiant(config.appTheme)
+        chip.background = if (radiant) {
+            // The reference's chip row: the chosen chip is a light card behind a solid brand
+            // hairline, the rest a flat muted wash. Glass over a light ground gave three
+            // near-identical chips with nothing marking the choice.
+            android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                cornerRadius = chipRadius
+                setColor(if (isActive) config.recentColor else config.mainTextColor.withAlpha(0.06f))
+                setStroke(
+                    (if (isActive) 2.getScaledPx() else stroke).coerceAtLeast(1),
+                    if (isActive) {
+                        config.accentGradientStart.withAlpha(0.85f)
+                    } else {
+                        config.mainTextColor.withAlpha(0.10f)
+                    }
+                )
+            }
+        } else {
+            com.texto.sms.helpers.TextoGlass.bar(
+                tint = if (config.topBarColor != 0) config.topBarColor else Color.BLACK,
+                cornerRadius = chipRadius,
+                opacity = config.glassOpacity / 100f,
+                strokeWidthPx = stroke,
+                rimAlpha = 0.20f
+            )
+        }
         val horizontal = if (filterId == com.texto.sms.adapters.FilterChipsAdapter.ADD_CHIP_ID) {
             18.getScaledPx()
         } else {
@@ -1382,7 +1449,7 @@ class MainActivity : SimpleActivity() {
         chip.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
         // Flat. The lift belonged to the solid gradient chip; over a halo it would cast a
         // shadow onto the very thing marking the selection.
-        chip.elevation = 0f
+        chip.elevation = if (radiant && isActive) 3f * density else 0f
 
         views.label.apply {
             setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))

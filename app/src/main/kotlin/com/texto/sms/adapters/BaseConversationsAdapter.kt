@@ -210,7 +210,14 @@ abstract class BaseConversationsAdapter(
 
     override fun getItemViewType(position: Int): Int {
         // Every row in the new UI is a full-width card showing name and message body.
-        return if (activity.config.useNewUi) VIEW_TYPE_RECENT else VIEW_TYPE_DEFAULT
+        // Radiant *is* the card layout: the raised cards are the whole point of the skin, so it
+        // no longer depends on the separate "new UI" switch being on as well -- picking the
+        // theme and still seeing flat rows is exactly the "theme not applied" complaint.
+        return if (activity.config.useNewUi || AppThemes.isRadiant(activity.config.appTheme)) {
+            VIEW_TYPE_RECENT
+        } else {
+            VIEW_TYPE_DEFAULT
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {

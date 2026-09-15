@@ -290,21 +290,26 @@ object AppThemes {
     private val radiant = AppTheme(
         id = RADIANT,
         label = "رادیانت",
-        topBarColor = Color.parseColor("#F8FBFF"),
-        topBarTextColor = Color.parseColor("#172033"),
-        mainTextColor = Color.parseColor("#172033"),
-        mainBackgroundColor = Color.parseColor("#EAF2FF"),
-        backgroundGradient = Color.parseColor("#F5F9FF") to Color.parseColor("#E4EEFC"),
-        cardColor = Color.parseColor("#F8FBFF"),
-        inputBarTextColor = Color.parseColor("#172033"),
-        accentGradient = Color.parseColor("#1687F8") to Color.parseColor("#0868E8"),
-        auroraAccent = Color.parseColor("#1DBEA5"),
-        haloColors = Triple(Color.parseColor("#B7E5FF"), Color.parseColor("#C8D8FF"), Color.parseColor("#BFEFE5")),
-        haloOpacity = 0.36f,
-        sentBubbleTextColor = Color.WHITE,
-        receivedBubbleColor = Color.parseColor("#FFFFFF"),
-        receivedBubbleTextColor = Color.parseColor("#172033"),
-        cardCornerRadiusDp = 18,
+        // Straight off the reference mockup's own tokens rather than eyeballed: --glass
+        // #F4F7FC for the bars, --foreground #141F32 for the ink, --background #E4ECF8 for
+        // the ground, --card #F0F4FA for the cards and --brand #1C6EF0 for the accent. The
+        // card has to sit *above* the ground, so the ground is the darker of the two: the
+        // near-white card on a near-white ground is exactly why the cards read as flat.
+        topBarColor = Color.parseColor("#F4F7FC"),
+        topBarTextColor = Color.parseColor("#141F32"),
+        mainTextColor = Color.parseColor("#141F32"),
+        mainBackgroundColor = Color.parseColor("#E4ECF8"),
+        backgroundGradient = Color.parseColor("#EBF1FB") to Color.parseColor("#DFE7F3"),
+        cardColor = Color.parseColor("#F0F4FA"),
+        inputBarTextColor = Color.parseColor("#141F32"),
+        accentGradient = Color.parseColor("#1C6EF0") to Color.parseColor("#155FD8"),
+        auroraAccent = Color.parseColor("#0FA05C"),
+        haloColors = Triple(Color.parseColor("#C6DCFB"), Color.parseColor("#D3E6FF"), Color.parseColor("#C9D8EF")),
+        haloOpacity = 0.34f,
+        sentBubbleTextColor = Color.parseColor("#FAFCFF"),
+        receivedBubbleColor = Color.parseColor("#F0F4FA"),
+        receivedBubbleTextColor = Color.parseColor("#141F32"),
+        cardCornerRadiusDp = 24,
         glass = true
     )
 
@@ -325,7 +330,7 @@ object AppThemes {
         sentBubbleTextColor = Color.WHITE,
         receivedBubbleColor = Color.parseColor("#20364F"),
         receivedBubbleTextColor = Color.parseColor("#F4F8FF"),
-        cardCornerRadiusDp = 18,
+        cardCornerRadiusDp = 24,
         glass = true
     )
 
@@ -402,6 +407,10 @@ object AppThemes {
         config.receivedBubbleColorSet = false
         config.cardCornerRadiusDp = theme.cardCornerRadiusDp
         config.glassTheme = theme.glass
+        // Radiant is defined *as* the card layout, so picking it turns the card list on. Left
+        // to the separate switch, choosing Radiant repainted the colours while the rows
+        // stayed flat, which is what "the theme isn't applied" was describing.
+        if (isRadiant(theme.id)) config.useNewUi = true
 
         // A picked background image would sit on top of the theme, so clear it.
         config.mainBackgroundImage = ""
