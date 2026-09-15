@@ -420,7 +420,6 @@ open class SimpleActivity : AppCompatActivity() {
                 R.id.nav_home_icon,
                 R.id.nav_search_icon,
                 R.id.nav_add_icon,
-                R.id.texto_search_icon,
                 // Painted from the accent and the bar ink by their own screens, after this pass.
                 R.id.texto_fab,
                 R.id.texto_header_search_label,
@@ -665,7 +664,6 @@ open class SimpleActivity : AppCompatActivity() {
             findViewById<View>(R.id.texto_nav_container)?.let {
                 val inputBarTextColor = config.inputBarTextColor
                 findViewById<ImageView>(R.id.nav_home_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
-                findViewById<ImageView>(R.id.texto_search_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
                 findViewById<ImageView>(R.id.nav_search_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
                 findViewById<ImageView>(R.id.nav_add_icon)?.imageTintList = ColorStateList.valueOf(inputBarTextColor)
             }
@@ -845,7 +843,6 @@ open class SimpleActivity : AppCompatActivity() {
         
         val textColorCSL = ColorStateList.valueOf(config.inputBarTextColor)
         val searchIcons = listOfNotNull(
-            findViewById<ImageView>(R.id.texto_search_icon),
             findViewById<ImageView>(R.id.new_conversation_search_icon)
         )
         
