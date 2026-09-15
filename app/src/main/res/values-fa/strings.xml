@@ -26,6 +26,9 @@
     <string name="picker_contact">مخاطب</string>
     <string name="picker_schedule">زمان‌بندی</string>
     <string name="no_conversations_found">هیچ گفتگویی یافت نشد</string>
+    <string name="filter_active_notice">نمایش با فیلتر «%1$s»</string>
+    <string name="conversation_row_description">%1$s. %2$s. %3$s</string>
+    <string name="unread_messages_count">%1$d پیام خوانده‌نشده</string>
     <string name="start_conversation">شروع گفتگو</string>
     <string name="reply">پاسخ</string>
     <string name="show_character_counter">نمایش شمارنده نویسه هنگام نوشتن پیام</string>

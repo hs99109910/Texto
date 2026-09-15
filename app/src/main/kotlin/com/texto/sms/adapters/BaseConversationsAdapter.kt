@@ -123,16 +123,33 @@ abstract class BaseConversationsAdapter(
         }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
+    /**
+     * Re-reads the drafts and rebinds only the threads whose draft actually changed.
+     *
+     * This runs on every resume. It used to rebuild every visible row through
+     * notifyDataSetChanged(), which throws away the RecyclerView's item state and re-measures
+     * the lot -- so coming back from a conversation cost a full relayout of the list to move,
+     * usually, one "Draft" tag.
+     */
     fun updateDrafts() {
         ensureBackgroundThread {
             val newDrafts = HashMap<Long, String>()
             fetchDrafts(newDrafts)
             activity.runOnUiThread {
                 if (activity.isFinishing || activity.isDestroyed) return@runOnUiThread
-                if (drafts.hashCode() != newDrafts.hashCode()) {
-                    drafts = newDrafts
-                    safeNotifyDataSetChanged()
+                if (drafts == newDrafts) return@runOnUiThread
+
+                val changedThreads = (drafts.keys + newDrafts.keys).filter {
+                    drafts[it] != newDrafts[it]
+                }.toSet()
+                drafts = newDrafts
+
+                if (isDragging) {
+                    pendingNotify = true
+                    return@runOnUiThread
+                }
+                currentList.forEachIndexed { index, conversation ->
+                    if (conversation.threadId in changedThreads) notifyItemChanged(index)
                 }
             }
         }
@@ -571,6 +588,12 @@ abstract class BaseConversationsAdapter(
             }
 
             recentDate.text = (conversation.date * 1000L).formatUiDateOrTime()
+            // See the note in setupView: the row speaks as one thing, its lines do not.
+            recentFrame.contentDescription = rowDescription(
+                conversation, recentBody.text?.toString(), recentDate.text?.toString()
+            )
+            listOf<View>(recentAddress, recentBody, recentDate)
+                .forEach { it.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO }
             // Secondary and tertiary text weights come straight from the design's tokens
             // (--txt2 58%, --txt3 36%) rather than from a blanket view alpha, so the
             // unread/read distinction below is free to use alpha for its own purpose.
@@ -883,6 +906,26 @@ abstract class BaseConversationsAdapter(
         }
     }
 
+    /** Name, preview, time and the unread count as one announcement for the row. */
+    private fun rowDescription(
+        conversation: Conversation,
+        preview: String?,
+        date: String?,
+    ): String {
+        val base = activity.getString(
+            R.string.conversation_row_description,
+            conversation.title,
+            preview.orEmpty(),
+            date.orEmpty(),
+        )
+        // The badge is a bare number on screen; spoken on its own it means nothing.
+        return if (!conversation.read && conversation.unreadCount > 0) {
+            "$base. " + activity.getString(R.string.unread_messages_count, conversation.unreadCount)
+        } else {
+            base
+        }
+    }
+
     private fun setupView(view: View, conversation: Conversation, holder: ViewHolder) {
         ItemConversationBinding.bind(view).apply {
             root.setupViewBackground(activity)
@@ -954,6 +997,15 @@ abstract class BaseConversationsAdapter(
                 text = (conversation.date * 1000L).formatUiDateOrTime()
                 setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.8f)
             }
+
+            // One sentence for the whole row. Every line was focusable on its own, so a
+            // screen reader read a name, then a time, then a preview as three unrelated
+            // stops with no way to tell which thread they belonged to.
+            root.contentDescription = rowDescription(
+                conversation, conversationBodyShort.text?.toString(), conversationDate.text?.toString()
+            )
+            listOf<View>(conversationAddress, conversationBodyShort, conversationDate)
+                .forEach { it.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO }
 
             val isUnread = !conversation.read
             val style = if (isUnread) {

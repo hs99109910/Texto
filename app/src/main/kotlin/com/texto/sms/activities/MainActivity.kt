@@ -17,10 +17,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.view.animation.DecelerateInterpolator
-import android.view.animation.OvershootInterpolator
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.children
@@ -46,7 +44,6 @@ import com.texto.sms.helpers.showInlineBarsAround
 import com.texto.sms.helpers.TextoGlass
 import com.texto.sms.helpers.textoCapsuleDialog
 import com.texto.sms.helpers.textoColorPicker
-import com.texto.sms.helpers.NAV_ICON_DP
 import com.texto.sms.helpers.expandTouchTarget
 import com.texto.sms.helpers.SEARCHED_MESSAGE_ID
 import com.texto.sms.helpers.THREAD_ID
@@ -141,6 +138,12 @@ class MainActivity : SimpleActivity() {
 
     private var lastUsedNewUi: Boolean? = null
 
+    /** The look config was last painted from; see [appearanceSignature]. */
+    private var lastAppearanceSignature: String? = null
+
+    /** Set when a launch lands on a filter, so the first resume can say which one. */
+    private var pendingFilterNotice = false
+
     // Scroll position captured when leaving for a thread, replayed once the list is back.
     private var pendingScrollPosition = androidx.recyclerview.widget.RecyclerView.NO_POSITION
     private var pendingScrollOffset = 0
@@ -160,9 +163,6 @@ class MainActivity : SimpleActivity() {
     /** The customiser's sound row, waiting on the ringtone picker; see [customizeFilter]. */
     private var pendingSoundPick: ((uri: String?, label: String?) -> Unit)? = null
 
-    /** False until the bottom capsule's halo has been put somewhere; see styleNavTabs. */
-    private var navHaloPlaced = false
-
     /** Paints the sliding halo behind the chosen filter chip; installed in buildFilterChips. */
     private var filterHalo: FilterHaloDecoration? = null
 
@@ -172,7 +172,9 @@ class MainActivity : SimpleActivity() {
     private val binding by viewBinding(ActivityMainBinding::inflate)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+        // The night-mode pin lives in App.onCreate now. Set here it ran after the activity
+        // had already been created with the phone's own mode, so a device in dark mode built
+        // this screen twice on every cold start and flashed the other palette in between.
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
@@ -180,12 +182,20 @@ class MainActivity : SimpleActivity() {
         setupSearchEdgeToEdge()
         setupTextoTopAppBar(binding.mainAppbar, NavigationIcon.None, Color.TRANSPARENT)
 
-        setupTextoNavBar()
+        setupHomeActions()
 
         // Opening the app starts on the filter the user nominated in settings, rather than
         // wherever they happened to leave the chips last time. Written through activeFilterId
         // so buildFilterChips() and everything downstream keep reading a single source.
-        config.activeFilterId = config.defaultFilterId
+        //
+        // Only on a real launch. onCreate also runs on a rotation or any other configuration
+        // change, and doing this there threw away the chip the user had just picked.
+        if (savedInstanceState == null) {
+            config.activeFilterId = config.defaultFilterId
+            // Landing on a filter hides threads, so say which one rather than letting a
+            // filtered list look like a list with messages missing from it.
+            pendingFilterNotice = config.defaultFilterId != MessageFilter.ID_ALL
+        }
 
         loadMessages()
         
@@ -231,6 +241,13 @@ class MainActivity : SimpleActivity() {
         if (isInitialized) buildFilterChips()
         initMessenger()
 
+        if (pendingFilterNotice) {
+            pendingFilterNotice = false
+            // Said once, on the launch that did it, so a filtered list is never mistaken for
+            // messages having gone missing.
+            toast(getString(R.string.filter_active_notice, activeFilter.label))
+        }
+
         // No second syncConversations() here. initMessenger() -> getCachedConversations()
         // already starts a full fetch cycle and ends it with its own sync, and starting
         // another one straight afterwards bumped conversationLoadGeneration. The cached
@@ -244,33 +261,61 @@ class MainActivity : SimpleActivity() {
             updateDrafts()
         }
 
-        styleAppTitle()
-        setupScaledToolbar(binding.mainToolbar, HEADER_HEIGHT_DP)
-
-        styleHeaderGear()
-
-        getOrCreateConversationsAdapter().updateScaling()
-        applyCustomColors()
-        setupTextoNavBar()
-        setupOverlayBars()
-
-        filterChipsAdapter?.notifyDataSetChanged()
-        binding.textoSearchInput.setTextColor(config.inputBarTextColor)
-        binding.textoSearchInput.setHintTextColor(config.inputBarTextColor.withAlpha(0.5f))
+        // Repainting and re-measuring the whole screen -- header, gear, chips, glass, the two
+        // floating bars and every row's scaling -- used to happen on every single resume, so
+        // stepping back from a conversation redid work whose answer had not changed and
+        // dropped frames doing it. It is done on the first resume and after that only when
+        // something it reads from config actually differs; see [appearanceSignature].
+        val signature = appearanceSignature()
+        if (signature != lastAppearanceSignature) {
+            lastAppearanceSignature = signature
+            styleAppTitle()
+            setupScaledToolbar(binding.mainToolbar, HEADER_HEIGHT_DP)
+            styleHeaderGear()
+            styleEmptyState()
+            getOrCreateConversationsAdapter().updateScaling()
+            applyCustomColors()
+            setupHomeActions()
+            setupOverlayBars()
+            // buildFilterChips() above already rebuilt and repainted the row; the blanket
+            // notifyDataSetChanged() that used to follow it here rebound every chip a second
+            // time for nothing.
+            binding.textoSearchInput.setTextColor(config.inputBarTextColor)
+            binding.textoSearchInput.setHintTextColor(config.inputBarTextColor.withAlpha(0.5f))
+        }
 
         if (isFirstResume && config.useNewUi) {
             isFirstResume = false
-            binding.mainAppbar.pivotY = 0f
-            binding.mainAppbar.scaleY = 0.4f
+            // A short, plain settle. It was an 800ms overshoot that squashed the header to
+            // 40% and sprang it back, which read as the app struggling to open rather than
+            // as an entrance.
             binding.mainAppbar.alpha = 0f
+            binding.mainAppbar.translationY = -8f * resources.displayMetrics.density
             binding.mainAppbar.animate()
-                .scaleY(1f)
+                .translationY(0f)
                 .alpha(1f)
-                .setDuration(800)
-                .setInterpolator(android.view.animation.OvershootInterpolator(2.2f))
+                .setDuration(SEARCH_ANIM_MILLIS)
+                .setInterpolator(DecelerateInterpolator())
                 .start()
         }
     }
+
+    /**
+     * Everything the home screen's painters read out of config, in one value.
+     *
+     * onResume compares it with the last one and only repaints when it moved. Anything added
+     * to a styling pass here has to be added to this list too, or a change to it will not
+     * show up until the activity is recreated.
+     */
+    private fun appearanceSignature(): String = listOf(
+        config.appTheme, config.useNewUi, config.uiScale, config.glassOpacity,
+        config.fontFamilyTexto, config.fontSize,
+        config.mainTextColor, config.mainBackgroundColor,
+        config.topBarColor, config.topBarTextColor,
+        config.recentColor, config.accentGradientStart, config.accentInkColor,
+        config.inputBarBackgroundColor, config.inputBarTextColor,
+        config.topBarOutline, config.topBarOutlineColor, config.topBarOutlineThickness,
+    ).joinToString("|")
 
     override fun onPause() {
         super.onPause()
@@ -331,7 +376,6 @@ class MainActivity : SimpleActivity() {
         // directly beside a light 40dp disc with a dark one: two materials on one row, on the
         // one row the design means to read as a single control set.
         styleHeaderTile(binding.textoMenuBtn)
-        binding.textoAppearanceBtn.beGone()
 
         // The capsule's middle is the search field's placeholder: the bar's own ink at the
         // idle 58%, with the magnifier at the 68% every header glyph carries.
@@ -387,12 +431,14 @@ class MainActivity : SimpleActivity() {
 
     /**
      * The home screen's two ways out: search, from the capsule that is the header, and a new
-     * conversation, from the extended FAB. The three-tab floating pill that used to carry both
-     * is retired -- its "Conversations" tab only ever pointed at the screen it sat on -- and its
-     * views stay in the layout, gone, for the painters that still reach into them by id.
+     * conversation, from the extended FAB.
+     *
+     * The three-tab floating pill that used to carry both is gone from the layout as well as
+     * from the screen now -- its "Conversations" tab only ever pointed at the screen it sat
+     * on -- along with the halo, the six tab views and the painting passes that kept styling
+     * all of it on every resume for something nobody could see.
      */
-    private fun setupTextoNavBar() = binding.apply {
-        textoNavContainer.beGone()
+    private fun setupHomeActions() = binding.apply {
         styleFab()
         textoFab.setOnClickListener { launchNewConversation() }
         textoFab.beVisibleIf(!isSearchExpanded)
@@ -442,93 +488,6 @@ class MainActivity : SimpleActivity() {
     }
 
     /**
-     * The capsule's tabs and the lozenge behind the current one, painted here rather than
-     * left to the XML placeholders so a theme change repaints them without reinflating.
-     */
-    private fun styleNavTabs() = binding.apply {
-        val density = resources.displayMetrics.density
-        // The lozenge marks where you actually are, so while the search panel is up it sits
-        // behind the search tab rather than staying on a conversation list that is not on
-        // screen. Painted per tab from the same recipe, so only which one gets it changes.
-        val activeTab: android.view.View = if (isSearchExpanded) navSearchContainer else navHomeBtn
-        // `--primary`, the accent the design tints the active tab with -- not `--primary-alt`
-        // (auroraAccentColor), which is only the third halo hue behind the app.
-        val accent = config.accentGradientStart
-        // `--txt2`, the design's one secondary ink: the same 58% the filter chips' idle
-        // labels and the conversation preview line carry. It sat at 68% here, which is not
-        // a value the design has -- the two selectors sit at opposite ends of the same
-        // screen and their idle labels were visibly different weights.
-        val muted = config.mainTextColor.withAlpha(0.58f)
-
-        // The halo is a view behind the tabs rather than a background on one of them, so
-        // moving the selection slides it across instead of erasing it here and drawing it
-        // there. See TextoHalo.
-        navHalo.background = android.graphics.drawable.GradientDrawable().apply {
-            shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-            // A pill, like the filter chips' halo and the two bars: any radius past half the
-            // height rounds the ends completely, and the draw clamps it. It was a fixed 27dp
-            // against a halo about 64dp tall, so the app's two selection markers -- meant to
-            // read as one idea -- were a rounded rectangle at the bottom and a pill at the top.
-            cornerRadius = CHIP_PILL_RADIUS_DP * density
-            // `background: var(--primary-soft)` over `border: 1px solid primary/0.25`.
-            setColor(accent.withAlpha(0.16f))
-            // Through getScaledPx, like the chip halo it matches and the bars' own rims: a
-            // raw density ignores the UI-scale slider, so past about 1.2 this stayed a 2px
-            // hairline while the halo at the top of the screen had grown to 3.
-            setStroke(1.getScaledPx().coerceAtLeast(1), accent.withAlpha(0.25f))
-        }
-        listOf(navHomeBtn, navAddBtn, navSearchContainer).forEach { tab -> tab.background = null }
-        // Only after the tabs have been measured: their padding is set further down this
-        // very method, so asking for their bounds now would place the halo on last frame's
-        // geometry. The first pass lands without animating -- nothing to travel from.
-        navHalo.post {
-            if (isFinishing || isDestroyed) return@post
-            val animate = navHaloPlaced
-            navHaloPlaced = true
-            com.texto.sms.helpers.TextoHalo.moveView(navHalo, activeTab, animate)
-        }
-
-        // The design carries the active/idle distinction in colour -- `--primary` against
-        // `--muted` -- rather than by fading the whole tab, so the idle tabs get the muted
-        // ink at full opacity instead of the accent at 36%.
-        val searchIsActive = activeTab === navSearchContainer
-        navHomeIcon.applyColorFilter(if (searchIsActive) muted else accent)
-        navHomeLabel.setTextColor(if (searchIsActive) muted else accent)
-        textoSearchIcon.applyColorFilter(if (searchIsActive) accent else muted)
-        navSearchLabel.setTextColor(if (searchIsActive) accent else muted)
-        navAddIcon.applyColorFilter(muted)
-        navAddLabel.setTextColor(muted)
-
-        val padH = 4.getScaledPx()
-        val padV = 10.getScaledPx()
-        listOf(navHomeBtn, navAddBtn, navSearchContainer).forEach { tab ->
-            tab.minimumWidth = 0
-            tab.setPadding(padH, padV, padH, padV)
-        }
-        val glyph = NAV_ICON_DP.getScaledPx()
-        listOf(navHomeIcon, navAddIcon, textoSearchIcon).forEach { icon ->
-            icon.updateLayoutParams {
-                width = glyph
-                height = glyph
-            }
-        }
-        // Weight as well as colour, which is the rule the filter chips already follow: the
-        // chosen chip is bold and the rest are not. The capsule marked its current tab in
-        // colour alone, so the two selection markers -- meant to read as one idea at opposite
-        // ends of the same screen -- said it two different ways.
-        listOf(
-            navHomeLabel to (!searchIsActive),
-            navSearchLabel to searchIsActive,
-            navAddLabel to false,
-        ).forEach { (label, isActive) ->
-            label.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
-            label.typeface = typefaceFor(
-                if (isActive) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL
-            )
-        }
-    }
-
-    /**
      * Search opens as its own panel across the top rather than swallowing the bottom capsule,
      * so the three nav tabs stay reachable the whole time. The panel slides down from behind
      * the header on the same decelerate curve the rest of the app animates on, and the
@@ -538,19 +497,29 @@ class MainActivity : SimpleActivity() {
         if (isSearchExpanded) return@apply
         isSearchExpanded = true
 
-        // The header capsule and the home filter row step aside entirely while searching.
-        // They sit above this panel in the same space, so leaving them up hid the field and
-        // its chips behind the wordmark; search gets the top of the screen to itself.
-        mainAppbar.beGone()
-        filterBar.beGone()
-        // Starting a conversation is not what the search screen is for, and the FAB would sit
-        // on top of the results and the keyboard.
-        textoFab.beGone()
+        // The header capsule and the home filter row step aside while searching: they sit
+        // above this panel in the same space, so leaving them up hid the field and its chips
+        // behind the wordmark. They fade out over the same interval the panel slides in on
+        // rather than blinking out of existence a frame before it -- three things vanishing
+        // at once was the jolt this transition had.
+        //
+        // Starting a conversation is not what the search screen is for either, and the FAB
+        // would sit on top of the results and the keyboard.
+        listOf<View>(mainAppbar, filterBar, textoFab).forEach { bar ->
+            bar.animate()
+                .alpha(0f)
+                .setDuration(SEARCH_ANIM_MILLIS)
+                .setInterpolator(DecelerateInterpolator())
+                .withEndAction {
+                    if (isFinishing || isDestroyed) return@withEndAction
+                    if (isSearchExpanded) bar.beGone()
+                }
+                .start()
+        }
 
         buildSearchFilterChips()
         buildSearchDateChips()
         styleSearchPanel()
-        styleNavTabs()
 
         searchHolder.beVisible()
         searchHolder.alpha = 0f
@@ -613,16 +582,19 @@ class MainActivity : SimpleActivity() {
             animate().alpha(1f).setDuration(SEARCH_ANIM_MILLIS).start()
         }
 
-        mainAppbar.beVisible()
-        filterBar.beVisible()
-        textoFab.beVisible()
+        // Back in on the same fade they left on. Full view alpha at the end of it: how
+        // see-through these are is the glass setting's job alone. A 0.92 here multiplied
+        // against the fill and put the bars below whatever the slider said, which is part of
+        // why its top end never looked opaque.
+        listOf<View>(mainAppbar, filterBar, textoFab).forEach { bar ->
+            bar.beVisible()
+            bar.animate()
+                .alpha(1f)
+                .setDuration(SEARCH_ANIM_MILLIS)
+                .setInterpolator(DecelerateInterpolator())
+                .start()
+        }
         textoFab.extend()
-        // Full view alpha: how see-through these are is the glass setting's job alone. A
-        // 0.92 here multiplied against the fill and put the bars below whatever the slider
-        // said, which is part of why its top end never looked opaque.
-        mainAppbar.alpha = 1f
-        filterBar.alpha = 1f
-        styleNavTabs()
     }
 
     /**
@@ -1399,13 +1371,31 @@ class MainActivity : SimpleActivity() {
 
     private fun setupOneTimeViews() {
         binding.noConversationsPlaceholder2.setOnClickListener { launchNewConversation() }
+        styleEmptyState()
+        setupPullToRefresh()
+
+        // The header's middle looks like a field but is not one: it opens the search panel,
+        // which owns the real input. Sighted users get that from the tap; a screen reader was
+        // told only the text, so it announced a label with nothing to do. Announced as a
+        // button now, which is what it behaves like.
+        ViewCompat.setAccessibilityDelegate(
+            binding.textoHeaderSearch,
+            object : androidx.core.view.AccessibilityDelegateCompat() {
+                override fun onInitializeAccessibilityNodeInfo(
+                    host: View,
+                    info: androidx.core.view.accessibility.AccessibilityNodeInfoCompat,
+                ) {
+                    super.onInitializeAccessibilityNodeInfo(host, info)
+                    info.className = android.widget.Button::class.java.name
+                }
+            }
+        )
         // The header's single control. The overflow menu it replaced offered archived
         // conversations, settings and about; all three live inside settings now, so the
         // gear opens that rather than a menu with one real entry left in it.
         binding.textoMenuBtn.setOnClickListener {
             startActivity(Intent(this@MainActivity, SettingsActivity::class.java))
         }
-        binding.textoAppearanceBtn.setOnClickListener { openAppearanceEditor() }
         buildFilterChips()
 
         // Once the user scrolls themselves, the remembered position is stale.
@@ -1440,6 +1430,31 @@ class MainActivity : SimpleActivity() {
         binding.textoFab.startAnimation(searchAnim)
 
         binding.textoSearchInput.setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize())
+    }
+
+    /**
+     * Swipe down to re-read the threads. The app refreshes itself on every message and on
+     * every resume, but there was no way to ask it to: when a message did not show up, the
+     * only move left was to force-stop the app.
+     *
+     * The spinner is dropped below the header and the chip row, which float over the list, so
+     * it does not come down behind them.
+     */
+    private fun setupPullToRefresh() {
+        binding.conversationsRefresh.apply {
+            setOnRefreshListener {
+                syncConversations(cached = ArrayList(allConversations))
+            }
+            setColorSchemeColors(config.accentGradientStart)
+            setProgressBackgroundColorSchemeColor(config.mainBackgroundColor)
+        }
+    }
+
+    /** The frosted bars float over the list, so the spinner has to start below them. */
+    private fun setRefreshSpinnerOffset(topInset: Int) {
+        val start = topInset
+        val end = topInset + 64.getScaledPx()
+        binding.conversationsRefresh.setProgressViewOffset(false, start, end)
     }
 
     private fun getCachedConversations(isManualReorder: Boolean = false) {
@@ -1666,7 +1681,10 @@ class MainActivity : SimpleActivity() {
         } else {
             binding.conversationsProgressBar.hide()
             binding.noConversationsPlaceholder.beGone()
+            binding.conversationsRefresh.isRefreshing = false
         }
+        // No mark while loading: it belongs to "there is nothing here", not to "not yet".
+        binding.emptyStateIcon.beGone()
     }
 
     private fun showOrHidePlaceholder(show: Boolean) {
@@ -1678,6 +1696,59 @@ class MainActivity : SimpleActivity() {
             getString(R.string.no_conversations_found)
         }
         binding.noConversationsPlaceholder2.beVisibleIf(show && !isFiltered)
+        // An empty screen was two lines of text in the middle of nothing. The mark gives it a
+        // centre, and it comes and goes with the message it belongs to.
+        binding.emptyStateIcon.beVisibleIf(show)
+        binding.conversationsRefresh.isRefreshing = false
+    }
+
+    /**
+     * The empty state, painted from the theme: a soft accent mark, and a button that looks
+     * like one. "Start a conversation" used to be plain text with a ripple behind it, which
+     * read as a third line of the message rather than as the one thing to do here.
+     */
+    private fun styleEmptyState() = binding.apply {
+        emptyStateIcon.applyColorFilter(config.accentGradientStart.withAlpha(0.35f))
+        val size = 88.getScaledPx()
+        emptyStateIcon.updateLayoutParams<LinearLayout.LayoutParams> {
+            width = size
+            height = size
+        }
+
+        noConversationsPlaceholder.apply {
+            setTextColor(config.mainTextColor.withAlpha(0.68f))
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.0f))
+            typeface = typefaceFor(android.graphics.Typeface.NORMAL)
+        }
+
+        noConversationsPlaceholder2.apply {
+            setTextColor(config.accentInkColor)
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.95f))
+            typeface = typefaceFor(android.graphics.Typeface.BOLD)
+            minHeight = 48.getScaledPx()
+            minimumWidth = 180.getScaledPx()
+            val padH = 24.getScaledPx()
+            val padV = 12.getScaledPx()
+            setPadding(padH, padV, padH, padV)
+            background = android.graphics.drawable.GradientDrawable().apply {
+                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                cornerRadius = 16f * resources.displayMetrics.density
+                setColor(config.accentGradientStart)
+            }
+            outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+            ViewCompat.setAccessibilityDelegate(
+                this,
+                object : androidx.core.view.AccessibilityDelegateCompat() {
+                    override fun onInitializeAccessibilityNodeInfo(
+                        host: View,
+                        info: androidx.core.view.accessibility.AccessibilityNodeInfoCompat,
+                    ) {
+                        super.onInitializeAccessibilityNodeInfo(host, info)
+                        info.className = android.widget.Button::class.java.name
+                    }
+                }
+            )
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -1815,6 +1886,13 @@ class MainActivity : SimpleActivity() {
                         scrollToPosition(0)
                     }
                 }
+                // The loading bar and the pull-to-refresh spinner both belong just under the
+                // chip row: drawn at the very top they were behind the frosted header, which
+                // is the whole reason the progress bar was never seen.
+                binding.conversationsProgressBar.updateLayoutParams<RelativeLayout.LayoutParams> {
+                    topMargin = inset
+                }
+                setRefreshSpinnerOffset(inset)
                 // The empty-state text is already positioned with layout_below="filter_bar",
                 // so it follows the bar without any extra offset here.
             }
@@ -1923,7 +2001,6 @@ class MainActivity : SimpleActivity() {
 
     private fun applyOutlines() = binding.apply {
         val density = resources.displayMetrics.density
-        val inputBarTextColor = config.inputBarTextColor
         val isNewUi = config.useNewUi
         
         if (config.topBarOutline && isNewUi) {
@@ -1951,27 +2028,10 @@ class MainActivity : SimpleActivity() {
             binding.mainAppbar.foreground = null
         }
 
-        if (config.searchBarOutline && isNewUi) {
-            val thickness = config.searchBarOutlineThickness
-            val thickStroke = (thickness * density).toInt()
-            val r_base = 100f * density
-            val drawable = android.graphics.drawable.GradientDrawable().apply {
-                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-                setStroke(thickStroke, config.searchBarOutlineColor)
-                cornerRadius = r_base
-                setColor(Color.TRANSPARENT)
-            }
-            val layerDrawable = android.graphics.drawable.LayerDrawable(arrayOf(drawable))
-            layerDrawable.setLayerInset(0, 0, 0, 0, 0)
-            binding.textoNavContainer.foreground = layerDrawable
-            
-            // Sync icon and divider colors with search bar text color
-            binding.navHomeIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
-            binding.navAddIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
-            binding.textoSearchIcon.imageTintList = android.content.res.ColorStateList.valueOf(inputBarTextColor)
-        } else {
-            binding.textoNavContainer.foreground = null
-        }
+        // The search-bar outline setting traced the retired bottom pill. That view is gone,
+        // and this screen's own search control is the header capsule the top-bar outline
+        // already traces, so there is nothing left here for it to draw on. The setting still
+        // applies where a search bar actually exists.
     }
 
     // ---- the live appearance editor ----------------------------------------------------------
@@ -2014,7 +2074,6 @@ class MainActivity : SimpleActivity() {
         editPulse.start {
             buildList {
                 add(binding.mainToolbar)
-                add(binding.textoNavContainer)
                 binding.conversationsList.children.forEach { row ->
                     row.findViewById<View>(R.id.recent_frame)?.let { add(it) }
                 }
@@ -2047,7 +2106,8 @@ class MainActivity : SimpleActivity() {
     private fun repaintHome() {
         applyCustomColors()
         setupOverlayBars()
-        setupTextoNavBar()
+        setupHomeActions()
+        styleEmptyState()
         updateAppFonts(binding.root)
         binding.conversationsList.adapter?.notifyDataSetChanged()
         if (isEditingAppearance) styleAppearanceBar()
@@ -2060,7 +2120,7 @@ class MainActivity : SimpleActivity() {
      */
     private fun setHomeFunctionsEnabled(enabled: Boolean) = binding.apply {
         listOf<View>(
-            textoMenuBtn, textoAppearanceBtn, textoFab, textoHeaderSearch,
+            textoMenuBtn, textoFab, textoHeaderSearch,
             filterBar
         )
             .forEach {
@@ -2110,7 +2170,7 @@ class MainActivity : SimpleActivity() {
         appearanceDone.setOnClickListener { closeAppearanceEditor(keep = true) }
         // The two capsules are one material and take one colour, so either of them opens the
         // same picker rather than pretending they can differ.
-        listOf<View>(mainToolbar, textoHeaderRow, textoNavContainer).forEach { bar ->
+        listOf<View>(mainToolbar, textoHeaderRow).forEach { bar ->
             bar.setOnClickListener { if (isEditingAppearance) showBarAppearanceBars(bar) }
             bar.isClickable = true
         }

@@ -1,6 +1,7 @@
 package com.texto.sms
 
 import android.app.Application
+import androidx.appcompat.app.AppCompatDelegate
 import android.content.pm.ApplicationInfo
 import android.database.ContentObserver
 import android.net.Uri
@@ -38,6 +39,12 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // Texto ships one hand-painted palette and reads its own theme settings, so the
+        // system's dark mode must not swap resources underneath it. Pinned here, before the
+        // first activity exists: MainActivity used to do it in onCreate, which meant a phone
+        // in dark mode built the home screen once in the night configuration, got this, and
+        // rebuilt it -- a visible flash of the wrong colours on every cold start.
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         if (hasPermission(PERMISSION_READ_CONTACTS)) {
             listOf(
                 ContactsContract.Contacts.CONTENT_URI,

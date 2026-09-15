@@ -36,10 +36,12 @@
         android:paddingVertical="4dp"
         android:background="@drawable/pill_background_recent_1">
 
+        <!-- Decoration: the monogram repeats the name on the line beside it. -->
         <ImageView
             android:id="@+id/recent_image"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:importantForAccessibility="no"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"

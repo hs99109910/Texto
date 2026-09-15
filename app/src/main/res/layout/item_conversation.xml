@@ -14,10 +14,16 @@
     android:paddingEnd="16dp"
     android:paddingBottom="14dp">
 
+    <!--
+        Decoration, not information: the monogram or photo repeats the name on the line beside
+        it. Left focusable, a screen reader stopped on every row twice and read the drawable's
+        own name at the first stop.
+    -->
     <ImageView
         android:id="@+id/conversation_image"
         android:layout_width="@dimen/texto_list_icon_size_medium"
         android:layout_height="@dimen/texto_list_icon_size_medium"
+        android:importantForAccessibility="no"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
