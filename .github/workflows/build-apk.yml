@@ -2,7 +2,7 @@ name: Build APK
 
 on:
   push:
-    branches: [ main, claude/app-build-h2us3g, claude/app-ui-changes-dwxibd ]
+    branches: [ main, claude/** ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
