@@ -22,6 +22,7 @@ import com.texto.sms.extensions.beVisibleIf
 import com.texto.sms.extensions.setupViewBackground
 import com.texto.sms.extensions.toast
 import com.texto.sms.helpers.SimpleContactsHelper
+import com.texto.sms.helpers.AppThemes
 import com.texto.sms.extensions.ensureBackgroundThread
 import com.texto.sms.views.TextoRecyclerView
 import com.texto.sms.R
@@ -653,10 +654,16 @@ abstract class BaseConversationsAdapter(
                 val padH = ROW_PADDING_H_DP.getScaledPxIn(a)
                 val padV = ROW_PADDING_V_DP.getScaledPxIn(a)
                 recentFrame.setPadding(padH, padV, padH, padV)
-                // Separate cards, but packed close: half the gap on each side of every card.
+                // Radiant deliberately leaves enough air for the card shadow to remain visible.
+                // Other skins retain the denser conversation list they already use.
+                val rowGap = if (AppThemes.isRadiant(activity.config.appTheme)) {
+                    RADIANT_ROW_GAP_DP
+                } else {
+                    ROW_GAP_DP
+                }
                 recentFrame.updateLayoutParams<android.view.ViewGroup.MarginLayoutParams> {
-                    topMargin = ROW_GAP_DP.getScaledPxIn(a)
-                    bottomMargin = ROW_GAP_DP.getScaledPxIn(a)
+                    topMargin = rowGap.getScaledPxIn(a)
+                    bottomMargin = rowGap.getScaledPxIn(a)
                 }
 
                 val avatarGap = AVATAR_TEXT_GAP_DP.getScaledPxIn(a)
@@ -723,6 +730,7 @@ abstract class BaseConversationsAdapter(
             val cardRadius =
                 activity.config.cardCornerRadiusDp * resources.displayMetrics.density
 
+            val isRadiant = AppThemes.isRadiant(activity.config.appTheme)
             if (activity.config.glassTheme) {
                 // The design's row is a glass wash of the card colour behind a `--divider`
                 // hairline: `border: 1px solid var(--divider)` on `background: var(--glass)`.
@@ -737,10 +745,14 @@ abstract class BaseConversationsAdapter(
                     view = recentFrame,
                     tint = baseColor,
                     cornerRadius = cardRadius,
-                    opacity = if (isSelected) 0.82f else 0.68f,
+                    opacity = when {
+                        isSelected -> 0.92f
+                        isRadiant -> 0.98f
+                        else -> 0.68f
+                    },
                     strokeWidthPx = (resources.displayMetrics.density).toInt().coerceAtLeast(1),
-                    rimAlpha = 0.10f,
-                    sheenAlpha = 0f,
+                    rimAlpha = if (isRadiant) 0.18f else 0.10f,
+                    sheenAlpha = if (isRadiant) 0.06f else 0f,
                     outlineColor = outlineColor,
                     outlineWidthPx = outlineThickness
                 )
@@ -776,17 +788,28 @@ abstract class BaseConversationsAdapter(
             val isGlass = activity.config.glassTheme
             val cardElevation = when {
                 !isGlass -> 8f
+                isRadiant -> RADIANT_CARD_ELEVATION_DP
                 canTintShadow -> GLASS_CARD_ELEVATION_DP
                 else -> 0f
             }
             recentFrame.elevation = cardElevation * resources.displayMetrics.density
-            recentFrame.translationZ = if (isGlass) 0f else 4f
+            recentFrame.translationZ = when {
+                isRadiant -> RADIANT_CARD_TRANSLATION_Z_DP * resources.displayMetrics.density
+                isGlass -> 0f
+                else -> 4f
+            }
             if (canTintShadow && isGlass) {
-                // Cast in the theme's own darkest ground rather than black, so the shadow
-                // belongs to the background it falls on.
-                val shadowTint = activity.config.mainBackgroundColor
-                recentFrame.outlineAmbientShadowColor = shadowTint.withAlpha(GLASS_SHADOW_ALPHA)
-                recentFrame.outlineSpotShadowColor = shadowTint.withAlpha(GLASS_SHADOW_ALPHA)
+                // Radiant needs the visibly lifted cards from its reference design. Its text
+                // colour gives the pale surface a cool grey-blue shadow; the other glass
+                // skins keep their quieter background-coloured shadow.
+                val shadowTint = if (isRadiant) {
+                    activity.config.mainTextColor
+                } else {
+                    activity.config.mainBackgroundColor
+                }
+                val shadowAlpha = if (isRadiant) RADIANT_SHADOW_ALPHA else GLASS_SHADOW_ALPHA
+                recentFrame.outlineAmbientShadowColor = shadowTint.withAlpha(shadowAlpha)
+                recentFrame.outlineSpotShadowColor = shadowTint.withAlpha(shadowAlpha)
             }
             recentFrame.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
             recentFrame.clipToOutline = false
@@ -1149,6 +1172,7 @@ abstract class BaseConversationsAdapter(
         private const val ROW_PADDING_V_DP = 4
         /** Each side of a card, so two cards sit 2dp apart (was 4 + 4). */
         private const val ROW_GAP_DP = 1
+        private const val RADIANT_ROW_GAP_DP = 5
         private const val PIN_DP = 14
         private const val PIN_NAME_GAP_DP = 4
 
@@ -1185,8 +1209,13 @@ abstract class BaseConversationsAdapter(
          */
         private const val GLASS_CARD_ELEVATION_DP = 16f
 
+        /** Stronger separation for Radiant's deliberately raised white conversation cards. */
+        private const val RADIANT_CARD_ELEVATION_DP = 12f
+        private const val RADIANT_CARD_TRANSLATION_Z_DP = 2f
+
         /** A tenth of full strength. Any denser and the card stops floating and starts sitting. */
         private const val GLASS_SHADOW_ALPHA = 0.10f
+        private const val RADIANT_SHADOW_ALPHA = 0.22f
         
         const val VIEW_TYPE_DEFAULT = 0
         const val VIEW_TYPE_RECENT = 1
