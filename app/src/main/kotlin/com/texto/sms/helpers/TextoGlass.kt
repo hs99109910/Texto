@@ -195,8 +195,68 @@ object TextoGlass {
         return LayerDrawable(arrayOf(fill, rim))
     }
 
+    /**
+     * The Radiant reference's raised surface, measured off the design itself. Its cards,
+     * chips and both capsule bars all share one recipe:
+     *
+     *   border: 1px solid var(--hairline)
+     *   box-shadow: inset 0 1px 0 rgba(255,255,255,.72),
+     *               inset 0 -1px 2px rgba(176,184,198,.38),
+     *               0 1px 2px rgba(108,119,137,.18)
+     *
+     * Android has no inset shadow, so the bevel is drawn as stacked rounded rects: the
+     * hairline underneath, a shade ring inside it that only shows along the bottom edge, a
+     * white highlight that only shows along the top edge, and the flat face over both. That
+     * top light line plus the bottom dark line is what makes the reference's cards read as
+     * lifted -- not a big drop shadow, which is why the earlier attempts looked flat no
+     * matter how much elevation they were given.
+     */
+    fun bevel(
+        face: Int,
+        cornerRadius: Float,
+        hairline: Int = RADIANT_HAIRLINE,
+        shade: Int = RADIANT_BEVEL_SHADE,
+        highlightAlpha: Float = 0.72f,
+        opacity: Float = 1f,
+        linePx: Int = 1,
+    ): Drawable {
+        fun rr(color: Int, radius: Float) = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            setCornerRadius(radius.coerceAtLeast(0f))
+            setColor(color)
+        }
+
+        val px = linePx.coerceAtLeast(1)
+        val layers = LayerDrawable(
+            arrayOf(
+                rr(hairline, cornerRadius),
+                rr(shade, cornerRadius - px),
+                rr(Color.WHITE.withAlpha(highlightAlpha), cornerRadius - px),
+                rr(face.withAlpha(opacity), cornerRadius - 2 * px),
+            )
+        )
+        // The shade ring shows only where the layers above stop short: a single line above
+        // the hairline at the bottom.
+        layers.setLayerInset(1, px, px, px, px)
+        // The highlight is pulled off the bottom so the shade line is what closes the card.
+        layers.setLayerInset(2, px, px, px, 2 * px)
+        // The face leaves the top line of the highlight and the bottom line of the shade.
+        layers.setLayerInset(3, px, 2 * px, px, 2 * px)
+        return layers
+    }
+
+    /** `--hairline` in the Radiant reference. */
+    val RADIANT_HAIRLINE: Int = Color.parseColor("#CAD1DD")
+
+    /** The reference's inset bottom shadow, flattened to the line it actually draws. */
+    val RADIANT_BEVEL_SHADE: Int = Color.parseColor("#B7C0CF")
+
+    /** The reference's outer `0 1px 2px` cast, used to tint the platform shadow. */
+    val RADIANT_CAST: Int = Color.parseColor("#3A4D6E")
+
     /** The mockup's bar gradient runs .84 -> .66; keeping the ratio is what carries over. */
     private const val FADE_RATIO = 0.79f
+
 
     /** The design's own light-theme rim, `--rim: 20,23,43`. */
     private val LIGHT_RIM = Color.rgb(20, 23, 43)

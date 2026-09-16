@@ -649,6 +649,23 @@ abstract class BaseConversationsAdapter(
                 height = size
             }
 
+            if (AppThemes.isRadiant(activity.config.appTheme)) {
+                // The reference lifts the brand tile off the card with its own
+                // `0 7px 16px` cast, which is what keeps the monogram from looking
+                // printed onto the card face.
+                val d = resources.displayMetrics.density
+                recentImage.elevation = 6f * d
+                recentImage.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    val cast = Color.parseColor("#23478F").withAlpha(0.28f)
+                    recentImage.outlineAmbientShadowColor = cast
+                    recentImage.outlineSpotShadowColor = cast
+                }
+            } else {
+                recentImage.elevation = 0f
+            }
+
+
             // Row density. The design's 15dp padding and 7dp gap put roughly 92dp between
             // one row and the next, where Google Messages sits near 72dp: on this screen
             // that is two whole conversations of difference. 9dp and 4dp brought the pitch
@@ -740,7 +757,19 @@ abstract class BaseConversationsAdapter(
                 activity.config.cardCornerRadiusDp * resources.displayMetrics.density
 
             val isRadiant = AppThemes.isRadiant(activity.config.appTheme)
-            if (activity.config.glassTheme) {
+            if (isRadiant) {
+                // Radiant's card is the reference's raised surface, line for line: a hairline
+                // frame, a white top edge, a shaded bottom edge and a flat face. Painted with
+                // a glass panel instead it was a wash with a border, which is why the cards
+                // kept reading as flush with the page however much elevation they were given.
+                recentFrame.background = TextoGlass.bevel(
+                    face = baseColor,
+                    cornerRadius = cardRadius,
+                    opacity = if (isSelected) 1f else 0.99f,
+                    linePx = resources.displayMetrics.density.toInt().coerceAtLeast(1)
+                )
+                recentFrame.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+            } else if (activity.config.glassTheme) {
                 // The design's row is a glass wash of the card colour behind a `--divider`
                 // hairline: `border: 1px solid var(--divider)` on `background: var(--glass)`.
                 // The rim is what gives a row its edge against the halo field behind it --
@@ -754,18 +783,15 @@ abstract class BaseConversationsAdapter(
                     view = recentFrame,
                     tint = baseColor,
                     cornerRadius = cardRadius,
-                    opacity = when {
-                        isSelected -> 0.92f
-                        isRadiant -> 0.98f
-                        else -> 0.68f
-                    },
+                    opacity = if (isSelected) 0.92f else 0.68f,
                     strokeWidthPx = (resources.displayMetrics.density).toInt().coerceAtLeast(1),
-                    rimAlpha = if (isRadiant) 0f else 0.10f,
-                    sheenAlpha = if (isRadiant) 0.08f else 0f,
-                    outlineColor = if (isRadiant) Color.parseColor("#CAD1DD") else outlineColor,
-                    outlineWidthPx = if (isRadiant) (resources.displayMetrics.density).toInt().coerceAtLeast(1) else outlineThickness
+                    rimAlpha = 0.10f,
+                    sheenAlpha = 0f,
+                    outlineColor = outlineColor,
+                    outlineWidthPx = outlineThickness
                 )
             } else {
+
                 // Classic look: an opaque vertical gradient in the same single colour.
                 val gd = GradientDrawable(
                     GradientDrawable.Orientation.TOP_BOTTOM,
@@ -796,23 +822,24 @@ abstract class BaseConversationsAdapter(
             val canTintShadow = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
             val isGlass = activity.config.glassTheme
             val cardElevation = when {
-                !isGlass -> 8f
                 isRadiant -> RADIANT_CARD_ELEVATION_DP
+                !isGlass -> 8f
                 canTintShadow -> GLASS_CARD_ELEVATION_DP
                 else -> 0f
             }
+
             recentFrame.elevation = cardElevation * resources.displayMetrics.density
             recentFrame.translationZ = when {
                 isRadiant -> RADIANT_CARD_TRANSLATION_Z_DP * resources.displayMetrics.density
                 isGlass -> 0f
                 else -> 4f
             }
-            if (canTintShadow && isGlass) {
-                // Radiant needs the visibly lifted cards from its reference design. Its text
-                // colour gives the pale surface a cool grey-blue shadow; the other glass
-                // skins keep their quieter background-coloured shadow.
+            if (canTintShadow && (isGlass || isRadiant)) {
+                // Radiant's cast is the reference's own `0 1px 2px rgba(108,119,137,.18)`: a
+                // tight, cool grey-blue drop under the bevel rather than a wide halo. The
+                // lift comes from the bevel; the shadow only seats the card on the page.
                 val shadowTint = if (isRadiant) {
-                    activity.config.mainTextColor
+                    TextoGlass.RADIANT_CAST
                 } else {
                     activity.config.mainBackgroundColor
                 }
@@ -820,6 +847,7 @@ abstract class BaseConversationsAdapter(
                 recentFrame.outlineAmbientShadowColor = shadowTint.withAlpha(shadowAlpha)
                 recentFrame.outlineSpotShadowColor = shadowTint.withAlpha(shadowAlpha)
             }
+
             recentFrame.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
             recentFrame.clipToOutline = false
 
@@ -1218,13 +1246,17 @@ abstract class BaseConversationsAdapter(
          */
         private const val GLASS_CARD_ELEVATION_DP = 16f
 
-        /** Stronger separation for Radiant's deliberately raised white conversation cards. */
-        private const val RADIANT_CARD_ELEVATION_DP = 5f
+        /**
+         * Radiant's cast is the reference's tight `0 1px 2px`, not a lift of its own: the
+         * card is raised by its bevel. A tall elevation blurred the drop into a grey halo
+         * and washed out the bevel's own bottom line.
+         */
+        private const val RADIANT_CARD_ELEVATION_DP = 3f
         private const val RADIANT_CARD_TRANSLATION_Z_DP = 0f
 
         /** A tenth of full strength. Any denser and the card stops floating and starts sitting. */
         private const val GLASS_SHADOW_ALPHA = 0.10f
-        private const val RADIANT_SHADOW_ALPHA = 0.12f
+        private const val RADIANT_SHADOW_ALPHA = 0.22f
         
         const val VIEW_TYPE_DEFAULT = 0
         const val VIEW_TYPE_RECENT = 1

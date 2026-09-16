@@ -514,17 +514,24 @@ class MainActivity : SimpleActivity() {
             width = 384.getScaledPx().coerceAtMost(resources.displayMetrics.widthPixels - 32.getScaledPx())
             height = 54.getScaledPx()
         }
-        TextoGlass.applyPanel(
-            view = radiantNavContainer,
-            tint = config.topBarColor,
+        // The reference's nav pill is the same raised surface as its cards: hairline, white
+        // top edge, shaded bottom edge, flat face -- plus a tight drop under it. Painted as a
+        // glass panel it sank into the page while the cards above it stood up.
+        radiantNavContainer.background = TextoGlass.bevel(
+            face = config.topBarColor,
             cornerRadius = 24f * density,
-            opacity = 0.88f,
-            strokeWidthPx = density.toInt().coerceAtLeast(1),
-            rimAlpha = 0f,
-            sheenAlpha = 0.08f,
-            outlineColor = Color.parseColor("#CAD1DD"),
-            outlineWidthPx = density.toInt().coerceAtLeast(1),
+            opacity = 0.94f,
+            linePx = density.toInt().coerceAtLeast(1)
         )
+        radiantNavContainer.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+        radiantNavContainer.elevation = 4f * density
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            radiantNavContainer.outlineAmbientShadowColor =
+                TextoGlass.RADIANT_CAST.withAlpha(0.22f)
+            radiantNavContainer.outlineSpotShadowColor =
+                TextoGlass.RADIANT_CAST.withAlpha(0.22f)
+        }
+
 
         // The reference marks the open tab with a soft brand wash carrying brand ink, not a
         // saturated gradient block: the gradient made the bar read as one big button and
@@ -1427,19 +1434,22 @@ class MainActivity : SimpleActivity() {
         // page. The halo marks it instead, drawn over the glass rather than under it.
         val radiant = AppThemes.isRadiant(config.appTheme)
         chip.background = if (radiant) {
-            // The reference's chip row: the chosen chip is a light card behind a solid brand
-            // hairline, the rest a flat muted wash. Glass over a light ground gave three
-            // near-identical chips with nothing marking the choice.
-            android.graphics.drawable.GradientDrawable().apply {
-                shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-                cornerRadius = 12f * density
-                setColor(if (isActive) Color.parseColor("#D3E6FF") else config.recentColor)
-                setStroke(
-                    stroke.coerceAtLeast(1),
-                    if (isActive) config.accentGradientStart else Color.parseColor("#CAD1DD")
-                )
-            }
+            // The reference's chips carry the same raised recipe as its cards, only smaller:
+            // the chosen one on a brand-soft face behind a solid brand hairline, the rest on
+            // the card face behind the page hairline. Flat rectangles here were the giveaway
+            // that the chip row and the cards were not the same material.
+            com.texto.sms.helpers.TextoGlass.bevel(
+                face = if (isActive) Color.parseColor("#D3E6FF") else config.recentColor,
+                cornerRadius = 14f * density,
+                hairline = if (isActive) {
+                    config.accentGradientStart
+                } else {
+                    com.texto.sms.helpers.TextoGlass.RADIANT_HAIRLINE
+                },
+                linePx = stroke.coerceAtLeast(1)
+            )
         } else {
+
             com.texto.sms.helpers.TextoGlass.bar(
                 tint = if (config.topBarColor != 0) config.topBarColor else Color.BLACK,
                 cornerRadius = chipRadius,

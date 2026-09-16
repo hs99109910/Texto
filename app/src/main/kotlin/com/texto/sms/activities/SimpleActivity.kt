@@ -577,21 +577,31 @@ open class SimpleActivity : AppCompatActivity() {
 
             fun barShapeOf(radius: Float): Drawable {
                 val corners = FloatArray(8) { radius }
-                return if (useNewUi) {
+                return if (radiant) {
+                    // The reference paints its header capsule with the very same raised
+                    // recipe as its cards: hairline, white top edge, shaded bottom edge,
+                    // flat face. A gradient wash with a border is what made the bar read as
+                    // a different material from the cards under it.
+                    TextoGlass.bevel(
+                        face = barColor,
+                        cornerRadius = radius,
+                        opacity = 0.94f,
+                        linePx = 1.getScaledPx().coerceAtLeast(1)
+                    )
+                } else if (useNewUi) {
                     // The same recipe the floating nav pill is painted with, so the two
                     // capsules are one material rather than a frosted panel above and a
                     // gradient below.
                     TextoGlass.bar(
                         tint = barColor,
                         cornerRadii = corners,
-                        opacity = if (radiant) 0.88f else glassOpacity,
+                        opacity = glassOpacity,
                         // Through getScaledPx, like the nav pill and the filter chips. Raw
                         // `density.toInt()` ignored the UI-scale setting and truncated
                         // besides, so past a scale of about 1.2 the header kept a 2px
                         // hairline while the two capsules it matches had grown to 3.
                         strokeWidthPx = 1.getScaledPx().coerceAtLeast(1),
-                        rimAlpha = if (radiant) 1f else 0.20f,
-                        rimColor = if (radiant) Color.parseColor("#CAD1DD") else null
+                        rimAlpha = 0.20f
                     )
                 } else {
                     GradientDrawable().apply {
@@ -601,6 +611,7 @@ open class SimpleActivity : AppCompatActivity() {
                     }
                 }
             }
+
 
             if (config.topBarBgMode == BG_MODE_IMAGE && topBarImage.isNotEmpty()) {
                 loadBackgroundImage(topBarImage, appBar, config.topBarCropRect)
