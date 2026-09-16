@@ -1112,10 +1112,15 @@ abstract class BaseConversationsAdapter(
         view.apply {
             beVisibleIf(isUnread)
             if (isUnread) {
+                // The badge counts in the user's own digits: under Persian the reference
+                // reads "۵", not "5", and the count is the one number on the row that
+                // was still being written in Latin figures.
+                val locale = java.util.Locale.getDefault()
                 text = when {
-                    count > MAX_UNREAD_BADGE_COUNT -> "$MAX_UNREAD_BADGE_COUNT+"
+                    count > MAX_UNREAD_BADGE_COUNT ->
+                        String.format(locale, "%d+", MAX_UNREAD_BADGE_COUNT)
                     count == 0 -> ""
-                    else -> count.toString()
+                    else -> String.format(locale, "%d", count)
                 }
                 val config = activity.config
                 setTextColor(config.accentInkColor)
@@ -1135,12 +1140,26 @@ abstract class BaseConversationsAdapter(
                 }
                 minWidth = size
                 setPadding(pad, 0, pad, 0)
-                background = TextoGlass.accent(
-                    start = config.accentGradientStart,
-                    end = config.accentGradientEnd,
-                    cornerRadius = size / 2f,
-                    mid = config.accentGradientMid
-                )
+                background = if (AppThemes.isRadiant(config.appTheme)) {
+                    // Radiant's badge is the reference's own flat brand pill: a single
+                    // `--brand` fill with white ink, no gradient. On a raised card the
+                    // gradient read as a second light source fighting the card's bevel.
+                    android.graphics.drawable.GradientDrawable().apply {
+                        shape = android.graphics.drawable.GradientDrawable.RECTANGLE
+                        cornerRadius = size / 2f
+                        setColor(TextoGlass.RADIANT_BRAND)
+                    }
+                } else {
+                    TextoGlass.accent(
+                        start = config.accentGradientStart,
+                        end = config.accentGradientEnd,
+                        cornerRadius = size / 2f,
+                        mid = config.accentGradientMid
+                    )
+                }
+                if (AppThemes.isRadiant(config.appTheme)) {
+                    setTextColor(Color.WHITE)
+                }
             }
         }
     }
