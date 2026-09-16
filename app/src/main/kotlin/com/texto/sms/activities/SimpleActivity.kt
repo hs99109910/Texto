@@ -586,7 +586,7 @@ open class SimpleActivity : AppCompatActivity() {
                         face = barColor,
                         cornerRadius = radius,
                         opacity = 0.94f,
-                        linePx = 1.getScaledPx().coerceAtLeast(1)
+                        linePx = 2.getScaledPx().coerceAtLeast(2)
                     )
                 } else if (useNewUi) {
                     // The same recipe the floating nav pill is painted with, so the two
@@ -663,7 +663,7 @@ open class SimpleActivity : AppCompatActivity() {
 
             if (useNewUi) {
                 appBar.background = appBar.background ?: ColorDrawable(barColor) // Ensure background is set if Glide is async
-                appBar.elevation = 14 * density // Extra Stronger shadow
+                appBar.elevation = (if (radiant) 28 else 14) * density
                 appBar.setLayerType(View.LAYER_TYPE_HARDWARE, null)
                 // Ensure shadow is visible by disabling clipping on parent
                 (appBar.parent as? ViewGroup)?.let {
@@ -782,12 +782,21 @@ open class SimpleActivity : AppCompatActivity() {
                             // a fixed height and keeps its fixed corner.
                             val radius = if (isNavPill) view.height / 2f else inputRadius
                             if (radius <= 0f) return
-                            view.background = TextoGlass.bar(
-                                tint = inputBgColor,
-                                cornerRadius = radius,
-                                opacity = config.glassOpacity / 100f,
-                                strokeWidthPx = 1.getScaledPx()
-                            )
+                            view.background = if (radiant) {
+                                TextoGlass.bevel(
+                                    face = inputBgColor,
+                                    cornerRadius = radius,
+                                    opacity = 0.96f,
+                                    linePx = 2.getScaledPx().coerceAtLeast(2)
+                                )
+                            } else {
+                                TextoGlass.bar(
+                                    tint = inputBgColor,
+                                    cornerRadius = radius,
+                                    opacity = config.glassOpacity / 100f,
+                                    strokeWidthPx = 1.getScaledPx()
+                                )
+                            }
                         }
                         paintCapsule(inputBar)
                         // The height is only known once laid out, and the radius comes from

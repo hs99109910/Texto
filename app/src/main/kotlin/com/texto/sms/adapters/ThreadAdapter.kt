@@ -999,16 +999,26 @@ class ThreadAdapter(
                     tintMid == null -> intArrayOf(config.accentGradientStart, tintEnd)
                     else -> intArrayOf(config.accentGradientStart, tintMid, tintEnd)
                 }
-                background = com.texto.sms.helpers.TextoBubbleDrawable(
-                    colors = colors,
-                    radii = baseRadii,
-                    tailOnRight = onRight,
-                    showTail = !joinsNext,
-                    tailWidth = tailWidth.toFloat(),
-                    tailHeight = BUBBLE_TAIL_H_DP.getScaledPxIn(scaled).toFloat(),
-                    strokeColor = outlineColor,
-                    strokeWidth = outlineWidth.toFloat()
-                )
+                val radiant = AppThemes.isRadiant(config.appTheme)
+                background = if (radiant) {
+                    TextoGlass.bevel(
+                        face = if (hasAccent) config.accentGradientStart else bgColor,
+                        cornerRadius = r20,
+                        hairline = outlineColor ?: TextoGlass.RADIANT_HAIRLINE,
+                        linePx = (density * 2f).toInt().coerceAtLeast(2)
+                    )
+                } else {
+                    com.texto.sms.helpers.TextoBubbleDrawable(
+                        colors = colors,
+                        radii = baseRadii,
+                        tailOnRight = onRight,
+                        showTail = !joinsNext,
+                        tailWidth = tailWidth.toFloat(),
+                        tailHeight = BUBBLE_TAIL_H_DP.getScaledPxIn(scaled).toFloat(),
+                        strokeColor = outlineColor,
+                        strokeWidth = outlineWidth.toFloat()
+                    )
+                }
                 val padInner = BUBBLE_PAD_H_DP.getScaledPxIn(scaled)
                 val padOuter = padInner + tailWidth
                 setPadding(
@@ -1021,7 +1031,13 @@ class ThreadAdapter(
                 // Both bubbles sit flush. The design gives the sent one only `var(--soft)`,
                 // a shadow tuned almost to nothing; a real 4dp lift instead put a visible
                 // edge under it and made it read as raised against a flat mockup.
-                elevation = 0f
+                elevation = if (radiant) 10f * density else 0f
+                translationZ = if (radiant) 2f * density else 0f
+                if (radiant && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                    val cast = TextoGlass.RADIANT_CAST.withAlpha(0.60f)
+                    outlineAmbientShadowColor = cast
+                    outlineSpotShadowColor = cast
+                }
                 clipToOutline = false
                 outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
             } else {

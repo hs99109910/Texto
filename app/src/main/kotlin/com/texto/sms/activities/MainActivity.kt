@@ -521,16 +521,16 @@ class MainActivity : SimpleActivity() {
             face = config.topBarColor,
             cornerRadius = 24f * density,
             opacity = 0.94f,
-            linePx = density.toInt().coerceAtLeast(1)
+            linePx = (density * 2f).toInt().coerceAtLeast(2)
         )
         radiantNavContainer.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
-        radiantNavContainer.elevation = 6f * density
-        radiantNavContainer.translationZ = 1f * density
+        radiantNavContainer.elevation = 12f * density
+        radiantNavContainer.translationZ = 2f * density
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
             radiantNavContainer.outlineAmbientShadowColor =
-                TextoGlass.RADIANT_CAST.withAlpha(0.30f)
+                TextoGlass.RADIANT_CAST.withAlpha(0.60f)
             radiantNavContainer.outlineSpotShadowColor =
-                TextoGlass.RADIANT_CAST.withAlpha(0.30f)
+                TextoGlass.RADIANT_CAST.withAlpha(0.60f)
         }
 
 
@@ -1289,19 +1289,12 @@ class MainActivity : SimpleActivity() {
             height = LOGO_HEIGHT_DP.getScaledPx()
         }
         colorFilter = null
-        val radiant = AppThemes.isRadiant(config.appTheme)
-        // Radiant uses a dedicated, tightly cropped copy of the launcher artwork. It keeps
-        // the whole speech-bubble silhouette visible instead of enlarging adaptive-icon art
-        // past the ImageView bounds and cutting off its lower edge. Other themes retain their
-        // original launcher badge and crop behavior unchanged.
-        setImageResource(if (radiant) R.drawable.texto_header_logo else R.mipmap.ic_launcher_round)
-        scaleType = if (radiant) {
-            android.widget.ImageView.ScaleType.FIT_CENTER
-        } else {
-            android.widget.ImageView.ScaleType.CENTER_CROP
-        }
-        scaleX = 1f
-        scaleY = 1f
+        // Keep the header mark identical to the app's original launcher icon.
+        setImageResource(R.mipmap.ic_launcher_round)
+        scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
+        val originalCrop = if (AppThemes.isRadiant(config.appTheme)) 1.42f else 1f
+        scaleX = originalCrop
+        scaleY = originalCrop
     }
 
     /**
@@ -1455,7 +1448,7 @@ class MainActivity : SimpleActivity() {
                 } else {
                     com.texto.sms.helpers.TextoGlass.RADIANT_HAIRLINE
                 },
-                linePx = stroke.coerceAtLeast(1)
+                linePx = (stroke * 2).coerceAtLeast(2)
             )
         } else {
 
@@ -1467,10 +1460,10 @@ class MainActivity : SimpleActivity() {
                 rimAlpha = 0.20f
             )
         }
-        chip.elevation = if (radiant) 2f * density else 0f
-        chip.translationZ = if (radiant && isActive) density else 0f
+        chip.elevation = if (radiant) 4f * density else 0f
+        chip.translationZ = if (radiant && isActive) 2f * density else 0f
         if (radiant && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-            val shadow = TextoGlass.RADIANT_CAST.withAlpha(if (isActive) 0.28f else 0.22f)
+            val shadow = TextoGlass.RADIANT_CAST.withAlpha(if (isActive) 0.56f else 0.44f)
             chip.outlineAmbientShadowColor = shadow
             chip.outlineSpotShadowColor = shadow
         }

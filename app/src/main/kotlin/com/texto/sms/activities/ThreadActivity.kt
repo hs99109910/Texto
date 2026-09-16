@@ -405,8 +405,18 @@ class ThreadActivity : SimpleActivity() {
         // while its straight edges looked clean. The bar already separates itself from the
         // page with TextoGlass's own hairline rim; the shadow only has to hint that it
         // floats, and at 3dp the corners measure clean.
-        inputBar.elevation = if (isNewUi) 3f * resources.displayMetrics.density else 0f
-        inputBar.translationZ = 0f
+        val radiant = AppThemes.isRadiant(config.appTheme)
+        inputBar.elevation = when {
+            radiant -> 6f * resources.displayMetrics.density
+            isNewUi -> 3f * resources.displayMetrics.density
+            else -> 0f
+        }
+        inputBar.translationZ = if (radiant) 2f * resources.displayMetrics.density else 0f
+        if (radiant && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+            val cast = TextoGlass.RADIANT_CAST.withAlpha(0.60f)
+            inputBar.outlineAmbientShadowColor = cast
+            inputBar.outlineSpotShadowColor = cast
+        }
 
         // The shape the shadow is cast from, set here because this is where the elevation
         // that casts it is, so the two cannot drift apart. clipToOutline is left alone: only
@@ -880,7 +890,8 @@ class ThreadActivity : SimpleActivity() {
                 mid = config.accentGradientMid
             )
             threadSendMessage.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
-            threadSendMessage.elevation = 6 * density
+            threadSendMessage.elevation =
+                (if (AppThemes.isRadiant(config.appTheme)) 12 else 6) * density
 
             // No fill and no hairline on the row: everything the composer draws belongs to
             // the capsule inside it, so anything painted here would read as a second slab.
@@ -1163,12 +1174,25 @@ class ThreadActivity : SimpleActivity() {
                 width = side
                 height = side
             }
-            view.background = android.graphics.drawable.GradientDrawable().apply {
-                shape = android.graphics.drawable.GradientDrawable.OVAL
-                setColor(fill)
-                setStroke(1.getScaledPx(), rim)
+            view.background = if (AppThemes.isRadiant(config.appTheme)) {
+                TextoGlass.bevel(
+                    face = fill,
+                    cornerRadius = side / 2f,
+                    linePx = 2.getScaledPx().coerceAtLeast(2)
+                )
+            } else {
+                android.graphics.drawable.GradientDrawable().apply {
+                    shape = android.graphics.drawable.GradientDrawable.OVAL
+                    setColor(fill)
+                    setStroke(1.getScaledPx(), rim)
+                }
             }
             view.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
+            view.elevation = if (AppThemes.isRadiant(config.appTheme)) {
+                4f * resources.displayMetrics.density
+            } else {
+                0f
+            }
             view.imageTintList = android.content.res.ColorStateList.valueOf(glyph)
             // Drawn at 38 and 40dp, which is what the design asks for and under the
             // platform's 48dp floor; the hit rect grows to it while the disc stays put.

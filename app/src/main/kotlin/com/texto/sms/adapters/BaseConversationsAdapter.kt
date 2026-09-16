@@ -682,8 +682,8 @@ abstract class BaseConversationsAdapter(
             // XML values did not, which is why the row never grew with the rest of the app.
             run {
                 val a = activity as SimpleActivity
-                val padH = (if (AppThemes.isRadiant(activity.config.appTheme)) 12 else ROW_PADDING_H_DP).getScaledPxIn(a)
-                val padV = (if (AppThemes.isRadiant(activity.config.appTheme)) 8 else ROW_PADDING_V_DP).getScaledPxIn(a)
+                val padH = (if (AppThemes.isRadiant(activity.config.appTheme)) 10 else ROW_PADDING_H_DP).getScaledPxIn(a)
+                val padV = (if (AppThemes.isRadiant(activity.config.appTheme)) 4 else ROW_PADDING_V_DP).getScaledPxIn(a)
                 recentFrame.setPadding(padH, padV, padH, padV)
                 // Radiant deliberately leaves enough air for the card shadow to remain visible.
                 // Other skins retain the denser conversation list they already use.
@@ -699,7 +699,7 @@ abstract class BaseConversationsAdapter(
                     topMargin = rowGap.getScaledPxIn(a)
                     bottomMargin = rowGap.getScaledPxIn(a)
                 }
-                recentFrame.minimumHeight = (if (AppThemes.isRadiant(activity.config.appTheme)) 58 else 76).getScaledPxIn(a)
+                recentFrame.minimumHeight = (if (AppThemes.isRadiant(activity.config.appTheme)) 45 else 76).getScaledPxIn(a)
 
                 val avatarGap = AVATAR_TEXT_GAP_DP.getScaledPxIn(a)
                 val endGap = TEXT_END_GAP_DP.getScaledPxIn(a)
@@ -775,7 +775,7 @@ abstract class BaseConversationsAdapter(
                     face = baseColor,
                     cornerRadius = cardRadius,
                     opacity = if (isSelected) 1f else 0.99f,
-                    linePx = resources.displayMetrics.density.toInt().coerceAtLeast(1)
+                    linePx = (resources.displayMetrics.density * 2f).toInt().coerceAtLeast(2)
                 )
                 recentFrame.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
             } else if (activity.config.glassTheme) {
@@ -1233,12 +1233,12 @@ abstract class BaseConversationsAdapter(
          * the shorter header gives back.
          */
         private const val AVATAR_DP = 48
-        private const val RADIANT_AVATAR_DP = 42
+        private const val RADIANT_AVATAR_DP = 36
         private const val ROW_PADDING_H_DP = 16
         private const val ROW_PADDING_V_DP = 4
         /** Each side of a card, so two cards sit 2dp apart (was 4 + 4). */
         private const val ROW_GAP_DP = 1
-        private const val RADIANT_ROW_GAP_DP = 3
+        private const val RADIANT_ROW_GAP_DP = 1
         private const val PIN_DP = 14
         private const val PIN_NAME_GAP_DP = 4
 
@@ -1280,12 +1280,12 @@ abstract class BaseConversationsAdapter(
          * card is raised by its bevel. A tall elevation blurred the drop into a grey halo
          * and washed out the bevel's own bottom line.
          */
-        private const val RADIANT_CARD_ELEVATION_DP = 5f
-        private const val RADIANT_CARD_TRANSLATION_Z_DP = 1f
+        private const val RADIANT_CARD_ELEVATION_DP = 10f
+        private const val RADIANT_CARD_TRANSLATION_Z_DP = 2f
 
         /** A tenth of full strength. Any denser and the card stops floating and starts sitting. */
         private const val GLASS_SHADOW_ALPHA = 0.10f
-        private const val RADIANT_SHADOW_ALPHA = 0.30f
+        private const val RADIANT_SHADOW_ALPHA = 0.60f
         
         const val VIEW_TYPE_DEFAULT = 0
         const val VIEW_TYPE_RECENT = 1
