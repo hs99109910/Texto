@@ -17,7 +17,7 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/main_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="58dp"
+            android:layout_height="54dp"
             android:background="@android:color/transparent"
             app:popupTheme="@style/TextoPopupTheme">
 
@@ -34,13 +34,13 @@
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingStart="22dp"
-                android:paddingEnd="22dp">
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp">
 
                 <ImageView
                     android:id="@+id/texto_title"
-                    android:layout_width="34dp"
-                    android:layout_height="34dp"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
                     android:contentDescription="@string/app_launcher_name"
                     android:scaleType="fitCenter"
                     android:src="@mipmap/ic_launcher_round" />
@@ -49,7 +49,7 @@
                     android:id="@+id/texto_header_search"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="12dp"
+                    android:layout_marginStart="8dp"
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     android:clickable="true"
@@ -88,8 +88,8 @@
                 -->
                 <ImageView
                     android:id="@+id/texto_menu_btn"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:layout_gravity="center_vertical"
                     android:background="@drawable/texto_header_tile_bg"
                     android:clickable="true"
@@ -163,8 +163,8 @@
                     android:clipToPadding="false"
                     android:overScrollMode="never"
                     android:paddingHorizontal="16dp"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="3dp"
+                    android:paddingTop="0dp"
+                    android:paddingBottom="12dp"
                     android:scrollbars="none" />
 
                 <!--
@@ -189,7 +189,7 @@
                         android:layoutAnimation="@anim/texto_layout_animation"
                         android:overScrollMode="ifContentScrolls"
                         android:scrollbars="none"
-                        android:paddingHorizontal="4dp"
+                        android:paddingHorizontal="0dp"
                         android:clipChildren="false"
                         android:clipToPadding="false"
                         app:layoutManager="com.texto.sms.views.TextoLinearLayoutManager" />
@@ -473,8 +473,8 @@
     <!-- Radiant-only Telegram-style navigation. MainActivity keeps it gone for every other skin. -->
     <LinearLayout
         android:id="@+id/radiant_nav_container"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="384dp"
+        android:layout_height="54dp"
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginHorizontal="16dp"
         android:layout_marginBottom="16dp"
@@ -485,26 +485,26 @@
         android:visibility="gone"
         tools:visibility="visible">
 
-        <LinearLayout android:id="@+id/radiant_messages_btn" android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:paddingHorizontal="4dp">
-            <ImageView android:id="@+id/radiant_messages_icon" android:layout_width="22dp" android:layout_height="22dp" android:importantForAccessibility="no" android:src="@drawable/ic_ph_chat_teardrop_text" />
+        <LinearLayout android:id="@+id/radiant_messages_btn" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:gravity="center" android:orientation="horizontal" android:paddingHorizontal="6dp">
+            <ImageView android:id="@+id/radiant_messages_icon" android:layout_width="18dp" android:layout_height="18dp" android:importantForAccessibility="no" android:src="@drawable/ic_ph_chat_teardrop_text" />
             <TextView android:id="@+id/radiant_messages_label" style="@style/NavBarLabel" android:text="@string/nav_messages" />
         </LinearLayout>
-        <LinearLayout android:id="@+id/radiant_contacts_btn" android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:paddingHorizontal="4dp">
-            <ImageView android:id="@+id/radiant_contacts_icon" android:layout_width="22dp" android:layout_height="22dp" android:importantForAccessibility="no" android:src="@drawable/ic_ph_users" />
+        <LinearLayout android:id="@+id/radiant_contacts_btn" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:gravity="center" android:orientation="horizontal" android:paddingHorizontal="6dp">
+            <ImageView android:id="@+id/radiant_contacts_icon" android:layout_width="18dp" android:layout_height="18dp" android:importantForAccessibility="no" android:src="@drawable/ic_ph_users" />
             <TextView android:id="@+id/radiant_contacts_label" style="@style/NavBarLabel" android:text="@string/nav_contacts" />
         </LinearLayout>
-        <LinearLayout android:id="@+id/radiant_archive_btn" android:layout_width="0dp" android:layout_height="56dp" android:layout_weight="1" android:gravity="center" android:orientation="vertical" android:paddingHorizontal="4dp">
-            <ImageView android:id="@+id/radiant_archive_icon" android:layout_width="22dp" android:layout_height="22dp" android:importantForAccessibility="no" android:src="@drawable/ic_ph_archive_box" />
+        <LinearLayout android:id="@+id/radiant_archive_btn" android:layout_width="0dp" android:layout_height="42dp" android:layout_weight="1" android:gravity="center" android:orientation="horizontal" android:paddingHorizontal="6dp">
+            <ImageView android:id="@+id/radiant_archive_icon" android:layout_width="18dp" android:layout_height="18dp" android:importantForAccessibility="no" android:src="@drawable/ic_ph_archive_box" />
             <TextView android:id="@+id/radiant_archive_label" style="@style/NavBarLabel" android:text="@string/nav_archive" />
         </LinearLayout>
         <ImageView
             android:id="@+id/radiant_compose_btn"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_marginStart="4dp"
             android:contentDescription="@string/nav_new_message"
             android:elevation="6dp"
-            android:padding="14dp"
+            android:padding="10dp"
             android:src="@drawable/ic_ph_pencil" />
     </LinearLayout>
 

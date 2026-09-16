@@ -299,7 +299,10 @@ object AppThemes {
         topBarTextColor = Color.parseColor("#141F32"),
         mainTextColor = Color.parseColor("#141F32"),
         mainBackgroundColor = Color.parseColor("#E4ECF8"),
-        backgroundGradient = Color.parseColor("#EBF1FB") to Color.parseColor("#DFE7F3"),
+        // The reference background is a single token, not a gradient or an aurora field.
+        // Keeping it flat is essential: the contrast between #E4ECF8 and the #F0F4FA cards
+        // is what makes their inset highlight and cool shadow visible.
+        backgroundGradient = null,
         cardColor = Color.parseColor("#F0F4FA"),
         inputBarTextColor = Color.parseColor("#141F32"),
         accentGradient = Color.parseColor("#1C6EF0") to Color.parseColor("#155FD8"),
@@ -309,7 +312,7 @@ object AppThemes {
         sentBubbleTextColor = Color.parseColor("#FAFCFF"),
         receivedBubbleColor = Color.parseColor("#F0F4FA"),
         receivedBubbleTextColor = Color.parseColor("#141F32"),
-        cardCornerRadiusDp = 24,
+        cardCornerRadiusDp = 22,
         glass = true
     )
 

@@ -568,13 +568,14 @@ abstract class BaseConversationsAdapter(
             recentAddress.text = conversation.title.asLtrPhone()
             recentAddress.setTextColor(mainTextColor)
             // The design's row type ramp, relative to the preview line: 15 / 13 / 11.
-            recentAddress.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 1.15f)
+            val radiant = AppThemes.isRadiant(activity.config.appTheme)
+            recentAddress.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * if (radiant) 1.08f else 1.15f)
 
             val smsDraft = drafts[conversation.threadId]
             val draftLabel = activity.getString(R.string.draft)
 
             recentBody.setTextColor(mainTextColor)
-            recentBody.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize)
+            recentBody.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * if (radiant) 0.92f else 1f)
             recentBody.text = if (!smsDraft.isNullOrEmpty()) {
                 "$draftLabel: $smsDraft"
             } else {
@@ -609,7 +610,7 @@ abstract class BaseConversationsAdapter(
             // secondary, but not to the point of being unreadable. .52 measures 3.04:1,
             // the large-text floor, and still sits well behind the name and the preview.
             recentDate.setTextColor(mainTextColor.withAlpha(0.52f))
-            recentDate.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * 0.85f)
+            recentDate.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize * if (radiant) 0.85f else 0.85f)
             recentDate.alpha = 1f
             recentBody.setTextColor(mainTextColor.withAlpha(0.58f))
 
@@ -658,8 +659,8 @@ abstract class BaseConversationsAdapter(
             // XML values did not, which is why the row never grew with the rest of the app.
             run {
                 val a = activity as SimpleActivity
-                val padH = ROW_PADDING_H_DP.getScaledPxIn(a)
-                val padV = ROW_PADDING_V_DP.getScaledPxIn(a)
+                val padH = (if (AppThemes.isRadiant(activity.config.appTheme)) 14 else ROW_PADDING_H_DP).getScaledPxIn(a)
+                val padV = (if (AppThemes.isRadiant(activity.config.appTheme)) 14 else ROW_PADDING_V_DP).getScaledPxIn(a)
                 recentFrame.setPadding(padH, padV, padH, padV)
                 // Radiant deliberately leaves enough air for the card shadow to remain visible.
                 // Other skins retain the denser conversation list they already use.
@@ -758,10 +759,10 @@ abstract class BaseConversationsAdapter(
                         else -> 0.68f
                     },
                     strokeWidthPx = (resources.displayMetrics.density).toInt().coerceAtLeast(1),
-                    rimAlpha = if (isRadiant) 0.18f else 0.10f,
-                    sheenAlpha = if (isRadiant) 0.06f else 0f,
-                    outlineColor = outlineColor,
-                    outlineWidthPx = outlineThickness
+                    rimAlpha = if (isRadiant) 0f else 0.10f,
+                    sheenAlpha = if (isRadiant) 0.08f else 0f,
+                    outlineColor = if (isRadiant) Color.parseColor("#CAD1DD") else outlineColor,
+                    outlineWidthPx = if (isRadiant) (resources.displayMetrics.density).toInt().coerceAtLeast(1) else outlineThickness
                 )
             } else {
                 // Classic look: an opaque vertical gradient in the same single colour.
@@ -1217,12 +1218,12 @@ abstract class BaseConversationsAdapter(
         private const val GLASS_CARD_ELEVATION_DP = 16f
 
         /** Stronger separation for Radiant's deliberately raised white conversation cards. */
-        private const val RADIANT_CARD_ELEVATION_DP = 12f
-        private const val RADIANT_CARD_TRANSLATION_Z_DP = 2f
+        private const val RADIANT_CARD_ELEVATION_DP = 5f
+        private const val RADIANT_CARD_TRANSLATION_Z_DP = 0f
 
         /** A tenth of full strength. Any denser and the card stops floating and starts sitting. */
         private const val GLASS_SHADOW_ALPHA = 0.10f
-        private const val RADIANT_SHADOW_ALPHA = 0.22f
+        private const val RADIANT_SHADOW_ALPHA = 0.12f
         
         const val VIEW_TYPE_DEFAULT = 0
         const val VIEW_TYPE_RECENT = 1

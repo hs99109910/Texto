@@ -161,6 +161,7 @@ object TextoGlass {
         opacity: Float = 0.84f,
         strokeWidthPx: Int = 1,
         rimAlpha: Float = 0.20f,
+        rimColor: Int? = null,
     ): Drawable {
         fun GradientDrawable.applyCorners() {
             if (cornerRadii != null) this.cornerRadii = cornerRadii else this.cornerRadius = cornerRadius
@@ -188,7 +189,7 @@ object TextoGlass {
             shape = GradientDrawable.RECTANGLE
             applyCorners()
             setColor(Color.TRANSPARENT)
-            setStroke(strokeWidthPx, rimFor(tint, rimAlpha))
+            setStroke(strokeWidthPx, rimColor ?: rimFor(tint, rimAlpha))
         }
 
         return LayerDrawable(arrayOf(fill, rim))

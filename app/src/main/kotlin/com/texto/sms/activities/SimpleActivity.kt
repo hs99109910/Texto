@@ -546,6 +546,7 @@ open class SimpleActivity : AppCompatActivity() {
             // the mismatch you could see between the top and bottom of the screen.
             val barSideInset = (TextoGlass.FLOATING_BAR_INSET_DP * density).toInt()
             val useNewUi = config.useNewUi
+            val radiant = AppThemes.isRadiant(config.appTheme)
 
             val topBarImage = config.topBarImage
             // Settings -> "شفافیت نوارهای شیشه‌ای" drives every frosted bar, so the top bar,
@@ -583,12 +584,14 @@ open class SimpleActivity : AppCompatActivity() {
                     TextoGlass.bar(
                         tint = barColor,
                         cornerRadii = corners,
-                        opacity = glassOpacity,
+                        opacity = if (radiant) 0.88f else glassOpacity,
                         // Through getScaledPx, like the nav pill and the filter chips. Raw
                         // `density.toInt()` ignored the UI-scale setting and truncated
                         // besides, so past a scale of about 1.2 the header kept a 2px
                         // hairline while the two capsules it matches had grown to 3.
-                        strokeWidthPx = 1.getScaledPx().coerceAtLeast(1)
+                        strokeWidthPx = 1.getScaledPx().coerceAtLeast(1),
+                        rimAlpha = if (radiant) 1f else 0.20f,
+                        rimColor = if (radiant) Color.parseColor("#CAD1DD") else null
                     )
                 } else {
                     GradientDrawable().apply {

@@ -96,7 +96,7 @@ class MainActivity : SimpleActivity() {
         const val PICK_FILTER_SOUND_REQUEST = 1201
 
         /** The design's wordmark: 20% up from the 34dp it shipped at, then 10% back down. */
-        const val LOGO_HEIGHT_DP = 34
+        const val LOGO_HEIGHT_DP = 32
 
         /**
          * The home header, 12dp shorter than the 70dp every other bar uses.
@@ -107,7 +107,7 @@ class MainActivity : SimpleActivity() {
          * nothing inside it shrank -- only the air around them. Twelve dp is most of a
          * conversation row's worth of screen, and the list starts that much higher.
          */
-        const val HEADER_HEIGHT_DP = 58
+        const val HEADER_HEIGHT_DP = 54
 
         /** Matches the other panel transitions in the app. */
         const val SEARCH_ANIM_MILLIS = 260L
@@ -389,7 +389,10 @@ class MainActivity : SimpleActivity() {
         }
         binding.textoHeaderSearchLabel.apply {
             setTextColor(ink.withAlpha(0.58f))
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(1.0f))
+            setTextSize(
+                TypedValue.COMPLEX_UNIT_PX,
+                getScaledTextSize(if (AppThemes.isRadiant(config.appTheme)) 0.75f else 1.0f)
+            )
             typeface = typefaceFor(android.graphics.Typeface.NORMAL)
         }
 
@@ -403,17 +406,17 @@ class MainActivity : SimpleActivity() {
                 background = android.graphics.drawable.GradientDrawable().apply {
                     shape = android.graphics.drawable.GradientDrawable.RECTANGLE
                     cornerRadius = 999f
-                    setColor(config.mainBackgroundColor)
+                    setColor(Color.parseColor("#DFE7F3"))
                     setStroke(
                         density.toInt().coerceAtLeast(1),
-                        com.texto.sms.helpers.TextoGlass.rimFor(config.recentColor, 0.30f)
+                        Color.parseColor("#CAD1DD")
                     )
                 }
                 val padH = 14.getScaledPx()
                 setPadding(padH, 0, padH, 0)
                 updateLayoutParams<LinearLayout.LayoutParams> {
-                    topMargin = 8.getScaledPx()
-                    bottomMargin = 8.getScaledPx()
+                    topMargin = 9.getScaledPx()
+                    bottomMargin = 9.getScaledPx()
                 }
                 outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
             }
@@ -431,19 +434,20 @@ class MainActivity : SimpleActivity() {
 
     private fun styleHeaderTile(tile: android.widget.ImageView) = tile.apply {
         val density = resources.displayMetrics.density
-        val size = 40.getScaledPx()
+        val radiant = AppThemes.isRadiant(config.appTheme)
+        val size = (if (radiant) 36 else 40).getScaledPx()
         updateLayoutParams<LinearLayout.LayoutParams> {
             width = size
             height = size
         }
-        val pad = 11.getScaledPx()
+        val pad = (if (radiant) 10 else 11).getScaledPx()
         setPadding(pad, pad, pad, pad)
         background = android.graphics.drawable.GradientDrawable().apply {
             shape = android.graphics.drawable.GradientDrawable.OVAL
-            setColor(config.mainBackgroundColor.withAlpha(0.55f))
+            setColor(if (radiant) config.recentColor else config.mainBackgroundColor.withAlpha(0.55f))
             setStroke(
                 density.toInt().coerceAtLeast(1),
-                com.texto.sms.helpers.TextoGlass.rimFor(config.recentColor, 0.22f)
+                if (radiant) Color.parseColor("#CAD1DD") else com.texto.sms.helpers.TextoGlass.rimFor(config.recentColor, 0.22f)
             )
         }
         outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
@@ -506,14 +510,20 @@ class MainActivity : SimpleActivity() {
         if (!visible) return@apply
 
         val density = resources.displayMetrics.density
+        radiantNavContainer.updateLayoutParams<androidx.coordinatorlayout.widget.CoordinatorLayout.LayoutParams> {
+            width = 384.getScaledPx().coerceAtMost(resources.displayMetrics.widthPixels - 32.getScaledPx())
+            height = 54.getScaledPx()
+        }
         TextoGlass.applyPanel(
             view = radiantNavContainer,
             tint = config.topBarColor,
-            cornerRadius = 32f * density,
-            opacity = 0.94f,
+            cornerRadius = 24f * density,
+            opacity = 0.88f,
             strokeWidthPx = density.toInt().coerceAtLeast(1),
-            rimAlpha = 0.12f,
-            sheenAlpha = 0.04f,
+            rimAlpha = 0f,
+            sheenAlpha = 0.08f,
+            outlineColor = Color.parseColor("#CAD1DD"),
+            outlineWidthPx = density.toInt().coerceAtLeast(1),
         )
 
         // The reference marks the open tab with a soft brand wash carrying brand ink, not a
@@ -522,9 +532,8 @@ class MainActivity : SimpleActivity() {
         val accent = config.accentGradientStart
         radiantMessagesBtn.background = android.graphics.drawable.GradientDrawable().apply {
             shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-            cornerRadius = 24f * density
-            setColor(accent.withAlpha(0.14f))
-            setStroke(density.toInt().coerceAtLeast(1), accent.withAlpha(0.24f))
+            cornerRadius = 100f * density
+            setColor(Color.parseColor("#D3E6FF"))
         }
 
         val muted = config.mainTextColor.withAlpha(0.60f)
@@ -541,7 +550,7 @@ class MainActivity : SimpleActivity() {
             shape = android.graphics.drawable.GradientDrawable.OVAL
         }
         radiantComposeBtn.applyColorFilter(config.accentInkColor)
-        radiantComposeBtn.elevation = 8f * density
+        radiantComposeBtn.elevation = 6f * density
 
         radiantMessagesBtn.setOnClickListener {
             if (isSearchExpanded) shrinkSearchBar() else conversationsList.smoothScrollToPosition(0)
@@ -1272,6 +1281,11 @@ class MainActivity : SimpleActivity() {
             height = LOGO_HEIGHT_DP.getScaledPx()
         }
         colorFilter = null
+        // Adaptive launcher art has a large safe-zone inset. Zooming the existing logo makes
+        // its actual mark occupy the same compact 32dp brand slot as the reference wordmark.
+        scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
+        if (AppThemes.isRadiant(config.appTheme)) scaleX = 1.42f else scaleX = 1f
+        if (AppThemes.isRadiant(config.appTheme)) scaleY = 1.42f else scaleY = 1f
     }
 
     /**
@@ -1418,15 +1432,11 @@ class MainActivity : SimpleActivity() {
             // near-identical chips with nothing marking the choice.
             android.graphics.drawable.GradientDrawable().apply {
                 shape = android.graphics.drawable.GradientDrawable.RECTANGLE
-                cornerRadius = chipRadius
-                setColor(if (isActive) config.recentColor else config.mainTextColor.withAlpha(0.06f))
+                cornerRadius = 12f * density
+                setColor(if (isActive) Color.parseColor("#D3E6FF") else config.recentColor)
                 setStroke(
-                    (if (isActive) 2.getScaledPx() else stroke).coerceAtLeast(1),
-                    if (isActive) {
-                        config.accentGradientStart.withAlpha(0.85f)
-                    } else {
-                        config.mainTextColor.withAlpha(0.10f)
-                    }
+                    stroke.coerceAtLeast(1),
+                    if (isActive) config.accentGradientStart else Color.parseColor("#CAD1DD")
                 )
             }
         } else {
@@ -1439,20 +1449,20 @@ class MainActivity : SimpleActivity() {
             )
         }
         val horizontal = if (filterId == com.texto.sms.adapters.FilterChipsAdapter.ADD_CHIP_ID) {
-            18.getScaledPx()
+            14.getScaledPx()
         } else {
             // The design's own 8px/16px chip padding.
-            16.getScaledPx()
+            14.getScaledPx()
         }
-        chip.setPadding(horizontal, 8.getScaledPx(), horizontal, 8.getScaledPx())
+        chip.setPadding(horizontal, 6.getScaledPx(), horizontal, 6.getScaledPx())
         chip.alpha = 1f
         chip.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
         // Flat. The lift belonged to the solid gradient chip; over a halo it would cast a
         // shadow onto the very thing marking the selection.
-        chip.elevation = if (radiant && isActive) 3f * density else 0f
+        chip.elevation = 0f
 
         views.label.apply {
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.78f))
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(if (radiant) 0.75f else 0.78f))
             setTextColor(textColor)
             typeface = typefaceFor(
                 if (isActive) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL
@@ -1463,7 +1473,7 @@ class MainActivity : SimpleActivity() {
         // the glass. Both are a wash of the chip's own ink, which is what those two tokens
         // resolve to on either ground.
         views.count.apply {
-            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(0.62f))
+            setTextSize(TypedValue.COMPLEX_UNIT_PX, getScaledTextSize(if (radiant) 0.625f else 0.62f))
             setTextColor(textColor)
             typeface = typefaceFor(android.graphics.Typeface.BOLD)
             val padH = 6.getScaledPx()
@@ -1765,6 +1775,15 @@ class MainActivity : SimpleActivity() {
         val filters = currentFilters()
         filterChipsAdapter?.submitFilters(filters, activeFilter.id, filterCounts(filters))
         searchFilterChipsAdapter?.submitFilters(filters, searchFilter.id, filterCounts(filters))
+        updateRadiantUnreadCount()
+    }
+
+    /** Keeps the reference's header badge honest by deriving it from real unread threads. */
+    private fun updateRadiantUnreadCount() {
+        if (!AppThemes.isRadiant(config.appTheme)) return
+        val unread = allConversations.count { !it.read }
+        binding.textoTitle.contentDescription = getString(R.string.app_launcher_name) +
+            if (unread > 0) ", " + getString(R.string.unread_messages_count, unread) else ""
     }
 
     /**
@@ -1991,7 +2010,7 @@ class MainActivity : SimpleActivity() {
             // one floating surface from the next. At 8dp on both sides of the row -- on top
             // of that padding -- the strip between the header and the first card was mostly
             // empty screen.
-            val barsGap = 5.getScaledPx()
+            val barsGap = if (AppThemes.isRadiant(config.appTheme)) 0 else 5.getScaledPx()
             filterBar.updateLayoutParams<RelativeLayout.LayoutParams> {
                 topMargin = appbar.height + barsGap
             }
