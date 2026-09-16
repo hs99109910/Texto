@@ -245,6 +245,9 @@ object TextoGlass {
         return layers
     }
 
+    /** `--brand` in the Radiant reference: the flat blue its badges and active chip carry. */
+    val RADIANT_BRAND: Int = Color.parseColor("#1C6EF0")
+
     /** `--hairline` in the Radiant reference. */
     val RADIANT_HAIRLINE: Int = Color.parseColor("#CAD1DD")
 
