@@ -1,6 +1,7 @@
 package com.texto.sms.adapters
 
 import android.annotation.SuppressLint
+import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.LayerDrawable
