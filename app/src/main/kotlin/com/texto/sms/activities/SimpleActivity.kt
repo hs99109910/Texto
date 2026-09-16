@@ -743,6 +743,7 @@ open class SimpleActivity : AppCompatActivity() {
                        findViewById<View>(R.id.new_conversation_search_container)
         if (inputBar != null) {
             val inputBgColor = config.inputBarBackgroundColor
+            val radiantInput = AppThemes.isRadiant(config.appTheme)
             // The nav pill is a true capsule, like the header it has to match: its radius is
             // half its own height and is taken at paint time, below. The composer keeps the
             // design's fixed 1.6rem because it grows with the text it holds, and the
@@ -782,7 +783,7 @@ open class SimpleActivity : AppCompatActivity() {
                             // a fixed height and keeps its fixed corner.
                             val radius = if (isNavPill) view.height / 2f else inputRadius
                             if (radius <= 0f) return
-                            view.background = if (radiant) {
+                            view.background = if (radiantInput) {
                                 TextoGlass.bevel(
                                     face = inputBgColor,
                                     cornerRadius = radius,
