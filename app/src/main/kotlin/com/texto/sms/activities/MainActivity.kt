@@ -1469,7 +1469,7 @@ class MainActivity : SimpleActivity() {
         }
         chip.elevation = if (radiant) 2f * density else 0f
         chip.translationZ = if (radiant && isActive) density else 0f
-        if (radiant && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        if (radiant && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
             val shadow = TextoGlass.RADIANT_CAST.withAlpha(if (isActive) 0.28f else 0.22f)
             chip.outlineAmbientShadowColor = shadow
             chip.outlineSpotShadowColor = shadow
