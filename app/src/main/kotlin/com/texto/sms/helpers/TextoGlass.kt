@@ -216,7 +216,7 @@ object TextoGlass {
         cornerRadius: Float,
         hairline: Int = RADIANT_HAIRLINE,
         shade: Int = RADIANT_BEVEL_SHADE,
-        highlightAlpha: Float = 0.72f,
+        highlightAlpha: Float = 0.88f,
         opacity: Float = 1f,
         linePx: Int = 1,
     ): Drawable {
@@ -252,7 +252,7 @@ object TextoGlass {
     val RADIANT_HAIRLINE: Int = Color.parseColor("#CAD1DD")
 
     /** The reference's inset bottom shadow, flattened to the line it actually draws. */
-    val RADIANT_BEVEL_SHADE: Int = Color.parseColor("#B7C0CF")
+    val RADIANT_BEVEL_SHADE: Int = Color.parseColor("#A7B3C5")
 
     /** The reference's outer `0 1px 2px` cast, used to tint the platform shadow. */
     val RADIANT_CAST: Int = Color.parseColor("#3A4D6E")

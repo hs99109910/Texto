@@ -524,12 +524,13 @@ class MainActivity : SimpleActivity() {
             linePx = density.toInt().coerceAtLeast(1)
         )
         radiantNavContainer.outlineProvider = android.view.ViewOutlineProvider.BACKGROUND
-        radiantNavContainer.elevation = 4f * density
+        radiantNavContainer.elevation = 6f * density
+        radiantNavContainer.translationZ = 1f * density
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
             radiantNavContainer.outlineAmbientShadowColor =
-                TextoGlass.RADIANT_CAST.withAlpha(0.22f)
+                TextoGlass.RADIANT_CAST.withAlpha(0.30f)
             radiantNavContainer.outlineSpotShadowColor =
-                TextoGlass.RADIANT_CAST.withAlpha(0.22f)
+                TextoGlass.RADIANT_CAST.withAlpha(0.30f)
         }
 
 
@@ -1288,11 +1289,19 @@ class MainActivity : SimpleActivity() {
             height = LOGO_HEIGHT_DP.getScaledPx()
         }
         colorFilter = null
-        // Adaptive launcher art has a large safe-zone inset. Zooming the existing logo makes
-        // its actual mark occupy the same compact 32dp brand slot as the reference wordmark.
-        scaleType = android.widget.ImageView.ScaleType.CENTER_CROP
-        if (AppThemes.isRadiant(config.appTheme)) scaleX = 1.42f else scaleX = 1f
-        if (AppThemes.isRadiant(config.appTheme)) scaleY = 1.42f else scaleY = 1f
+        val radiant = AppThemes.isRadiant(config.appTheme)
+        // Radiant uses a dedicated, tightly cropped copy of the launcher artwork. It keeps
+        // the whole speech-bubble silhouette visible instead of enlarging adaptive-icon art
+        // past the ImageView bounds and cutting off its lower edge. Other themes retain their
+        // original launcher badge and crop behavior unchanged.
+        setImageResource(if (radiant) R.drawable.texto_header_logo else R.mipmap.ic_launcher_round)
+        scaleType = if (radiant) {
+            android.widget.ImageView.ScaleType.FIT_CENTER
+        } else {
+            android.widget.ImageView.ScaleType.CENTER_CROP
+        }
+        scaleX = 1f
+        scaleY = 1f
     }
 
     /**
@@ -1457,6 +1466,13 @@ class MainActivity : SimpleActivity() {
                 strokeWidthPx = stroke,
                 rimAlpha = 0.20f
             )
+        }
+        chip.elevation = if (radiant) 2f * density else 0f
+        chip.translationZ = if (radiant && isActive) density else 0f
+        if (radiant && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val shadow = TextoGlass.RADIANT_CAST.withAlpha(if (isActive) 0.28f else 0.22f)
+            chip.outlineAmbientShadowColor = shadow
+            chip.outlineSpotShadowColor = shadow
         }
         val horizontal = if (filterId == com.texto.sms.adapters.FilterChipsAdapter.ADD_CHIP_ID) {
             14.getScaledPx()
@@ -2021,6 +2037,12 @@ class MainActivity : SimpleActivity() {
             // of that padding -- the strip between the header and the first card was mostly
             // empty screen.
             val barsGap = if (AppThemes.isRadiant(config.appTheme)) 0 else 5.getScaledPx()
+            filterBar.setPadding(
+                filterBar.paddingLeft,
+                filterBar.paddingTop,
+                filterBar.paddingRight,
+                (if (AppThemes.isRadiant(config.appTheme)) 6 else 12).getScaledPx()
+            )
             filterBar.updateLayoutParams<RelativeLayout.LayoutParams> {
                 topMargin = appbar.height + barsGap
             }
